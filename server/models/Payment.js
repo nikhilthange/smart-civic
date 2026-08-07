@@ -109,9 +109,6 @@ const PaymentSchema = new mongoose.Schema(
 PaymentSchema.index({ complaint: 1 });
 PaymentSchema.index({ payer: 1 });
 PaymentSchema.index({ status: 1 });
-PaymentSchema.index({ razorpayOrderId: 1 }, { sparse: true });
-PaymentSchema.index({ razorpayPaymentId: 1 }, { sparse: true });
-PaymentSchema.index({ transactionId: 1 }, { sparse: true });
 PaymentSchema.index({ createdAt: -1 });
 PaymentSchema.index({ payer: 1, status: 1 }); // User payment history
 

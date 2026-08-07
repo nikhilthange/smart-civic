@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import toast from "react-hot-toast"
 import {
   Activity, AlertTriangle, CheckCircle2, Clock, FileText,
-  Bot, Plus, ArrowRight, Loader2, Bell
+  Bot, Plus, ArrowRight, Loader2, Bell, Award, RotateCcw
 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -145,6 +146,19 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* Civic Karma Banner */}
+      <div className="bg-gradient-to-r from-[#1E3A8A] to-indigo-700 text-white rounded-xl p-5 shadow-sm flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-white/10 rounded-lg">
+            <Award className="w-8 h-8 text-amber-300" />
+          </div>
+          <div>
+            <h3 className="font-bold text-lg">Civic Karma Score: {user?.karmaPoints ?? (stats?.total ? stats.total * 10 : 10)} Points</h3>
+            <p className="text-xs text-blue-100 mt-0.5">Earn +10 Civic Karma points for every verified report contributing to city governance!</p>
+          </div>
+        </div>
+      </div>
+
       {/* Content grid */}
       <div className="grid gap-6 lg:grid-cols-7">
         {/* Recent complaints table */}
@@ -187,8 +201,8 @@ export default function Dashboard() {
                   {recent.map((c) => (
                     <TableRow key={c._id} className="hover:bg-slate-50/80">
                       <TableCell className="font-mono text-xs">
-                        <Link to={`/complaint/${c.complaintId}/track`} className="text-primary hover:underline">
-                          {c.complaintId}
+                        <Link to={`/complaint/${c._id || c.id || c.complaintId}/track`} className="text-primary hover:underline">
+                          {c.complaintId || c._id}
                         </Link>
                       </TableCell>
                       <TableCell className="text-sm">
@@ -199,7 +213,30 @@ export default function Dashboard() {
                         {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
                       </TableCell>
                       <TableCell className="text-right">
-                        <StatusBadge status={c.status} />
+                        <div className="flex items-center justify-end gap-2">
+                          <StatusBadge status={c.status} />
+                          {c.status === "resolved" && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs text-amber-700 border-amber-300 hover:bg-amber-50 h-7 px-2"
+                              onClick={async () => {
+                                const reason = prompt("State reason for reopening issue:", "Resolution unsatisfactory");
+                                if (!reason) return;
+                                try {
+                                  await complaintApi.reopen(c._id, reason);
+                                  toast.success("Ticket reopened & escalated to CRITICAL priority!");
+                                  window.location.reload();
+                                } catch {
+                                  toast.error("Could not reopen ticket.");
+                                }
+                              }}
+                            >
+                              <RotateCcw className="w-3 h-3 mr-1" />
+                              Reopen
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

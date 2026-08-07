@@ -74,6 +74,12 @@ export interface Complaint {
     recommendedDepartmentCode: string
     analysisNote: string
   }
+  ward?: string
+  zone?: string
+  slaDeadline?: string
+  slaStatus?: "on_time" | "escalated" | "breached"
+  contractorPenalty?: number
+  affectedCitizensCount?: number
   createdAt: string
   updatedAt: string
 }
@@ -186,6 +192,23 @@ export const complaintApi = {
 
   assignOfficer: async (id: string, officerId: string) => {
     const res = await api.patch(`/complaints/${id}/assign`, { officerId })
+    return res.data
+  },
+
+  resolve: async (id: string, resolutionImage: File, resolutionNotes?: string) => {
+    const formData = new FormData()
+    formData.append("resolutionImage", resolutionImage)
+    if (resolutionNotes) {
+      formData.append("resolutionNotes", resolutionNotes)
+    }
+    const res = await api.put(`/complaints/${id}/resolve`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    return res.data
+  },
+
+  reopen: async (id: string, reason?: string) => {
+    const res = await api.post(`/complaints/${id}/reopen`, { reason })
     return res.data
   },
 }

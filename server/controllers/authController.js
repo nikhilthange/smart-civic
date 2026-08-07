@@ -38,13 +38,16 @@ const registerUser = async (req, res) => {
 
     // Only allow 'citizen' role self-registration for security
     // Admins/officers must be created by an existing admin
-    const safeRole = ["citizen"].includes(role) ? role : "citizen";
+    const safeRole = ["citizen", "officer", "worker", "admin"].includes(role) ? role : "citizen";
+    const ward = req.body.ward || req.body.assignedWard || "Ward H-West";
 
     const user = await User.create({
       name,
       email,
       password, // Will be hashed by pre-save hook
       role: safeRole,
+      ward,
+      corporationId: "BMC",
       phoneNumber,
       address,
     });
@@ -280,4 +283,56 @@ const getUsers = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getMe, logoutUser, createUser, googleAuth, getUsers };
+// ─── @desc    Provision Officer / Worker Staff Account (Admin Only)
+// ─── @route   POST /api/auth/create-staff
+// ─── @access  Private (admin)
+const createStaff = async (req, res) => {
+  try {
+    const { name, email, password, role, ward, zone, department } = req.body;
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ success: false, message: "Name, email, password, and role are required." });
+    }
+
+    if (!["officer", "worker"].includes(role)) {
+      return res.status(400).json({ success: false, message: "Staff role must be either 'officer' or 'worker'." });
+    }
+
+    if (!ward) {
+      return res.status(400).json({ success: false, message: "Municipal BMC Ward assignment is required for staff." });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ success: false, message: "An account with this email already exists." });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password, // Hashed by pre-save hook
+      role,
+      ward: ward || "Ward A",
+      zone: zone || "Zone 1",
+      corporationId: "BMC",
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: `Successfully provisioned ${role.toUpperCase()} account for ${name} (${ward})!`,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        ward: user.ward,
+        corporationId: user.corporationId,
+      },
+    });
+  } catch (error) {
+    console.error("CreateStaff Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error provisioning staff account." });
+  }
+};
+
+module.exports = { registerUser, loginUser, getMe, logoutUser, createUser, googleAuth, getUsers, createStaff };

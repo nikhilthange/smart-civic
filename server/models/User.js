@@ -34,8 +34,8 @@ const UserSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ["citizen", "admin", "officer"],
-        message: "Role must be citizen, admin, or officer",
+        values: ["citizen", "admin", "officer", "worker"],
+        message: "Role must be citizen, admin, officer, or worker",
       },
       default: "citizen",
     },
@@ -56,6 +56,28 @@ const UserSchema = new mongoose.Schema(
     avatar: {
       type: String, // URL
       default: null,
+    },
+    // BMC Ward & Zone assignments for officers/citizens
+    ward: {
+      type: String,
+      default: "Ward A",
+      trim: true,
+    },
+    zone: {
+      type: String,
+      default: "Zone 1",
+      trim: true,
+    },
+    // Multi-Tenant Corporation Assignment
+    corporationId: {
+      type: String,
+      default: "BMC",
+      trim: true,
+    },
+    // Civic Engagement & Gamification
+    karmaPoints: {
+      type: Number,
+      default: 0,
     },
     // For officers: link to their department
     department: {

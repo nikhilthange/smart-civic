@@ -12,6 +12,11 @@ const {
   deleteComplaint,
   getStats,
   assignOfficer,
+  resolveComplaint,
+  reopenComplaint,
+  assignWorker,
+  getWorkerTasks,
+  workerSubmitProof,
 } = require("../controllers/complaintController");
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
@@ -41,14 +46,20 @@ const statusValidation = [
 // GET /api/complaints/stats  — must come before /:id
 router.get("/stats", protect, authorize("admin", "officer"), getStats);
 
+// GET /api/complaints/all — Admin only route for all complaints
+router.get("/all", protect, authorize("admin"), getComplaints);
+
+// GET /api/complaints/worker-tasks — Get tasks assigned to logged-in worker (must come before /:id)
+router.get("/worker-tasks", protect, authorize("worker", "officer", "admin"), getWorkerTasks);
+
 // GET /api/complaints  — citizen sees own; admin/officer see all
 router.get("/", protect, getComplaints);
 
-// POST /api/complaints  — citizen submits complaint with optional file upload
+// POST /api/complaints  — citizen/admin submits complaint with optional file upload
 router.post(
   "/",
   protect,
-  authorize("citizen"),
+  authorize("citizen", "admin"),
   upload.array("attachments", 5),
   handleUploadError,
   createValidation,
@@ -77,6 +88,37 @@ router.patch(
   body("officerId").isMongoId().withMessage("Invalid officer ID"),
   validate,
   assignOfficer
+);
+
+// PUT /api/complaints/:id/resolve — Municipal officer resolves complaint with mandatory proof photo
+router.put(
+  "/:id/resolve",
+  protect,
+  authorize("officer", "admin"),
+  upload.single("resolutionImage"),
+  handleUploadError,
+  resolveComplaint
+);
+
+// POST /api/complaints/:id/reopen — Citizen reopens a resolved complaint within 48h
+router.post(
+  "/:id/reopen",
+  protect,
+  authorize("citizen", "admin"),
+  reopenComplaint
+);
+
+// PUT /api/complaints/:id/assign-worker — Assign complaint to field worker
+router.put("/:id/assign-worker", protect, authorize("officer", "admin"), assignWorker);
+
+// PUT /api/complaints/:id/worker-submit — Worker submits resolution proof image
+router.put(
+  "/:id/worker-submit",
+  protect,
+  authorize("worker", "officer", "admin"),
+  upload.single("resolutionImage"),
+  handleUploadError,
+  workerSubmitProof
 );
 
 // DELETE /api/complaints/:id

@@ -10,6 +10,7 @@ const {
   createUser,
   googleAuth,
   getUsers,
+  createStaff,
 } = require("../controllers/authController");
 
 const { protect, authorize } = require("../middlewares/auth");
@@ -86,5 +87,8 @@ router.post(
 
 // @route  GET  /api/auth/users  (Admin only)
 router.get("/users", protect, authorize("admin"), getUsers);
+
+// @route  POST /api/auth/create-staff  (Admin only)
+router.post("/create-staff", protect, authorize("admin"), createStaff);
 
 module.exports = router;

@@ -88,7 +88,7 @@ export default function SearchComplaints() {
       setComplaints(res.complaints)
       setTotal(res.total)
       setPages(res.pages)
-    } catch (err: any) {
+    } catch {
       setError("Failed to load complaints. Please try again.")
     } finally {
       setLoading(false)
@@ -367,7 +367,7 @@ export default function SearchComplaints() {
                       {new Date(c.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">
-                      <Link to={`/complaint/${c._id}/track`}>
+                      <Link to={`/complaint/${c._id || c.id || c.complaintId}/track`}>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                           <ExternalLink className="h-3.5 w-3.5" />
                         </Button>

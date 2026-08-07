@@ -93,6 +93,7 @@ app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/payments",      require("./routes/paymentRoutes"));
 app.use("/api/donations",     require("./routes/donationRoutes"));
 app.use("/api/analytics",     require("./routes/analyticsRoutes"));
+app.use("/api/reports",       require("./routes/reportRoutes"));
 
 // ─── Health check (no rate limit — used by load balancers) ────────────────────
 app.get("/api/health", (req, res) => {
@@ -114,6 +115,11 @@ app.use(globalErrorHandler);
 const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode`);
+  
+  // ─── Initialize SLA Background Worker ──────────────────────────────────────
+  const slaService = require("./services/slaService");
+  setTimeout(() => slaService.checkSlaBreaches(), 5000);
+  setInterval(() => slaService.checkSlaBreaches(), 10 * 60 * 1000);
 });
 
 // ─── Graceful shutdown — close DB + pending connections ───────────────────────

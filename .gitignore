@@ -1,7 +1,15 @@
 node_modules/
 .env
+.env.*
 dist/
 build/
 .DS_Store
 coverage/
 *.log
+*.pt
+server/uploads/*
+!server/uploads/.gitkeep
+__pycache__/
+.venv/
+venv/
+server/ai_service/venv/

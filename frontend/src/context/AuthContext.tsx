@@ -9,7 +9,7 @@ import {
 import api from "@/lib/axios"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-export type UserRole = "citizen" | "admin" | "officer"
+export type UserRole = "citizen" | "admin" | "officer" | "worker"
 
 export interface AuthUser {
   id: string
@@ -25,6 +25,8 @@ interface RegisterData {
   name: string
   email: string
   password: string
+  role?: UserRole
+  ward?: string
   phoneNumber?: string
   address?: string
 }

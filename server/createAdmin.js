@@ -4,7 +4,7 @@ require('dotenv').config();
 
 async function createAdmin() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/smart-civic');
     
     const existing = await User.findOne({ email: 'admin@smartcivic.com' });
     if (existing) {

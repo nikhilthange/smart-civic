@@ -139,6 +139,11 @@ const ComplaintSchema = new mongoose.Schema(
       ref: "Officer",
       default: null,
     },
+    assignedWorker: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
@@ -160,6 +165,50 @@ const ComplaintSchema = new mongoose.Schema(
       },
     },
 
+    // ─── Multi-Tenant Municipal & Inter-Agency Governance ─────────────────────
+    corporationId: {
+      type: String,
+      default: "BMC",
+      trim: true,
+    },
+    jurisdictionType: {
+      type: String,
+      enum: ["municipal", "state_highway", "railways", "development_authority"],
+      default: "municipal",
+    },
+
+    // ─── BMC Ward & Municipal Governance ─────────────────────────────────────
+    ward: {
+      type: String,
+      default: "Ward A",
+      trim: true,
+    },
+    zone: {
+      type: String,
+      default: "Zone 1",
+      trim: true,
+    },
+
+    // ─── SLA Management & Penalties ───────────────────────────────────────────
+    slaDeadline: {
+      type: Date,
+      required: true,
+    },
+    slaStatus: {
+      type: String,
+      enum: ["on_time", "escalated", "breached"],
+      default: "on_time",
+    },
+    contractorPenalty: {
+      type: Number,
+      default: 0,
+    },
+    assignedContractor: {
+      name: { type: String, trim: true, default: null },
+      vendorId: { type: String, trim: true, default: null },
+      assignedAt: { type: Date, default: null },
+    },
+
     // ─── Timeline ─────────────────────────────────────────────────────────────
     statusHistory: [StatusHistorySchema],
     estimatedResolution: { type: Date },
@@ -168,6 +217,16 @@ const ComplaintSchema = new mongoose.Schema(
     closedAt: { type: Date },
 
     // ─── Notes ────────────────────────────────────────────────────────────────
+    resolutionImage: {
+      url: { type: String, default: null },
+      filename: { type: String, default: null },
+      publicId: { type: String, default: null },
+    },
+    resolutionNotes: {
+      type: String,
+      trim: true,
+      maxlength: [1000, "Resolution notes cannot exceed 1000 characters"],
+    },
     adminNotes: {
       type: String,
       trim: true,
@@ -182,7 +241,21 @@ const ComplaintSchema = new mongoose.Schema(
     // ─── Engagement ───────────────────────────────────────────────────────────
     upvotes: {
       type: Number,
-      default: 0,
+      default: 1,
+    },
+    affectedCitizensCount: {
+      type: Number,
+      default: 1,
+    },
+    reportedByCitizens: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    priorityScore: {
+      type: Number,
+      default: 10,
     },
     isAnonymous: {
       type: Boolean,

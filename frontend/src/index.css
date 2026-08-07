@@ -70,8 +70,20 @@
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+  .font-mono, code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
   body {
     @apply bg-background text-foreground;
+    background-color: #F8FAFC;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }

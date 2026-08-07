@@ -205,7 +205,7 @@ export default function ComplaintHistory() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => navigate(`/complaint/${c.complaintId}/track`)}
+                              onClick={() => navigate(`/complaint/${c._id || c.id || c.complaintId}/track`)}
                             >
                               Track
                             </Button>

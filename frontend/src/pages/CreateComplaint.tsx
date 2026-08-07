@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
-  CheckCircle2, Loader2, Bot, Info
+  CheckCircle2, Loader2, Bot, Info, Camera
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { complaintApi, CATEGORY_LABELS, type ComplaintCategory } from "@/services/complaintApi"
+import { CameraCaptureModal } from "@/components/common/CameraCaptureModal"
 
 const CATEGORIES = Object.entries(CATEGORY_LABELS) as [ComplaintCategory, string][]
 
@@ -23,6 +24,7 @@ const PRIORITY_OPTIONS = [
 export default function CreateComplaint() {
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isCameraOpen, setIsCameraOpen] = useState(false)
 
   const [form, setForm] = useState({
     title: "",
@@ -57,7 +59,7 @@ export default function CreateComplaint() {
             const data = await res.json()
             setForm(prev => ({ ...prev, locationAddress: data.display_name }))
           }
-        } catch (e) {
+        } catch {
           // ignore
         }
         setGeoLoading(false)
@@ -164,7 +166,7 @@ export default function CreateComplaint() {
               <Button variant="outline" className="flex-1" onClick={() => navigate("/complaints")}>
                 View History
               </Button>
-              <Button className="flex-1" onClick={() => navigate(`/complaint/${success.complaintId}/track`)}>
+              <Button className="flex-1" onClick={() => navigate(`/complaint/${success._id || success.id || success.complaintId}/track`)}>
                 Track Complaint
               </Button>
             </div>
@@ -346,28 +348,47 @@ export default function CreateComplaint() {
               <CardDescription>Upload up to 5 images, videos or PDFs (max 10MB each)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Drop zone */}
-              <div
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={onDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
-                  dragOver ? "border-primary bg-primary/5" : "border-slate-200 hover:border-primary/50 hover:bg-slate-50"
-                }`}
-              >
-                <UploadCloud className={`h-10 w-10 mb-3 ${dragOver ? "text-primary" : "text-slate-400"}`} />
-                <p className="text-sm font-medium text-slate-700">Drop files here or click to browse</p>
-                <p className="text-xs text-slate-400 mt-1">JPEG, PNG, WEBP, MP4, PDF — max 10MB per file</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="image/*,video/mp4,application/pdf"
-                  className="hidden"
-                  onChange={(e) => e.target.files && addFiles(e.target.files)}
-                />
+              {/* Drop zone & Camera Snap Action */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={onDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex-1 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
+                    dragOver ? "border-primary bg-primary/5" : "border-slate-200 hover:border-primary/50 hover:bg-slate-50"
+                  }`}
+                >
+                  <UploadCloud className={`h-8 w-8 mb-2 ${dragOver ? "text-primary" : "text-slate-400"}`} />
+                  <p className="text-sm font-medium text-slate-700">Drop files here or click to browse</p>
+                  <p className="text-xs text-slate-400 mt-1">JPEG, PNG, WEBP, MP4, PDF — max 10MB</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*,video/mp4,application/pdf"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => e.target.files && addFiles(e.target.files)}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsCameraOpen(true)}
+                  className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-emerald-300 bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-800 rounded-xl transition-colors min-w-[140px]"
+                >
+                  <Camera className="h-8 w-8 mb-2 text-emerald-600" />
+                  <span className="text-sm font-semibold">Live Camera</span>
+                  <span className="text-xs text-emerald-700 mt-1">Snap photo now</span>
+                </button>
               </div>
+
+              <CameraCaptureModal
+                isOpen={isCameraOpen}
+                onClose={() => setIsCameraOpen(false)}
+                onCapture={(file) => addFiles([file] as unknown as FileList)}
+              />
 
               {/* Preview */}
               {files.length > 0 && (

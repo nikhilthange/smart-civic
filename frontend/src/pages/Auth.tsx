@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate, Link, Navigate } from "react-router-dom"
 import { Building2, Eye, EyeOff, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,11 +21,20 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string
+    email: string
+    password: string
+    phoneNumber: string
+    role: "citizen" | "officer" | "worker" | "admin"
+    ward: string
+  }>({
     name: "",
     email: "",
     password: "",
     phoneNumber: "",
+    role: "citizen",
+    ward: "Ward H-West",
   })
 
   const { login, register, loginWithGoogle, isLoading, isAuthenticated } = useAuth()
@@ -33,11 +42,10 @@ export default function Auth() {
 
   // If already authenticated redirect away
   if (isAuthenticated) {
-    navigate("/dashboard", { replace: true })
-    return null
+    return <Navigate to="/dashboard" replace />
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }))
     setLocalError(null)
   }
@@ -53,6 +61,8 @@ export default function Auth() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          role: formData.role,
+          ward: formData.ward,
           phoneNumber: formData.phoneNumber || undefined,
         })
       }
@@ -65,7 +75,7 @@ export default function Auth() {
   const switchMode = () => {
     setIsLogin(!isLogin)
     setLocalError(null)
-    setFormData({ name: "", email: "", password: "", phoneNumber: "" })
+    setFormData({ name: "", email: "", password: "", phoneNumber: "", role: "citizen", ward: "Ward H-West" })
   }
 
   return (
@@ -113,7 +123,7 @@ export default function Auth() {
                   <Label htmlFor="name">Full Name</Label>
                   <Input
                     id="name"
-                    placeholder="John Doe"
+                    placeholder="e.g. Citizen / Officer Name"
                     value={formData.name}
                     onChange={handleChange}
                     required={!isLogin}
@@ -127,13 +137,49 @@ export default function Auth() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="john@example.com"
+                  placeholder="e.g. user@domain.com"
                   value={formData.email}
                   onChange={handleChange}
                   required
                   autoComplete="email"
                 />
               </div>
+
+              {!isLogin && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Register As (Testing Role)</Label>
+                    <select
+                      id="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      className="w-full text-sm border border-slate-200 dark:border-slate-800 rounded-md p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="citizen">Citizen (Public Grievance Reporter)</option>
+                      <option value="officer">Municipal Officer (Ward Manager)</option>
+                      <option value="worker">Field Worker (Ground Operations)</option>
+                      <option value="admin">Admin (BMC Headquarters)</option>
+                    </select>
+                  </div>
+
+                  {(formData.role === "officer" || formData.role === "worker") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="ward">Assigned BMC Ward</Label>
+                      <select
+                        id="ward"
+                        value={formData.ward}
+                        onChange={handleChange}
+                        className="w-full text-sm border border-slate-200 dark:border-slate-800 rounded-md p-2.5 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="Ward A">Ward A (Colaba/Fort)</option>
+                        <option value="Ward G-South">Ward G-South (Worli)</option>
+                        <option value="Ward H-West">Ward H-West (Bandra)</option>
+                        <option value="Ward K-East">Ward K-East (Andheri)</option>
+                      </select>
+                    </div>
+                  )}
+                </>
+              )}
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -151,7 +197,7 @@ export default function Auth() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder={isLogin ? "••••••••" : "Min. 8 chars, upper, lower, digit"}
+                    placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
                     required
@@ -187,7 +233,7 @@ export default function Auth() {
                   <Input
                     id="phoneNumber"
                     type="tel"
-                    placeholder="+91 98765 43210"
+                    placeholder="+91 00000 00000"
                     value={formData.phoneNumber}
                     onChange={handleChange}
                     autoComplete="tel"

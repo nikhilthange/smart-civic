@@ -24,9 +24,12 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
     return <Navigate to="/auth" replace />
   }
 
-  // Role check — redirect to unauthorized page if role not allowed
+  // Role check — redirect user to their authorized dashboard if role not allowed for this route
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/unauthorized" replace />
+    if (user.role === "worker") return <Navigate to="/worker-dashboard" replace />
+    if (user.role === "officer") return <Navigate to="/officer/dashboard" replace />
+    if (user.role === "admin") return <Navigate to="/admin/dashboard" replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   // Render nested routes

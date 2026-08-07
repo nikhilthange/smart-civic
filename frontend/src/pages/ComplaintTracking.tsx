@@ -42,28 +42,34 @@ function StatusBadgeLg({ status }: { status: ComplaintStatus }) {
 
 export default function ComplaintTracking() {
   const { user } = useAuth()
-  const { id } = useParams<{ id: string }>()
+  const { id, complaintId } = useParams<{ id?: string; complaintId?: string }>()
+  const targetId = id || complaintId
+
   const [complaint, setComplaint] = useState<Complaint | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
 
   useEffect(() => {
-    if (!id) return
+    if (!targetId) {
+      setError("No complaint ID provided in URL.")
+      setIsLoading(false)
+      return
+    }
     const load = async () => {
       setIsLoading(true)
       setError(null)
       try {
-        const data = await complaintApi.getOne(id)
+        const data = await complaintApi.getOne(targetId)
         setComplaint(data)
       } catch {
-        setError("Complaint not found or you don't have access.")
+        setError("Complaint not found or access restricted.")
       } finally {
         setIsLoading(false)
       }
     }
     load()
-  }, [id])
+  }, [targetId])
 
   if (isLoading) {
     return (
@@ -75,12 +81,18 @@ export default function ComplaintTracking() {
 
   if (error || !complaint) {
     return (
-      <div className="max-w-lg mx-auto py-12 text-center">
-        <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-slate-800">{error || "Complaint not found"}</h2>
-        <Link to="/complaints">
-          <Button className="mt-6">Back to History</Button>
-        </Link>
+      <div className="max-w-lg mx-auto py-16 text-center space-y-4">
+        <AlertCircle className="h-14 w-14 text-red-500 mx-auto" />
+        <h2 className="text-2xl font-bold text-slate-900">{error || "Complaint not found"}</h2>
+        <p className="text-slate-500 text-sm">The complaint ID may be invalid or restricted for this account role.</p>
+        <div className="flex justify-center gap-3 pt-2">
+          <Link to="/dashboard">
+            <Button className="bg-primary text-white">Return to Dashboard</Button>
+          </Link>
+          <Link to="/complaints">
+            <Button variant="outline">View All Complaints</Button>
+          </Link>
+        </div>
       </div>
     )
   }

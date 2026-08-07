@@ -12,6 +12,7 @@ import {
   BarChart3,
   HeartHandshake,
   LineChart,
+  Wrench,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,6 +36,8 @@ const navItems = [
   { name: "Complaint History", href: "/complaints",          icon: History },
   { name: "Search",            href: "/search",              icon: Search },
   { name: "Donations",         href: "/donate",              icon: HeartHandshake },
+  { name: "Field Worker Queue",href: "/worker-dashboard",    icon: Wrench,     workerOnly: true },
+  { name: "Officer Portal",    href: "/officer/dashboard",   icon: Shield,     officerOnly: true },
   { name: "Admin Dashboard",   href: "/admin/dashboard",     icon: BarChart3,  adminOnly: true },
   { name: "Analytics",         href: "/admin/analytics",     icon: LineChart,  adminOnly: true },
 ]
@@ -58,6 +61,7 @@ export default function DashboardLayout() {
   const roleBadgeColor: Record<string, string> = {
     admin: "bg-red-100 text-red-700 border-red-200",
     officer: "bg-blue-100 text-blue-700 border-blue-200",
+    worker: "bg-amber-100 text-amber-700 border-amber-200",
     citizen: "bg-green-100 text-green-700 border-green-200",
   }
 
@@ -93,8 +97,13 @@ export default function DashboardLayout() {
         <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
           {navItems.map((item) => {
             const isActive = location.pathname === item.href
-            const isAdmin = ["admin", "officer"].includes(user?.role ?? "")
+            const isAdmin = user?.role === "admin"
+            const isOfficerOrAdmin = ["admin", "officer"].includes(user?.role ?? "")
+            const isWorkerOfficerAdmin = ["admin", "officer", "worker"].includes(user?.role ?? "")
+
             if (item.adminOnly && !isAdmin) return null
+            if (item.officerOnly && !isOfficerOrAdmin) return null
+            if (item.workerOnly && !isWorkerOfficerAdmin) return null
             return (
               <Link
                 key={item.name}

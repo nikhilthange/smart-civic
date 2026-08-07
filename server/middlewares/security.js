@@ -56,11 +56,11 @@ const corsOptions = {
 // ─── 3. Rate limiters ─────────────────────────────────────────────────────────
 const defaultLimiter = rateLimit({
   windowMs:        15 * 60 * 1000, // 15 minutes
-  max:             100,
+  max:             2000,           // 2000 requests per 15 min window
   standardHeaders: true,
   legacyHeaders:   false,
   message:         { success: false, message: "Too many requests. Please try again in 15 minutes." },
-  skip: (req) => process.env.NODE_ENV === "test",
+  skip: (req) => process.env.NODE_ENV !== "production" || process.env.NODE_ENV === "test",
 });
 
 const authLimiter = rateLimit({

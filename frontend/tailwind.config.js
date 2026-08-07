@@ -20,6 +20,14 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
       colors: {
+        'civic-emerald': '#10B981',
+        'civic-emerald-dark': '#059669',
+        'civic-mint': '#ECFDF5',
+        'civic-green': {
+          DEFAULT: '#10B981',
+          dark: '#059669',
+          mint: '#ECFDF5',
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

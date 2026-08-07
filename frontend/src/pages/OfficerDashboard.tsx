@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import {
   MapPin,
   Users,
@@ -62,14 +63,18 @@ export default function OfficerDashboard() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   // Fetch complaints for officer department
   const loadComplaints = async () => {
     setIsLoading(true);
+    setFetchError(null);
     try {
       const data = await complaintApi.getAll({ limit: 50 });
       setComplaints(data.complaints || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error loading officer task queue:", err);
+      setFetchError(err.response?.data?.message || "Failed to load officer task queue. Please retry.");
     } finally {
       setIsLoading(false);
     }
@@ -215,9 +220,21 @@ export default function OfficerDashboard() {
       </div>
 
       {/* Task Queue Content */}
-      {isLoading ? (
+      {fetchError ? (
+        <div className="flex flex-col items-center justify-center p-8 bg-red-50 border border-red-200 rounded-xl text-center">
+          <AlertCircle className="w-10 h-10 text-red-600 mb-2" />
+          <h3 className="text-base font-semibold text-red-800">Task Queue Error</h3>
+          <p className="text-sm text-red-600 mt-1 max-w-md">{fetchError}</p>
+          <button
+            onClick={loadComplaints}
+            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium text-xs rounded-lg transition-colors"
+          >
+            Retry Loading
+          </button>
+        </div>
+      ) : isLoading ? (
         <div className="flex justify-center items-center h-64 bg-white rounded-xl border border-gray-200">
-          <Loader2 className="w-8 h-8 text-[#1E3A8A] animate-spin" />
+          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
         </div>
       ) : filteredComplaints.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border border-gray-200 p-8">

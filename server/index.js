@@ -94,6 +94,7 @@ app.use("/api/payments",      require("./routes/paymentRoutes"));
 app.use("/api/donations",     require("./routes/donationRoutes"));
 app.use("/api/analytics",     require("./routes/analyticsRoutes"));
 app.use("/api/reports",       require("./routes/reportRoutes"));
+app.use("/api/admin",         require("./routes/adminRoutes"));
 
 // ─── Health check (no rate limit — used by load balancers) ────────────────────
 app.get("/api/health", (req, res) => {

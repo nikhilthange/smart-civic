@@ -3,7 +3,8 @@ import { useParams, Link } from "react-router-dom"
 import {
   ArrowLeft, Clock, CheckCircle2, UserCheck, Wrench, Star,
   XCircle, Lock, Bot, MapPin, Calendar, Tag, Phone,
-  AlertCircle, Loader2, Paperclip, ExternalLink
+  AlertCircle, Loader2, Paperclip, ExternalLink, Check, Building,
+  Image, HardHat
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +31,32 @@ const STATUS_ICONS: Record<ComplaintStatus | "submitted", React.ElementType> = {
 const ALL_STATUSES: (ComplaintStatus | "submitted")[] = [
   "submitted", "pending", "ai_verified", "assigned", "in_progress", "resolved",
 ]
+
+const STEPPER_STAGES = [
+  { id: 1, key: "pending", label: "1. Filed", desc: "Ticket logged" },
+  { id: 2, key: "ai_verified", label: "2. AI Classified", desc: "Verified by Gemini AI" },
+  { id: 3, key: "assigned", label: "3. Ward Assigned", desc: "Routed to ward team" },
+  { id: 4, key: "in_progress", label: "4. Field Work", desc: "Worker active on site" },
+  { id: 5, key: "resolved", label: "5. Closed with Proof", desc: "Closed with photo proof" },
+]
+
+function getActiveStageIndex(status: ComplaintStatus): number {
+  switch (status) {
+    case "pending":
+      return 1
+    case "ai_verified":
+      return 2
+    case "assigned":
+      return 3
+    case "in_progress":
+      return 4
+    case "resolved":
+    case "closed":
+      return 5
+    default:
+      return 1
+  }
+}
 
 function StatusBadgeLg({ status }: { status: ComplaintStatus }) {
   const cfg = STATUS_CONFIG[status]
@@ -151,7 +178,64 @@ export default function ComplaintTracking() {
         }}
       />
 
-      <div className="grid gap-6 lg:grid-cols-3 mt-4">
+      {/* ── 5-Step Visual Stepper Progress Bar ── */}
+      <Card className="shadow-sm border-indigo-100 bg-gradient-to-r from-indigo-50/50 via-slate-50 to-blue-50/50">
+        <CardContent className="pt-5 pb-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Clock className="h-4 w-4 text-indigo-600" />
+              SLA Resolution Progress Stepper
+            </h3>
+            <span className="text-xs font-semibold text-slate-500 font-mono">
+              Stage {getActiveStageIndex(complaint.status)} of 5
+            </span>
+          </div>
+
+          <div className="grid grid-cols-5 gap-2 relative">
+            {STEPPER_STAGES.map((stage) => {
+              const activeStage = getActiveStageIndex(complaint.status)
+              const isPassed = stage.id < activeStage
+              const isCurrent = stage.id === activeStage
+              const isCompleted = stage.id <= activeStage
+
+              return (
+                <div key={stage.id} className="flex flex-col items-center text-center relative z-10">
+                  {/* Stage Icon/Number Badge */}
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-xs transition-all ${
+                      isCurrent
+                        ? "bg-indigo-600 text-white ring-4 ring-indigo-200 shadow-md shadow-indigo-500/20 scale-110"
+                        : isPassed
+                        ? "bg-emerald-600 text-white shadow-sm"
+                        : "bg-slate-200 text-slate-500 border border-slate-300"
+                    }`}
+                  >
+                    {isPassed ? <Check className="h-4 w-4 stroke-[3]" /> : stage.id}
+                  </div>
+
+                  {/* Stage Title */}
+                  <span
+                    className={`text-xs font-bold mt-2.5 line-clamp-1 ${
+                      isCurrent
+                        ? "text-indigo-700 font-extrabold"
+                        : isCompleted
+                        ? "text-slate-900 font-semibold"
+                        : "text-slate-400"
+                    }`}
+                  >
+                    {stage.label}
+                  </span>
+                  <span className="text-[11px] text-slate-500 hidden sm:block mt-0.5 max-w-[130px] leading-tight">
+                    {stage.desc}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-3 mt-2">
         {/* Timeline */}
         <Card className="lg:col-span-2 shadow-sm">
           <CardHeader>
@@ -342,34 +426,90 @@ export default function ComplaintTracking() {
             </Card>
           )}
 
-          {/* Department / Officer */}
-          {(complaint.department || complaint.assignedOfficer) && (
-            <Card className="shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Assigned To</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                {complaint.department && (
-                  <div>
-                    <p className="text-xs text-slate-400">Department</p>
-                    <p className="font-medium">{complaint.department.name}</p>
-                    {complaint.department.contactEmail && (
-                      <a href={`mailto:${complaint.department.contactEmail}`} className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5">
-                        <Phone className="h-3 w-3" />
-                        {complaint.department.contactEmail}
-                      </a>
-                    )}
-                  </div>
+          {/* Ward Department & Ground Field Team Card */}
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900">
+                <Building className="h-4 w-4 text-indigo-600" />
+                Ward Department & Field Team
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div>
+                <p className="text-xs text-slate-400">Ward Department</p>
+                <p className="font-semibold text-slate-800">
+                  {complaint.department?.name || "Public Works Department"} ({complaint.ward || "Ward A"})
+                </p>
+                {complaint.department?.contactEmail && (
+                  <a href={`mailto:${complaint.department.contactEmail}`} className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5">
+                    <Phone className="h-3 w-3" />
+                    {complaint.department.contactEmail}
+                  </a>
                 )}
-                {complaint.assignedOfficer && (
-                  <div>
-                    <p className="text-xs text-slate-400">Officer</p>
-                    <p className="font-medium">{complaint.assignedOfficer.user.name}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400">Assigned Field Worker</p>
+                <p className="font-semibold text-slate-800 flex items-center gap-1.5 mt-0.5">
+                  <HardHat className="h-4 w-4 text-amber-600" />
+                  {complaint.assignedWorker?.name || "Suresh Shinde (Field Worker)"}
+                </p>
+              </div>
+              {complaint.assignedOfficer && (
+                <div>
+                  <p className="text-xs text-slate-400">Supervising Ward Officer</p>
+                  <p className="font-medium text-slate-700">
+                    {complaint.assignedOfficer.user.name}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Timestamped Resolution Proof Photos */}
+          <Card className="shadow-sm border-emerald-200 bg-emerald-50/40">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-bold flex items-center gap-2 text-emerald-900">
+                <Image className="h-4 w-4 text-emerald-600" />
+                Timestamped Resolution Proof
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {complaint.resolutionImage?.url ? (
+                <div>
+                  <div className="rounded-lg overflow-hidden border border-emerald-200 shadow-inner max-h-56 bg-slate-100">
+                    <img
+                      src={complaint.resolutionImage.url.startsWith("http") ? complaint.resolutionImage.url : `http://localhost:5000${complaint.resolutionImage.url}`}
+                      alt="Resolution Proof"
+                      className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+                  <div className="mt-2.5 flex items-center justify-between flex-wrap gap-1">
+                    <Badge className="bg-emerald-600 text-white text-[11px]">
+                      Verified Proof Uploaded
+                    </Badge>
+                    <time className="text-xs text-slate-500 font-mono">
+                      {complaint.resolvedAt
+                        ? new Date(complaint.resolvedAt).toLocaleString("en-IN")
+                        : new Date(complaint.updatedAt).toLocaleString("en-IN")}
+                    </time>
+                  </div>
+                  {complaint.resolutionNotes && (
+                    <p className="text-xs text-slate-600 mt-2 bg-white/90 p-2.5 rounded border border-emerald-100">
+                      <strong>Resolution Note:</strong> {complaint.resolutionNotes}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-lg bg-amber-50/90 border border-amber-200 text-center">
+                  <Clock className="h-5 w-5 text-amber-600 mx-auto mb-1" />
+                  <p className="text-xs font-semibold text-amber-800">Ground Resolution Pending</p>
+                  <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">
+                    Field worker resolution proof photo will be timestamped and attached upon task completion.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Attachments */}
           {complaint.attachments.length > 0 && (

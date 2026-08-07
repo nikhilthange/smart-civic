@@ -18,6 +18,8 @@ import WorkerDashboard from "./pages/WorkerDashboard"
 
 import { GoogleOAuthProvider } from '@react-oauth/google'
 
+import MapView from "./pages/MapView"
+
 function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your_google_client_id_here'
 
@@ -32,15 +34,17 @@ function App() {
           <Route path="/login" element={<Auth />} />
           <Route path="/register" element={<Auth />} />
           <Route path="/unauthorized" element={<Unauthorized />} />
+          <Route path="/public-map" element={<MapView />} />
 
           {/* Protected Routes — Citizen & Admin */}
-          <Route element={<ProtectedRoute allowedRoles={["citizen", "admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["citizen", "worker", "officer", "admin"]} />}>
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/citizen-dashboard" element={<Dashboard />} />
               <Route path="/complaint/new" element={<CreateComplaint />} />
               <Route path="/complaints" element={<ComplaintHistory />} />
               <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
+              <Route path="/map" element={<MapView />} />
               <Route path="/donate" element={<Donation />} />
               <Route path="/search" element={<SearchComplaints />} />
             </Route>
@@ -57,6 +61,7 @@ function App() {
           {/* Protected Routes — Officer & Admin */}
           <Route element={<ProtectedRoute allowedRoles={["officer", "admin"]} />}>
             <Route element={<DashboardLayout />}>
+              <Route path="/officer" element={<OfficerDashboard />} />
               <Route path="/officer-dashboard" element={<OfficerDashboard />} />
               <Route path="/officer/dashboard" element={<OfficerDashboard />} />
             </Route>

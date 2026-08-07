@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+import { useTranslation } from "react-i18next"
+
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table"
@@ -15,16 +17,6 @@ import {
   complaintApi, STATUS_CONFIG, CATEGORY_LABELS,
   type Complaint, type ComplaintStatus
 } from "@/services/complaintApi"
-
-const STATUS_FILTERS: { label: string; value: ComplaintStatus | "all" }[] = [
-  { label: "All", value: "all" },
-  { label: "Pending", value: "pending" },
-  { label: "AI Verified", value: "ai_verified" },
-  { label: "Assigned", value: "assigned" },
-  { label: "In Progress", value: "in_progress" },
-  { label: "Resolved", value: "resolved" },
-  { label: "Rejected", value: "rejected" },
-]
 
 function StatusBadge({ status }: { status: ComplaintStatus }) {
   const cfg = STATUS_CONFIG[status]
@@ -36,6 +28,7 @@ function StatusBadge({ status }: { status: ComplaintStatus }) {
 }
 
 export default function ComplaintHistory() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [complaints, setComplaints] = useState<Complaint[]>([])
   const [total, setTotal] = useState(0)
@@ -88,12 +81,14 @@ export default function ComplaintHistory() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <History className="h-5 w-5 text-primary" />
+          <div className="h-10 w-10 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
+            <History className="h-5 w-5 text-emerald-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Complaints</h1>
-            <p className="text-sm text-slate-500">{total} total submissions</p>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {t("complaints.title", "My Complaints")}
+            </h1>
+            <p className="text-sm text-slate-500">{total} {t("complaints.submissions", "submissions")}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -103,7 +98,7 @@ export default function ComplaintHistory() {
           <Link to="/complaint/new">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
-              New Complaint
+              {t("complaints.newComplaint", "File New Complaint")}
             </Button>
           </Link>
         </div>
@@ -111,8 +106,8 @@ export default function ComplaintHistory() {
 
       <Card className="shadow-sm">
         <CardHeader className="pb-4">
-          <CardTitle>Submissions</CardTitle>
-          <CardDescription>Track the status of all your submitted complaints.</CardDescription>
+          <CardTitle>{t("complaints.submissions", "Submissions")}</CardTitle>
+          <CardDescription>{t("complaints.subtitle", "Track the status of all your submitted complaints.")}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* Filters */}
@@ -120,7 +115,7 @@ export default function ComplaintHistory() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Search by ID or title..."
+                placeholder={t("complaints.searchPlaceholder", "Search by ID or title...")}
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1) }}
                 className="pl-9"
@@ -128,13 +123,21 @@ export default function ComplaintHistory() {
             </div>
             <div className="flex items-center gap-1 overflow-x-auto pb-1">
               <Filter className="h-4 w-4 text-slate-400 shrink-0 ml-1" />
-              {STATUS_FILTERS.map(f => (
+              {[
+                { label: t("complaints.all", "All"), value: "all" },
+                { label: t("complaints.pending", "Pending"), value: "pending" },
+                { label: t("complaints.aiVerified", "AI Verified"), value: "ai_verified" },
+                { label: t("complaints.assigned", "Assigned"), value: "assigned" },
+                { label: t("complaints.inProgress", "In Progress"), value: "in_progress" },
+                { label: t("complaints.resolved", "Resolved"), value: "resolved" },
+                { label: t("complaints.rejected", "Rejected"), value: "rejected" },
+              ].map(f => (
                 <button
                   key={f.value}
                   onClick={() => { setStatusFilter(f.value as ComplaintStatus | "all"); setPage(1) }}
                   className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                     statusFilter === f.value
-                      ? "bg-primary text-white border-primary"
+                      ? "bg-emerald-600 text-white border-emerald-600 font-semibold"
                       : "border-slate-200 text-slate-600 hover:border-slate-300"
                   }`}
                 >
@@ -155,18 +158,18 @@ export default function ComplaintHistory() {
           {/* Table */}
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
             </div>
           ) : complaints.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-              <FileX className="h-12 w-12 mb-3" />
-              <p className="font-medium text-slate-600">No complaints found</p>
+              <FileX className="h-12 w-12 mb-3 text-slate-400" />
+              <p className="font-medium text-slate-600">{t("complaints.noComplaints", "No complaints found")}</p>
               <p className="text-sm mt-1">
-                {search || statusFilter !== "all" ? "Try adjusting your filters." : "Submit your first complaint!"}
+                {t("complaints.noComplaintsDesc", "You haven't reported any civic complaints yet.")}
               </p>
               {!search && statusFilter === "all" && (
                 <Link to="/complaint/new">
-                  <Button className="mt-4" size="sm">Submit a Complaint</Button>
+                  <Button className="mt-4" size="sm">{t("complaints.newComplaint", "File New Complaint")}</Button>
                 </Link>
               )}
             </div>
@@ -176,12 +179,12 @@ export default function ComplaintHistory() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-slate-50">
-                      <TableHead className="font-semibold">ID</TableHead>
-                      <TableHead className="font-semibold">Title</TableHead>
-                      <TableHead className="font-semibold hidden md:table-cell">Category</TableHead>
-                      <TableHead className="font-semibold hidden sm:table-cell">Date</TableHead>
-                      <TableHead className="font-semibold">Status</TableHead>
-                      <TableHead className="text-right font-semibold">Actions</TableHead>
+                      <TableHead className="font-semibold">{t("table.id", "Ticket ID")}</TableHead>
+                      <TableHead className="font-semibold">{t("table.title", "Title")}</TableHead>
+                      <TableHead className="font-semibold hidden md:table-cell">{t("table.category", "Category")}</TableHead>
+                      <TableHead className="font-semibold hidden sm:table-cell">{t("table.date", "Date")}</TableHead>
+                      <TableHead className="font-semibold">{t("table.status", "Status")}</TableHead>
+                      <TableHead className="text-right font-semibold">{t("table.actions", "Actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

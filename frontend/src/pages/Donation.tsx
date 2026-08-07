@@ -94,7 +94,7 @@ export default function Donation() {
               donationId: donationId,
             })
             setSuccess(true)
-          } catch (err) {
+          } catch {
             setError("Payment verification failed. Please contact support.")
           }
         },

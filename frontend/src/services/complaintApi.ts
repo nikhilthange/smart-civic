@@ -61,11 +61,16 @@ export interface Complaint {
   statusHistory: StatusHistoryEntry[]
   department?: { name: string; code: string; contactEmail?: string }
   assignedOfficer?: { user: { name: string; email: string } }
+  assignedWorker?: { _id?: string; name?: string; email?: string; phoneNumber?: string }
+  resolutionImage?: { url: string; filename?: string }
+  resolutionNotes?: string
   estimatedResolution?: string
   resolvedAt?: string
   adminNotes?: string
   rejectionReason?: string
   feedbackSubmitted: boolean
+  upvoteCount?: number
+  upvotes?: number
   aiAnalysis?: {
     verified: boolean
     category: ComplaintCategory
@@ -82,6 +87,15 @@ export interface Complaint {
   affectedCitizensCount?: number
   createdAt: string
   updatedAt: string
+}
+
+export interface WardScore {
+  ward: string
+  totalTickets: number
+  resolvedTickets: number
+  slaMetCount: number
+  slaMetPercentage: number
+  statusBadge: "Green" | "Red" | "Yellow"
 }
 
 export interface CreateComplaintData {
@@ -130,7 +144,7 @@ export const STATUS_CONFIG: Record<
   ai_verified:  { label: "AI Verified",  color: "text-violet-700", bg: "bg-violet-50", border: "border-violet-300" },
   assigned:     { label: "Assigned",     color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-300" },
   in_progress:  { label: "In Progress",  color: "text-cyan-700",   bg: "bg-cyan-50",   border: "border-cyan-300" },
-  resolved:     { label: "Resolved",     color: "text-green-700",  bg: "bg-green-50",  border: "border-green-300" },
+  resolved:     { label: "Resolved",     color: "text-emerald-700",  bg: "bg-emerald-50",  border: "border-emerald-300" },
   closed:       { label: "Closed",       color: "text-slate-700",  bg: "bg-slate-50",  border: "border-slate-300" },
   rejected:     { label: "Rejected",     color: "text-red-700",    bg: "bg-red-50",    border: "border-red-300" },
 }
@@ -210,5 +224,10 @@ export const complaintApi = {
   reopen: async (id: string, reason?: string) => {
     const res = await api.post(`/complaints/${id}/reopen`, { reason })
     return res.data
+  },
+
+  getWardPerformance: async () => {
+    const res = await api.get<{ success: boolean; wards: WardScore[] }>("/admin/ward-performance")
+    return res.data.wards
   },
 }

@@ -83,27 +83,37 @@ const createComplaint = async (req, res) => {
       };
     }
 
-    // ─── 1. Spatial Proximity Check ($nearSphere) ─────────────────────────
+    // ─── 1. Spatial Proximity Check (0.0002 degrees ~ 20 meters radius) ───
     if (coordinates) {
       const activeStatuses = ["pending", "ai_verified", "assigned", "in_progress"];
+      const degRadius = 0.0002; // ~20 meters
+      
       const duplicateQuery = {
         category: targetCategory,
         status: { $in: activeStatuses },
-        "location.coordinates": {
-          $nearSphere: {
-            $geometry: {
-              type: "Point",
-              coordinates: [parsedLng, parsedLat]
-            },
-            $maxDistance: 50 // 50 meters
+        $or: [
+          {
+            "location.coordinates": {
+              $nearSphere: {
+                $geometry: {
+                  type: "Point",
+                  coordinates: [parsedLng, parsedLat]
+                },
+                $maxDistance: 20 // 20 meters
+              }
+            }
+          },
+          {
+            "location.coordinates.coordinates.0": { $gte: parsedLng - degRadius, $lte: parsedLng + degRadius },
+            "location.coordinates.coordinates.1": { $gte: parsedLat - degRadius, $lte: parsedLat + degRadius }
           }
-        }
+        ]
       };
 
       const existingComplaint = await Complaint.findOne(duplicateQuery);
 
       if (existingComplaint) {
-        // ─── 2. Deduplication Logic ─────────────────────────────────────────
+        // ─── 2. Deduplication Logic: Link new photo & Increment upvoteCount ───
         const userIdStr = (req.user.id || req.user._id)?.toString();
 
         if (!existingComplaint.reportedByCitizens) {
@@ -116,7 +126,21 @@ const createComplaint = async (req, res) => {
 
         if (!alreadyReported) {
           existingComplaint.reportedByCitizens.push(req.user.id || req.user._id);
-          existingComplaint.upvotes = (existingComplaint.upvotes || 0) + 1;
+        }
+
+        // Increment upvoteCount and upvotes fields
+        existingComplaint.upvoteCount = (existingComplaint.upvoteCount || existingComplaint.upvotes || 1) + 1;
+        existingComplaint.upvotes = (existingComplaint.upvotes || 1) + 1;
+
+        // Link new photos/attachments to the original complaint
+        if (attachments && attachments.length > 0) {
+          if (!existingComplaint.attachments) {
+            existingComplaint.attachments = [];
+          }
+          existingComplaint.attachments = [
+            ...existingComplaint.attachments,
+            ...attachments
+          ].slice(0, 10); // cap total attachments at 10
         }
 
         existingComplaint.affectedCitizensCount = (existingComplaint.affectedCitizensCount || 1) + 1;
@@ -134,8 +158,10 @@ const createComplaint = async (req, res) => {
         return res.status(200).json({
           success: true,
           isDuplicate: true,
+          ticketId: existingComplaint.complaintId || existingComplaint._id,
+          existingTicketId: existingComplaint.complaintId || existingComplaint._id,
           complaint: existingComplaint,
-          message: "Issue already reported! We've added your vote to prioritize it."
+          message: "Duplicate complaint detected within 0.0002° (~20m) radius. Linked new photo and incremented upvoteCount on original ticket."
         });
       }
     }
@@ -191,6 +217,7 @@ const createComplaint = async (req, res) => {
       priorityScore: 10,
       reportedByCitizens: [req.user.id],
       upvotes: 1,
+      upvoteCount: 1,
       statusHistory: [
         { status: "pending", changedBy: req.user.id, note: "Complaint submitted" },
         ...(aiAnalysis.verified ? [{ status: "ai_verified", changedBy: req.user.id, note: `AI verification passed. Detected issue: ${aiAnalysis.category.replace(/_/g, ' ')}. Recommended Department: ${aiAnalysis.recommendedDepartmentCode}` }] : []),

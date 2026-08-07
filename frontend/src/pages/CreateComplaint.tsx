@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { complaintApi, CATEGORY_LABELS, type ComplaintCategory } from "@/services/complaintApi"
 import { CameraCaptureModal } from "@/components/common/CameraCaptureModal"
+import VoiceInput from "@/components/common/VoiceInput"
 
 const CATEGORIES = Object.entries(CATEGORY_LABELS) as [ComplaintCategory, string][]
 
@@ -247,8 +248,18 @@ export default function CreateComplaint() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="description">Detailed Description <span className="text-red-500">*</span></Label>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="description">Detailed Description <span className="text-red-500">*</span></Label>
+                    <VoiceInput
+                      onTranscript={(text) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          description: prev.description ? `${prev.description} ${text}` : text,
+                        }))
+                      }
+                    />
+                  </div>
                   {form.description.length > 0 && (
                     <Badge
                       variant="outline"

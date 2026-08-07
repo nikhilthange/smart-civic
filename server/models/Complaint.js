@@ -243,6 +243,10 @@ const ComplaintSchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
+    upvoteCount: {
+      type: Number,
+      default: 1,
+    },
     affectedCitizensCount: {
       type: Number,
       default: 1,

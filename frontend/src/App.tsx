@@ -42,6 +42,8 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/citizen-dashboard" element={<Dashboard />} />
               <Route path="/complaint/new" element={<CreateComplaint />} />
+              <Route path="/complaints/new" element={<CreateComplaint />} />
+              <Route path="/create-complaint" element={<CreateComplaint />} />
               <Route path="/complaints" element={<ComplaintHistory />} />
               <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
               <Route path="/map" element={<MapView />} />

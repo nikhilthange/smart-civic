@@ -12,7 +12,11 @@ import {
   CheckCircle2,
   Users,
   MessageSquare,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles,
+  Camera,
+  Award,
+  Star
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -102,6 +106,170 @@ export default function Home() {
                 </Link>
               </motion.div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* ═══ 4K BEFORE & AFTER AI RESOLUTION PROOF SHOWCASE ═══════════════════ */}
+        <section id="proof-showcase" className="w-full py-20 md:py-28 bg-slate-100/70 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800">
+          <div className="container px-4 md:px-6 mx-auto">
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/50 px-4 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+                <span>AI-Verified Field Resolution Proof</span>
+              </div>
+              <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl text-slate-900 dark:text-white">
+                Before & After Civic Transformations
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
+                Real evidence logged by BMC ground officers with AI computer vision quality verification and timestamped resolution proof.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Card 1: Pothole & Road Repair */}
+              <motion.div
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="group rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-xl overflow-hidden hover:shadow-2xl transition-all"
+              >
+                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600">
+                      <Camera className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">Pothole & Road Surface Repair</h3>
+                      <p className="text-xs text-slate-500">Infrastructure Dept • Ticket #BMC-2026-9841</p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300">
+                    <Award className="h-3.5 w-3.5 text-emerald-600" />
+                    SLA Met (14h)
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-6">
+                  {/* Before Container */}
+                  <div className="relative rounded-xl overflow-hidden border border-rose-200 dark:border-rose-900/50 bg-slate-900 shadow-inner">
+                    <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-rose-600/90 text-white backdrop-blur-md shadow-md">
+                      🔴 Reported Critical
+                    </span>
+                    <img
+                      src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=1600&q=80"
+                      alt="Before Pothole"
+                      className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
+                    />
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
+                      <p className="text-[11px] text-slate-300 font-medium">BEFORE: Severe Pothole Hazard</p>
+                    </div>
+                  </div>
+
+                  {/* After Container */}
+                  <div className="relative rounded-xl overflow-hidden border border-emerald-500/40 bg-slate-900 shadow-inner">
+                    <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-emerald-600/90 text-white backdrop-blur-md shadow-md">
+                      🟢 Resolved & Verified
+                    </span>
+                    <img
+                      src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1600&q=80"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1000&q=80";
+                      }}
+                      alt="After Repair"
+                      className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
+                    />
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
+                      <p className="text-[11px] text-emerald-300 font-medium">AFTER: Smooth Asphalt Restored</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 flex-wrap gap-2">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    📍 Ward H-West (Bandra) — Resolved in 14 Hours — AI Confidence 98%
+                  </span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    Verified by BMC AI Computer Vision ✓
+                  </span>
+                </div>
+              </motion.div>
+
+              {/* Card 2: Waste Clearance & Sanitation */}
+              <motion.div
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+                className="group rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-xl overflow-hidden hover:shadow-2xl transition-all"
+              >
+                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-600">
+                      <Camera className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">Waste Clearance & Sanitation</h3>
+                      <p className="text-xs text-slate-500">Solid Waste Dept • Ticket #BMC-2026-8812</p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300">
+                    <Award className="h-3.5 w-3.5 text-emerald-600" />
+                    Cleaned & Logged
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-6">
+                  {/* Before Container */}
+                  <div className="relative rounded-xl overflow-hidden border border-rose-200 dark:border-rose-900/50 bg-slate-900 shadow-inner">
+                    <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-rose-600/90 text-white backdrop-blur-md shadow-md">
+                      🔴 Reported Critical
+                    </span>
+                    <img
+                      src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=1600&q=80"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1604186837056-8e7c286756f2?auto=format&fit=crop&w=1000&q=80";
+                      }}
+                      alt="Before Waste Clearance"
+                      className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
+                    />
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
+                      <p className="text-[11px] text-slate-300 font-medium">BEFORE: Overflowing Waste Pile</p>
+                    </div>
+                  </div>
+
+                  {/* After Container */}
+                  <div className="relative rounded-xl overflow-hidden border border-emerald-500/40 bg-slate-900 shadow-inner">
+                    <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-emerald-600/90 text-white backdrop-blur-md shadow-md">
+                      🟢 Cleaned & Sanitized
+                    </span>
+                    <img
+                      src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=1600&q=80"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=1000&q=80";
+                      }}
+                      alt="After Sanitation"
+                      className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
+                    />
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
+                      <p className="text-[11px] text-emerald-300 font-medium">AFTER: Fully Cleaned Boulevard</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 flex-wrap gap-2">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    📍 Ward G-South (Worli) — Cleaned & Verified — Field Proof Logged
+                  </span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    Timestamped Officer Proof Logged ✓
+                  </span>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </section>
 
@@ -206,17 +374,16 @@ export default function Home() {
         </section>
 
         {/* How It Works Section */}
-        <section id="how-it-works" className="w-full py-20 md:py-32 bg-slate-900 text-white">
+        <section id="how-it-works" className="w-full py-20 bg-slate-50 dark:bg-slate-950 border-y border-slate-200/60 dark:border-slate-800">
           <div className="container px-4 md:px-6 mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-white">How it works</h2>
-              <p className="mt-4 text-lg text-slate-400">
+              <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900 dark:text-white">How it works</h2>
+              <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
                 From identifying a problem to fixing it, the process is seamless.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-8 relative">
-              <div className="hidden md:block absolute top-12 left-1/8 right-1/8 h-0.5 bg-slate-700 -z-10"></div>
+            <div className="grid md:grid-cols-4 gap-6 relative">
               {[
                 { step: "01", title: "Spot & Report", desc: "Take a photo and provide a brief description of the issue." },
                 { step: "02", title: "AI Analyzes", desc: "Our AI categorizes and routes the ticket to the correct department." },
@@ -228,23 +395,23 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.2, duration: 0.5 }}
-                  className="flex flex-col items-center text-center relative z-10"
+                  transition={{ delay: i * 0.15, duration: 0.5 }}
+                  className="flex flex-col items-center text-center p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
                 >
-                  <div className="w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-900 flex items-center justify-center text-2xl font-bold text-primary mb-6 shadow-xl">
+                  <div className="bg-emerald-600 text-white font-bold text-lg w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/20 mb-6 mx-auto group-hover:scale-110 transition-transform">
                     {item.step}
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                  <p className="text-slate-400">{item.desc}</p>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{item.desc}</p>
                 </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Statistics Section */}
-        <section className="w-full py-20 bg-primary text-primary-foreground">
-          <div className="container px-4 md:px-6 mx-auto">
+        {/* Statistics Section Banner */}
+        <section className="container px-4 md:px-6 mx-auto my-12">
+          <div className="bg-gradient-to-br from-emerald-900 to-teal-950 text-white rounded-3xl p-10 shadow-xl max-w-7xl mx-auto border border-emerald-800/40">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
                 { number: "25k+", label: "Issues Resolved" },
@@ -252,9 +419,9 @@ export default function Home() {
                 { number: "150+", label: "Cities Integrated" },
                 { number: "100k+", label: "Active Citizens" },
               ].map((stat, i) => (
-                <div key={i} className="flex flex-col items-center justify-center space-y-2">
-                  <h3 className="text-4xl md:text-5xl font-extrabold tracking-tighter">{stat.number}</h3>
-                  <p className="text-primary-foreground/80 font-medium">{stat.label}</p>
+                <div key={i} className="flex flex-col items-center justify-center">
+                  <h3 className="text-4xl lg:text-5xl font-extrabold text-emerald-400 mb-2 tracking-tight">{stat.number}</h3>
+                  <p className="text-emerald-100/80 text-sm font-medium uppercase tracking-wider">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -262,33 +429,83 @@ export default function Home() {
         </section>
 
         {/* Testimonials */}
-        <section className="w-full py-20 md:py-32 bg-slate-50 dark:bg-slate-950">
+        <section className="w-full py-24 px-4 sm:px-6 lg:px-8 bg-slate-50/80 dark:bg-slate-950 border-t border-slate-200/60 dark:border-slate-800">
           <div className="container px-4 md:px-6 mx-auto">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-slate-900 dark:text-white">Trusted by communities</h2>
+            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+              <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 uppercase tracking-wider">
+                Community Voice
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white text-center mt-3">
+                Trusted by Citizens & City Authorities
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
+                See how Smart Civic AI empowers municipal officers and citizens alike with real-time feedback.
+              </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
+
+            <div className="grid md:grid-cols-3 gap-8">
               {[
-                { name: "Sarah J.", role: "Citizen", text: "I reported a broken streetlight and it was fixed the next day. The tracking feature is fantastic!" },
-                { name: "Mark T.", role: "City Official", text: "The AI routing saves us hours of manual sorting. We can now focus directly on solving the problems." },
-                { name: "Elena R.", role: "Community Leader", text: "This platform has brought transparency to our local government. Highly recommend it to all neighborhoods." }
-              ].map((testimonial, i) => (
-                <Card key={i} className="bg-white dark:bg-slate-900 shadow-sm border-slate-200 dark:border-slate-800">
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col gap-4">
-                      <p className="text-slate-600 dark:text-slate-400 italic">"{testimonial.text}"</p>
-                      <div className="flex items-center gap-4 mt-4">
-                        <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
-                          {testimonial.name[0]}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-slate-900 dark:text-white">{testimonial.name}</p>
-                          <p className="text-xs text-slate-500">{testimonial.role}</p>
-                        </div>
-                      </div>
+                {
+                  name: "Priya Kulkarni",
+                  role: "Citizen, Ward H-West (Bandra)",
+                  text: "I reported a severe pothole hazard on my street, and it was repaired in less than 14 hours! The SLA timeline stepper and photo proof gave me 100% confidence.",
+                  avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
+                  badge: "Verified Citizen ✓",
+                  badgeClass: "bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2 py-0.5 rounded-md",
+                },
+                {
+                  name: "Rajesh Patil",
+                  role: "Senior Ward Officer, BMC",
+                  text: "The AI auto-categorization and spatial deduplication save our ward department hours of manual triage every week. Priority routing ensures critical emergencies get resolved first.",
+                  avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+                  badge: "Municipal Officer ✓",
+                  badgeClass: "bg-teal-50 text-teal-700 border border-teal-200 text-xs font-medium px-2 py-0.5 rounded-md",
+                },
+                {
+                  name: "Ananya Deshmukh",
+                  role: "Community Association President, Worli",
+                  text: "Smart Civic AI has brought unmatched governance transparency to our ward. The Ward Leaderboard scorecards motivate city departments to consistently exceed SLA targets.",
+                  avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=200&q=80",
+                  badge: "Community Leader ✓",
+                  badgeClass: "bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-medium px-2 py-0.5 rounded-md",
+                },
+              ].map((t, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.15, duration: 0.5 }}
+                  className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200/80 dark:border-slate-800/80 shadow-sm hover:shadow-xl hover:border-emerald-500/50 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
+                >
+                  <div>
+                    {/* 5-Star Rating */}
+                    <div className="flex text-amber-400 gap-1 mb-4">
+                      {[...Array(5)].map((_, starIdx) => (
+                        <Star key={starIdx} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                      ))}
                     </div>
-                  </CardContent>
-                </Card>
+
+                    <p className="text-slate-700 dark:text-slate-300 italic text-base leading-relaxed mb-6">
+                      {t.text}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <img
+                      src={t.avatar}
+                      alt={t.name}
+                      className="h-12 w-12 rounded-full object-cover border-2 border-emerald-500/30 shadow-sm shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{t.name}</p>
+                        <span className={t.badgeClass}>{t.badge}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 truncate mt-0.5">{t.role}</p>
+                    </div>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </div>

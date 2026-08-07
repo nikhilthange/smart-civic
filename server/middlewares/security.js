@@ -65,18 +65,18 @@ const defaultLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs:        15 * 60 * 1000, // 15 minutes
-  max:             20,             // strict: 20 auth attempts per window
+  max:             100,            // 100 auth attempts per window
   standardHeaders: true,
   legacyHeaders:   false,
   message:         { success: false, message: "Too many login attempts. Please wait 15 minutes before trying again." },
-  skip: (req) => process.env.NODE_ENV === "test",
+  skip: (req) => process.env.NODE_ENV !== "production" || process.env.NODE_ENV === "test",
 });
 
 const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max:      30,              // max 30 file uploads per hour per IP
+  max:      100,             // max 100 file uploads per hour per IP
   message:  { success: false, message: "Upload limit reached. Please try again in an hour." },
-  skip: (req) => process.env.NODE_ENV === "test",
+  skip: (req) => process.env.NODE_ENV !== "production" || process.env.NODE_ENV === "test",
 });
 
 // ─── 4. MongoDB Operator Injection Sanitizer ──────────────────────────────────

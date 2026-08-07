@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import {
   ArrowLeft, Clock, CheckCircle2, UserCheck, Wrench, Star,
   XCircle, Lock, Bot, MapPin, Calendar, Tag, Phone,
@@ -32,14 +33,6 @@ const ALL_STATUSES: (ComplaintStatus | "submitted")[] = [
   "submitted", "pending", "ai_verified", "assigned", "in_progress", "resolved",
 ]
 
-const STEPPER_STAGES = [
-  { id: 1, key: "pending", label: "1. Filed", desc: "Ticket logged" },
-  { id: 2, key: "ai_verified", label: "2. AI Classified", desc: "Verified by Gemini AI" },
-  { id: 3, key: "assigned", label: "3. Ward Assigned", desc: "Routed to ward team" },
-  { id: 4, key: "in_progress", label: "4. Field Work", desc: "Worker active on site" },
-  { id: 5, key: "resolved", label: "5. Closed with Proof", desc: "Closed with photo proof" },
-]
-
 function getActiveStageIndex(status: ComplaintStatus): number {
   switch (status) {
     case "pending":
@@ -68,6 +61,7 @@ function StatusBadgeLg({ status }: { status: ComplaintStatus }) {
 }
 
 export default function ComplaintTracking() {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const { id, complaintId } = useParams<{ id?: string; complaintId?: string }>()
   const targetId = id || complaintId
@@ -124,16 +118,21 @@ export default function ComplaintTracking() {
     )
   }
 
-  // Build timeline — show statuses up to and including current
+  const stepperStages = [
+    { id: 1, key: "pending", label: `1. ${t("tracking.filed")}`, desc: t("tracking.filedDesc") },
+    { id: 2, key: "ai_verified", label: `2. ${t("tracking.aiClassified")}`, desc: t("tracking.aiClassifiedDesc") },
+    { id: 3, key: "assigned", label: `3. ${t("tracking.wardAssigned")}`, desc: t("tracking.wardAssignedDesc") },
+    { id: 4, key: "in_progress", label: `4. ${t("tracking.fieldWork")}`, desc: t("tracking.fieldWorkDesc") },
+    { id: 5, key: "resolved", label: `5. ${t("tracking.closedWithProof")}`, desc: t("tracking.closedWithProofDesc") },
+  ]
+
   const currentStatusIndex = ALL_STATUSES.indexOf(
     complaint.status === "pending" ? "pending" : (complaint.status as typeof ALL_STATUSES[number])
   )
-
-  // Map statusHistory for notes lookup
   const historyMap = new Map(complaint.statusHistory.map(h => [h.status, h]))
 
   return (
-    <div className="flex flex-col gap-6 max-w-5xl mx-auto w-full">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-8">
       {/* Header */}
       <div className="flex items-start gap-4">
         <Link to="/complaints">
@@ -143,56 +142,53 @@ export default function ComplaintTracking() {
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 truncate">{complaint.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">{complaint.title}</h1>
             <StatusBadgeLg status={complaint.status} />
           </div>
-          <div className="flex items-center gap-4 mt-1">
-            <span className="font-mono text-sm text-slate-500">{complaint.complaintId}</span>
+          <div className="flex items-center gap-4 mt-1.5 flex-wrap">
+            <span className="font-mono text-sm font-semibold text-slate-500">{complaint.complaintId}</span>
             <span className="text-slate-300">•</span>
             <span className="text-sm text-slate-500">
               Submitted {new Date(complaint.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}
             </span>
           </div>
         </div>
-      </div>
 
-      {/* Feedback Button for Citizens */}
-      {user?.role === "citizen" && 
-       (complaint.status === "resolved" || complaint.status === "closed") && 
-       !complaint.feedbackSubmitted && (
-        <div className="flex justify-end mt-2">
-          <Button onClick={() => setIsFeedbackOpen(true)} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
+        {/* Feedback Button for Citizens */}
+        {user?.role === "citizen" && 
+         (complaint.status === "resolved" || complaint.status === "closed") && 
+         !complaint.feedbackSubmitted && (
+          <Button onClick={() => setIsFeedbackOpen(true)} className="gap-2 bg-indigo-600 hover:bg-indigo-700 shrink-0">
             <Star className="h-4 w-4" />
-            Rate your experience
+            {t("tracking.rateExperience")}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       <FeedbackModal 
         complaintId={complaint._id}
         isOpen={isFeedbackOpen}
         onClose={() => setIsFeedbackOpen(false)}
         onSuccess={() => {
-          // Optimistically update UI
           setComplaint(prev => prev ? { ...prev, feedbackSubmitted: true } : prev)
         }}
       />
 
       {/* ── 5-Step Visual Stepper Progress Bar ── */}
-      <Card className="shadow-sm border-indigo-100 bg-gradient-to-r from-indigo-50/50 via-slate-50 to-blue-50/50">
+      <Card className="shadow-sm border-indigo-100 dark:border-slate-800 bg-gradient-to-r from-indigo-50/50 via-slate-50 to-blue-50/50 dark:from-slate-900 dark:to-slate-800/80">
         <CardContent className="pt-5 pb-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Clock className="h-4 w-4 text-indigo-600" />
-              SLA Resolution Progress Stepper
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Clock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              {t("tracking.stepperTitle")}
             </h3>
             <span className="text-xs font-semibold text-slate-500 font-mono">
-              Stage {getActiveStageIndex(complaint.status)} of 5
+              {t("tracking.stage")} {getActiveStageIndex(complaint.status)} {t("tracking.of")} 5
             </span>
           </div>
 
           <div className="grid grid-cols-5 gap-2 relative">
-            {STEPPER_STAGES.map((stage) => {
+            {stepperStages.map((stage) => {
               const activeStage = getActiveStageIndex(complaint.status)
               const isPassed = stage.id < activeStage
               const isCurrent = stage.id === activeStage
@@ -207,7 +203,7 @@ export default function ComplaintTracking() {
                         ? "bg-indigo-600 text-white ring-4 ring-indigo-200 shadow-md shadow-indigo-500/20 scale-110"
                         : isPassed
                         ? "bg-emerald-600 text-white shadow-sm"
-                        : "bg-slate-200 text-slate-500 border border-slate-300"
+                        : "bg-slate-200 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700"
                     }`}
                   >
                     {isPassed ? <Check className="h-4 w-4 stroke-[3]" /> : stage.id}
@@ -217,9 +213,9 @@ export default function ComplaintTracking() {
                   <span
                     className={`text-xs font-bold mt-2.5 line-clamp-1 ${
                       isCurrent
-                        ? "text-indigo-700 font-extrabold"
+                        ? "text-indigo-700 dark:text-indigo-400 font-extrabold"
                         : isCompleted
-                        ? "text-slate-900 font-semibold"
+                        ? "text-slate-900 dark:text-white font-semibold"
                         : "text-slate-400"
                     }`}
                   >
@@ -235,14 +231,14 @@ export default function ComplaintTracking() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-3 mt-2">
-        {/* Timeline */}
-        <Card className="lg:col-span-2 shadow-sm">
-          <CardHeader>
-            <CardTitle>Resolution Timeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative ml-3">
+      {/* ── Main Responsive Grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full max-w-7xl mx-auto">
+        {/* Left Column: Timeline & Description */}
+        <div className="lg:col-span-2 space-y-6 w-full min-w-0">
+          {/* Resolution Timeline Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm w-full">
+            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-6">{t("tracking.timelineTitle")}</h2>
+            <div className="relative space-y-6">
               {ALL_STATUSES.map((status, index) => {
                 const Icon = STATUS_ICONS[status]
                 const isCompleted = index <= currentStatusIndex
@@ -250,25 +246,24 @@ export default function ComplaintTracking() {
                 const historyEntry = historyMap.get(status === "submitted" ? "pending" : status)
                 const isLast = index === ALL_STATUSES.length - 1
 
-                // Don't show rejected as "not reached" unless complaint was rejected
                 if (complaint.status === "rejected" && index >= ALL_STATUSES.indexOf("in_progress")) return null
 
                 return (
-                  <div key={status} className="relative flex gap-4 pb-8">
+                  <div key={status} className="relative flex items-start gap-4">
                     {/* Vertical line */}
                     {!isLast && (
                       <div className={`absolute left-3.5 top-7 w-0.5 h-full -translate-x-1/2 ${
-                        isCompleted ? "bg-primary" : "bg-slate-200"
+                        isCompleted ? "bg-emerald-500" : "bg-slate-200 dark:bg-slate-800"
                       }`} />
                     )}
 
                     {/* Icon */}
                     <div className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ring-4 ${
                       isCurrent
-                        ? "bg-primary text-white ring-primary/20 shadow-lg shadow-primary/30"
+                        ? "bg-emerald-600 text-white ring-emerald-200 shadow-md shadow-emerald-500/20"
                         : isCompleted
-                        ? "bg-primary text-white ring-white"
-                        : "bg-slate-100 text-slate-400 ring-white border border-slate-200"
+                        ? "bg-emerald-600 text-white ring-white dark:ring-slate-900"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-400 ring-white dark:ring-slate-900 border border-slate-200 dark:border-slate-700"
                     }`}>
                       <Icon className="h-3.5 w-3.5" />
                     </div>
@@ -276,13 +271,13 @@ export default function ComplaintTracking() {
                     {/* Content */}
                     <div className="flex-1 min-w-0 pt-0.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className={`font-semibold text-sm ${isCompleted ? "text-slate-900" : "text-slate-400"}`}>
-                          {status === "submitted" ? "Submitted" :
+                        <h3 className={`font-semibold text-sm ${isCompleted ? "text-slate-900 dark:text-white" : "text-slate-400"}`}>
+                          {status === "submitted" ? t("tracking.submitted") :
                            STATUS_CONFIG[status as ComplaintStatus]?.label || status}
                         </h3>
                         {isCurrent && (
-                          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                            Current
+                          <span className="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                            {t("tracking.currentStage")}
                           </span>
                         )}
                       </div>
@@ -295,10 +290,10 @@ export default function ComplaintTracking() {
                         </time>
                       )}
                       {historyEntry?.note && (
-                        <p className="text-sm text-slate-500 mt-1">{historyEntry.note}</p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">{historyEntry.note}</p>
                       )}
                       {!historyEntry && !isCompleted && (
-                        <p className="text-xs text-slate-400 mt-0.5">Pending</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{t("tracking.pending")}</p>
                       )}
                     </div>
                   </div>
@@ -307,55 +302,61 @@ export default function ComplaintTracking() {
 
               {/* Rejected state */}
               {complaint.status === "rejected" && (
-                <div className="relative flex gap-4 pb-2">
+                <div className="relative flex items-start gap-4 pb-2">
                   <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-500 text-white ring-4 ring-red-100">
                     <XCircle className="h-3.5 w-3.5" />
                   </div>
-                  <div className="flex-1 pt-0.5">
-                    <h3 className="font-semibold text-sm text-red-700">Rejected</h3>
+                  <div className="flex-1 min-w-0 pt-0.5">
+                    <h3 className="font-semibold text-sm text-red-700 dark:text-red-400">Rejected</h3>
                     {complaint.rejectionReason && (
-                      <p className="text-sm text-slate-500 mt-1">Reason: {complaint.rejectionReason}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 bg-red-50 dark:bg-red-950/40 p-3 rounded-xl border border-red-100 dark:border-red-900/50">Reason: {complaint.rejectionReason}</p>
                     )}
                   </div>
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Details sidebar */}
-        <div className="flex flex-col gap-4">
+          {/* Description Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm w-full">
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-white mb-3">{t("tracking.description")}</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{complaint.description}</p>
+          </div>
+        </div>
+
+        {/* Right Column: Details Sidebar */}
+        <div className="lg:col-span-1 space-y-6 w-full">
           {/* AI Analysis Card */}
           {complaint.aiAnalysis && (
-            <Card className="shadow-sm border-violet-200 bg-violet-50/50">
+            <Card className="shadow-sm border-violet-200 dark:border-violet-900/50 bg-violet-50/50 dark:bg-violet-950/30">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold text-violet-800 flex items-center gap-1.5">
-                  <Bot className="h-4 w-4 text-violet-600" />
-                  AI Verification Details
+                <CardTitle className="text-sm font-bold text-violet-900 dark:text-violet-300 flex items-center gap-1.5">
+                  <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                  {t("tracking.aiVerificationDetails")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 text-xs text-violet-900">
+              <CardContent className="space-y-3 text-xs text-violet-900 dark:text-violet-200">
                 <div>
-                  <span className="text-violet-600 block">Verified Status</span>
+                  <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.verifiedStatus")}</span>
                   <span className="font-semibold text-sm">
                     {complaint.aiAnalysis.verified ? "Verified ✅" : "Unverified ⚠️"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-violet-600 block">Confidence Score</span>
+                  <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.confidenceScore")}</span>
                   <span className="font-semibold text-sm">
                     {(complaint.aiAnalysis.confidence * 100).toFixed(0)}%
                   </span>
                 </div>
                 <div>
-                  <span className="text-violet-600 block">Severity Level</span>
+                  <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.severityLevel")}</span>
                   <span className="font-semibold text-sm capitalize">
                     {complaint.aiAnalysis.severity}
                   </span>
                 </div>
                 <div>
-                  <span className="text-violet-600 block">AI Explanation</span>
-                  <p className="mt-0.5 text-violet-700 leading-relaxed text-xs">
+                  <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.aiExplanation")}</span>
+                  <p className="mt-0.5 text-violet-700 dark:text-violet-300 leading-relaxed text-xs">
                     {complaint.aiAnalysis.analysisNote}
                   </p>
                 </div>
@@ -363,23 +364,24 @@ export default function ComplaintTracking() {
             </Card>
           )}
 
-          <Card className="shadow-sm">
+          {/* Complaint Details Card */}
+          <Card className="shadow-sm border-slate-200 dark:border-slate-800">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm">Complaint Details</CardTitle>
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">{t("tracking.complaintMetadata")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
                 <Tag className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-400">Category</p>
-                  <p className="font-medium">{CATEGORY_LABELS[complaint.category]}</p>
+                  <p className="text-xs text-slate-400 font-medium">{t("tracking.category")}</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{CATEGORY_LABELS[complaint.category]}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-400">Location</p>
-                  <p className="font-medium">{complaint.location.address}</p>
+                  <p className="text-xs text-slate-400 font-medium">{t("tracking.location")}</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">{complaint.location.address}</p>
                   {complaint.location.city && (
                     <p className="text-slate-500 text-xs">{complaint.location.city}, {complaint.location.state}</p>
                   )}
@@ -388,7 +390,7 @@ export default function ComplaintTracking() {
               <div className="flex items-start gap-2">
                 <Star className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-slate-400">Priority</p>
+                  <p className="text-xs text-slate-400 font-medium">{t("tracking.priority")}</p>
                   <Badge variant="outline" className="capitalize mt-0.5">{complaint.priority}</Badge>
                 </div>
               </div>
@@ -396,8 +398,8 @@ export default function ComplaintTracking() {
                 <div className="flex items-start gap-2">
                   <Calendar className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-slate-400">Estimated Resolution</p>
-                    <p className="font-medium">
+                    <p className="text-xs text-slate-400 font-medium">{t("tracking.estimatedResolution")}</p>
+                    <p className="font-semibold text-slate-800 dark:text-slate-200">
                       {new Date(complaint.estimatedResolution).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                     </p>
                   </div>
@@ -408,15 +410,15 @@ export default function ComplaintTracking() {
 
           {/* Location Map */}
           {complaint.location?.coordinates?.coordinates && (
-            <Card className="shadow-sm">
+            <Card className="shadow-sm border-slate-200 dark:border-slate-800">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Complaint Location
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+                  <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  {t("tracking.complaintLocationMap")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="h-[250px] rounded-lg overflow-hidden border border-slate-200">
+                <div className="h-[240px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
                   <ComplaintMap
                     lat={complaint.location.coordinates.coordinates[1]}
                     lng={complaint.location.coordinates.coordinates[0]}
@@ -427,37 +429,37 @@ export default function ComplaintTracking() {
           )}
 
           {/* Ward Department & Ground Field Team Card */}
-          <Card className="shadow-sm border-slate-200">
+          <Card className="shadow-sm border-slate-200 dark:border-slate-800">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900">
-                <Building className="h-4 w-4 text-indigo-600" />
-                Ward Department & Field Team
+              <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+                <Building className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                {t("tracking.wardDeptAndFieldTeam")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div>
-                <p className="text-xs text-slate-400">Ward Department</p>
-                <p className="font-semibold text-slate-800">
+                <p className="text-xs text-slate-400 font-medium">{t("tracking.wardDepartment")}</p>
+                <p className="font-semibold text-slate-800 dark:text-slate-200">
                   {complaint.department?.name || "Public Works Department"} ({complaint.ward || "Ward A"})
                 </p>
                 {complaint.department?.contactEmail && (
-                  <a href={`mailto:${complaint.department.contactEmail}`} className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5">
+                  <a href={`mailto:${complaint.department.contactEmail}`} className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5 font-medium">
                     <Phone className="h-3 w-3" />
                     {complaint.department.contactEmail}
                   </a>
                 )}
               </div>
               <div>
-                <p className="text-xs text-slate-400">Assigned Field Worker</p>
-                <p className="font-semibold text-slate-800 flex items-center gap-1.5 mt-0.5">
+                <p className="text-xs text-slate-400 font-medium">{t("tracking.assignedFieldWorker")}</p>
+                <p className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mt-0.5">
                   <HardHat className="h-4 w-4 text-amber-600" />
                   {complaint.assignedWorker?.name || "Suresh Shinde (Field Worker)"}
                 </p>
               </div>
               {complaint.assignedOfficer && (
                 <div>
-                  <p className="text-xs text-slate-400">Supervising Ward Officer</p>
-                  <p className="font-medium text-slate-700">
+                  <p className="text-xs text-slate-400 font-medium">{t("tracking.supervisingOfficer")}</p>
+                  <p className="font-semibold text-slate-700 dark:text-slate-300">
                     {complaint.assignedOfficer.user.name}
                   </p>
                 </div>
@@ -466,17 +468,17 @@ export default function ComplaintTracking() {
           </Card>
 
           {/* Timestamped Resolution Proof Photos */}
-          <Card className="shadow-sm border-emerald-200 bg-emerald-50/40">
+          <Card className="shadow-sm border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-bold flex items-center gap-2 text-emerald-900">
-                <Image className="h-4 w-4 text-emerald-600" />
-                Timestamped Resolution Proof
+              <CardTitle className="text-sm font-bold flex items-center gap-2 text-emerald-900 dark:text-emerald-300">
+                <Image className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                {t("tracking.timestampedResolutionProof")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {complaint.resolutionImage?.url ? (
                 <div>
-                  <div className="rounded-lg overflow-hidden border border-emerald-200 shadow-inner max-h-56 bg-slate-100">
+                  <div className="rounded-xl overflow-hidden border border-emerald-200 dark:border-emerald-900 shadow-inner max-h-56 bg-slate-100 dark:bg-slate-800">
                     <img
                       src={complaint.resolutionImage.url.startsWith("http") ? complaint.resolutionImage.url : `http://localhost:5000${complaint.resolutionImage.url}`}
                       alt="Resolution Proof"
@@ -485,7 +487,7 @@ export default function ComplaintTracking() {
                   </div>
                   <div className="mt-2.5 flex items-center justify-between flex-wrap gap-1">
                     <Badge className="bg-emerald-600 text-white text-[11px]">
-                      Verified Proof Uploaded
+                      {t("tracking.verifiedProofUploaded")}
                     </Badge>
                     <time className="text-xs text-slate-500 font-mono">
                       {complaint.resolvedAt
@@ -494,17 +496,17 @@ export default function ComplaintTracking() {
                     </time>
                   </div>
                   {complaint.resolutionNotes && (
-                    <p className="text-xs text-slate-600 mt-2 bg-white/90 p-2.5 rounded border border-emerald-100">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 bg-white/90 dark:bg-slate-900/90 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900">
                       <strong>Resolution Note:</strong> {complaint.resolutionNotes}
                     </p>
                   )}
                 </div>
               ) : (
-                <div className="p-3.5 rounded-lg bg-amber-50/90 border border-amber-200 text-center">
+                <div className="p-3.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-center">
                   <Clock className="h-5 w-5 text-amber-600 mx-auto mb-1" />
-                  <p className="text-xs font-semibold text-amber-800">Ground Resolution Pending</p>
-                  <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">
-                    Field worker resolution proof photo will be timestamped and attached upon task completion.
+                  <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">{t("tracking.groundResolutionPending")}</p>
+                  <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 leading-snug">
+                    {t("tracking.resolutionPendingDesc")}
                   </p>
                 </div>
               )}
@@ -513,11 +515,11 @@ export default function ComplaintTracking() {
 
           {/* Attachments */}
           {complaint.attachments.length > 0 && (
-            <Card className="shadow-sm">
+            <Card className="shadow-sm border-slate-200 dark:border-slate-800">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Paperclip className="h-4 w-4" />
-                  Attachments ({complaint.attachments.length})
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+                  <Paperclip className="h-4 w-4 text-slate-400" />
+                  {t("tracking.attachments")} ({complaint.attachments.length})
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -527,7 +529,7 @@ export default function ComplaintTracking() {
                     href={`http://localhost:5000${att.url}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-primary hover:underline"
+                    className="flex items-center gap-2 text-sm text-primary hover:underline font-medium"
                   >
                     <ExternalLink className="h-3 w-3 shrink-0" />
                     <span className="truncate">{att.filename}</span>
@@ -539,27 +541,17 @@ export default function ComplaintTracking() {
 
           {/* Admin notes */}
           {complaint.adminNotes && (
-            <Card className="shadow-sm border-amber-200 bg-amber-50">
+            <Card className="shadow-sm border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-amber-800">Official Note</CardTitle>
+                <CardTitle className="text-sm font-bold text-amber-800 dark:text-amber-300">{t("tracking.officialNote")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-amber-700">{complaint.adminNotes}</p>
+                <p className="text-sm text-amber-700 dark:text-amber-400">{complaint.adminNotes}</p>
               </CardContent>
             </Card>
           )}
         </div>
       </div>
-
-      {/* Description */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Description</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{complaint.description}</p>
-        </CardContent>
-      </Card>
     </div>
   )
 }

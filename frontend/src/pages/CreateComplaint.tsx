@@ -41,6 +41,13 @@ export default function CreateComplaint() {
     isAnonymous: false,
   })
 
+  const [files, setFiles] = useState<File[]>([])
+  const [dragOver, setDragOver] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<{ complaintId: string; rawId?: string; aiVerified: boolean } | null>(null)
+  const [geoLoading, setGeoLoading] = useState(false)
+
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser.")
@@ -53,12 +60,11 @@ export default function CreateComplaint() {
         const lng = position.coords.longitude
         setForm(prev => ({ ...prev, lat, lng }))
         
-        // Optional: reverse geocode using Nominatim or Google Maps to fill the address box
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
           if (res.ok) {
             const data = await res.json()
-            setForm(prev => ({ ...prev, locationAddress: data.display_name }))
+            setForm(prev => ({ ...prev, locationAddress: data.display_name || "" }))
           }
         } catch {
           // ignore
@@ -71,13 +77,6 @@ export default function CreateComplaint() {
       }
     )
   }
-
-  const [files, setFiles] = useState<File[]>([])
-  const [dragOver, setDragOver] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<{ complaintId: string; aiVerified: boolean } | null>(null)
-  const [geoLoading, setGeoLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -125,9 +124,11 @@ export default function CreateComplaint() {
         category: form.category as ComplaintCategory,
         attachments: files,
       })
+      const c = result.complaint
       setSuccess({
-        complaintId: result.complaint.complaintId,
-        aiVerified: result.complaint.status === "ai_verified",
+        complaintId: c.complaintId || c._id,
+        rawId: c._id || c.id || c.complaintId,
+        aiVerified: c.status === "ai_verified",
       })
     } catch (err: unknown) {
       const msg = err && typeof err === "object" && "response" in err
@@ -167,7 +168,7 @@ export default function CreateComplaint() {
               <Button variant="outline" className="flex-1" onClick={() => navigate("/complaints")}>
                 View History
               </Button>
-              <Button className="flex-1" onClick={() => navigate(`/complaint/${success._id || success.id || success.complaintId}/track`)}>
+              <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => navigate(`/complaint/${success.rawId || success.complaintId}/track`)}>
                 Track Complaint
               </Button>
             </div>

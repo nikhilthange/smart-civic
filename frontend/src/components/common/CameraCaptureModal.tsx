@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState, useEffect, useCallback } from "react"
 import { Camera, RefreshCw, Check, X, AlertTriangle } from "lucide-react"
 
 interface CameraCaptureModalProps {

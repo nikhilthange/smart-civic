@@ -83,8 +83,8 @@ export default function Dashboard() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-sm">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="glass-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Submissions</CardTitle>
             <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -99,7 +99,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-l-4 border-l-amber-400">
+        <Card className="glass-card border-l-4 border-l-amber-400">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Pending</CardTitle>
             <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center">
@@ -114,7 +114,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-l-4 border-l-blue-400">
+        <Card className="glass-card border-l-4 border-l-blue-400">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">In Progress</CardTitle>
             <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
@@ -129,7 +129,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-l-4 border-l-green-400">
+        <Card className="glass-card border-l-4 border-l-green-400">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Resolved</CardTitle>
             <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center">
@@ -146,9 +146,9 @@ export default function Dashboard() {
       </div>
 
       {/* Content grid */}
-      <div className="grid gap-4 lg:grid-cols-7">
+      <div className="grid gap-6 lg:grid-cols-7">
         {/* Recent complaints table */}
-        <Card className="lg:col-span-4 shadow-sm">
+        <Card className="lg:col-span-4 glass-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Recent Complaints</CardTitle>
@@ -210,9 +210,9 @@ export default function Dashboard() {
         </Card>
 
         {/* Right sidebar */}
-        <div className="lg:col-span-3 flex flex-col gap-4">
+        <div className="lg:col-span-3 flex flex-col gap-6">
           {/* Quick actions */}
-          <Card className="shadow-sm">
+          <Card className="glass-card">
             <CardHeader className="pb-3">
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
@@ -241,7 +241,7 @@ export default function Dashboard() {
           </Card>
 
           {/* Notifications */}
-          <Card className="shadow-sm flex-1">
+          <Card className="glass-card flex-1">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle>Notifications</CardTitle>

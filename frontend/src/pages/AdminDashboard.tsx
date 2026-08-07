@@ -4,9 +4,9 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from "recharts"
 import {
-  BarChart3, Users, CheckCircle2, Clock, AlertCircle,
+  BarChart3, Users, CheckCircle2, Clock,
   RefreshCw, Loader2, Building2, TrendingUp, UserCheck,
-  ArrowRight, ChevronDown, Shield
+  ArrowRight, Shield
 } from "lucide-react"
 import { complaintApi, type Complaint, STATUS_CONFIG, CATEGORY_LABELS, type ComplaintStatus } from "../services/complaintApi"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card"
@@ -15,6 +15,9 @@ import { Badge } from "../components/ui/badge"
 import { Link } from "react-router-dom"
 import toast from "react-hot-toast"
 import api from "@/lib/axios"
+import { officerApi, type Officer } from "../services/officerApi"
+import { AddOfficerModal } from "../components/ui/AddOfficerModal"
+import { AssignOfficerModal } from "../components/ui/AssignOfficerModal"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface StatsData {
@@ -56,7 +59,7 @@ function KpiCard({ label, value, icon: Icon, color, sub }: {
   label: string; value: number | string; icon: React.ElementType; color: string; sub?: string
 }) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="glass-card hover:shadow-lg transition-shadow">
       <CardContent className="pt-5 pb-4">
         <div className="flex items-start justify-between">
           <div>
@@ -78,11 +81,14 @@ export default function AdminDashboard() {
   const [stats, setStats]         = useState<StatsData | null>(null)
   const [complaints, setComplaints] = useState<Complaint[]>([])
   const [users, setUsers]         = useState<UserData[]>([])
-  const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "users">("overview")
+  const [officers, setOfficers]   = useState<Officer[]>([])
+  const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "users" | "officers">("overview")
   const [loading, setLoading]     = useState(true)
   const [statusFilter, setStatusFilter] = useState("")
   const [page, setPage]           = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [isAddOfficerOpen, setIsAddOfficerOpen] = useState(false)
+  const [assignModal, setAssignModal] = useState({ isOpen: false, complaintId: "", departmentId: "" })
 
   const fetchAll = useCallback(async () => {
     try {
@@ -110,8 +116,18 @@ export default function AdminDashboard() {
     }
   }, [])
 
+  const fetchOfficers = useCallback(async () => {
+    try {
+      const data = await officerApi.getAll()
+      setOfficers(data)
+    } catch {
+      toast.error("Failed to load officers")
+    }
+  }, [])
+
   useEffect(() => { fetchAll() }, [fetchAll])
   useEffect(() => { if (activeTab === "users") fetchUsers() }, [activeTab, fetchUsers])
+  useEffect(() => { if (activeTab === "officers") fetchOfficers() }, [activeTab, fetchOfficers])
 
   const handleStatusChange = async (id: string, status: string) => {
     try {
@@ -121,9 +137,8 @@ export default function AdminDashboard() {
     } catch { toast.error("Update failed") }
   }
 
-  const handleAssign = async (complaintId: string) => {
-    // Placeholder — open modal in future iteration
-    toast("Assign feature coming soon — link officer via the complaint detail page", { icon: "ℹ️" })
+  const handleAssign = async (complaintId: string, departmentId?: string) => {
+    setAssignModal({ isOpen: true, complaintId, departmentId: departmentId || "" })
   }
 
   if (loading && !stats) {
@@ -174,7 +189,7 @@ export default function AdminDashboard() {
 
       {/* ── Tab Switcher ── */}
       <div className="flex border-b gap-1">
-        {(["overview", "complaints", "users"] as const).map((t) => (
+        {(["overview", "complaints", "users", "officers"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setActiveTab(t)}
@@ -194,7 +209,7 @@ export default function AdminDashboard() {
         <div className="space-y-6">
           {/* Row 1: Daily Trend + Status Pie */}
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card className="lg:col-span-2 shadow-sm">
+            <Card className="lg:col-span-2 glass-card">
               <CardHeader>
                 <CardTitle className="text-base">Daily Complaint Volume (Last 30 days)</CardTitle>
               </CardHeader>
@@ -211,7 +226,7 @@ export default function AdminDashboard() {
                       <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                       <Tooltip
                         contentStyle={{ borderRadius: 8, fontSize: 12 }}
-                        formatter={(v: number) => [v, "Complaints"]}
+                        formatter={(v: any) => [v, "Complaints"]}
                       />
                       <Line
                         type="monotone"
@@ -227,7 +242,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-sm">
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="text-base">Status Distribution</CardTitle>
               </CardHeader>
@@ -250,7 +265,7 @@ export default function AdminDashboard() {
                           <Cell key={i} fill={entry.fill} />
                         ))}
                       </Pie>
-                      <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} formatter={(v: number, n: string) => [v, n]} />
+                      <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} formatter={(v: any, n: any) => [v, n]} />
                       <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
                     </PieChart>
                   </ResponsiveContainer>
@@ -261,7 +276,7 @@ export default function AdminDashboard() {
 
           {/* Row 2: Category Bar + Dept Performance */}
           <div className="grid gap-6 lg:grid-cols-2">
-            <Card className="shadow-sm">
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="text-base">Complaints by Category</CardTitle>
               </CardHeader>
@@ -286,7 +301,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-sm">
+            <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="text-base">Department Performance</CardTitle>
                 <CardDescription>Total · Resolved · Pending</CardDescription>
@@ -334,7 +349,7 @@ export default function AdminDashboard() {
 
       {/* ═══ TAB: COMPLAINTS ═════════════════════════════════════════════════ */}
       {activeTab === "complaints" && (
-        <Card className="shadow-sm">
+        <Card className="glass-card">
           <CardHeader>
             <div className="flex items-center justify-between flex-wrap gap-3">
               <CardTitle className="text-base">All Complaints</CardTitle>
@@ -404,7 +419,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-3 py-3 text-right">
                         <div className="flex items-center gap-1 justify-end">
-                          <Button variant="ghost" size="sm" onClick={() => handleAssign(c._id)}>
+                          <Button variant="ghost" size="sm" onClick={() => handleAssign(c._id, (c.department as any)?._id)}>
                             <UserCheck className="h-3.5 w-3.5" />
                           </Button>
                           <Link to={`/complaint/${c._id}/track`}>
@@ -435,7 +450,7 @@ export default function AdminDashboard() {
 
       {/* ═══ TAB: USERS ══════════════════════════════════════════════════════ */}
       {activeTab === "users" && (
-        <Card className="shadow-sm">
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-base">User Management</CardTitle>
             <CardDescription>All registered citizens, officers, and admins</CardDescription>
@@ -491,6 +506,81 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       )}
+
+      {/* ═══ TAB: OFFICERS ═════════════════════════════════════════════════ */}
+      {activeTab === "officers" && (
+        <Card className="glass-card">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base">Officers Directory</CardTitle>
+                <CardDescription>Manage department officers and workloads</CardDescription>
+              </div>
+              <Button onClick={() => setIsAddOfficerOpen(true)} size="sm">
+                + Add Officer
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {officers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+                <Users className="h-8 w-8" />
+                <p className="text-sm">No officers found.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
+                    <tr>
+                      <th className="px-3 py-3">Officer</th>
+                      <th className="px-3 py-3">Employee ID</th>
+                      <th className="px-3 py-3">Department</th>
+                      <th className="px-3 py-3">Designation</th>
+                      <th className="px-3 py-3">Performance</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {officers.map((o) => (
+                      <tr key={o._id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-3 py-3">
+                          <p className="font-medium">{o.user.name}</p>
+                          <p className="text-xs text-slate-500">{o.user.email}</p>
+                        </td>
+                        <td className="px-3 py-3 font-mono text-xs">{o.employeeId}</td>
+                        <td className="px-3 py-3">
+                          <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50 text-[10px]">
+                            {o.department.name}
+                          </Badge>
+                        </td>
+                        <td className="px-3 py-3 text-slate-600">{o.designation}</td>
+                        <td className="px-3 py-3">
+                           {/* Add stats if available, otherwise placeholder */}
+                           <p className="text-xs">Resolved: <span className="font-medium text-green-600">—</span></p>
+                           <p className="text-xs text-slate-500">Active: —</p>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ── Modals ── */}
+      <AddOfficerModal 
+        isOpen={isAddOfficerOpen} 
+        onClose={() => setIsAddOfficerOpen(false)} 
+        onSuccess={fetchOfficers} 
+      />
+      <AssignOfficerModal 
+        isOpen={assignModal.isOpen} 
+        onClose={() => setAssignModal({ isOpen: false, complaintId: "", departmentId: "" })} 
+        onSuccess={() => { fetchAll(); if (activeTab === "officers") fetchOfficers() }} 
+        complaintId={assignModal.complaintId}
+        departmentId={assignModal.departmentId}
+      />
     </div>
   )
 }

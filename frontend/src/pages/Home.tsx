@@ -38,8 +38,10 @@ export default function Home() {
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/70 dark:bg-slate-950/70 backdrop-blur-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link className="flex items-center gap-2" to="/">
-            <Building2 className="h-6 w-6 text-primary" />
+          <Link className="flex items-center gap-3 transition-transform hover:scale-105" to="/">
+            <div className="bg-primary/10 p-2 rounded-xl">
+              <Building2 className="h-6 w-6 text-primary" />
+            </div>
             <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic AI</span>
           </Link>
           <nav className="hidden md:flex gap-6 items-center">
@@ -62,9 +64,10 @@ export default function Home() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full py-20 md:py-32 lg:py-40 overflow-hidden">
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-          <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-40 blur-[100px]"></div>
+        <section className="relative w-full py-24 md:py-32 lg:py-48 overflow-hidden bg-white dark:bg-slate-950">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-70"></div>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+          <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 h-[400px] w-[800px] rounded-full bg-primary/20 opacity-30 blur-[120px]"></div>
           
           <div className="container relative px-4 md:px-6 mx-auto text-center">
             <motion.div 
@@ -73,27 +76,27 @@ export default function Home() {
               variants={staggerContainer}
               className="flex flex-col items-center gap-6"
             >
-              <motion.div variants={fadeUpVariant} className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary/10 text-primary">
-                <Zap className="h-4 w-4 mr-1 text-amber-500" /> Introducing AI-Powered City Management
+              <motion.div variants={fadeUpVariant} className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium transition-colors hover:bg-primary/10 text-primary">
+                <Zap className="h-4 w-4 mr-2 text-amber-500" /> Introducing AI-Powered City Management
               </motion.div>
-              <motion.h1 variants={fadeUpVariant} className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl/none max-w-4xl text-slate-900 dark:text-white">
+              <motion.h1 variants={fadeUpVariant} className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl/none max-w-4xl text-slate-900 dark:text-white leading-[1.1]">
                 Empowering Citizens, <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">
                   Building Smarter Cities.
                 </span>
               </motion.h1>
-              <motion.p variants={fadeUpVariant} className="mx-auto max-w-[700px] text-slate-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-slate-400">
+              <motion.p variants={fadeUpVariant} className="mx-auto max-w-[700px] text-slate-500 md:text-xl/relaxed lg:text-lg/relaxed xl:text-xl/relaxed dark:text-slate-400">
                 Report civic issues instantly, track resolution progress in real-time, and let our advanced AI engine route your complaints to the right department automatically.
               </motion.p>
-              <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row justify-center gap-4 mt-4 w-full sm:w-auto">
+              <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row justify-center gap-4 mt-8 w-full sm:w-auto">
                 <Link to="/auth" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto rounded-full h-12 px-8 text-base shadow-lg shadow-primary/25">
+                  <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 text-base shadow-lg shadow-primary/30 transition-all hover:scale-105">
                     Report an Issue
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
                 <Link to="/dashboard" className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto rounded-full h-12 px-8 text-base bg-white dark:bg-slate-950">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 text-base bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all hover:scale-105">
                     Access Dashboard
                   </Button>
                 </Link>
@@ -185,12 +188,12 @@ export default function Home() {
                 { icon: MessageSquare, title: "Direct Feedback", desc: "Communicate directly with city officials regarding your complaints." },
               ].map((feature, i) => (
                 <motion.div key={i} variants={fadeUpVariant}>
-                  <Card className="h-full border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all hover:shadow-md hover:border-primary/50">
+                  <Card className="h-full border-slate-200/60 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 hover:border-primary/30">
                     <CardHeader>
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                        <feature.icon className="h-6 w-6 text-primary" />
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center mb-4">
+                        <feature.icon className="h-7 w-7 text-primary" />
                       </div>
-                      <CardTitle className="text-xl">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-slate-500 dark:text-slate-400">{feature.desc}</p>

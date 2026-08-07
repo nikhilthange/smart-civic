@@ -62,7 +62,7 @@ export default function CreateComplaint() {
         }
         setGeoLoading(false)
       },
-      (err) => {
+      () => {
         setGeoLoading(false)
         setError("Unable to retrieve your location.")
       }
@@ -101,32 +101,6 @@ export default function CreateComplaint() {
     e.preventDefault()
     setDragOver(false)
     addFiles(e.dataTransfer.files)
-  }
-
-  // Geolocation
-  const useCurrentLocation = () => {
-    if (!navigator.geolocation) return
-    setGeoLoading(true)
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords
-        try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
-          const data = await res.json()
-          setForm(prev => ({
-            ...prev,
-            locationAddress: data.display_name || `${latitude}, ${longitude}`,
-            locationCity: data.address?.city || data.address?.town || "",
-            locationState: data.address?.state || "",
-            locationPincode: data.address?.postcode || "",
-          }))
-        } catch {
-          setForm(prev => ({ ...prev, locationAddress: `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` }))
-        }
-        setGeoLoading(false)
-      },
-      () => setGeoLoading(false)
-    )
   }
 
   // AI preview

@@ -11,6 +11,7 @@ const {
   updateComplaintStatus,
   deleteComplaint,
   getStats,
+  assignOfficer,
 } = require("../controllers/complaintController");
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
@@ -66,6 +67,16 @@ router.patch(
   statusValidation,
   validate,
   updateComplaintStatus
+);
+
+// PATCH /api/complaints/:id/assign
+router.patch(
+  "/:id/assign",
+  protect,
+  authorize("admin"),
+  body("officerId").isMongoId().withMessage("Invalid officer ID"),
+  validate,
+  assignOfficer
 );
 
 // DELETE /api/complaints/:id

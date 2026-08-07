@@ -20,14 +20,23 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^4.22.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.6.2",
     "express-validator": "^7.3.2",
+    "firebase-admin": "^14.2.0",
     "google-auth-library": "^11.0.0",
+    "helmet": "^8.3.0",
+    "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.1",
+    "morgan": "^1.11.0",
     "multer": "^2.2.0",
     "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^9.0.4",
+    "razorpay": "^2.9.8",
     "sharp": "^0.35.3",
-    "uuid": "^14.0.1"
+    "uuid": "^14.0.1",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

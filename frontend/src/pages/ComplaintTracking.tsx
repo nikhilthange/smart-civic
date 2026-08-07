@@ -320,11 +320,12 @@ export default function ComplaintTracking() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <ComplaintMap
-                  lat={complaint.location.coordinates.coordinates[1]}
-                  lng={complaint.location.coordinates.coordinates[0]}
-                  address={complaint.location.address}
-                />
+                <div className="h-[250px] rounded-lg overflow-hidden border border-slate-200">
+                  <ComplaintMap
+                    lat={complaint.location.coordinates.coordinates[1]}
+                    lng={complaint.location.coordinates.coordinates[0]}
+                  />
+                </div>
               </CardContent>
             </Card>
           )}

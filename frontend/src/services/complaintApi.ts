@@ -183,4 +183,9 @@ export const complaintApi = {
     }>("/complaints/stats")
     return res.data
   },
+
+  assignOfficer: async (id: string, officerId: string) => {
+    const res = await api.patch(`/complaints/${id}/assign`, { officerId })
+    return res.data
+  },
 }

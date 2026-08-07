@@ -1,5 +1,7 @@
 const Complaint = require("../models/Complaint");
+const Officer = require("../models/Officer");
 const Notification = require("../models/Notification");
+const notificationService = require("../services/notificationService");
 const cloudinary = require("../config/cloudinary");
 const { normaliseAttachments } = require("../middlewares/upload");
 const fs = require("fs");
@@ -97,15 +99,11 @@ const createComplaint = async (req, res) => {
       ],
     });
 
-    // Send confirmation notification
-    await Notification.send({
-      recipient: req.user.id,
-      complaint: complaint._id,
-      type: "complaint_submitted",
-      title: "Complaint Submitted",
-      message: `Your complaint "${complaint.title}" (${complaint.complaintId}) has been received${aiAnalysis.verified ? " and automatically AI-verified" : ""}.`,
-      actionUrl: `/complaint/${complaint._id}/track`,
-    });
+    // Send confirmation via in-app + email + FCM
+    await notificationService.complaintCreated(req.user.id, complaint);
+    if (complaint.status === "ai_verified") {
+      await notificationService.aiVerified(req.user.id, complaint);
+    }
 
     return res.status(201).json({ success: true, complaint });
   } catch (error) {
@@ -119,7 +117,21 @@ const createComplaint = async (req, res) => {
 // ─── @access  Private
 const getComplaints = async (req, res) => {
   try {
-    const { status, category, priority, page = 1, limit = 10, search } = req.query;
+    const {
+      status,
+      category,
+      priority,
+      page = 1,
+      limit = 10,
+      search,
+      city,
+      state,
+      pincode,
+      dateFrom,
+      dateTo,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
 
     const query = {};
 
@@ -128,23 +140,57 @@ const getComplaints = async (req, res) => {
       query.citizen = req.user.id;
     }
 
-    if (status) query.status = status;
-    if (category) query.category = category;
-    if (priority) query.priority = priority;
+    // Status: support comma-separated list  e.g. status=pending,resolved
+    if (status) {
+      const statuses = status.split(",").map((s) => s.trim()).filter(Boolean);
+      query.status = statuses.length === 1 ? statuses[0] : { $in: statuses };
+    }
+    if (category) {
+      const categories = category.split(",").map((s) => s.trim()).filter(Boolean);
+      query.category = categories.length === 1 ? categories[0] : { $in: categories };
+    }
+    if (priority) {
+      const priorities = priority.split(",").map((s) => s.trim()).filter(Boolean);
+      query.priority = priorities.length === 1 ? priorities[0] : { $in: priorities };
+    }
+
+    // Location filters
+    if (city)    query["location.city"]    = { $regex: city,    $options: "i" };
+    if (state)   query["location.state"]   = { $regex: state,   $options: "i" };
+    if (pincode) query["location.pincode"] = { $regex: pincode, $options: "i" };
+
+    // Date range
+    if (dateFrom || dateTo) {
+      query.createdAt = {};
+      if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
+      if (dateTo) {
+        const end = new Date(dateTo);
+        end.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = end;
+      }
+    }
+
+    // Text search
     if (search) {
       query.$or = [
-        { title: { $regex: search, $options: "i" } },
+        { title:       { $regex: search, $options: "i" } },
         { complaintId: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
+        { "location.address": { $regex: search, $options: "i" } },
       ];
     }
 
-    const skip = (Number(page) - 1) * Number(limit);
+    // Allowed sort fields
+    const ALLOWED_SORT = ["createdAt", "updatedAt", "priority", "status", "category"];
+    const sortField  = ALLOWED_SORT.includes(sortBy) ? sortBy : "createdAt";
+    const sortDir    = sortOrder === "asc" ? 1 : -1;
+
+    const skip  = (Number(page) - 1) * Number(limit);
     const total = await Complaint.countDocuments(query);
     const complaints = await Complaint.find(query)
-      .sort({ createdAt: -1 })
+      .sort({ [sortField]: sortDir })
       .skip(skip)
-      .limit(Number(limit))
+      .limit(Math.min(Number(limit), 100)) // max 100 per page
       .populate("citizen", "name email avatar")
       .populate("department", "name code")
       .populate({ path: "assignedOfficer", populate: { path: "user", select: "name email" } })
@@ -233,14 +279,11 @@ const updateComplaintStatus = async (req, res) => {
       rejected: "Rejected",
     };
     if (statusLabels[status]) {
-      await Notification.send({
-        recipient: complaint.citizen,
-        complaint: complaint._id,
-        type: "complaint_status_update",
-        title: `Complaint ${statusLabels[status]}`,
-        message: `Your complaint "${complaint.title}" has been updated to: ${statusLabels[status]}.${note ? ` Note: ${note}` : ""}`,
-        actionUrl: `/complaint/${complaint._id}/track`,
-      });
+      if (status === "resolved") {
+        await notificationService.complaintResolved(complaint.citizen, complaint);
+      } else {
+        await notificationService.statusUpdated(complaint.citizen, complaint, status);
+      }
     }
 
     res.status(200).json({ success: true, complaint, previousStatus: oldStatus });
@@ -415,4 +458,38 @@ const getStats = async (req, res) => {
   }
 };
 
-module.exports = { createComplaint, getComplaints, getComplaint, updateComplaintStatus, deleteComplaint, getStats };
+const assignOfficer = async (req, res) => {
+  try {
+    const { officerId } = req.body;
+    const complaintId = req.params.id;
+
+    if (!officerId) return res.status(400).json({ success: false, message: "Officer ID is required" });
+
+    const complaint = await Complaint.findById(complaintId);
+    if (!complaint) return res.status(404).json({ success: false, message: "Complaint not found" });
+
+    const officer = await Officer.findById(officerId);
+    if (!officer) return res.status(404).json({ success: false, message: "Officer not found" });
+
+    // Update complaint
+    complaint.assignedOfficer = officerId;
+    complaint.status = "assigned";
+    complaint.assignedAt = new Date();
+    await complaint.save();
+
+    // Update officer stats
+    officer.activeComplaintsCount += 1;
+    await officer.save();
+
+    // Notify citizen via in-app + email + FCM
+    const officerUser = await require("../models/User").findById(officer.user).select("name").lean();
+    await notificationService.officerAssigned(complaint.citizen, complaint, officerUser?.name || "an officer");
+
+    res.status(200).json({ success: true, message: "Officer assigned successfully", complaint });
+  } catch (error) {
+    console.error("Assign Officer Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error assigning officer." });
+  }
+};
+
+module.exports = { createComplaint, getComplaints, getComplaint, updateComplaintStatus, deleteComplaint, getStats, assignOfficer };

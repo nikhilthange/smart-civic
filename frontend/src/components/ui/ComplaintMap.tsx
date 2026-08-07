@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react"
-import { MapPin, Building2, ExternalLink } from "lucide-react"
+import { Building2, ExternalLink } from "lucide-react"
 import { departmentApi, type Department } from "@/services/departmentApi"
 
 interface ComplaintMapProps {
   lat: number
   lng: number
-  address: string
 }
 
-export default function ComplaintMap({ lat, lng, address }: ComplaintMapProps) {
+export default function ComplaintMap({ lat, lng }: ComplaintMapProps) {
   const [nearbyDepts, setNearbyDepts] = useState<Department[]>([])
   const [loadingDepts, setLoadingDepts] = useState(false)
 

@@ -9,6 +9,9 @@ import ComplaintHistory from "./pages/ComplaintHistory"
 import ComplaintTracking from "./pages/ComplaintTracking"
 import Unauthorized from "./pages/Unauthorized"
 import AdminDashboard from "./pages/AdminDashboard"
+import Donation from "./pages/Donation"
+import AnalyticsDashboard from "./pages/AnalyticsDashboard"
+import SearchComplaints from "./pages/SearchComplaints"
 import DashboardLayout from "./components/layout/DashboardLayout"
 
 import { GoogleOAuthProvider } from '@react-oauth/google'
@@ -33,6 +36,8 @@ function App() {
               <Route path="/complaint/new" element={<CreateComplaint />} />
               <Route path="/complaints" element={<ComplaintHistory />} />
               <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
+              <Route path="/donate" element={<Donation />} />
+              <Route path="/search" element={<SearchComplaints />} />
             </Route>
           </Route>
 
@@ -40,6 +45,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={["admin", "officer"]} />}>
             <Route element={<DashboardLayout />}>
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
             </Route>
           </Route>
         </Routes>

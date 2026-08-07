@@ -69,20 +69,26 @@ export default function Auth() {
   }
 
   return (
-    <div className="flex min-h-[100svh] items-center justify-center bg-slate-50 dark:bg-slate-900 p-4">
-      <div className="w-full max-w-[420px]">
+    <div className="flex min-h-[100svh] items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 relative overflow-hidden">
+      {/* Background gradients */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-70 pointer-events-none"></div>
+      <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 h-[400px] w-[800px] rounded-full bg-primary/10 opacity-40 blur-[120px] pointer-events-none"></div>
+
+      <div className="w-full max-w-[420px] relative z-10">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Link to="/" className="flex items-center gap-2">
-            <Building2 className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-slate-900 dark:text-white">
+          <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105">
+            <div className="bg-primary/10 p-2 rounded-xl">
+              <Building2 className="h-8 w-8 text-primary" />
+            </div>
+            <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Smart Civic AI
             </span>
           </Link>
         </div>
 
-        <Card className="shadow-lg border-t-4 border-t-primary">
-          <CardHeader className="space-y-1 text-center">
+        <Card className="glass-card border-t-4 border-t-primary border-x-slate-200/50 border-b-slate-200/50 dark:border-x-slate-800/50 dark:border-b-slate-800/50 rounded-2xl shadow-xl shadow-primary/5">
+          <CardHeader className="space-y-1 text-center pb-6">
             <CardTitle className="text-2xl tracking-tight">
               {isLogin ? "Welcome back" : "Create an account"}
             </CardTitle>

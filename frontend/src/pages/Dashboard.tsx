@@ -154,7 +154,7 @@ export default function Dashboard() {
             <Award className="w-8 h-8 text-amber-300" />
           </div>
           <div>
-            <h3 className="font-bold text-lg">{t("dashPage.karmaScore")}: {user?.karmaPoints ?? (stats?.total ? stats.total * 10 : 10)} Points</h3>
+            <h3 className="font-bold text-lg">{t("dashPage.karmaScore")}: {(user as any)?.karmaPoints ?? (stats?.total ? stats.total * 10 : 10)} Points</h3>
             <p className="text-xs text-blue-100 mt-0.5">{t("dashPage.karmaDesc")}</p>
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function Dashboard() {
                   {recent.map((c) => (
                     <TableRow key={c._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/80">
                       <TableCell className="font-mono text-xs">
-                        <Link to={`/complaint/${c._id || c.id || c.complaintId}/track`} className="text-emerald-600 font-semibold hover:underline">
+                        <Link to={`/complaint/${c._id || (c as any).id || c.complaintId}/track`} className="text-emerald-600 font-semibold hover:underline">
                           {c.complaintId || c._id}
                         </Link>
                       </TableCell>

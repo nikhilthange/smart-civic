@@ -2,13 +2,14 @@ import { useState, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
-  CheckCircle2, Loader2, Bot, Info, Camera
+  CheckCircle2, Loader2, Camera
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import exifr from "exifr"
+import toast from "react-hot-toast"
 import { complaintApi, CATEGORY_LABELS, type ComplaintCategory } from "@/services/complaintApi"
 import { CameraCaptureModal } from "@/components/common/CameraCaptureModal"
 import VoiceInput from "@/components/common/VoiceInput"
@@ -86,13 +87,39 @@ export default function CreateComplaint() {
     }))
   }
 
-  // File handling
-  const addFiles = useCallback((newFiles: FileList | File[]) => {
+  // File handling with EXIF metadata location extraction
+  const addFiles = useCallback(async (newFiles: FileList | File[]) => {
     const arr = Array.from(newFiles)
-    setFiles(prev => {
-      const combined = [...prev, ...arr].slice(0, 5)
-      return combined
-    })
+    setFiles(prev => [...prev, ...arr].slice(0, 5))
+
+    for (const file of arr) {
+      if (file.type && file.type.startsWith("image/")) {
+        try {
+          const gps = await exifr.gps(file)
+          if (gps && typeof gps.latitude === "number" && typeof gps.longitude === "number") {
+            if (gps.latitude !== 0 || gps.longitude !== 0) {
+              const lat = gps.latitude
+              const lng = gps.longitude
+              setForm(prev => ({ ...prev, lat, lng }))
+              toast.success("📷 Photo EXIF Location extracted! Map pin updated.")
+              
+              try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                if (res.ok) {
+                  const data = await res.json()
+                  setForm(prev => ({ ...prev, locationAddress: data.display_name || prev.locationAddress }))
+                }
+              } catch {
+                // ignore reverse geocode error
+              }
+              break;
+            }
+          }
+        } catch {
+          // ignore EXIF extraction errors for files without EXIF header
+        }
+      }
+    }
   }, [])
 
   const removeFile = (index: number) => {
@@ -104,9 +131,6 @@ export default function CreateComplaint() {
     setDragOver(false)
     addFiles(e.dataTransfer.files)
   }
-
-  // AI preview
-  const aiWillVerify = form.description.length >= 50
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -157,13 +181,6 @@ export default function CreateComplaint() {
               <p className="text-lg font-mono font-bold text-primary">{success.complaintId}</p>
             </div>
 
-            {success.aiVerified && (
-              <div className="flex items-center gap-2 text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-4 py-2 w-full">
-                <Bot className="h-4 w-4 shrink-0" />
-                <p className="text-sm font-medium">AI Verified — Your complaint passed automated verification and will be prioritized.</p>
-              </div>
-            )}
-
             <div className="flex gap-3 w-full pt-2">
               <Button variant="outline" className="flex-1" onClick={() => navigate("/complaints")}>
                 View History
@@ -187,16 +204,7 @@ export default function CreateComplaint() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Submit a Complaint</h1>
-          <p className="text-sm text-slate-500">Report civic issues to the appropriate department</p>
-        </div>
-      </div>
-
-      {/* AI info banner */}
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-violet-200 bg-violet-50 px-4 py-3">
-        <Bot className="h-5 w-5 text-violet-600 mt-0.5 shrink-0" />
-        <div>
-          <p className="text-sm font-semibold text-violet-800">AI-Powered Verification</p>
-          <p className="text-xs text-violet-600 mt-0.5">Complaints with a detailed description (50+ characters) are automatically verified by our AI and prioritized for faster resolution.</p>
+          <p className="text-sm text-slate-500">Report civic issues directly to your municipal ward department</p>
         </div>
       </div>
 
@@ -261,21 +269,6 @@ export default function CreateComplaint() {
                       }
                     />
                   </div>
-                  {form.description.length > 0 && (
-                    <Badge
-                      variant="outline"
-                      className={aiWillVerify
-                        ? "border-violet-300 text-violet-700 bg-violet-50"
-                        : "border-amber-300 text-amber-700 bg-amber-50"
-                      }
-                    >
-                      {aiWillVerify ? (
-                        <><Bot className="h-3 w-3 mr-1" />AI will verify</>
-                      ) : (
-                        <><Info className="h-3 w-3 mr-1" />{50 - form.description.length} more chars for AI verification</>
-                      )}
-                    </Badge>
-                  )}
                 </div>
                 <textarea
                   id="description"

@@ -180,6 +180,16 @@ export default function AdminDashboard() {
     } catch { toast.error("Update failed") }
   }
 
+  const handleDepartmentReassign = async (id: string, code: string) => {
+    try {
+      const res = await complaintApi.reassignDepartment(id, code)
+      toast.success(res.message || "Department re-assigned successfully")
+      fetchAll()
+    } catch {
+      toast.error("Re-assignment failed")
+    }
+  }
+
   const handleAssign = async (complaintId: string, departmentId?: string) => {
     setAssignModal({ isOpen: true, complaintId, departmentId: departmentId || "" })
   }
@@ -268,14 +278,14 @@ export default function AdminDashboard() {
       {/* ── KPI Cards ── */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Total Complaints"   value={stats?.total ?? 0}  icon={BarChart3}   color="text-indigo-600"  sub="All time" />
-        <KpiCard label="Pending Review"     value={pending + aiVerified} icon={Clock}      color="text-amber-600"  sub={`${pending} raw · ${aiVerified} AI-verified`} />
+        <KpiCard label="Pending Review"     value={pending + aiVerified} icon={Clock}      color="text-amber-600"  sub="Awaiting field assignment" />
         <KpiCard label="In Progress"        value={inProgress}           icon={TrendingUp}  color="text-cyan-600"   sub="Being actively worked on" />
         <KpiCard label="Resolved"           value={resolved}             icon={CheckCircle2} color="text-green-600" sub="Successfully closed" />
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <KpiCard label="Registered Users"   value={stats?.totalUsers ?? 0}  icon={Users}       color="text-violet-600" />
         <KpiCard label="Active Departments" value={stats?.totalDepts ?? 0}  icon={Building2}   color="text-blue-600" />
-        <KpiCard label="AI Verified"        value={aiVerified}               icon={Shield}      color="text-purple-600" sub="Auto-routed by Gemini AI" />
+        <KpiCard label="Verified Tickets"   value={aiVerified}               icon={Shield}      color="text-purple-600" sub="Rule-routed to ward" />
       </div>
 
       {/* ── Tab Switcher ── */}
@@ -618,14 +628,15 @@ export default function AdminDashboard() {
                     <th className="px-3 py-3">Citizen</th>
                     <th className="px-3 py-3">Title</th>
                     <th className="px-3 py-3">Status</th>
-                    <th className="px-3 py-3">Update</th>
+                    <th className="px-3 py-3">Department</th>
+                    <th className="px-3 py-3">Update Status</th>
                     <th className="px-3 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {complaints.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-10 text-slate-400">No complaints found.</td>
+                      <td colSpan={7} className="text-center py-10 text-slate-400">No complaints found.</td>
                     </tr>
                   ) : complaints.map((c) => (
                     <tr key={c._id} className="hover:bg-slate-50 transition-colors">
@@ -650,6 +661,22 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-3 py-3">
                         <select
+                          className="text-xs border rounded px-1.5 py-1 w-28 bg-white font-medium text-slate-700"
+                          value={(c.department as any)?.code || "PWD"}
+                          onChange={(e) => handleDepartmentReassign(c._id, e.target.value)}
+                          title="Re-assign Department"
+                        >
+                          <option value="PWD">PWD (Roads)</option>
+                          <option value="SWM">SWM (Garbage)</option>
+                          <option value="ELD">ELD (Power/Lights)</option>
+                          <option value="WSD">WSD (Water/Drain)</option>
+                          <option value="PSD">PSD (Safety)</option>
+                          <option value="PRD">PRD (Parks)</option>
+                          <option value="GEN">GEN (General)</option>
+                        </select>
+                      </td>
+                      <td className="px-3 py-3">
+                        <select
                           className="text-xs border rounded px-1.5 py-1 w-32"
                           value={c.status}
                           onChange={(e) => handleStatusChange(c._id, e.target.value)}
@@ -664,7 +691,7 @@ export default function AdminDashboard() {
                           <Button variant="ghost" size="sm" onClick={() => handleAssign(c._id, (c.department as any)?._id)}>
                             <UserCheck className="h-3.5 w-3.5" />
                           </Button>
-                          <Link to={`/complaint/${c._id || c.id || c.complaintId}/track`}>
+                          <Link to={`/complaint/${c._id || (c as any).id || c.complaintId}/track`}>
                             <Button variant="outline" size="sm" className="gap-1 text-xs">
                               View <ArrowRight className="h-3 w-3" />
                             </Button>

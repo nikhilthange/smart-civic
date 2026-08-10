@@ -46,7 +46,7 @@ export default function Home() {
             <div className="bg-primary/10 p-2 rounded-xl">
               <Building2 className="h-6 w-6 text-primary" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic AI</span>
+            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic Portal</span>
           </Link>
           <nav className="hidden md:flex gap-6 items-center">
             <a href="#features" className="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">Features</a>
@@ -439,7 +439,7 @@ export default function Home() {
                 Trusted by Citizens & City Authorities
               </h2>
               <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
-                See how Smart Civic AI empowers municipal officers and citizens alike with real-time feedback.
+                See how Smart Civic Portal empowers municipal officers and citizens alike with real-time feedback.
               </p>
             </div>
 
@@ -464,7 +464,7 @@ export default function Home() {
                 {
                   name: "Ananya Deshmukh",
                   role: "Community Association President, Worli",
-                  text: "Smart Civic AI has brought unmatched governance transparency to our ward. The Ward Leaderboard scorecards motivate city departments to consistently exceed SLA targets.",
+                  text: "Smart Civic Portal has brought unmatched governance transparency to our ward. The Ward Leaderboard scorecards motivate city departments to consistently exceed SLA targets.",
                   avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=200&q=80",
                   badge: "Community Leader ✓",
                   badgeClass: "bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-medium px-2 py-0.5 rounded-md",
@@ -519,7 +519,7 @@ export default function Home() {
             <div className="col-span-2 lg:col-span-2">
               <Link className="flex items-center gap-2 mb-4" to="/">
                 <Building2 className="h-6 w-6 text-primary" />
-                <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic AI</span>
+                <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic Portal</span>
               </Link>
               <p className="text-slate-500 dark:text-slate-400 max-w-xs mb-6">
                 Making cities smarter, safer, and more responsive to citizen needs through AI-powered technology.
@@ -553,7 +553,7 @@ export default function Home() {
             </div>
           </div>
           <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
-            <p>© 2026 Smart Civic AI Platform. All rights reserved.</p>
+            <p>© 2026 Smart Civic Portal Platform. All rights reserved.</p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Twitter</a>
               <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">LinkedIn</a>

@@ -17,6 +17,7 @@ const {
   assignWorker,
   getWorkerTasks,
   workerSubmitProof,
+  upvoteComplaint,
 } = require("../controllers/complaintController");
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
@@ -69,6 +70,9 @@ router.post(
 
 // GET /api/complaints/:id
 router.get("/:id", protect, getComplaint);
+
+// POST /api/complaints/:id/upvote — Citizen upvotes a complaint
+router.post("/:id/upvote", protect, upvoteComplaint);
 
 // PATCH /api/complaints/:id/status
 router.patch(

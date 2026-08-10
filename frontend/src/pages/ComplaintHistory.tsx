@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import {
   History, Search, Plus, RefreshCw, Filter, ChevronLeft,
-  ChevronRight, Trash2, AlertCircle, Loader2, FileX
+  ChevronRight, Trash2, AlertCircle, Loader2, FileX, ThumbsUp
 } from "lucide-react"
+import toast from "react-hot-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -73,6 +74,16 @@ export default function ComplaintHistory() {
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
         : "Failed to delete."
       alert(msg)
+    }
+  }
+
+  const handleUpvote = async (id: string) => {
+    try {
+      const res = await complaintApi.upvote(id)
+      toast.success(res.message || "Upvoted complaint! +5 Karma awarded.")
+      load()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Already upvoted or failed.")
     }
   }
 
@@ -208,7 +219,17 @@ export default function ComplaintHistory() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => navigate(`/complaint/${c._id || c.id || c.complaintId}/track`)}
+                              className="gap-1 text-slate-600 hover:text-emerald-600"
+                              onClick={() => handleUpvote(c._id)}
+                              title="Upvote / Me Too"
+                            >
+                              <ThumbsUp className="h-3.5 w-3.5" />
+                              <span className="text-xs font-semibold">{c.upvoteCount || c.upvotes || 1}</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => navigate(`/complaint/${c._id || (c as any).id || c.complaintId}/track`)}
                             >
                               Track
                             </Button>

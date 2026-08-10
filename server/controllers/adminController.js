@@ -1,6 +1,7 @@
 "use strict";
 
 const Complaint = require("../models/Complaint");
+const Department = require("../models/Department");
 
 /**
  * Target Wards for Governance Leaderboard:
@@ -89,6 +90,58 @@ const getWardPerformanceScorecard = async (req, res) => {
   }
 };
 
+/**
+ * @desc    Re-assign complaint to a different department
+ * @route   PATCH /api/admin/complaints/:id/department
+ * @access  Private (Admin / Officer)
+ */
+const reassignDepartment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { departmentId, code } = req.body;
+
+    if (!departmentId && !code) {
+      return res.status(400).json({ success: false, message: "Department ID or department code is required." });
+    }
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    let dept = null;
+    if (departmentId) {
+      dept = await Department.findById(departmentId);
+    } else if (code) {
+      dept = await Department.findOne({ code });
+    }
+
+    if (!dept) {
+      return res.status(404).json({ success: false, message: "Department not found." });
+    }
+
+    complaint.department = dept._id;
+    complaint.statusHistory.push({
+      status: complaint.status,
+      changedBy: req.user.id || req.user._id,
+      note: `Department re-assigned to ${dept.name} (${dept.code}).`
+    });
+
+    await complaint.save();
+    const updatedComplaint = await Complaint.findById(id).populate("department", "name code contactEmail");
+
+    return res.status(200).json({
+      success: true,
+      message: `Complaint re-assigned to ${dept.name} successfully.`,
+      complaint: updatedComplaint,
+    });
+  } catch (error) {
+    console.error("Reassign Department Error:", error.message);
+    return res.status(500).json({ success: false, message: "Server error while re-assigning department." });
+  }
+};
+
 module.exports = {
   getWardPerformanceScorecard,
+  reassignDepartment,
 };

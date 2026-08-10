@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const exifr = require("exifr");
 const Complaint = require("../models/Complaint");
 const Officer = require("../models/Officer");
 const User = require("../models/User");
@@ -9,35 +10,152 @@ const { normaliseAttachments } = require("../middlewares/upload");
 const fs = require("fs");
 const path = require("path");
 const Department = require("../models/Department");
-const geminiService = require("../services/geminiService");
-const aiService = require("../services/aiService");
 const slaService = require("../services/slaService");
+const localVisionService = require("../services/localVisionService");
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const STATUS_ORDER = ["pending", "ai_verified", "assigned", "in_progress", "resolved", "closed", "rejected"];
 
 const DEFAULT_DEPTS = {
-  PWD: "Public Works Department",
-  WSD: "Water Supply & Sewage Department",
-  ELD: "Electricity & Streetlights Department",
+  PWD: "Public Works Department (Roads & Infrastructure)",
   SWM: "Solid Waste Management Department",
+  SWD: "Storm Water Drains Department",
+  WSD: "Water Supply & Sewage Department",
+  PRD: "Parks & Tree Authority Department",
+  ELD: "Electricity & Streetlights Department",
+  PHD: "Public Health Department",
+  LIC: "License & Encroachment Department",
   PSD: "Public Safety Department",
-  PRD: "Parks & Recreation Department",
   GEN: "General Administration Department"
 };
 
+// Deterministic & Vision Category to BMC Department Code Lookup
+const CATEGORY_TO_DEPARTMENT = {
+  roads_and_infrastructure: "PWD",
+  illegal_construction: "PWD",
+  garbage_collection: "SWM",
+  waste_management: "SWM",
+  drainage: "SWD",
+  water_and_sanitation: "WSD",
+  parks_and_recreation: "PRD",
+  electricity: "ELD",
+  street_lighting: "ELD",
+  health_hazard: "PHD",
+  public_safety: "PSD",
+  noise_pollution: "PSD",
+  encroachment: "LIC",
+  public_transport: "GEN",
+  other: "GEN",
+};
+
+// GeoJSON Polygon Boundaries for Municipal Wards
+const WARD_POLYGONS = [
+  {
+    ward: "Ward A",
+    zone: "Zone 1",
+    // Colaba / Fort / South Mumbai area (18.90 - 18.96 N, 72.80 - 72.85 E)
+    polygon: [
+      [72.800, 18.900],
+      [72.850, 18.900],
+      [72.850, 18.960],
+      [72.800, 18.960],
+      [72.800, 18.900]
+    ]
+  },
+  {
+    ward: "Ward G-South",
+    zone: "Zone 2",
+    // Worli / Parel area (18.96 - 19.03 N, 72.80 - 72.85 E)
+    polygon: [
+      [72.800, 18.960],
+      [72.850, 18.960],
+      [72.850, 19.030],
+      [72.800, 19.030],
+      [72.800, 18.960]
+    ]
+  },
+  {
+    ward: "Ward H-West",
+    zone: "Zone 3",
+    // Bandra / Khar area (19.03 - 19.09 N, 72.80 - 72.85 E)
+    polygon: [
+      [72.800, 19.030],
+      [72.850, 19.030],
+      [72.850, 19.090],
+      [72.800, 19.090],
+      [72.800, 19.030]
+    ]
+  },
+  {
+    ward: "Ward K-East",
+    zone: "Zone 4",
+    // Andheri / Midtown area (19.09 - 19.20 N, 72.82 - 72.92 E)
+    polygon: [
+      [72.820, 19.090],
+      [72.920, 19.090],
+      [72.920, 19.200],
+      [72.820, 19.200],
+      [72.820, 19.090]
+    ]
+  }
+];
+
+// Point-in-polygon ray-casting spatial algorithm
+function isPointInPolygon(point, polygon) {
+  const x = point[0]; // lng
+  const y = point[1]; // lat
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i][0], yi = polygon[i][1];
+    const xj = polygon[j][0], yj = polygon[j][1];
+    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
 const getBmcWardAndZone = (address = "", latNum, lngNum) => {
+  if (latNum !== undefined && lngNum !== undefined && !isNaN(latNum) && !isNaN(lngNum) && latNum !== 0 && lngNum !== 0) {
+    const pt = [Number(lngNum), Number(latNum)];
+    for (const w of WARD_POLYGONS) {
+      if (isPointInPolygon(pt, w.polygon)) {
+        return { ward: w.ward, zone: w.zone };
+      }
+    }
+  }
+  // Address substring fallback
   const addr = (address || "").toLowerCase();
   if (addr.includes("bandra") || addr.includes("khar")) return { ward: "Ward H-West", zone: "Zone 3" };
   if (addr.includes("andheri") || addr.includes("midtown")) return { ward: "Ward K-East", zone: "Zone 4" };
   if (addr.includes("worli") || addr.includes("parel")) return { ward: "Ward G-South", zone: "Zone 2" };
   if (addr.includes("colaba") || addr.includes("fort")) return { ward: "Ward A", zone: "Zone 1" };
-  if (latNum && lngNum) {
-    if (latNum > 19.10) return { ward: "Ward K-East", zone: "Zone 4" };
-    if (latNum > 19.05) return { ward: "Ward H-West", zone: "Zone 3" };
-    if (latNum > 18.95) return { ward: "Ward G-South", zone: "Zone 2" };
-  }
   return { ward: "Ward A", zone: "Zone 1" };
+};
+
+// Helper: EXIF GPS location extraction from image files
+const extractExifLocation = async (files) => {
+  if (!files || files.length === 0) return null;
+  for (const file of files) {
+    try {
+      let gpsData = null;
+      if (file.buffer) {
+        gpsData = await exifr.gps(file.buffer);
+      } else if (file.path && fs.existsSync(file.path)) {
+        gpsData = await exifr.gps(file.path);
+      }
+      if (gpsData && typeof gpsData.latitude === "number" && typeof gpsData.longitude === "number") {
+        if (gpsData.latitude !== 0 || gpsData.longitude !== 0) {
+          return {
+            latitude: gpsData.latitude,
+            longitude: gpsData.longitude
+          };
+        }
+      }
+    } catch (err) {
+      console.warn("EXIF extraction skipped for file:", err.message);
+    }
+  }
+  return null;
 };
 
 // ─── @desc    Create a complaint
@@ -67,26 +185,50 @@ const createComplaint = async (req, res) => {
 
     const attachments = normaliseAttachments(req.files);
 
-    // Call Integrated Computer Vision & AI Analysis Service
-    const aiAnalysis = await aiService.analyzeComplaintAI(description, attachments);
+    // ─── STEP 2: Extract EXIF GPS Metadata from Uploaded Photos ──────────────
+    let parsedLat = Number(lat !== undefined ? lat : latitude);
+    let parsedLng = Number(lng !== undefined ? lng : longitude);
 
-    const targetCategory = aiAnalysis.category || category;
+    if (req.files && req.files.length > 0) {
+      const exifGps = await extractExifLocation(req.files);
+      if (exifGps) {
+        parsedLat = exifGps.latitude;
+        parsedLng = exifGps.longitude;
+        console.log(`📷 EXIF Location extracted: [Lat: ${parsedLat}, Lng: ${parsedLng}]`);
+      }
+    }
 
     // Parse GeoJSON coordinates: MongoDB expects [longitude, latitude]
-    const parsedLat = Number(lat !== undefined ? lat : latitude);
-    const parsedLng = Number(lng !== undefined ? lng : longitude);
     let coordinates = undefined;
-    if (!isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat !== 0 && parsedLng !== 0) {
+    if (!isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat !== 0 && parsedLat !== 0) {
       coordinates = {
         type: "Point",
         coordinates: [parsedLng, parsedLat] // [longitude, latitude]
       };
     }
 
-    // ─── 1. Spatial Proximity Check (0.0002 degrees ~ 20 meters radius) ───
+    // ─── Local Vision Service Classification (<300ms Inference) ─────────────────
+    let localVisionAnalysis = null;
+    let targetCategory = category;
+
+    if (req.files && req.files.length > 0) {
+      const firstFile = req.files[0];
+      const imgBuffer = firstFile.buffer || (firstFile.path && fs.existsSync(firstFile.path) ? fs.readFileSync(firstFile.path) : null);
+      if (imgBuffer) {
+        localVisionAnalysis = await localVisionService.analyzeImageBuffer(imgBuffer, category);
+        console.log(`🤖 Local Vision Analysis: ${localVisionAnalysis.detectedLabel} (${localVisionAnalysis.confidence * 100}%, ${localVisionAnalysis.inferenceTimeMs}ms)`);
+        
+        // Auto-override category if ONNX local vision confidence >= 65% (0.65)
+        if (localVisionAnalysis && localVisionAnalysis.confidence >= 0.65 && localVisionAnalysis.suggestedCategory) {
+          targetCategory = localVisionAnalysis.suggestedCategory;
+        }
+      }
+    }
+
+    // ─── STEP 3: 50-Meter Spatial Proximity Deduplication Check (0.00045° ~ 50m) ───
     if (coordinates) {
       const activeStatuses = ["pending", "ai_verified", "assigned", "in_progress"];
-      const degRadius = 0.0002; // ~20 meters
+      const degRadius = 0.00045; // ~50 meters in degrees
       
       const duplicateQuery = {
         category: targetCategory,
@@ -99,7 +241,7 @@ const createComplaint = async (req, res) => {
                   type: "Point",
                   coordinates: [parsedLng, parsedLat]
                 },
-                $maxDistance: 20 // 20 meters
+                $maxDistance: 50 // 50 meters
               }
             }
           },
@@ -113,7 +255,6 @@ const createComplaint = async (req, res) => {
       const existingComplaint = await Complaint.findOne(duplicateQuery);
 
       if (existingComplaint) {
-        // ─── 2. Deduplication Logic: Link new photo & Increment upvoteCount ───
         const userIdStr = (req.user.id || req.user._id)?.toString();
 
         if (!existingComplaint.reportedByCitizens) {
@@ -132,7 +273,7 @@ const createComplaint = async (req, res) => {
         existingComplaint.upvoteCount = (existingComplaint.upvoteCount || existingComplaint.upvotes || 1) + 1;
         existingComplaint.upvotes = (existingComplaint.upvotes || 1) + 1;
 
-        // Link new photos/attachments to the original complaint
+        // Merge new photos/attachments into the original complaint
         if (attachments && attachments.length > 0) {
           if (!existingComplaint.attachments) {
             existingComplaint.attachments = [];
@@ -140,13 +281,12 @@ const createComplaint = async (req, res) => {
           existingComplaint.attachments = [
             ...existingComplaint.attachments,
             ...attachments
-          ].slice(0, 10); // cap total attachments at 10
+          ].slice(0, 10);
         }
 
         existingComplaint.affectedCitizensCount = (existingComplaint.affectedCitizensCount || 1) + 1;
         existingComplaint.priorityScore = (existingComplaint.priorityScore || 10) + 5;
 
-        // Escalate priority based on boosted priority score
         if (existingComplaint.priorityScore >= 35) {
           existingComplaint.priority = "critical";
         } else if (existingComplaint.priorityScore >= 20) {
@@ -161,33 +301,71 @@ const createComplaint = async (req, res) => {
           ticketId: existingComplaint.complaintId || existingComplaint._id,
           existingTicketId: existingComplaint.complaintId || existingComplaint._id,
           complaint: existingComplaint,
-          message: "Duplicate complaint detected within 0.0002° (~20m) radius. Linked new photo and incremented upvoteCount on original ticket."
+          message: "Duplicate complaint detected within 50m radius. Linked photo and incremented upvote count on existing ticket."
         });
       }
     }
 
-    // ─── 3. New Complaint Creation ────────────────────────────────────────
-    // Find or create recommended department
-    let departmentId = null;
-    if (aiAnalysis.recommendedDepartmentCode) {
-      let dept = await Department.findOne({ code: aiAnalysis.recommendedDepartmentCode });
-      if (!dept) {
-        dept = await Department.create({
-          code: aiAnalysis.recommendedDepartmentCode,
-          name: DEFAULT_DEPTS[aiAnalysis.recommendedDepartmentCode] || "General Administration Department",
-          contactEmail: `contact.${aiAnalysis.recommendedDepartmentCode.toLowerCase()}@smartcity.gov.in`,
-        });
-      }
-      departmentId = dept._id;
+    // ─── STEP 1: Deterministic Category-to-Department Lookup ──────────────────
+    const targetDeptCode = CATEGORY_TO_DEPARTMENT[targetCategory] || "GEN";
+    let dept = await Department.findOne({ code: targetDeptCode });
+    if (!dept) {
+      dept = await Department.create({
+        code: targetDeptCode,
+        name: DEFAULT_DEPTS[targetDeptCode] || "General Administration Department",
+        contactEmail: `contact.${targetDeptCode.toLowerCase()}@smartcity.gov.in`,
+      });
     }
+    const departmentId = dept._id;
 
-    const finalStatus = aiAnalysis.verified ? "ai_verified" : "pending";
-    const effectivePriority = aiAnalysis.severity || priority || "medium";
-    const slaDeadline = slaService.calculateSlaDeadline(effectivePriority);
+    // ─── GeoJSON Ward & Zone Spatial Polygon Lookup ────────────────────────────
     const bmcLocation = getBmcWardAndZone(locationAddress, parsedLat, parsedLng);
+    const effectivePriority = priority || "medium";
+    const slaDeadline = slaService.calculateSlaDeadline(effectivePriority);
 
     const userCorp = req.body.corporationId || req.user.corporationId || "BMC";
     const userJurisdiction = req.body.jurisdictionType || "municipal";
+
+    // ─── Automatic Department Officer Assignment Engine ───────────────────────
+    let autoAssignedOfficerDoc = null;
+    let assignedOfficerUserId = req.user.id;
+    let initialStatus = "pending";
+    let assignmentNote = `Complaint submitted. ${localVisionAnalysis ? `Local Vision: ${localVisionAnalysis.displayName} (${(localVisionAnalysis.confidence * 100).toFixed(0)}%). ` : ""}Routed to ${dept.name} (${targetDeptCode}) for ${bmcLocation.ward}.`;
+
+    let officerUser = await User.findOne({
+      role: "officer",
+      department: departmentId,
+      ward: bmcLocation.ward,
+      isActive: true,
+    });
+
+    if (!officerUser) {
+      officerUser = await User.findOne({
+        role: "officer",
+        department: departmentId,
+        isActive: true,
+      });
+    }
+
+    if (officerUser) {
+      assignedOfficerUserId = officerUser._id;
+      autoAssignedOfficerDoc = await Officer.findOne({ user: officerUser._id });
+      if (!autoAssignedOfficerDoc) {
+        autoAssignedOfficerDoc = await Officer.create({
+          user: officerUser._id,
+          department: departmentId,
+          employeeId: `BMC-${targetDeptCode}-OFF-${Math.floor(10 + Math.random() * 90)}`,
+          designation: `${targetDeptCode} Executive Engineer`,
+          isAvailable: true,
+        });
+      }
+
+      initialStatus = "assigned";
+      assignmentNote = `Auto-assigned to ${officerUser.name} (${targetDeptCode} ${officerUser.ward || bmcLocation.ward} Officer) upon vision classification.`;
+
+      autoAssignedOfficerDoc.activeComplaintsCount = (autoAssignedOfficerDoc.activeComplaintsCount || 0) + 1;
+      await autoAssignedOfficerDoc.save();
+    }
 
     const complaint = await Complaint.create({
       title,
@@ -211,29 +389,41 @@ const createComplaint = async (req, res) => {
       },
       attachments,
       department: departmentId,
-      status: finalStatus,
-      aiAnalysis,
+      assignedOfficer: autoAssignedOfficerDoc ? autoAssignedOfficerDoc._id : null,
+      status: initialStatus,
+      ...(localVisionAnalysis && { aiAnalysis: localVisionAnalysis }),
       affectedCitizensCount: 1,
       priorityScore: 10,
       reportedByCitizens: [req.user.id],
       upvotes: 1,
       upvoteCount: 1,
       statusHistory: [
-        { status: "pending", changedBy: req.user.id, note: "Complaint submitted" },
-        ...(aiAnalysis.verified ? [{ status: "ai_verified", changedBy: req.user.id, note: `AI verification passed. Detected issue: ${aiAnalysis.category.replace(/_/g, ' ')}. Recommended Department: ${aiAnalysis.recommendedDepartmentCode}` }] : []),
+        {
+          status: "pending",
+          changedBy: req.user.id,
+          note: `Complaint submitted. Routed to ${dept.name} (${targetDeptCode}) for ${bmcLocation.ward}.`
+        },
+        ...(autoAssignedOfficerDoc ? [{
+          status: "assigned",
+          changedBy: assignedOfficerUserId,
+          note: assignmentNote
+        }] : [])
       ],
     });
 
     // Award +10 Civic Karma points to reporting user
     await User.findByIdAndUpdate(req.user.id, { $inc: { karmaPoints: 10 } });
 
-    // Send confirmation via in-app + email + FCM
+    // Send confirmation notification
     await notificationService.complaintCreated(req.user.id, complaint);
-    if (complaint.status === "ai_verified") {
-      await notificationService.aiVerified(req.user.id, complaint);
-    }
 
-    return res.status(201).json({ success: true, isDuplicate: false, complaint });
+    return res.status(201).json({
+      success: true,
+      isDuplicate: false,
+      complaint,
+      visionConfidence: localVisionAnalysis?.confidence || 0,
+      detectedLabel: localVisionAnalysis?.detectedLabel || "unclassified"
+    });
   } catch (error) {
     console.error("CreateComplaint Error:", error.message);
     res.status(500).json({ success: false, message: "Server error while creating complaint." });
@@ -880,6 +1070,59 @@ const workerSubmitProof = async (req, res) => {
   }
 };
 
+// ─── @desc    Upvote / Me-Too a complaint
+// ─── @route   POST /api/complaints/:id/upvote
+// ─── @access  Private
+const upvoteComplaint = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id || req.user._id;
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    if (!complaint.reportedByCitizens) {
+      complaint.reportedByCitizens = [];
+    }
+
+    const alreadyUpvoted = complaint.reportedByCitizens.some(
+      (cid) => cid.toString() === userId.toString()
+    );
+
+    if (alreadyUpvoted) {
+      return res.status(400).json({ success: false, message: "You have already upvoted this complaint." });
+    }
+
+    complaint.reportedByCitizens.push(userId);
+    complaint.upvoteCount = (complaint.upvoteCount || complaint.upvotes || 0) + 1;
+    complaint.upvotes = (complaint.upvotes || 0) + 1;
+    complaint.affectedCitizensCount = (complaint.affectedCitizensCount || 1) + 1;
+    complaint.priorityScore = (complaint.priorityScore || 10) + 5;
+
+    if (complaint.priorityScore >= 35) {
+      complaint.priority = "critical";
+    } else if (complaint.priorityScore >= 20) {
+      complaint.priority = "high";
+    }
+
+    await complaint.save();
+
+    // Award +5 Civic Karma points to upvoting citizen
+    await User.findByIdAndUpdate(userId, { $inc: { karmaPoints: 5 } });
+
+    return res.status(200).json({
+      success: true,
+      message: "Complaint upvoted successfully! +5 Civic Karma points awarded.",
+      complaint,
+    });
+  } catch (error) {
+    console.error("UpvoteComplaint Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error while upvoting complaint." });
+  }
+};
+
 module.exports = {
   createComplaint,
   getComplaints,
@@ -892,5 +1135,6 @@ module.exports = {
   reopenComplaint,
   assignWorker,
   getWorkerTasks,
-  workerSubmitProof
+  workerSubmitProof,
+  upvoteComplaint
 };

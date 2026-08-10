@@ -230,4 +230,14 @@ export const complaintApi = {
     const res = await api.get<{ success: boolean; wards: WardScore[] }>("/admin/ward-performance")
     return res.data.wards
   },
+
+  upvote: async (id: string) => {
+    const res = await api.post<{ success: boolean; message: string; complaint: Complaint }>(`/complaints/${id}/upvote`)
+    return res.data
+  },
+
+  reassignDepartment: async (id: string, departmentId: string) => {
+    const res = await api.patch<{ success: boolean; message: string; complaint: Complaint }>(`/admin/complaints/${id}/department`, { departmentId })
+    return res.data
+  },
 }

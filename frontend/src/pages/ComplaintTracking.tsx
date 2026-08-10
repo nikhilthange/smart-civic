@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
   ArrowLeft, Clock, CheckCircle2, UserCheck, Wrench, Star,
-  XCircle, Lock, Bot, MapPin, Calendar, Tag, Phone,
+  XCircle, Lock, MapPin, Calendar, Tag, Phone,
   AlertCircle, Loader2, Paperclip, ExternalLink, Check, Building,
   Image, HardHat
 } from "lucide-react"
@@ -21,7 +21,7 @@ import FeedbackModal from "@/components/ui/FeedbackModal"
 const STATUS_ICONS: Record<ComplaintStatus | "submitted", React.ElementType> = {
   submitted:   Clock,
   pending:     Clock,
-  ai_verified: Bot,
+  ai_verified: Clock,
   assigned:    UserCheck,
   in_progress: Wrench,
   resolved:    CheckCircle2,
@@ -30,22 +30,21 @@ const STATUS_ICONS: Record<ComplaintStatus | "submitted", React.ElementType> = {
 }
 
 const ALL_STATUSES: (ComplaintStatus | "submitted")[] = [
-  "submitted", "pending", "ai_verified", "assigned", "in_progress", "resolved",
+  "submitted", "pending", "assigned", "in_progress", "resolved",
 ]
 
 function getActiveStageIndex(status: ComplaintStatus): number {
   switch (status) {
     case "pending":
-      return 1
     case "ai_verified":
-      return 2
+      return 1
     case "assigned":
-      return 3
+      return 2
     case "in_progress":
-      return 4
+      return 3
     case "resolved":
     case "closed":
-      return 5
+      return 4
     default:
       return 1
   }
@@ -120,10 +119,9 @@ export default function ComplaintTracking() {
 
   const stepperStages = [
     { id: 1, key: "pending", label: `1. ${t("tracking.filed")}`, desc: t("tracking.filedDesc") },
-    { id: 2, key: "ai_verified", label: `2. ${t("tracking.aiClassified")}`, desc: t("tracking.aiClassifiedDesc") },
-    { id: 3, key: "assigned", label: `3. ${t("tracking.wardAssigned")}`, desc: t("tracking.wardAssignedDesc") },
-    { id: 4, key: "in_progress", label: `4. ${t("tracking.fieldWork")}`, desc: t("tracking.fieldWorkDesc") },
-    { id: 5, key: "resolved", label: `5. ${t("tracking.closedWithProof")}`, desc: t("tracking.closedWithProofDesc") },
+    { id: 2, key: "assigned", label: `2. ${t("tracking.wardAssigned")}`, desc: t("tracking.wardAssignedDesc") },
+    { id: 3, key: "in_progress", label: `3. ${t("tracking.fieldWork")}`, desc: t("tracking.fieldWorkDesc") },
+    { id: 4, key: "resolved", label: `4. ${t("tracking.closedWithProof")}`, desc: t("tracking.closedWithProofDesc") },
   ]
 
   const currentStatusIndex = ALL_STATUSES.indexOf(
@@ -174,7 +172,7 @@ export default function ComplaintTracking() {
         }}
       />
 
-      {/* ── 5-Step Visual Stepper Progress Bar ── */}
+      {/* ── 4-Step Visual Stepper Progress Bar ── */}
       <Card className="shadow-sm border-indigo-100 dark:border-slate-800 bg-gradient-to-r from-indigo-50/50 via-slate-50 to-blue-50/50 dark:from-slate-900 dark:to-slate-800/80">
         <CardContent className="pt-5 pb-5">
           <div className="flex items-center justify-between mb-4">
@@ -183,11 +181,11 @@ export default function ComplaintTracking() {
               {t("tracking.stepperTitle")}
             </h3>
             <span className="text-xs font-semibold text-slate-500 font-mono">
-              {t("tracking.stage")} {getActiveStageIndex(complaint.status)} {t("tracking.of")} 5
+              {t("tracking.stage")} {getActiveStageIndex(complaint.status)} {t("tracking.of")} 4
             </span>
           </div>
 
-          <div className="grid grid-cols-5 gap-2 relative">
+          <div className="grid grid-cols-4 gap-2 relative">
             {stepperStages.map((stage) => {
               const activeStage = getActiveStageIndex(complaint.status)
               const isPassed = stage.id < activeStage
@@ -326,44 +324,6 @@ export default function ComplaintTracking() {
 
         {/* Right Column: Details Sidebar */}
         <div className="lg:col-span-1 space-y-6 w-full">
-          {/* AI Analysis Card */}
-          {complaint.aiAnalysis && (
-            <Card className="shadow-sm border-violet-200 dark:border-violet-900/50 bg-violet-50/50 dark:bg-violet-950/30">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold text-violet-900 dark:text-violet-300 flex items-center gap-1.5">
-                  <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                  {t("tracking.aiVerificationDetails")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-xs text-violet-900 dark:text-violet-200">
-                <div>
-                  <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.verifiedStatus")}</span>
-                  <span className="font-semibold text-sm">
-                    {complaint.aiAnalysis.verified ? "Verified ✅" : "Unverified ⚠️"}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.confidenceScore")}</span>
-                  <span className="font-semibold text-sm">
-                    {(complaint.aiAnalysis.confidence * 100).toFixed(0)}%
-                  </span>
-                </div>
-                <div>
-                  <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.severityLevel")}</span>
-                  <span className="font-semibold text-sm capitalize">
-                    {complaint.aiAnalysis.severity}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.aiExplanation")}</span>
-                  <p className="mt-0.5 text-violet-700 dark:text-violet-300 leading-relaxed text-xs">
-                    {complaint.aiAnalysis.analysisNote}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Complaint Details Card */}
           <Card className="shadow-sm border-slate-200 dark:border-slate-800">
             <CardHeader className="pb-3">

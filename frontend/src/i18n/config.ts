@@ -4,7 +4,7 @@ import { initReactI18next } from "react-i18next"
 const resources = {
   en: {
     translation: {
-      app_title: "Smart Civic AI",
+      app_title: "Smart Civic Portal",
       nav: {
         dashboard: "Dashboard",
         mapView: "Map View",

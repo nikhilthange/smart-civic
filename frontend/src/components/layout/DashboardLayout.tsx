@@ -77,7 +77,7 @@ export default function DashboardLayout() {
           <div className="bg-emerald-100 dark:bg-emerald-950/60 p-2 rounded-xl text-emerald-600 dark:text-emerald-400">
             <Building2 className="h-6 w-6" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic AI</span>
+          <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic Portal</span>
         </Link>
       </div>
 

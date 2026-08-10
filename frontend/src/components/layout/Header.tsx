@@ -9,7 +9,7 @@ export default function Header() {
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl px-4 lg:px-8 shadow-sm">
       <Link to="/" className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
         <Building2 className="h-5 w-5 text-indigo-600" />
-        <span>Smart Civic AI</span>
+        <span>Smart Civic Portal</span>
       </Link>
 
       <div className="flex-1 max-w-md mx-auto hidden sm:block">

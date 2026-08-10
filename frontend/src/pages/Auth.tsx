@@ -92,7 +92,7 @@ export default function Auth() {
               <Building2 className="h-8 w-8 text-primary" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Smart Civic AI
+              Smart Civic Portal
             </span>
           </Link>
         </div>

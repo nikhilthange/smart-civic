@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useMemo } from "react"
 import { Link } from "react-router-dom"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import toast from "react-hot-toast"
 import {
   Filter, MapPin, Layers, RefreshCw,
   Search, Eye, AlertTriangle, Building2
@@ -46,15 +47,27 @@ export default function MapView() {
   const mapInstanceRef  = useRef<L.Map | null>(null)
   const markersGroupRef = useRef<L.LayerGroup | null>(null)
 
+  // Attach window handler for Leaflet popup upvotes
+  useEffect(() => {
+    (window as any).upvoteComplaintFromMap = async (id: string) => {
+      try {
+        const res = await complaintApi.upvote(id)
+        toast.success(res.message || "Upvoted complaint!")
+        fetchComplaints()
+      } catch (err: any) {
+        toast.error(err.response?.data?.message || "Already upvoted or failed.")
+      }
+    }
+  }, [])
+
   // Fetch Complaints
   const fetchComplaints = async () => {
-    setLoading(true)
-    setError(null)
     try {
-      const data = await complaintApi.getAll({ limit: 100 })
-      setComplaints(data.complaints || [])
+      setLoading(true)
+      const res = await complaintApi.getAll({ limit: 200 })
+      setComplaints(res.complaints || [])
     } catch {
-      setError("Failed to load map complaint markers. Please try again.")
+      setError("Failed to load map data.")
     } finally {
       setLoading(false)
     }
@@ -64,7 +77,7 @@ export default function MapView() {
     fetchComplaints()
   }, [])
 
-  // Filter Logic
+  // Filtered List
   const filteredComplaints = useMemo(() => {
     return complaints.filter((item) => {
       if (selectedCategory !== "all" && item.category !== selectedCategory) return false
@@ -74,109 +87,81 @@ export default function MapView() {
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase()
         const matchTitle = item.title.toLowerCase().includes(q)
-        const matchId = item.complaintId.toLowerCase().includes(q)
-        const matchAddr = item.location?.address?.toLowerCase().includes(q)
+        const matchId    = item.complaintId.toLowerCase().includes(q)
+        const matchAddr  = (item.location?.address || "").toLowerCase().includes(q)
         if (!matchTitle && !matchId && !matchAddr) return false
       }
       return true
     })
   }, [complaints, selectedCategory, selectedStatus, selectedWard, selectedSeverity, searchQuery])
 
-  // Initialize Leaflet Map Instance once
+  // Initialize & Render Leaflet Map
   useEffect(() => {
-    if (!mapContainerRef.current || mapInstanceRef.current) return
+    if (activeTab !== "map" || !mapContainerRef.current) return
 
-    const map = L.map(mapContainerRef.current, {
-      center: MUMBAI_CENTER,
-      zoom: 12,
-      zoomControl: true,
-    })
+    if (!mapInstanceRef.current) {
+      const map = L.map(mapContainerRef.current).setView(MUMBAI_CENTER, 12)
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }).addTo(map)
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Smart Civic GIS',
-      maxZoom: 19,
-    }).addTo(map)
-
-    const markersGroup = L.layerGroup().addTo(map)
-    markersGroupRef.current = markersGroup
-    mapInstanceRef.current = map
-
-    return () => {
-      map.remove()
-      mapInstanceRef.current = null
+      markersGroupRef.current = L.layerGroup().addTo(map)
+      mapInstanceRef.current = map
     }
-  }, [])
 
-  // Update Markers on Filter or Complaints change
-  useEffect(() => {
     const map = mapInstanceRef.current
     const markersGroup = markersGroupRef.current
-    if (!map || !markersGroup) return
+    if (!markersGroup) return
 
     markersGroup.clearLayers()
-
-    const bounds: L.LatLngExpression[] = []
+    const bounds: [number, number][] = []
 
     filteredComplaints.forEach((c) => {
       let lat = c.location?.coordinates?.coordinates?.[1]
       let lng = c.location?.coordinates?.coordinates?.[0]
 
-      // Fallback to ward preset coordinates if missing
-      if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+      if (!lat || !lng) {
         const preset = WARD_COORDINATES[c.ward || "Ward A"] || MUMBAI_CENTER
-        lat = preset[0] + (Math.random() - 0.5) * 0.02
-        lng = preset[1] + (Math.random() - 0.5) * 0.02
+        lat = preset[0] + (Math.random() - 0.5) * 0.015
+        lng = preset[1] + (Math.random() - 0.5) * 0.015
       }
 
       bounds.push([lat, lng])
+      const color = SEVERITY_COLORS[c.priority || "medium"] || SEVERITY_COLORS.medium
 
-      const color = SEVERITY_COLORS[c.priority] || SEVERITY_COLORS.medium
-      const isCritical = c.priority === "critical"
-
-      // Custom Leaflet DivIcon
       const customIcon = L.divIcon({
-        className: "custom-map-marker",
+        className: "custom-map-pin",
         html: `
           <div style="
-            position: relative;
+            background-color: ${color.fill};
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
-            background-color: ${color.fill};
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: transform 0.2s ease;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 11px;
           ">
-            ${isCritical ? `<div style="
-              position: absolute;
-              inset: -4px;
-              border-radius: 50%;
-              border: 2px solid ${color.fill};
-              animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-            "></div>` : ""}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
+            ${c.priority === "critical" ? "!" : "•"}
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 32],
-        popupAnchor: [0, -32],
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
       })
 
       const marker = L.marker([lat, lng], { icon: customIcon })
-
-      const categoryLabel = CATEGORY_LABELS[c.category] || c.category.replace(/_/g, " ")
-      const statusLabel = STATUS_CONFIG[c.status]?.label || c.status
+      const statusCfg = STATUS_CONFIG[c.status] || STATUS_CONFIG.pending
+      const categoryLabel = CATEGORY_LABELS[c.category] || c.category
+      const statusLabel   = statusCfg.label
 
       const popupContent = `
-        <div style="font-family: system-ui, sans-serif; padding: 4px; min-width: 220px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+        <div style="font-family: system-ui, sans-serif; min-width: 220px; padding: 4px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
             <span style="font-size: 11px; font-weight: 700; color: #64748b; font-family: monospace;">${c.complaintId}</span>
             <span style="font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; text-transform: uppercase; background-color: ${color.bg}; color: ${color.text}; border: 1px solid ${color.border};">
               ${c.priority} priority
@@ -191,20 +176,34 @@ export default function MapView() {
             <div><strong>Status:</strong> ${statusLabel}</div>
             <div style="margin-top: 4px; color: #64748b; font-size: 11px;">${c.location?.address || "Mumbai, India"}</div>
           </div>
-          <a href="/complaint/${c._id}/track" style="
-            display: block;
-            text-align: center;
-            background-color: #4f46e5;
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            transition: background-color 0.2s;
-          " onmouseover="this.style.backgroundColor='#4338ca'" onmouseout="this.style.backgroundColor='#4f46e5'">
-            Track Complaint &rarr;
-          </a>
+          <div style="display: flex; gap: 6px; margin-top: 8px;">
+            <button onclick="window.upvoteComplaintFromMap('${c._id}')" style="
+              flex: 1;
+              background-color: #10b981;
+              color: #ffffff;
+              font-size: 11px;
+              font-weight: 600;
+              padding: 6px 8px;
+              border: none;
+              border-radius: 6px;
+              cursor: pointer;
+            ">
+              👍 Upvote (${c.upvoteCount || c.upvotes || 1})
+            </button>
+            <a href="/complaint/${c._id}/track" style="
+              flex: 1;
+              text-align: center;
+              background-color: #4f46e5;
+              color: #ffffff;
+              font-size: 11px;
+              font-weight: 600;
+              padding: 6px 8px;
+              border-radius: 6px;
+              text-decoration: none;
+            ">
+              Track &rarr;
+            </a>
+          </div>
         </div>
       `
 

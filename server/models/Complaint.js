@@ -43,11 +43,11 @@ const LocationSchema = new mongoose.Schema(
     coordinates: {
       type: {
         type: String,
-        enum: ["Point"],
-        default: "Point",
+        enum: ["Point"]
       },
       coordinates: {
         type: [Number], // [longitude, latitude]
+        default: undefined,
         validate: {
           validator: function (v) {
             return !v || v.length === 0 || v.length === 2;
@@ -66,6 +66,17 @@ const StatusHistorySchema = new mongoose.Schema(
     changedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     note: { type: String, maxlength: [500, "Note cannot exceed 500 characters"] },
     changedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
+const ReassignmentHistorySchema = new mongoose.Schema(
+  {
+    previousWorkerId: { type: mongoose.Schema.Types.ObjectId, ref: "Worker", required: true },
+    newWorkerId: { type: mongoose.Schema.Types.ObjectId, ref: "Worker", required: true },
+    reassignedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    reason: { type: String, required: true, trim: true },
+    reassignedAt: { type: Date, default: Date.now },
   },
   { _id: false }
 );
@@ -114,10 +125,10 @@ const ComplaintSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: {
-        values: ["pending", "ai_verified", "assigned", "in_progress", "resolved", "closed", "rejected"],
+        values: ["submitted", "ai_verified", "ward_assigned", "officer_assigned", "worker_assigned", "in_progress", "resolution_submitted", "resolved", "reopened"],
         message: "Invalid status",
       },
-      default: "pending",
+      default: "submitted",
     },
     priority: {
       type: String,
@@ -141,12 +152,17 @@ const ComplaintSchema = new mongoose.Schema(
     },
     assignedWorker: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Worker",
       default: null,
     },
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
+      default: null,
+    },
+    departmentName: {
+      type: String,
+      trim: true,
       default: null,
     },
 
@@ -178,9 +194,19 @@ const ComplaintSchema = new mongoose.Schema(
     },
 
     // ─── BMC Ward & Municipal Governance ─────────────────────────────────────
-    ward: {
+    wardId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ward",
+      default: null,
+    },
+    wardName: {
       type: String,
-      default: "Ward A",
+      default: "UNASSIGNED",
+      trim: true,
+    },
+    wardCode: {
+      type: String,
+      default: "UNASSIGNED",
       trim: true,
     },
     zone: {
@@ -211,6 +237,7 @@ const ComplaintSchema = new mongoose.Schema(
 
     // ─── Timeline ─────────────────────────────────────────────────────────────
     statusHistory: [StatusHistorySchema],
+    reassignmentHistory: [ReassignmentHistorySchema],
     estimatedResolution: { type: Date },
     assignedAt: { type: Date },
     resolvedAt: { type: Date },
@@ -226,6 +253,11 @@ const ComplaintSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: [1000, "Resolution notes cannot exceed 1000 characters"],
+    },
+    workNotes: {
+      type: String,
+      trim: true,
+      maxlength: [1000, "Work notes cannot exceed 1000 characters"],
     },
     adminNotes: {
       type: String,
@@ -276,8 +308,9 @@ const ComplaintSchema = new mongoose.Schema(
       category: { type: String, default: null },
       confidence: { type: Number, default: 0 },
       severity: { type: String, enum: ["low", "medium", "high", "critical"], default: "medium" },
-      recommendedDepartmentCode: { type: String, default: null },
-      analysisNote: { type: String, default: null },
+      department: { type: String, default: null },
+      explanation: { type: String, default: null },
+      source: { type: String, enum: ["GEMINI", "FALLBACK"], default: "FALLBACK" },
     },
   },
   {

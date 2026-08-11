@@ -19,9 +19,11 @@ const NotificationSchema = new mongoose.Schema(
         values: [
           "complaint_submitted",
           "complaint_assigned",
+          "complaint_assigned_worker",
           "complaint_status_update",
           "complaint_resolved",
           "complaint_rejected",
+          "complaint_rework_requested",
           "payment_success",
           "payment_failed",
           "feedback_request",

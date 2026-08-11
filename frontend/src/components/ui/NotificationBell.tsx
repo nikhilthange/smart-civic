@@ -10,9 +10,11 @@ import toast from "react-hot-toast"
 const TYPE_ICONS: Record<string, string> = {
   complaint_submitted:    "📋",
   complaint_assigned:     "👮",
+  complaint_assigned_worker: "👷",
   complaint_status_update:"🔄",
   complaint_resolved:     "✅",
   complaint_rejected:     "❌",
+  complaint_rework_requested: "⚠️",
   feedback_request:       "💬",
   general:                "📢",
 }

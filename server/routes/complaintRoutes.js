@@ -15,8 +15,12 @@ const {
   resolveComplaint,
   reopenComplaint,
   assignWorker,
+  getEligibleWorkers,
   getWorkerTasks,
   workerSubmitProof,
+  workerStartWork,
+  rejectResolution,
+  reassignWorker,
 } = require("../controllers/complaintController");
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
@@ -90,7 +94,7 @@ router.patch(
   assignOfficer
 );
 
-// PUT /api/complaints/:id/resolve — Municipal officer resolves complaint with mandatory proof photo
+// PUT /api/complaints/:id/resolve — Resolve complaint
 router.put(
   "/:id/resolve",
   protect,
@@ -100,6 +104,9 @@ router.put(
   resolveComplaint
 );
 
+// PUT /api/complaints/:id/reject-resolution — Reject resolution proof
+router.put("/:id/reject-resolution", protect, authorize("officer", "admin"), rejectResolution);
+
 // POST /api/complaints/:id/reopen — Citizen reopens a resolved complaint within 48h
 router.post(
   "/:id/reopen",
@@ -108,8 +115,27 @@ router.post(
   reopenComplaint
 );
 
-// PUT /api/complaints/:id/assign-worker — Assign complaint to field worker
-router.put("/:id/assign-worker", protect, authorize("officer", "admin"), assignWorker);
+// PUT /api/complaints/:id/assign-worker — Officer assigns a field worker
+router.put(
+  "/:id/assign-worker",
+  protect,
+  authorize("officer", "admin"),
+  assignWorker
+);
+
+// PUT /api/complaints/:id/reassign-worker — Officer reassigns to another field worker
+router.put(
+  "/:id/reassign-worker",
+  protect,
+  authorize("officer", "admin"),
+  reassignWorker
+);
+
+// GET /api/complaints/:id/eligible-workers — Get eligible workers for a complaint
+router.get("/:id/eligible-workers", protect, authorize("officer", "admin"), getEligibleWorkers);
+
+// PUT /api/complaints/:id/start-work — Worker starts work on a complaint
+router.put("/:id/start-work", protect, authorize("worker", "officer", "admin"), workerStartWork);
 
 // PUT /api/complaints/:id/worker-submit — Worker submits resolution proof image
 router.put(

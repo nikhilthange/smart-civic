@@ -1,13 +1,15 @@
 import api from "@/lib/axios"
 
 export type ComplaintStatus =
-  | "pending"
+  | "submitted"
   | "ai_verified"
-  | "assigned"
+  | "ward_assigned"
+  | "officer_assigned"
+  | "worker_assigned"
   | "in_progress"
+  | "resolution_submitted"
   | "resolved"
-  | "closed"
-  | "rejected"
+  | "reopened"
 
 export type ComplaintCategory =
   | "roads_and_infrastructure"
@@ -59,6 +61,7 @@ export interface Complaint {
   }
   attachments: Attachment[]
   statusHistory: StatusHistoryEntry[]
+  departmentName?: string
   department?: { name: string; code: string; contactEmail?: string }
   assignedOfficer?: { user: { name: string; email: string } }
   assignedWorker?: { _id?: string; name?: string; email?: string; phoneNumber?: string }
@@ -79,6 +82,9 @@ export interface Complaint {
     recommendedDepartmentCode: string
     analysisNote: string
   }
+  wardId?: string
+  wardName?: string
+  wardCode?: string
   ward?: string
   zone?: string
   slaDeadline?: string
@@ -137,16 +143,20 @@ export const CATEGORY_LABELS: Record<ComplaintCategory, string> = {
 }
 
 export const STATUS_CONFIG: Record<
-  ComplaintStatus,
+  string,
   { label: string; color: string; bg: string; border: string }
 > = {
-  pending:      { label: "Pending",      color: "text-amber-700",  bg: "bg-amber-50",  border: "border-amber-300" },
-  ai_verified:  { label: "AI Verified",  color: "text-violet-700", bg: "bg-violet-50", border: "border-violet-300" },
-  assigned:     { label: "Assigned",     color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-300" },
-  in_progress:  { label: "In Progress",  color: "text-cyan-700",   bg: "bg-cyan-50",   border: "border-cyan-300" },
-  resolved:     { label: "Resolved",     color: "text-emerald-700",  bg: "bg-emerald-50",  border: "border-emerald-300" },
-  closed:       { label: "Closed",       color: "text-slate-700",  bg: "bg-slate-50",  border: "border-slate-300" },
-  rejected:     { label: "Rejected",     color: "text-red-700",    bg: "bg-red-50",    border: "border-red-300" },
+  submitted:            { label: "Submitted",            color: "text-amber-700",  bg: "bg-amber-50",  border: "border-amber-300" },
+  pending:              { label: "Pending",              color: "text-amber-700",  bg: "bg-amber-50",  border: "border-amber-300" }, // Legacy
+  ai_verified:          { label: "AI Verified",          color: "text-violet-700", bg: "bg-violet-50", border: "border-violet-300" },
+  ward_assigned:        { label: "Ward Assigned",        color: "text-orange-700", bg: "bg-orange-50", border: "border-orange-300" },
+  assigned:             { label: "Assigned",             color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-300" }, // Legacy
+  officer_assigned:     { label: "Officer Assigned",     color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-300" },
+  worker_assigned:      { label: "Worker Assigned",      color: "text-indigo-700", bg: "bg-indigo-50", border: "border-indigo-300" },
+  in_progress:          { label: "In Progress",          color: "text-cyan-700",   bg: "bg-cyan-50",   border: "border-cyan-300" },
+  resolution_submitted: { label: "Resolution Submitted", color: "text-lime-700",   bg: "bg-lime-50",   border: "border-lime-300" },
+  resolved:             { label: "Resolved",             color: "text-emerald-700",bg: "bg-emerald-50",border: "border-emerald-300" },
+  reopened:             { label: "Reopened",             color: "text-red-700",    bg: "bg-red-50",    border: "border-red-300" },
 }
 
 // ─── API calls ────────────────────────────────────────────────────────────────
@@ -209,15 +219,30 @@ export const complaintApi = {
     return res.data
   },
 
-  resolve: async (id: string, resolutionImage: File, resolutionNotes?: string) => {
+  workerSubmitProof: async (id: string, resolutionImage: File, resolutionNotes?: string) => {
     const formData = new FormData()
     formData.append("resolutionImage", resolutionImage)
     if (resolutionNotes) {
       formData.append("resolutionNotes", resolutionNotes)
     }
-    const res = await api.put(`/complaints/${id}/resolve`, formData, {
+    const res = await api.put(`/complaints/${id}/worker-submit`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     })
+    return res.data
+  },
+
+  approveResolution: async (id: string, notes?: string) => {
+    const res = await api.put(`/complaints/${id}/resolve`, { resolutionNotes: notes })
+    return res.data
+  },
+
+  rejectResolution: async (id: string, reason: string) => {
+    const res = await api.put(`/complaints/${id}/reject-resolution`, { reason })
+    return res.data
+  },
+
+  reassignWorker: async (id: string, newWorkerId: string, reason: string) => {
+    const res = await api.put(`/complaints/${id}/reassign-worker`, { newWorkerId, reason })
     return res.data
   },
 
@@ -229,5 +254,20 @@ export const complaintApi = {
   getWardPerformance: async () => {
     const res = await api.get<{ success: boolean; wards: WardScore[] }>("/admin/ward-performance")
     return res.data.wards
+  },
+
+  getEligibleWorkers: async (id: string) => {
+    const res = await api.get(`/complaints/${id}/eligible-workers`)
+    return res.data.workers
+  },
+
+  assignWorker: async (id: string, workerId: string) => {
+    const res = await api.put(`/complaints/${id}/assign-worker`, { workerId })
+    return res.data
+  },
+
+  startWork: async (id: string) => {
+    const res = await api.put(`/complaints/${id}/start-work`)
+    return res.data
   },
 }

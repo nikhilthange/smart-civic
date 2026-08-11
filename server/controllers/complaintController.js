@@ -70,7 +70,21 @@ const createComplaint = async (req, res) => {
     // Call Integrated Computer Vision & AI Analysis Service
     const aiAnalysis = await aiService.analyzeComplaintAI(description, attachments);
 
-    const targetCategory = aiAnalysis.category || category;
+    const AI_CATEGORY_MAP = {
+      "Pothole": "roads_and_infrastructure",
+      "Garbage": "garbage_collection",
+      "Drainage": "drainage",
+      "Water Leakage": "water_and_sanitation",
+      "Street Light": "street_lighting",
+      "Fallen Tree": "parks_and_recreation",
+      "Illegal Parking": "other",
+      "Open Manhole": "public_safety",
+      "Road Sign": "roads_and_infrastructure",
+      "Other": "other"
+    };
+
+    const mappedCategory = aiAnalysis.category ? (AI_CATEGORY_MAP[aiAnalysis.category] || aiAnalysis.category) : null;
+    const targetCategory = mappedCategory || category;
 
     // Parse GeoJSON coordinates: MongoDB expects [longitude, latitude]
     const parsedLat = Number(lat !== undefined ? lat : latitude);
@@ -94,12 +108,8 @@ const createComplaint = async (req, res) => {
         $or: [
           {
             "location.coordinates": {
-              $nearSphere: {
-                $geometry: {
-                  type: "Point",
-                  coordinates: [parsedLng, parsedLat]
-                },
-                $maxDistance: 20 // 20 meters
+              $geoWithin: {
+                $centerSphere: [[parsedLng, parsedLat], 20 / 6378137] // 20 meters in radians
               }
             }
           },
@@ -169,19 +179,19 @@ const createComplaint = async (req, res) => {
     // ─── 3. New Complaint Creation ────────────────────────────────────────
     // Find or create recommended department
     let departmentId = null;
-    if (aiAnalysis.recommendedDepartmentCode) {
-      let dept = await Department.findOne({ code: aiAnalysis.recommendedDepartmentCode });
+    if (aiAnalysis.department) {
+      let dept = await Department.findOne({ code: aiAnalysis.department });
       if (!dept) {
         dept = await Department.create({
-          code: aiAnalysis.recommendedDepartmentCode,
-          name: DEFAULT_DEPTS[aiAnalysis.recommendedDepartmentCode] || "General Administration Department",
-          contactEmail: `contact.${aiAnalysis.recommendedDepartmentCode.toLowerCase()}@smartcity.gov.in`,
+          code: aiAnalysis.department,
+          name: DEFAULT_DEPTS[aiAnalysis.department] || "General Administration Department",
+          contactEmail: `contact.${aiAnalysis.department.toLowerCase()}@smartcity.gov.in`,
         });
       }
       departmentId = dept._id;
     }
 
-    const finalStatus = aiAnalysis.verified ? "ai_verified" : "pending";
+    const finalStatus = aiAnalysis.verified ? "ai_verified" : "submitted";
     const effectivePriority = aiAnalysis.severity || priority || "medium";
     const slaDeadline = slaService.calculateSlaDeadline(effectivePriority);
     const bmcLocation = getBmcWardAndZone(locationAddress, parsedLat, parsedLng);
@@ -219,18 +229,39 @@ const createComplaint = async (req, res) => {
       upvotes: 1,
       upvoteCount: 1,
       statusHistory: [
-        { status: "pending", changedBy: req.user.id, note: "Complaint submitted" },
-        ...(aiAnalysis.verified ? [{ status: "ai_verified", changedBy: req.user.id, note: `AI verification passed. Detected issue: ${aiAnalysis.category.replace(/_/g, ' ')}. Recommended Department: ${aiAnalysis.recommendedDepartmentCode}` }] : []),
+        { status: "submitted", changedBy: req.user.id, note: "Complaint submitted" },
+        ...(aiAnalysis.verified ? [{ status: "ai_verified", changedBy: req.user.id, note: `AI verification passed. Detected issue: ${aiAnalysis.category}. Recommended Department: ${aiAnalysis.department}` }] : []),
       ],
     });
 
     // Award +10 Civic Karma points to reporting user
     await User.findByIdAndUpdate(req.user.id, { $inc: { karmaPoints: 10 } });
 
-    // Send confirmation via in-app + email + FCM
-    await notificationService.complaintCreated(req.user.id, complaint);
-    if (complaint.status === "ai_verified") {
-      await notificationService.aiVerified(req.user.id, complaint);
+    // ─── Trigger Notifications ──────────────────────────────────────────────────
+    try {
+      // Always send Submitted
+      await notificationService.complaintCreated(req.user.id, complaint);
+      
+      // If AI Verified
+      if (aiAnalysis.verified) {
+        await notificationService.aiVerified(req.user.id, complaint);
+      }
+      
+      // If Ward Assigned
+      if (complaint.ward || (complaint.wardName && complaint.wardName !== "UNASSIGNED")) {
+        await notificationService.wardAssigned(req.user.id, complaint);
+      }
+      
+      // If Officer Assigned
+      if (complaint.assignedOfficer) {
+        const officerDoc = await Officer.findById(complaint.assignedOfficer).populate("user");
+        if (officerDoc && officerDoc.user) {
+          await notificationService.officerAssignedToCitizen(req.user.id, complaint, officerDoc.user.name);
+          await notificationService.newComplaintAssignedToOfficer(officerDoc.user._id, complaint);
+        }
+      }
+    } catch (notifErr) {
+      console.error("Failed to send creation notifications", notifErr);
     }
 
     return res.status(201).json({ success: true, isDuplicate: false, complaint });
@@ -638,7 +669,7 @@ const assignOfficer = async (req, res) => {
 
     // Update complaint
     complaint.assignedOfficer = officerId;
-    complaint.status = "assigned";
+    complaint.status = "officer_assigned";
     complaint.assignedAt = new Date();
     await complaint.save();
 
@@ -648,7 +679,7 @@ const assignOfficer = async (req, res) => {
 
     // Notify citizen via in-app + email + FCM
     const officerUser = await require("../models/User").findById(officer.user).select("name").lean();
-    await notificationService.officerAssigned(complaint.citizen, complaint, officerUser?.name || "an officer");
+    await notificationService.officerAssignedToCitizen(complaint.citizen, complaint, officerUser?.name || "an officer");
 
     res.status(200).json({ success: true, message: "Officer assigned successfully", complaint });
   } catch (error) {
@@ -712,7 +743,9 @@ const resolveComplaint = async (req, res) => {
     await complaint.save();
 
     // Trigger Notification to Citizen
-    await notificationService.statusUpdated(complaint.citizen, complaint, "resolved");
+    if (notificationService.complaintResolved) {
+      await notificationService.complaintResolved(complaint.citizen, complaint);
+    }
 
     return res.status(200).json({
       success: true,
@@ -758,14 +791,14 @@ const reopenComplaint = async (req, res) => {
     }
 
     // Reset status and escalate priority to critical
-    complaint.status = "assigned";
+    complaint.status = "reopened";
     complaint.priority = "critical";
     complaint.priorityScore = (complaint.priorityScore || 10) + 20;
     complaint.slaStatus = "escalated";
     complaint.slaDeadline = new Date(Date.now() + 12 * 60 * 60 * 1000); // 12-hour critical SLA
 
     complaint.statusHistory.push({
-      status: "assigned",
+      status: "reopened",
       changedBy: req.user.id,
       note: `Ticket REOPENED by citizen. Reason: ${reason || "Unsatisfactory resolution"}. Escalated to CRITICAL priority.`
     });
@@ -773,7 +806,9 @@ const reopenComplaint = async (req, res) => {
     await complaint.save();
 
     // Trigger Notification
-    await notificationService.statusUpdated(complaint.citizen, complaint, "reopened (escalated)");
+    if (notificationService.statusUpdated) {
+      await notificationService.statusUpdated(complaint.citizen, complaint, "reopened (escalated)");
+    }
 
     return res.status(200).json({
       success: true,
@@ -804,9 +839,9 @@ const assignWorker = async (req, res) => {
     }
 
     complaint.assignedWorker = workerId;
-    complaint.status = "assigned";
+    complaint.status = "worker_assigned";
     complaint.statusHistory.push({
-      status: "assigned",
+      status: "worker_assigned",
       changedBy: req.user.id,
       note: `Assigned to field worker (ID: ${workerId}).`
     });
@@ -816,6 +851,35 @@ const assignWorker = async (req, res) => {
   } catch (error) {
     console.error("AssignWorker Error:", error.message);
     res.status(500).json({ success: false, message: "Server error assigning worker." });
+  }
+};
+
+// ─── @desc    Get eligible workers for a complaint
+// ─── @route   GET /api/complaints/:id/eligible-workers
+// ─── @access  Private (officer, admin)
+const getEligibleWorkers = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    const Worker = require("../models/Worker");
+    
+    // Eligibility: active AND same department AND same ward
+    const eligibleWorkers = await Worker.find({
+      department: complaint.department,
+      wardId: complaint.wardId,
+    }).populate("user", "name");
+
+    // Sort by lowest active workload if activeTasks/activeComplaintsCount is tracked
+    eligibleWorkers.sort((a, b) => (a.activeComplaintsCount || 0) - (b.activeComplaintsCount || 0));
+
+    return res.status(200).json({ success: true, workers: eligibleWorkers });
+  } catch (error) {
+    console.error("GetEligibleWorkers Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error fetching eligible workers." });
   }
 };
 
@@ -841,7 +905,7 @@ const getWorkerTasks = async (req, res) => {
 const workerSubmitProof = async (req, res) => {
   try {
     const { id } = req.params;
-    const { notes } = req.body;
+    const { notes, workNotes, resolutionDescription } = req.body;
 
     const complaint = await Complaint.findById(id);
     if (!complaint) {
@@ -862,21 +926,216 @@ const workerSubmitProof = async (req, res) => {
       filename: req.file.filename || req.file.originalname,
       publicId: req.file.filename || null,
     };
-    complaint.resolutionNotes = notes || "Worker submitted resolution proof.";
-    complaint.status = "resolved";
-    complaint.resolvedAt = new Date();
+    complaint.resolutionNotes = resolutionDescription || notes || "Worker submitted resolution proof.";
+    if (workNotes) complaint.workNotes = workNotes;
+
+    complaint.status = "resolution_submitted";
 
     complaint.statusHistory.push({
-      status: "resolved",
+      status: "resolution_submitted",
       changedBy: req.user.id,
-      note: `Field worker submitted resolution proof image.`
+      note: "Worker submitted resolution proof.",
     });
 
     await complaint.save();
+    
+    // Trigger Notifications
+    try {
+      await notificationService.resolutionSubmittedToCitizen(complaint.citizen, complaint);
+      
+      const officerDoc = await Officer.findById(complaint.assignedOfficer).populate("user");
+      if (officerDoc && officerDoc.user) { 
+        await notificationService.resolutionSubmittedToOfficer(officerDoc.user._id, complaint);
+      }
+    } catch (notifErr) {
+      console.error("Notification Error:", notifErr);
+    }
+
     return res.status(200).json({ success: true, message: "Resolution proof submitted successfully!", complaint });
   } catch (error) {
     console.error("WorkerSubmitProof Error:", error.message);
-    res.status(500).json({ success: false, message: "Server error submitting resolution proof." });
+    res.status(500).json({ success: false, message: "Server error submitting proof." });
+  }
+};
+
+// ─── @desc    Worker starts work
+// ─── @route   PUT /api/complaints/:id/start-work
+// ─── @access  Private (worker)
+const workerStartWork = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const complaint = await Complaint.findById(id);
+
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    if (complaint.status !== "worker_assigned") {
+      return res.status(400).json({ success: false, message: "Complaint must be in 'worker_assigned' state to start work." });
+    }
+
+    complaint.status = "in_progress";
+    complaint.statusHistory.push({
+      status: "in_progress",
+      changedBy: req.user.id,
+      note: "Worker started work.",
+    });
+
+    await complaint.save();
+
+    // Trigger Notification
+    try {
+      await notificationService.workerStartedWork(complaint.citizen, complaint);
+    } catch (notifErr) {
+      console.error("Notification Error:", notifErr);
+    }
+
+    return res.status(200).json({ success: true, message: "Work started!", complaint });
+  } catch (error) {
+    console.error("WorkerStartWork Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error starting work." });
+  }
+};
+
+// ─── @desc    Officer rejects worker resolution
+// ─── @route   PUT /api/complaints/:id/reject-resolution
+// ─── @access  Private (officer, admin)
+const rejectResolution = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    if (!reason) {
+      return res.status(400).json({ success: false, message: "Reason is required to reject resolution." });
+    }
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    if (complaint.status !== "resolution_submitted") {
+      return res.status(400).json({ success: false, message: "Complaint must have proof submitted to reject it." });
+    }
+
+    complaint.status = "in_progress";
+    complaint.statusHistory.push({
+      status: "in_progress",
+      changedBy: req.user.id,
+      note: `Officer rejected resolution proof. Reason: ${reason}`,
+    });
+
+    await complaint.save();
+
+    // Trigger Notification
+    try {
+      const workerDoc = await Worker.findById(complaint.assignedWorker).populate("user");
+      if (workerDoc && workerDoc.user) {
+        await notificationService.reworkRequested(workerDoc.user._id, complaint);
+      }
+    } catch (notifErr) {
+      console.error("Notification Error:", notifErr);
+    }
+
+    return res.status(200).json({ success: true, message: "Resolution rejected, sent back to worker.", complaint });
+  } catch (error) {
+    console.error("RejectResolution Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error rejecting resolution." });
+  }
+};
+
+// ─── @desc    Officer reassigns complaint to another worker
+// ─── @route   PUT /api/complaints/:id/reassign-worker
+// ─── @access  Private (officer, admin)
+const reassignWorker = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newWorkerId, reason } = req.body;
+
+    if (!newWorkerId || !reason) {
+      return res.status(400).json({ success: false, message: "New worker ID and reason are required." });
+    }
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    if (!["worker_assigned", "in_progress"].includes(complaint.status)) {
+      return res.status(400).json({ success: false, message: "Complaint must be assigned or in progress to reassign." });
+    }
+
+    const previousWorkerId = complaint.assignedWorker;
+    
+    // Check if new worker is valid
+    const newWorker = await Worker.findById(newWorkerId).populate("user");
+    if (!newWorker || !newWorker.isAvailable || newWorker.department.toString() !== complaint.department.toString() || newWorker.wardId.toString() !== complaint.wardId.toString()) {
+      return res.status(400).json({ success: false, message: "New worker is not eligible (must be active and in the same ward/department)." });
+    }
+
+    // Update old worker count if exists
+    if (previousWorkerId) {
+      const oldWorker = await Worker.findById(previousWorkerId).populate("user");
+      if (oldWorker) {
+        oldWorker.activeComplaintsCount = Math.max(0, oldWorker.activeComplaintsCount - 1);
+        await oldWorker.save();
+        
+        // Notify old worker
+        try {
+          if (oldWorker.user) {
+            await notificationService.send({
+              recipientId: oldWorker.user._id,
+              complaintId: complaint._id,
+              type: "general",
+              title: "Task Reassigned 🔄",
+              message: `Task "${complaint.title}" has been reassigned from you to another worker.`,
+            });
+          }
+        } catch (e) {
+          console.error("Notif Error", e);
+        }
+      }
+    }
+
+    // Update new worker count
+    newWorker.activeComplaintsCount += 1;
+    await newWorker.save();
+
+    complaint.assignedWorker = newWorker._id;
+    complaint.status = "worker_assigned";
+
+    complaint.statusHistory.push({
+      status: "worker_assigned",
+      changedBy: req.user.id,
+      note: `Reassigned to field worker ${newWorker.user.name}. Reason: ${reason}`
+    });
+
+    if (!complaint.reassignmentHistory) {
+      complaint.reassignmentHistory = [];
+    }
+
+    complaint.reassignmentHistory.push({
+      previousWorkerId: previousWorkerId,
+      newWorkerId: newWorker._id,
+      reassignedBy: req.user.id,
+      reason: reason,
+      reassignedAt: new Date()
+    });
+
+    await complaint.save();
+
+    // Trigger Notification for New Worker and Citizen
+    try {
+      await notificationService.workerAssignedToCitizen(complaint.citizen, complaint, newWorker.user.name);
+      await notificationService.complaintAssignedToWorker(newWorker.user._id, complaint);
+    } catch (notifErr) {
+      console.error("Notification Error:", notifErr);
+    }
+
+    return res.status(200).json({ success: true, message: "Worker reassigned successfully!", complaint });
+  } catch (error) {
+    console.error("ReassignWorker Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error reassigning worker." });
   }
 };
 
@@ -891,6 +1150,10 @@ module.exports = {
   resolveComplaint,
   reopenComplaint,
   assignWorker,
+  getEligibleWorkers,
+  reassignWorker,
   getWorkerTasks,
-  workerSubmitProof
+  workerSubmitProof,
+  workerStartWork,
+  rejectResolution,
 };

@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/context/AuthContext"
+import toast from "react-hot-toast"
 import { NotificationBell } from "@/components/ui/NotificationBell"
 import LanguageSelector from "@/components/common/LanguageSelector"
 import { useTranslation } from "react-i18next"
@@ -201,8 +202,12 @@ export default function DashboardLayout() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast("Settings coming soon!", { icon: "⚙️" })}>
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast("Support portal coming soon!", { icon: "🎧" })}>
+                Support
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-red-600 focus:text-red-700 cursor-pointer"

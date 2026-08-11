@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const OfficerSchema = new mongoose.Schema(
+const WorkerSchema = new mongoose.Schema(
   {
     // One-to-one link to User account
     user: {
@@ -31,12 +31,6 @@ const OfficerSchema = new mongoose.Schema(
       trim: true,
       maxlength: [20, "Employee ID cannot exceed 20 characters"],
     },
-    designation: {
-      type: String,
-      required: [true, "Designation is required"],
-      trim: true,
-      maxlength: [100, "Designation cannot exceed 100 characters"],
-    },
     isAvailable: {
       type: Boolean,
       default: true, // Can accept new complaint assignments
@@ -50,13 +44,6 @@ const OfficerSchema = new mongoose.Schema(
     totalResolved: {
       type: Number,
       default: 0,
-      min: [0, "Total resolved cannot be negative"],
-    },
-    averageRating: {
-      type: Number,
-      default: 0,
-      min: [0, "Rating cannot be below 0"],
-      max: [5, "Rating cannot exceed 5"],
     },
     joiningDate: {
       type: Date,
@@ -71,16 +58,13 @@ const OfficerSchema = new mongoose.Schema(
 );
 
 // ─── Indexes ──────────────────────────────────────────────────────────────────
-// Note: user and employeeId indexes are created automatically by unique:true above
-OfficerSchema.index({ department: 1 });
-OfficerSchema.index({ isAvailable: 1 });
-OfficerSchema.index({ department: 1, wardId: 1, isAvailable: 1 }); // Compound for assignment queries
+WorkerSchema.index({ department: 1, wardId: 1, isAvailable: 1 }); // Compound for assignment queries
 
-// ─── Virtual: complaints assigned to officer ──────────────────────────────────
-OfficerSchema.virtual("complaints", {
+// ─── Virtual: complaints assigned to worker ──────────────────────────────────
+WorkerSchema.virtual("complaints", {
   ref: "Complaint",
   localField: "_id",
-  foreignField: "assignedOfficer",
+  foreignField: "assignedWorker",
 });
 
-module.exports = mongoose.model("Officer", OfficerSchema);
+module.exports = mongoose.model("Worker", WorkerSchema);

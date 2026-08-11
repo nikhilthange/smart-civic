@@ -3,9 +3,9 @@ import { useParams, Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
   ArrowLeft, Clock, CheckCircle2, UserCheck, Wrench, Star,
-  XCircle, Lock, Bot, MapPin, Calendar, Tag, Phone,
+  XCircle, Bot, MapPin, Calendar, Tag, Phone,
   AlertCircle, Loader2, Paperclip, ExternalLink, Check, Building,
-  Image, HardHat
+  Image, HardHat, FileCheck
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,41 +18,44 @@ import { useAuth } from "@/context/AuthContext"
 import ComplaintMap from "@/components/ui/ComplaintMap"
 import FeedbackModal from "@/components/ui/FeedbackModal"
 
-const STATUS_ICONS: Record<ComplaintStatus | "submitted", React.ElementType> = {
-  submitted:   Clock,
-  pending:     Clock,
-  ai_verified: Bot,
-  assigned:    UserCheck,
-  in_progress: Wrench,
-  resolved:    CheckCircle2,
-  closed:      Lock,
-  rejected:    XCircle,
+const STATUS_ICONS: Record<ComplaintStatus, React.ElementType> = {
+  submitted:            Clock,
+  ai_verified:          Bot,
+  ward_assigned:        MapPin,
+  officer_assigned:     UserCheck,
+  worker_assigned:      HardHat,
+  in_progress:          Wrench,
+  resolution_submitted: FileCheck,
+  resolved:             CheckCircle2,
+  reopened:             AlertCircle,
 }
 
-const ALL_STATUSES: (ComplaintStatus | "submitted")[] = [
-  "submitted", "pending", "ai_verified", "assigned", "in_progress", "resolved",
+const ALL_STATUSES: ComplaintStatus[] = [
+  "submitted", "ai_verified", "ward_assigned", "officer_assigned", "worker_assigned", "in_progress", "resolution_submitted", "resolved"
 ]
 
 function getActiveStageIndex(status: ComplaintStatus): number {
   switch (status) {
-    case "pending":
-      return 1
-    case "ai_verified":
-      return 2
-    case "assigned":
-      return 3
-    case "in_progress":
-      return 4
-    case "resolved":
-    case "closed":
-      return 5
-    default:
-      return 1
+    case "submitted":            return 1
+    case "ai_verified":          return 2
+    case "ward_assigned":        return 3
+    case "officer_assigned":     return 4
+    case "worker_assigned":      return 5
+    case "in_progress":          return 6
+    case "resolution_submitted": return 7
+    case "resolved":             return 8
+    case "reopened":             return 2 // Or somewhere else, but usually it restarts the loop
+    default:                     return 1
   }
 }
 
-function StatusBadgeLg({ status }: { status: ComplaintStatus }) {
-  const cfg = STATUS_CONFIG[status]
+function StatusBadgeLg({ status }: { status: ComplaintStatus | string }) {
+  const cfg = STATUS_CONFIG[status as ComplaintStatus] || {
+    label: status,
+    color: "text-gray-700",
+    bg: "bg-gray-100",
+    border: "border-gray-300"
+  }
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
       {cfg.label}
@@ -119,16 +122,17 @@ export default function ComplaintTracking() {
   }
 
   const stepperStages = [
-    { id: 1, key: "pending", label: `1. ${t("tracking.filed")}`, desc: t("tracking.filedDesc") },
-    { id: 2, key: "ai_verified", label: `2. ${t("tracking.aiClassified")}`, desc: t("tracking.aiClassifiedDesc") },
-    { id: 3, key: "assigned", label: `3. ${t("tracking.wardAssigned")}`, desc: t("tracking.wardAssignedDesc") },
-    { id: 4, key: "in_progress", label: `4. ${t("tracking.fieldWork")}`, desc: t("tracking.fieldWorkDesc") },
-    { id: 5, key: "resolved", label: `5. ${t("tracking.closedWithProof")}`, desc: t("tracking.closedWithProofDesc") },
+    { id: 1, key: "submitted",            label: `1. Filed`,                 desc: "Citizen submitted the issue" },
+    { id: 2, key: "ai_verified",          label: `2. AI Verified`,           desc: "AI processed the complaint" },
+    { id: 3, key: "ward_assigned",        label: `3. Ward Assigned`,         desc: "Mapped to local ward" },
+    { id: 4, key: "officer_assigned",     label: `4. Officer Assigned`,      desc: "Supervising officer attached" },
+    { id: 5, key: "worker_assigned",      label: `5. Worker Assigned`,       desc: "Field worker dispatched" },
+    { id: 6, key: "in_progress",          label: `6. In Progress`,           desc: "Work started on the ground" },
+    { id: 7, key: "resolution_submitted", label: `7. Resolution Submitted`,  desc: "Worker uploaded proof" },
+    { id: 8, key: "resolved",             label: `8. Resolved`,              desc: "Officer approved resolution" },
   ]
 
-  const currentStatusIndex = ALL_STATUSES.indexOf(
-    complaint.status === "pending" ? "pending" : (complaint.status as typeof ALL_STATUSES[number])
-  )
+  const currentStatusIndex = ALL_STATUSES.indexOf(complaint.status)
   const historyMap = new Map(complaint.statusHistory.map(h => [h.status, h]))
 
   return (
@@ -156,7 +160,7 @@ export default function ComplaintTracking() {
 
         {/* Feedback Button for Citizens */}
         {user?.role === "citizen" && 
-         (complaint.status === "resolved" || complaint.status === "closed") && 
+         (complaint.status === "resolved" || (complaint.status as string) === "closed") && 
          !complaint.feedbackSubmitted && (
           <Button onClick={() => setIsFeedbackOpen(true)} className="gap-2 bg-indigo-600 hover:bg-indigo-700 shrink-0">
             <Star className="h-4 w-4" />
@@ -243,10 +247,10 @@ export default function ComplaintTracking() {
                 const Icon = STATUS_ICONS[status]
                 const isCompleted = index <= currentStatusIndex
                 const isCurrent = index === currentStatusIndex
-                const historyEntry = historyMap.get(status === "submitted" ? "pending" : status)
+                const historyEntry = historyMap.get((status === "submitted" ? "pending" : status) as ComplaintStatus)
                 const isLast = index === ALL_STATUSES.length - 1
 
-                if (complaint.status === "rejected" && index >= ALL_STATUSES.indexOf("in_progress")) return null
+                if ((complaint.status as string) === "rejected" && index >= ALL_STATUSES.indexOf("in_progress")) return null
 
                 return (
                   <div key={status} className="relative flex items-start gap-4">
@@ -301,7 +305,7 @@ export default function ComplaintTracking() {
               })}
 
               {/* Rejected state */}
-              {complaint.status === "rejected" && (
+              {(complaint.status as string) === "rejected" && (
                 <div className="relative flex items-start gap-4 pb-2">
                   <div className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-500 text-white ring-4 ring-red-100">
                     <XCircle className="h-3.5 w-3.5" />
@@ -440,7 +444,7 @@ export default function ComplaintTracking() {
               <div>
                 <p className="text-xs text-slate-400 font-medium">{t("tracking.wardDepartment")}</p>
                 <p className="font-semibold text-slate-800 dark:text-slate-200">
-                  {complaint.department?.name || "Public Works Department"} ({complaint.ward || "Ward A"})
+                  {complaint.departmentName || complaint.department?.name || "General Administration Department"} ({complaint.wardName || "UNASSIGNED"})
                 </p>
                 {complaint.department?.contactEmail && (
                   <a href={`mailto:${complaint.department.contactEmail}`} className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5 font-medium">
@@ -460,7 +464,7 @@ export default function ComplaintTracking() {
                 <div>
                   <p className="text-xs text-slate-400 font-medium">{t("tracking.supervisingOfficer")}</p>
                   <p className="font-semibold text-slate-700 dark:text-slate-300">
-                    {complaint.assignedOfficer.user.name}
+                    {complaint.assignedOfficer?.user?.name || "Officer"}
                   </p>
                 </div>
               )}

@@ -205,33 +205,95 @@ const notificationService = {
       actionUrl: `/complaint/${complaint._id}/track`,
     }),
 
-  officerAssigned: (userId, complaint, officerName) =>
+  wardAssigned: (userId, complaint) =>
+    sendNotification({
+      recipientId: userId,
+      complaintId: complaint._id,
+      type: "complaint_status_update",
+      title: "Ward Assigned 📍",
+      message: `Your complaint "${complaint.title}" has been assigned to ${complaint.wardName}.`,
+      actionUrl: `/complaint/${complaint._id}/track`,
+    }),
+
+  officerAssignedToCitizen: (userId, complaint, officerName) =>
     sendNotification({
       recipientId: userId,
       complaintId: complaint._id,
       type: "complaint_assigned",
       title: "Officer Assigned 👮",
-      message: `Officer ${officerName} has been assigned to your complaint "${complaint.title}" (${complaint.complaintId}).`,
+      message: `Officer ${officerName} has been assigned to oversee your complaint "${complaint.title}".`,
       actionUrl: `/complaint/${complaint._id}/track`,
     }),
 
-  statusUpdated: (userId, complaint, newStatus) => {
-    const labels = {
-      in_progress: "In Progress 🔧",
-      resolved: "Resolved ✅",
-      closed: "Closed 📁",
-      rejected: "Rejected ❌",
-      assigned: "Officer Assigned 👮",
-    };
-    return sendNotification({
+  newComplaintAssignedToOfficer: (officerId, complaint) =>
+    sendNotification({
+      recipientId: officerId,
+      complaintId: complaint._id,
+      type: "complaint_assigned",
+      title: "New Complaint Assigned 📋",
+      message: `You have been assigned a new complaint: "${complaint.title}" (${complaint.complaintId}).`,
+      actionUrl: `/dashboard`,
+    }),
+
+  workerAssignedToCitizen: (userId, complaint, workerName) =>
+    sendNotification({
       recipientId: userId,
       complaintId: complaint._id,
-      type: newStatus === "resolved" ? "complaint_resolved" : "complaint_status_update",
-      title: `Complaint ${labels[newStatus] || "Status Updated"}`,
-      message: `Your complaint "${complaint.title}" status has been updated to: ${labels[newStatus] || newStatus}.`,
+      type: "complaint_assigned_worker",
+      title: "Worker Assigned 👷",
+      message: `Field worker ${workerName} has been dispatched for your complaint "${complaint.title}".`,
       actionUrl: `/complaint/${complaint._id}/track`,
-    });
-  },
+    }),
+
+  complaintAssignedToWorker: (workerId, complaint) =>
+    sendNotification({
+      recipientId: workerId,
+      complaintId: complaint._id,
+      type: "complaint_assigned_worker",
+      title: "New Field Task Assigned 👷",
+      message: `You have a new task assigned: "${complaint.title}".`,
+      actionUrl: `/dashboard`, // Or worker queue if separated
+    }),
+
+  workerStartedWork: (userId, complaint) =>
+    sendNotification({
+      recipientId: userId,
+      complaintId: complaint._id,
+      type: "complaint_status_update",
+      title: "Work Started 🔧",
+      message: `Field work has commenced on your complaint "${complaint.title}".`,
+      actionUrl: `/complaint/${complaint._id}/track`,
+    }),
+
+  resolutionSubmittedToCitizen: (userId, complaint) =>
+    sendNotification({
+      recipientId: userId,
+      complaintId: complaint._id,
+      type: "complaint_status_update",
+      title: "Resolution Proof Uploaded 📸",
+      message: `The field worker has uploaded resolution proof for "${complaint.title}". Pending officer approval.`,
+      actionUrl: `/complaint/${complaint._id}/track`,
+    }),
+
+  resolutionSubmittedToOfficer: (officerId, complaint) =>
+    sendNotification({
+      recipientId: officerId,
+      complaintId: complaint._id,
+      type: "complaint_status_update",
+      title: "Resolution Proof Uploaded 📸",
+      message: `Proof has been uploaded for "${complaint.title}". Awaiting your approval.`,
+      actionUrl: `/dashboard`,
+    }),
+
+  reworkRequested: (workerId, complaint) =>
+    sendNotification({
+      recipientId: workerId,
+      complaintId: complaint._id,
+      type: "complaint_rework_requested",
+      title: "Rework Requested ⚠️",
+      message: `The officer has requested rework on your resolution for "${complaint.title}".`,
+      actionUrl: `/dashboard`,
+    }),
 
   complaintResolved: (userId, complaint) =>
     sendNotification({

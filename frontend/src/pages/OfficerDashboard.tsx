@@ -1,51 +1,27 @@
-import { useState, useEffect, useRef } from "react";
-import {
-  MapPin,
-  Users,
-  CheckCircle2,
-  Camera,
-  X,
-  Loader2,
-  Filter,
-  AlertCircle,
-  FileCheck,
-  Building2,
-  Clock,
-  ShieldAlert,
-} from "lucide-react";
-import {
-  complaintApi,
-  type Complaint,
-  type ComplaintStatus,
-  CATEGORY_LABELS,
-  STATUS_CONFIG,
-} from "@/services/complaintApi";
+import React, { useState, useEffect, useRef } from "react";
+import { Building2, Filter, Loader2, AlertCircle, MapPin, Users, CheckCircle2, FileCheck, X, Camera } from "lucide-react";
+import { complaintApi, type Complaint, type ComplaintStatus } from "../services/complaintApi";
 
-function SlaTimerBadge({ deadline, status }: { deadline?: string; status?: string }) {
-  if (!deadline) return null;
-  const deadlineDate = new Date(deadline);
-  const now = new Date();
-  const diffMs = deadlineDate.getTime() - now.getTime();
+const CATEGORY_LABELS: Record<string, string> = {
+  pothole: "Pothole/Road Damage",
+  garbage: "Garbage Collection",
+  water: "Water Supply/Leakage",
+  electricity: "Streetlight/Electricity",
+  other: "Other Civic Issue",
+};
 
-  if (status === "breached" || diffMs < 0) {
-    return (
-      <div className="flex items-center gap-1 text-[11px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
-        <ShieldAlert className="w-3.5 h-3.5" />
-        <span>SLA BREACHED</span>
-      </div>
-    );
-  }
-
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-  return (
-    <div className="flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-      <Clock className="w-3.5 h-3.5" />
-      <span>{hours}h {mins}m SLA</span>
-    </div>
-  );
-}
+const STATUS_CONFIG: Record<ComplaintStatus | "pending", { label: string; color: string; bg: string; border: string }> = {
+  submitted: { label: "Filed", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300" },
+  pending: { label: "Filed", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300" },
+  ai_verified: { label: "AI Verified", color: "text-blue-700", bg: "bg-blue-100", border: "border-blue-300" },
+  ward_assigned: { label: "Ward Assigned", color: "text-indigo-700", bg: "bg-indigo-100", border: "border-indigo-300" },
+  officer_assigned: { label: "Officer Assigned", color: "text-purple-700", bg: "bg-purple-100", border: "border-purple-300" },
+  worker_assigned: { label: "Worker Assigned", color: "text-cyan-700", bg: "bg-cyan-100", border: "border-cyan-300" },
+  in_progress: { label: "In Progress", color: "text-amber-700", bg: "bg-amber-100", border: "border-amber-300" },
+  resolution_submitted: { label: "Proof Uploaded", color: "text-teal-700", bg: "bg-teal-100", border: "border-teal-300" },
+  resolved: { label: "Resolved", color: "text-emerald-700", bg: "bg-emerald-100", border: "border-emerald-300" },
+  reopened: { label: "Reopened", color: "text-red-700", bg: "bg-red-100", border: "border-red-300" },
+};
 
 export default function OfficerDashboard() {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -57,7 +33,19 @@ export default function OfficerDashboard() {
   // Modal Resolution Form State
   const [resolutionFile, setResolutionFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
-  const [resolutionNotes, setResolutionNotes] = useState("");
+  const [resolutionDescription, setResolutionDescription] = useState("");
+  const [workNotes, setWorkNotes] = useState("");
+
+  // Field Worker Assignment State
+  const [selectedForWorker, setSelectedForWorker] = useState<Complaint | null>(null);
+  const [eligibleWorkers, setEligibleWorkers] = useState<any[]>([]);
+  const [isReassigning, setIsReassigning] = useState(false);
+  const [reassignReason, setReassignReason] = useState("");
+
+  // Reject Rework Modal
+  const [selectedForReject, setSelectedForReject] = useState<Complaint | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -65,7 +53,7 @@ export default function OfficerDashboard() {
 
   const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Fetch complaints for officer department
+  // Fetch complaints
   const loadComplaints = async () => {
     setIsLoading(true);
     setFetchError(null);
@@ -106,16 +94,34 @@ export default function OfficerDashboard() {
     }
   };
 
-  // Status Change (In Progress)
   const handleStartWork = async (id: string) => {
     try {
-      await complaintApi.updateStatus(id, {
-        status: "in_progress",
-        note: "Municipal officer initiated field work.",
-      });
+      await complaintApi.startWork(id);
       loadComplaints();
     } catch (err) {
       console.error("Failed to start work:", err);
+    }
+  };
+
+  const handleApproveResolution = async (id: string) => {
+    try {
+      await complaintApi.approveResolution(id);
+      loadComplaints();
+    } catch (err) {
+      console.error("Failed to approve resolution:", err);
+    }
+  };
+
+  const handleRejectResolution = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedForReject || !rejectReason.trim()) return;
+    try {
+      await complaintApi.rejectResolution(selectedForReject._id, rejectReason);
+      setSelectedForReject(null);
+      setRejectReason("");
+      loadComplaints();
+    } catch (err) {
+      console.error("Failed to reject resolution:", err);
     }
   };
 
@@ -137,16 +143,18 @@ export default function OfficerDashboard() {
     setIsSubmitting(true);
 
     try {
-      await complaintApi.resolve(selectedComplaint._id, resolutionFile, resolutionNotes);
+      const notes = workNotes ? `${resolutionDescription}\n\nInternal Notes: ${workNotes}` : resolutionDescription;
+      await complaintApi.workerSubmitProof(selectedComplaint._id, resolutionFile, notes);
       setFeedback({
         type: "success",
-        text: "Complaint resolved successfully with photo proof!",
+        text: "Proof submitted successfully!",
       });
 
       setTimeout(() => {
         setSelectedComplaint(null);
         handleRemoveFile();
-        setResolutionNotes("");
+        setResolutionDescription("");
+        setWorkNotes("");
         setFeedback(null);
         loadComplaints();
       }, 1200);
@@ -161,10 +169,51 @@ export default function OfficerDashboard() {
     }
   };
 
-  // Filter complaints based on status and ward dropdowns
+  const handleFetchEligibleWorkers = async (complaint: Complaint, reassign = false) => {
+    try {
+      setSelectedForWorker(complaint);
+      setIsReassigning(reassign);
+      setReassignReason("");
+      setEligibleWorkers([]);
+      const workers = await complaintApi.getEligibleWorkers(complaint._id);
+      
+      if (reassign && complaint.assignedWorker?._id) {
+        setEligibleWorkers(workers.filter((w: any) => w._id !== complaint.assignedWorker?._id));
+      } else {
+        setEligibleWorkers(workers);
+      }
+    } catch (err) {
+      console.error("Failed to fetch workers:", err);
+    }
+  };
+
+  const handleAssignWorker = async (workerId: string) => {
+    if (!selectedForWorker) return;
+    
+    if (isReassigning && !reassignReason) {
+      setFeedback({ type: "error", text: "Reason is required for reassignment." });
+      return;
+    }
+
+    try {
+      if (isReassigning) {
+        await complaintApi.reassignWorker(selectedForWorker._id, workerId, reassignReason);
+      } else {
+        await complaintApi.assignWorker(selectedForWorker._id, workerId);
+      }
+      setSelectedForWorker(null);
+      loadComplaints();
+    } catch (err: any) {
+      console.error("Failed to assign/reassign worker:", err);
+      setFeedback({ type: "error", text: err.response?.data?.message || "Action failed." });
+    } finally {
+      // isAssigningWorker state removed
+    }
+  };
+
   const filteredComplaints = complaints.filter((c) => {
     const matchesStatus = statusFilter === "all" || c.status === statusFilter;
-    const matchesWard = wardFilter === "all" || (c.ward || "Ward A") === wardFilter;
+    const matchesWard = wardFilter === "all" || (c.wardName || "UNASSIGNED") === wardFilter;
     return matchesStatus && matchesWard;
   });
 
@@ -177,7 +226,6 @@ export default function OfficerDashboard() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      {/* Top Header & Task Queue Metrics */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
         <div>
           <div className="flex items-center gap-2">
@@ -189,7 +237,6 @@ export default function OfficerDashboard() {
           </p>
         </div>
 
-        {/* Filter Controls */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-gray-500" />
@@ -211,15 +258,16 @@ export default function OfficerDashboard() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg px-3 py-2 focus:ring-[#0284C7] focus:border-[#0284C7]"
           >
-            <option value="all">All Assigned Statuses</option>
-            <option value="assigned">Assigned</option>
+            <option value="all">All Statuses</option>
+            <option value="officer_assigned">Officer Assigned</option>
+            <option value="worker_assigned">Worker Assigned</option>
             <option value="in_progress">In Progress</option>
+            <option value="resolution_submitted">Proof Uploaded</option>
             <option value="resolved">Resolved</option>
           </select>
         </div>
       </div>
 
-      {/* Task Queue Content */}
       {fetchError ? (
         <div className="flex flex-col items-center justify-center p-8 bg-red-50 border border-red-200 rounded-xl text-center">
           <AlertCircle className="w-10 h-10 text-red-600 mb-2" />
@@ -254,16 +302,15 @@ export default function OfficerDashboard() {
                 className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between"
               >
                 <div>
-                  {/* Badges Header */}
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-1.5">
                       <span
                         className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase border ${priorityStyle}`}
                       >
-                        {c.priority || "medium"} priority
+                        {c.priority || "medium"}
                       </span>
                       <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                        {c.ward || "Ward A"}
+                        {c.wardName || "UNASSIGNED"}
                       </span>
                     </div>
 
@@ -274,21 +321,13 @@ export default function OfficerDashboard() {
                     </span>
                   </div>
 
-                  {/* SLA Countdown Timer Badge */}
-                  <div className="mb-3">
-                    <SlaTimerBadge deadline={c.slaDeadline} status={c.slaStatus} />
-                  </div>
-
-                  {/* Title & Category */}
                   <h3 className="font-bold text-gray-900 text-lg line-clamp-1">{c.title}</h3>
                   <p className="text-xs text-[#0284C7] font-semibold mt-0.5">
                     {CATEGORY_LABELS[c.category] || c.category}
                   </p>
 
-                  {/* Description */}
                   <p className="text-sm text-gray-600 mt-2 line-clamp-2">{c.description}</p>
 
-                  {/* Evidence Thumbnail */}
                   {c.attachments && c.attachments[0] && (
                     <div className="mt-3 overflow-hidden rounded-lg border border-gray-200 h-32 bg-gray-100">
                       <img
@@ -299,7 +338,6 @@ export default function OfficerDashboard() {
                     </div>
                   )}
 
-                  {/* Location & Affected Citizens */}
                   <div className="mt-4 pt-3 border-t border-gray-100 space-y-1.5 text-xs text-gray-500">
                     <div className="flex items-center gap-1.5">
                       <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -312,18 +350,35 @@ export default function OfficerDashboard() {
                   </div>
                 </div>
 
-                {/* Actions Footer */}
-                <div className="mt-5 pt-3 border-t border-gray-100 flex items-center gap-2">
-                  {c.status === "assigned" && (
-                    <button
-                      onClick={() => handleStartWork(c._id)}
-                      className="w-full py-2.5 px-4 bg-[#0284C7] text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition-colors"
-                    >
-                      Start Work
-                    </button>
-                  )}
+                <div className="mt-5 pt-3 border-t border-gray-100 flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    {c.status === "officer_assigned" && (
+                      <button
+                        onClick={() => handleFetchEligibleWorkers(c)}
+                        className="w-full py-2.5 px-4 bg-[#8B5CF6] text-white rounded-lg text-sm font-semibold hover:bg-violet-700 transition-colors"
+                      >
+                        Assign Field Worker
+                      </button>
+                    )}
+                    {(c.status === "worker_assigned" || c.status === "in_progress") && (
+                      <button
+                        onClick={() => handleFetchEligibleWorkers(c, true)}
+                        className="w-full py-2.5 px-4 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-colors"
+                      >
+                        Reassign Worker
+                      </button>
+                    )}
+                    {c.status === "worker_assigned" && (
+                      <button
+                        onClick={() => handleStartWork(c._id)}
+                        className="w-full py-2.5 px-4 bg-[#0284C7] text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition-colors"
+                      >
+                        Start Work
+                      </button>
+                    )}
+                  </div>
 
-                  {c.status !== "resolved" && c.status !== "closed" && (
+                  {c.status === "in_progress" && (
                     <button
                       onClick={() => {
                         setSelectedComplaint(c);
@@ -332,8 +387,38 @@ export default function OfficerDashboard() {
                       className="w-full py-2.5 px-4 bg-[#1E3A8A] text-white rounded-lg text-sm font-semibold hover:bg-blue-900 transition-colors flex items-center justify-center gap-1.5"
                     >
                       <FileCheck className="w-4 h-4" />
-                      Resolve Issue
+                      Submit Resolution Proof
                     </button>
+                  )}
+
+                  {c.status === "resolution_submitted" && (
+                    <div className="flex flex-col gap-2">
+                      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm mb-2">
+                        <p className="font-semibold text-gray-700 text-xs uppercase mb-1">Worker Description</p>
+                        <p className="text-gray-600 mb-2">{c.resolutionNotes || "No notes provided."}</p>
+                        {c.resolutionImage && c.resolutionImage.url && (
+                          <div className="mt-2 rounded-lg overflow-hidden border border-gray-300 h-24 bg-gray-100">
+                             <img src={c.resolutionImage.url} alt="Resolution" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApproveResolution(c._id)}
+                          className="flex-1 py-2 px-3 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => setSelectedForReject(c)}
+                          className="flex-1 py-2 px-3 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5"
+                        >
+                          <X className="w-4 h-4" />
+                          Rework
+                        </button>
+                      </div>
+                    </div>
                   )}
 
                   {c.status === "resolved" && (
@@ -348,7 +433,6 @@ export default function OfficerDashboard() {
         </div>
       )}
 
-      {/* Mandatory Photo Resolution Proof Modal */}
       {selectedComplaint && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative animate-in fade-in">
@@ -359,7 +443,7 @@ export default function OfficerDashboard() {
               <X className="w-5 h-5" />
             </button>
 
-            <h2 className="text-xl font-bold text-[#1E293B] mb-1">Upload Resolution Proof</h2>
+            <h2 className="text-xl font-bold text-[#1E293B] mb-1">Submit Proof</h2>
             <p className="text-xs text-gray-500 mb-4">
               Ticket: <span className="font-semibold text-gray-700">{selectedComplaint.complaintId}</span> -{" "}
               {selectedComplaint.title}
@@ -383,7 +467,6 @@ export default function OfficerDashboard() {
             )}
 
             <form onSubmit={handleResolveSubmit} className="space-y-4">
-              {/* Mandatory Resolution Photo Dropzone */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
                   After-Resolution Proof Photo <span className="text-red-500">*</span>
@@ -414,27 +497,38 @@ export default function OfficerDashboard() {
                   >
                     <Camera className="w-10 h-10 text-[#0284C7] mb-2" />
                     <p className="text-sm font-semibold text-gray-700">Click to upload resolution photo</p>
-                    <p className="text-xs text-gray-400 mt-0.5">JPG, PNG up to 10MB</p>
                   </div>
                 )}
               </div>
 
-              {/* Resolution Notes */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
-                  Officer Notes / Action Report
+                  Resolution Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  value={resolutionNotes}
-                  onChange={(e) => setResolutionNotes(e.target.value)}
-                  placeholder="Describe the repair/clean-up work completed by field team..."
-                  rows={3}
-                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-[#0284C7] focus:border-[#0284C7]"
+                  value={resolutionDescription}
+                  onChange={(e) => setResolutionDescription(e.target.value)}
+                  placeholder="Describe how the issue was resolved..."
+                  className="w-full bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg px-3 py-2 focus:ring-[#0284C7] focus:border-[#0284C7] resize-none"
+                  rows={2}
+                  required
                 />
               </div>
 
-              {/* Submit Buttons */}
-              <div className="flex items-center gap-3 pt-2">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                  Internal Work Notes (Optional)
+                </label>
+                <textarea
+                  value={workNotes}
+                  onChange={(e) => setWorkNotes(e.target.value)}
+                  placeholder="Any internal notes for the officer..."
+                  className="w-full bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg px-3 py-2 focus:ring-[#0284C7] focus:border-[#0284C7] resize-none"
+                  rows={2}
+                />
+              </div>
+
+              <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedComplaint(null)}
@@ -450,13 +544,107 @@ export default function OfficerDashboard() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Resolving...
+                      Submitting...
                     </>
                   ) : (
-                    "Mark as Resolved"
+                    "Submit Proof"
                   )}
                 </button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {selectedForWorker && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative animate-in fade-in">
+            <button
+              onClick={() => setSelectedForWorker(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h2 className="text-xl font-bold text-[#1E293B] mb-1">
+              {isReassigning ? "Reassign Field Worker" : "Assign Field Worker"}
+            </h2>
+            
+            {feedback && selectedForWorker && (
+              <div className="p-3 bg-red-50 text-red-700 rounded text-sm mb-4">
+                {feedback.text}
+              </div>
+            )}
+
+            {isReassigning && (
+              <div className="mt-4">
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                  Reason for Reassignment <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={reassignReason}
+                  onChange={(e) => setReassignReason(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2 mb-4"
+                >
+                  <option value="">Select Reason</option>
+                  <option value="Worker unavailable">Worker unavailable</option>
+                  <option value="Workload">Workload</option>
+                  <option value="Wrong assignment">Wrong assignment</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            )}
+
+            <div className="max-h-64 overflow-y-auto pr-1 space-y-3 mt-4">
+              {eligibleWorkers.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">No eligible workers found.</p>
+              ) : (
+                eligibleWorkers.map((worker) => (
+                  <div key={worker._id} className="flex justify-between p-3 border rounded-lg">
+                    <p className="font-bold">{worker.user.name}</p>
+                    <button
+                      onClick={() => handleAssignWorker(worker._id)}
+                      className="px-3 py-1 bg-blue-600 text-white rounded-lg"
+                    >
+                      Assign
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedForReject && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative animate-in fade-in">
+            <button
+              onClick={() => setSelectedForReject(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold text-[#1E293B] mb-1">Request Rework</h2>
+            <form onSubmit={handleRejectResolution} className="space-y-4 mt-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
+                  Reason for Rework <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-300 text-sm rounded-lg p-2"
+                  rows={3}
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-bold"
+              >
+                Submit Request
+              </button>
             </form>
           </div>
         </div>

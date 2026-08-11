@@ -62,23 +62,35 @@ const runFallbackAnalysis = (description) => {
   let recommendedDept = "GEN";
 
   if (descLower.includes("pothole") || descLower.includes("road")) {
-    matchedCategory = "roads_and_infrastructure";
+    matchedCategory = "Pothole";
     recommendedDept = "PWD";
-  } else if (descLower.includes("leak") || descLower.includes("water") || descLower.includes("drain")) {
-    matchedCategory = "water_and_sanitation";
+  } else if (descLower.includes("sign")) {
+    matchedCategory = "Road Sign";
+    recommendedDept = "PWD";
+  } else if (descLower.includes("manhole")) {
+    matchedCategory = "Open Manhole";
+    recommendedDept = "DRD";
+  } else if (descLower.includes("drainage") || descLower.includes("drain")) {
+    matchedCategory = "Drainage";
+    recommendedDept = "DRD";
+  } else if (descLower.includes("leak") || descLower.includes("water")) {
+    matchedCategory = "Water Leakage";
     recommendedDept = "WSD";
   } else if (descLower.includes("light") || descLower.includes("electricity")) {
-    matchedCategory = "street_lighting";
+    matchedCategory = "Street Light";
     recommendedDept = "ELD";
   } else if (descLower.includes("garbage") || descLower.includes("trash") || descLower.includes("waste")) {
-    matchedCategory = "garbage_collection";
+    matchedCategory = "Garbage";
     recommendedDept = "SWM";
-  } else if (descLower.includes("manhole") || descLower.includes("danger") || descLower.includes("safety")) {
-    matchedCategory = "public_safety";
-    recommendedDept = "PSD";
   } else if (descLower.includes("tree")) {
-    matchedCategory = "parks_and_recreation";
-    recommendedDept = "PRD";
+    matchedCategory = "Fallen Tree";
+    recommendedDept = "GTD";
+  } else if (descLower.includes("parking")) {
+    matchedCategory = "Illegal Parking";
+    recommendedDept = "TRD";
+  } else {
+    matchedCategory = "Other";
+    recommendedDept = "GEN";
   }
 
   const severity = descLower.includes("urgent") || descLower.includes("accident") || descLower.includes("danger") ? "high" : "medium";
@@ -88,8 +100,9 @@ const runFallbackAnalysis = (description) => {
     category: matchedCategory,
     confidence: 0.85,
     severity,
-    recommendedDepartmentCode: recommendedDept,
-    analysisNote: "AI analysis completed via local fallback parser (Gemini API key not configured).",
+    department: recommendedDept,
+    explanation: "AI analysis completed via local fallback parser (Gemini API key not configured).",
+    source: "FALLBACK",
   };
 };
 
@@ -115,21 +128,14 @@ const analyzeComplaint = async (description, attachments = []) => {
 You are the Smart Civic AI Assistant. Analyze the user's civic complaint.
 Description: "${description}"
 
-Look at the description and any attached image/video files (if present) to detect issues:
-- Garbage / Trash
-- Potholes / Broken Road
-- Water leakage / Sewage issue
-- Broken street light / Dark street
-- Illegal parking / Obstruction
-- Fallen tree / Park damage
-- Open manhole / Open drain / Safety hazard
+Look at the description and any attached image/video files (if present) to detect issues.
 
 Identify:
-1. The most accurate Category matching one of these:
-   "roads_and_infrastructure", "water_and_sanitation", "electricity", "garbage_collection", "public_safety", "parks_and_recreation", "street_lighting", "drainage", "other"
+1. The most accurate Category matching one of these EXACT values:
+   "Pothole", "Garbage", "Drainage", "Water Leakage", "Street Light", "Fallen Tree", "Illegal Parking", "Open Manhole", "Road Sign", "Other"
 2. A confidence score between 0.0 and 1.0.
 3. Severity level: "low", "medium", "high", or "critical".
-4. Recommended Department Code: "PWD" (Public Works), "WSD" (Water & Sewage), "ELD" (Electricity & Lights), "SWM" (Solid Waste), "PSD" (Public Safety), "PRD" (Parks & Rec), "GEN" (General).
+4. Recommended Department Code (must be 3 letters): "PWD" (Pothole/Road/Sign), "SWM" (Garbage), "DRD" (Drainage/Manhole), "WSD" (Water Leakage), "ELD" (Street Light), "GTD" (Fallen Tree), "TRD" (Illegal Parking), or "GEN".
 5. A brief summary explanation of the analysis.
 `;
 
@@ -140,15 +146,16 @@ Identify:
         category: {
           type: Type.STRING,
           enum: [
-            "roads_and_infrastructure",
-            "water_and_sanitation",
-            "electricity",
-            "garbage_collection",
-            "public_safety",
-            "parks_and_recreation",
-            "street_lighting",
-            "drainage",
-            "other"
+            "Pothole",
+            "Garbage",
+            "Drainage",
+            "Water Leakage",
+            "Street Light",
+            "Fallen Tree",
+            "Illegal Parking",
+            "Open Manhole",
+            "Road Sign",
+            "Other"
           ],
         },
         confidence: { type: Type.NUMBER },
@@ -156,13 +163,13 @@ Identify:
           type: Type.STRING,
           enum: ["low", "medium", "high", "critical"],
         },
-        recommendedDepartmentCode: {
+        department: {
           type: Type.STRING,
-          enum: ["PWD", "WSD", "ELD", "SWM", "PSD", "PRD", "GEN"],
+          enum: ["PWD", "SWM", "DRD", "WSD", "ELD", "GTD", "TRD", "GEN"],
         },
-        analysisNote: { type: Type.STRING },
+        explanation: { type: Type.STRING },
       },
-      required: ["category", "confidence", "severity", "recommendedDepartmentCode", "analysisNote"],
+      required: ["category", "confidence", "severity", "department", "explanation"],
     };
 
     const response = await ai.models.generateContent({
@@ -182,8 +189,9 @@ Identify:
       category: parsedResult.category,
       confidence: parsedResult.confidence,
       severity: parsedResult.severity,
-      recommendedDepartmentCode: parsedResult.recommendedDepartmentCode,
-      analysisNote: parsedResult.analysisNote,
+      department: parsedResult.department,
+      explanation: parsedResult.explanation,
+      source: "GEMINI",
     };
   } catch (err) {
     console.error("Gemini API call failed, falling back:", err.message);

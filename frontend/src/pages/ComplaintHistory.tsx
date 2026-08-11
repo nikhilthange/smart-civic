@@ -18,8 +18,13 @@ import {
   type Complaint, type ComplaintStatus
 } from "@/services/complaintApi"
 
-function StatusBadge({ status }: { status: ComplaintStatus }) {
-  const cfg = STATUS_CONFIG[status]
+function StatusBadge({ status }: { status: ComplaintStatus | string }) {
+  const cfg = STATUS_CONFIG[status as ComplaintStatus] || {
+    label: status,
+    color: "text-gray-700",
+    bg: "bg-gray-100",
+    border: "border-gray-300"
+  }
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
       {cfg.label}
@@ -208,7 +213,7 @@ export default function ComplaintHistory() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => navigate(`/complaint/${c._id || c.id || c.complaintId}/track`)}
+                              onClick={() => navigate(`/complaint/${c._id || (c as any).id || c.complaintId}/track`)}
                             >
                               Track
                             </Button>

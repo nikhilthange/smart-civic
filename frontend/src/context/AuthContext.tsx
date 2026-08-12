@@ -17,6 +17,7 @@ export interface AuthUser {
   email: string
   role: UserRole
   isActive: boolean
+  karmaPoints?: number
   createdAt?: string
   lastLogin?: string
 }

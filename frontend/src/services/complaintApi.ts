@@ -10,6 +10,9 @@ export type ComplaintStatus =
   | "resolution_submitted"
   | "resolved"
   | "reopened"
+  | "closed"
+  | "pending"
+  | "rejected"
 
 export type ComplaintCategory =
   | "roads_and_infrastructure"
@@ -41,6 +44,7 @@ export interface StatusHistoryEntry {
 
 export interface Complaint {
   _id: string
+  id?: string
   complaintId: string
   title: string
   description: string
@@ -146,17 +150,17 @@ export const STATUS_CONFIG: Record<
   string,
   { label: string; color: string; bg: string; border: string }
 > = {
-  submitted:            { label: "Submitted",            color: "text-amber-700",  bg: "bg-amber-50",  border: "border-amber-300" },
-  pending:              { label: "Pending",              color: "text-amber-700",  bg: "bg-amber-50",  border: "border-amber-300" }, // Legacy
-  ai_verified:          { label: "AI Verified",          color: "text-violet-700", bg: "bg-violet-50", border: "border-violet-300" },
-  ward_assigned:        { label: "Ward Assigned",        color: "text-orange-700", bg: "bg-orange-50", border: "border-orange-300" },
-  assigned:             { label: "Assigned",             color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-300" }, // Legacy
-  officer_assigned:     { label: "Officer Assigned",     color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-300" },
-  worker_assigned:      { label: "Worker Assigned",      color: "text-indigo-700", bg: "bg-indigo-50", border: "border-indigo-300" },
-  in_progress:          { label: "In Progress",          color: "text-cyan-700",   bg: "bg-cyan-50",   border: "border-cyan-300" },
-  resolution_submitted: { label: "Resolution Submitted", color: "text-lime-700",   bg: "bg-lime-50",   border: "border-lime-300" },
-  resolved:             { label: "Resolved",             color: "text-emerald-700",bg: "bg-emerald-50",border: "border-emerald-300" },
-  reopened:             { label: "Reopened",             color: "text-red-700",    bg: "bg-red-50",    border: "border-red-300" },
+  submitted: { label: "Submitted", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-300" },
+  pending: { label: "Pending", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-300" }, // Legacy
+  ai_verified: { label: "AI Verified", color: "text-violet-700", bg: "bg-violet-50", border: "border-violet-300" },
+  ward_assigned: { label: "Ward Assigned", color: "text-orange-700", bg: "bg-orange-50", border: "border-orange-300" },
+  assigned: { label: "Assigned", color: "text-blue-700", bg: "bg-blue-50", border: "border-blue-300" }, // Legacy
+  officer_assigned: { label: "Officer Assigned", color: "text-blue-700", bg: "bg-blue-50", border: "border-blue-300" },
+  worker_assigned: { label: "Worker Assigned", color: "text-indigo-700", bg: "bg-indigo-50", border: "border-indigo-300" },
+  in_progress: { label: "In Progress", color: "text-cyan-700", bg: "bg-cyan-50", border: "border-cyan-300" },
+  resolution_submitted: { label: "Resolution Submitted", color: "text-lime-700", bg: "bg-lime-50", border: "border-lime-300" },
+  resolved: { label: "Resolved", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-300" },
+  reopened: { label: "Reopened", color: "text-red-700", bg: "bg-red-50", border: "border-red-300" },
 }
 
 // ─── API calls ────────────────────────────────────────────────────────────────

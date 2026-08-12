@@ -21,6 +21,7 @@ interface Filters {
   category: ComplaintCategory | ""
   status: ComplaintStatus | ""
   priority: string
+  ward: string
   city: string
   dateFrom: string
   dateTo: string
@@ -48,7 +49,7 @@ const SORT_FIELDS: { value: SortField; label: string }[] = [
 const PAGE_SIZE_OPTIONS = [10, 25, 50]
 
 const EMPTY_FILTERS: Filters = {
-  search: "", category: "", status: "", priority: "", city: "", dateFrom: "", dateTo: ""
+  search: "", category: "", status: "", priority: "", ward: "", city: "", dateFrom: "", dateTo: ""
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -80,6 +81,7 @@ export default function SearchComplaints() {
       if (filters.category) params.category = filters.category
       if (filters.status)   params.status   = filters.status
       if (filters.priority) params.priority  = filters.priority
+      if (filters.ward)     params.ward      = filters.ward
       if (filters.city)     params.city      = filters.city
       if (filters.dateFrom) params.dateFrom  = filters.dateFrom
       if (filters.dateTo)   params.dateTo    = filters.dateTo
@@ -93,12 +95,12 @@ export default function SearchComplaints() {
     } finally {
       setLoading(false)
     }
-  }, [page, pageSize, sortBy, sortOrder, debouncedSearch, filters.category, filters.status, filters.priority, filters.city, filters.dateFrom, filters.dateTo])
+  }, [page, pageSize, sortBy, sortOrder, debouncedSearch, filters.category, filters.status, filters.priority, filters.ward, filters.city, filters.dateFrom, filters.dateTo])
 
   useEffect(() => { fetchComplaints() }, [fetchComplaints])
 
   // Reset to page 1 when filters change
-  useEffect(() => { setPage(1) }, [debouncedSearch, filters.category, filters.status, filters.priority, filters.city, filters.dateFrom, filters.dateTo, sortBy, sortOrder, pageSize])
+  useEffect(() => { setPage(1) }, [debouncedSearch, filters.category, filters.status, filters.priority, filters.ward, filters.city, filters.dateFrom, filters.dateTo, sortBy, sortOrder, pageSize])
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
@@ -216,6 +218,27 @@ export default function SearchComplaints() {
                   {PRIORITY_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
+                </select>
+              </div>
+
+              {/* Ward */}
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-400">BMC Ward</label>
+                <select
+                  value={filters.ward}
+                  onChange={e => handleFilterChange("ward", e.target.value)}
+                  className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all"
+                >
+                  <option value="">All BMC Wards</option>
+                  <option value="Ward A">Ward A (Colaba/Fort)</option>
+                  <option value="Ward C">Ward C (Chandanwadi)</option>
+                  <option value="Ward D">Ward D (Grant Road)</option>
+                  <option value="Ward F-South">Ward F-South (Parel)</option>
+                  <option value="Ward G-South">Ward G-South (Worli)</option>
+                  <option value="Ward H-West">Ward H-West (Bandra)</option>
+                  <option value="Ward K-East">Ward K-East (Andheri)</option>
+                  <option value="Ward L">Ward L (Kurla)</option>
+                  <option value="Ward M-East">Ward M-East (Govandi)</option>
                 </select>
               </div>
 

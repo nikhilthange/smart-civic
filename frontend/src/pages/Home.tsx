@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
-import { 
-  ArrowRight, 
-  Building2, 
-  ShieldCheck, 
-  MapPin, 
-  BarChart3, 
-  BrainCircuit, 
-  Zap, 
-  Clock, 
+import {
+  ArrowRight,
+  Building2,
+  ShieldCheck,
+  MapPin,
+  BarChart3,
+  BrainCircuit,
+  Zap,
+  Clock,
   CheckCircle2,
   Users,
   MessageSquare,
@@ -72,9 +72,9 @@ export default function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-70"></div>
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
           <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 h-[400px] w-[800px] rounded-full bg-primary/20 opacity-30 blur-[120px]"></div>
-          
+
           <div className="container relative px-4 md:px-6 mx-auto text-center">
-            <motion.div 
+            <motion.div
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
@@ -277,7 +277,7 @@ export default function Home() {
         <section id="ai" className="w-full py-20 md:py-32 bg-white dark:bg-slate-900 border-y">
           <div className="container px-4 md:px-6 mx-auto">
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-              <motion.div 
+              <motion.div
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
@@ -288,7 +288,7 @@ export default function Home() {
                   Smart AI Routing
                 </div>
                 <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-slate-900 dark:text-white">
-                  Zero delays. <br/> Infinite efficiency.
+                  Zero delays. <br /> Infinite efficiency.
                 </h2>
                 <p className="text-lg text-slate-500 dark:text-slate-400">
                   Our platform uses advanced Machine Learning models to automatically categorize and prioritize complaints as soon as they are submitted.
@@ -308,7 +308,7 @@ export default function Home() {
                   </li>
                 </ul>
               </motion.div>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -339,8 +339,8 @@ export default function Home() {
                 A complete toolkit designed for modern citizens and responsive city authorities.
               </p>
             </div>
-            
-            <motion.div 
+
+            <motion.div
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-50px" }}
@@ -390,7 +390,7 @@ export default function Home() {
                 { step: "03", title: "Authorities Act", desc: "Workers are dispatched with the exact location and details." },
                 { step: "04", title: "Issue Resolved", desc: "You receive a notification once the issue is permanently fixed." },
               ].map((item, i) => (
-                <motion.div 
+                <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}

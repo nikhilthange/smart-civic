@@ -25,6 +25,7 @@ const helmetMiddleware = helmet({
     },
   },
   crossOriginEmbedderPolicy: false, // allow Razorpay iframe
+  crossOriginResourcePolicy: { policy: "cross-origin" },
   hsts: {
     maxAge:            63072000, // 2 years
     includeSubDomains: true,

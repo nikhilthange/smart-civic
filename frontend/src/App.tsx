@@ -36,14 +36,21 @@ function App() {
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/public-map" element={<MapView />} />
 
-          {/* Protected Routes — Citizen & Admin */}
+          {/* Citizen-only Routes — Create Complaint */}
+          <Route element={<ProtectedRoute allowedRoles={["citizen"]} />}>
+            <Route element={<DashboardLayout />}>
+              <Route path="/complaint/create" element={<CreateComplaint />} />
+              <Route path="/complaint/new" element={<CreateComplaint />} />
+              <Route path="/complaints/new" element={<CreateComplaint />} />
+              <Route path="/create-complaint" element={<CreateComplaint />} />
+            </Route>
+          </Route>
+
+          {/* Protected Routes — All Authenticated Users */}
           <Route element={<ProtectedRoute allowedRoles={["citizen", "worker", "officer", "admin"]} />}>
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/citizen-dashboard" element={<Dashboard />} />
-              <Route path="/complaint/new" element={<CreateComplaint />} />
-              <Route path="/complaints/new" element={<CreateComplaint />} />
-              <Route path="/create-complaint" element={<CreateComplaint />} />
               <Route path="/complaints" element={<ComplaintHistory />} />
               <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
               <Route path="/map" element={<MapView />} />
@@ -55,6 +62,7 @@ function App() {
           {/* Protected Routes — Worker, Officer, Admin */}
           <Route element={<ProtectedRoute allowedRoles={["worker", "officer", "admin"]} />}>
             <Route element={<DashboardLayout />}>
+              <Route path="/worker-queue" element={<WorkerDashboard />} />
               <Route path="/worker-dashboard" element={<WorkerDashboard />} />
               <Route path="/worker/dashboard" element={<WorkerDashboard />} />
             </Route>
@@ -63,6 +71,7 @@ function App() {
           {/* Protected Routes — Officer & Admin */}
           <Route element={<ProtectedRoute allowedRoles={["officer", "admin"]} />}>
             <Route element={<DashboardLayout />}>
+              <Route path="/officer-portal" element={<OfficerDashboard />} />
               <Route path="/officer" element={<OfficerDashboard />} />
               <Route path="/officer-dashboard" element={<OfficerDashboard />} />
               <Route path="/officer/dashboard" element={<OfficerDashboard />} />
@@ -72,6 +81,7 @@ function App() {
           {/* Protected Routes — Admin only */}
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route element={<DashboardLayout />}>
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/analytics" element={<AnalyticsDashboard />} />

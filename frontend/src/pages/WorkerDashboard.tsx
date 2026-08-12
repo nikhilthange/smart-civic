@@ -3,14 +3,17 @@ import {
   Wrench, MapPin, CheckCircle2, Camera, X, Loader2, Navigation
 } from "lucide-react"
 import { complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
+import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import api from "@/lib/axios"
 import toast from "react-hot-toast"
 import { CameraCaptureModal } from "@/components/common/CameraCaptureModal"
+import { ComplaintDetailModal } from "@/components/common/ComplaintDetailModal"
 
 export default function WorkerDashboard() {
   const [tasks, setTasks] = useState<Complaint[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedTask, setSelectedTask] = useState<Complaint | null>(null)
+  const [detailModalTask, setDetailModalTask] = useState<Complaint | null>(null)
   const [isCameraOpen, setIsCameraOpen] = useState(false)
 
   // Resolution Form State
@@ -129,9 +132,12 @@ export default function WorkerDashboard() {
             return (
               <div
                 key={task._id}
-                className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between"
+                className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-lg transition-all p-5 flex flex-col justify-between"
               >
-                <div>
+                <div
+                  className="cursor-pointer group"
+                  onClick={() => setDetailModalTask(task)}
+                >
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
                       {task.priority || "medium"} Priority
@@ -146,6 +152,17 @@ export default function WorkerDashboard() {
                     {CATEGORY_LABELS[task.category] || task.category}
                   </p>
                   <p className="text-sm text-slate-600 mt-2 line-clamp-2">{task.description}</p>
+
+                  {task.attachments && task.attachments[0] && (
+                    <div className="mt-3 overflow-hidden rounded-lg border border-slate-200 h-32 bg-slate-100">
+                      <img
+                        src={getImageUrl(task.attachments[0])}
+                        onError={handleImageError}
+                        alt="Issue Evidence"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
 
                   {/* Location & Directions */}
                   <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
@@ -293,6 +310,12 @@ export default function WorkerDashboard() {
           </div>
         </div>
       )}
+
+      {/* Complaint Detail Modal Popup */}
+      <ComplaintDetailModal
+        complaint={detailModalTask}
+        onClose={() => setDetailModalTask(null)}
+      />
     </div>
   )
 }

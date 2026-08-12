@@ -34,16 +34,27 @@ import { NotificationBell } from "@/components/ui/NotificationBell"
 import LanguageSelector from "@/components/common/LanguageSelector"
 import { useTranslation } from "react-i18next"
 
-const navItems = [
+interface NavItem {
+  key: string
+  defaultName: string
+  href: string
+  icon: any
+  citizenOnly?: boolean
+  workerOnly?: boolean
+  officerOnly?: boolean
+  adminOnly?: boolean
+}
+
+const navItems: NavItem[] = [
   { key: "nav.dashboard", defaultName: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { key: "nav.mapView", defaultName: "Map View", href: "/map", icon: MapPin },
-  { key: "nav.createComplaint", defaultName: "Create Complaint", href: "/complaint/new", icon: FileEdit },
+  { key: "nav.createComplaint", defaultName: "Create Complaint", href: "/complaint/create", icon: FileEdit, citizenOnly: true },
   { key: "nav.complaintHistory", defaultName: "Complaint History", href: "/complaints", icon: History },
   { key: "nav.search", defaultName: "Search", href: "/search", icon: Search },
   { key: "nav.donations", defaultName: "Donations", href: "/donate", icon: HeartHandshake },
-  { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-dashboard", icon: Wrench, workerOnly: true },
-  { key: "nav.officerPortal", defaultName: "Officer Portal", href: "/officer/dashboard", icon: Shield, officerOnly: true },
-  { key: "nav.adminDashboard", defaultName: "Admin Dashboard", href: "/admin/dashboard", icon: BarChart3, adminOnly: true },
+  { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true },
+  { key: "nav.officerPortal", defaultName: "Officer Portal", href: "/officer-portal", icon: Shield, officerOnly: true },
+  { key: "nav.adminDashboard", defaultName: "Admin Dashboard", href: "/admin", icon: BarChart3, adminOnly: true },
   { key: "nav.analytics", defaultName: "Analytics", href: "/admin/analytics", icon: LineChart, adminOnly: true },
 ]
 
@@ -102,11 +113,17 @@ export default function DashboardLayout() {
       <div className="flex-1 overflow-auto py-2">
         <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.href
+            const isActive = location.pathname === item.href ||
+                             (item.href === "/complaint/create" && (location.pathname === "/complaint/new" || location.pathname === "/create-complaint")) ||
+                             (item.href === "/worker-queue" && (location.pathname === "/worker-dashboard" || location.pathname === "/worker/dashboard")) ||
+                             (item.href === "/officer-portal" && (location.pathname === "/officer" || location.pathname === "/officer-dashboard" || location.pathname === "/officer/dashboard")) ||
+                             (item.href === "/admin" && (location.pathname === "/admin-dashboard" || location.pathname === "/admin/dashboard"))
+            const isCitizen = user?.role === "citizen"
             const isAdmin = user?.role === "admin"
             const isOfficerOrAdmin = ["admin", "officer"].includes(user?.role ?? "")
             const isWorkerOfficerAdmin = ["admin", "officer", "worker"].includes(user?.role ?? "")
 
+            if (item.citizenOnly && !isCitizen) return null
             if (item.adminOnly && !isAdmin) return null
             if (item.officerOnly && !isOfficerOrAdmin) return null
             if (item.workerOnly && !isWorkerOfficerAdmin) return null

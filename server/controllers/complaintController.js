@@ -309,28 +309,47 @@ const getComplaints = async (req, res) => {
     }
 
     if (jurisdictionType) query.jurisdictionType = jurisdictionType;
-    if (ward) query.ward = ward;
-    if (zone) query.zone = zone;
     if (slaStatus) query.slaStatus = slaStatus;
 
+    const andConditions = [];
+
+    // Ward & Zone filter — check ward, zone, wardName, wardCode with case-insensitive regex match
+    if (req.query.ward && typeof req.query.ward === "string" && req.query.ward !== "all") {
+      const sanitizedWard = req.query.ward.split("(")[0].trim();
+      const escapedWard = sanitizedWard.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const wardRegex = { $regex: escapedWard, $options: "i" };
+      andConditions.push({
+        $or: [
+          { ward: wardRegex },
+          { zone: wardRegex },
+          { wardName: wardRegex },
+          { wardCode: wardRegex }
+        ]
+      });
+    } else if (zone && typeof zone === "string" && zone !== "all") {
+      const sanitizedZone = zone.split("(")[0].trim();
+      const escapedZone = sanitizedZone.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.zone = { $regex: escapedZone, $options: "i" };
+    }
+
     // Status: support comma-separated list  e.g. status=pending,resolved
-    if (status) {
+    if (status && typeof status === "string") {
       const statuses = status.split(",").map((s) => s.trim()).filter(Boolean);
       query.status = statuses.length === 1 ? statuses[0] : { $in: statuses };
     }
-    if (category) {
+    if (category && typeof category === "string") {
       const categories = category.split(",").map((s) => s.trim()).filter(Boolean);
       query.category = categories.length === 1 ? categories[0] : { $in: categories };
     }
-    if (priority) {
+    if (priority && typeof priority === "string") {
       const priorities = priority.split(",").map((s) => s.trim()).filter(Boolean);
       query.priority = priorities.length === 1 ? priorities[0] : { $in: priorities };
     }
 
     // Location filters
-    if (city)    query["location.city"]    = { $regex: city,    $options: "i" };
-    if (state)   query["location.state"]   = { $regex: state,   $options: "i" };
-    if (pincode) query["location.pincode"] = { $regex: pincode, $options: "i" };
+    if (city && typeof city === "string")    query["location.city"]    = { $regex: city.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),    $options: "i" };
+    if (state && typeof state === "string")   query["location.state"]   = { $regex: state.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),   $options: "i" };
+    if (pincode && typeof pincode === "string") query["location.pincode"] = { $regex: pincode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
 
     // Date range
     if (dateFrom || dateTo) {
@@ -344,13 +363,21 @@ const getComplaints = async (req, res) => {
     }
 
     // Text search
-    if (search) {
-      query.$or = [
-        { title:       { $regex: search, $options: "i" } },
-        { complaintId: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-        { "location.address": { $regex: search, $options: "i" } },
-      ];
+    if (search && typeof search === "string") {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const searchRegex = { $regex: escapedSearch, $options: "i" };
+      andConditions.push({
+        $or: [
+          { title: searchRegex },
+          { complaintId: searchRegex },
+          { description: searchRegex },
+          { "location.address": searchRegex }
+        ]
+      });
+    }
+
+    if (andConditions.length > 0) {
+      query.$and = andConditions;
     }
 
     // Allowed sort fields

@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
+import { getImageUrl, handleImageError } from "@/utils/imageUrl"
+
 import {
   complaintApi, STATUS_CONFIG, CATEGORY_LABELS,
   type Complaint, type ComplaintStatus
@@ -76,12 +78,14 @@ export default function Dashboard() {
             {t("dashPage.subtitle")}
           </p>
         </div>
-        <Link to="/complaint/new">
-          <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
-            <Plus className="h-4 w-4" />
-            {t("dashPage.newComplaint")}
-          </Button>
-        </Link>
+        {user?.role === "citizen" && (
+          <Link to="/complaint/create">
+            <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+              <Plus className="h-4 w-4" />
+              {t("dashPage.newComplaint")}
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Stats cards */}
@@ -192,6 +196,7 @@ export default function Dashboard() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-slate-50 dark:bg-slate-800">
+                    <TableHead className="font-semibold text-xs">Evidence</TableHead>
                     <TableHead className="font-semibold text-xs">{t("dashPage.id")}</TableHead>
                     <TableHead className="font-semibold text-xs">{t("dashPage.issue")}</TableHead>
                     <TableHead className="font-semibold text-xs hidden md:table-cell">{t("dashPage.date")}</TableHead>
@@ -201,6 +206,16 @@ export default function Dashboard() {
                 <TableBody>
                   {recent.map((c) => (
                     <TableRow key={c._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/80">
+                      <TableCell>
+                        <div className="h-9 w-9 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                          <img
+                            src={getImageUrl(c.attachments && c.attachments[0])}
+                            onError={handleImageError}
+                            alt="Evidence"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      </TableCell>
                       <TableCell className="font-mono text-xs">
                         <Link to={`/complaint/${c._id || c.id || c.complaintId}/track`} className="text-emerald-600 font-semibold hover:underline">
                           {c.complaintId || c._id}
@@ -255,16 +270,18 @@ export default function Dashboard() {
               <CardTitle>{t("dashPage.quickActions")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Link to="/complaint/new" className="flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3 hover:border-emerald-500/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors">
-                <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center shrink-0">
-                  <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{t("dashPage.submitComplaint")}</p>
-                  <p className="text-xs text-slate-400">{t("dashPage.submitDesc")}</p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-slate-400 ml-auto" />
-              </Link>
+              {user?.role === "citizen" && (
+                <Link to="/complaint/create" className="flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3 hover:border-emerald-500/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors">
+                  <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center shrink-0">
+                    <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{t("dashPage.submitComplaint")}</p>
+                    <p className="text-xs text-slate-400">{t("dashPage.submitDesc")}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-slate-400 ml-auto" />
+                </Link>
+              )}
               <Link to="/complaints" className="flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3 hover:border-emerald-500/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors">
                 <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-950 flex items-center justify-center shrink-0">
                   <Activity className="h-4 w-4 text-blue-500" />

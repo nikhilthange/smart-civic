@@ -13,6 +13,9 @@ import { useTranslation } from "react-i18next"
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table"
+import { useAuth } from "@/context/AuthContext"
+import { getImageUrl, handleImageError } from "@/utils/imageUrl"
+
 import {
   complaintApi, STATUS_CONFIG, CATEGORY_LABELS,
   type Complaint, type ComplaintStatus
@@ -34,6 +37,7 @@ function StatusBadge({ status }: { status: ComplaintStatus | string }) {
 
 export default function ComplaintHistory() {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [complaints, setComplaints] = useState<Complaint[]>([])
   const [total, setTotal] = useState(0)
@@ -100,12 +104,14 @@ export default function ComplaintHistory() {
           <Button variant="outline" size="icon" onClick={load} disabled={isLoading}>
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           </Button>
-          <Link to="/complaint/new">
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              {t("complaints.newComplaint", "File New Complaint")}
-            </Button>
-          </Link>
+          {user?.role === "citizen" && (
+            <Link to="/complaint/create">
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                {t("complaints.newComplaint", "File New Complaint")}
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -172,8 +178,8 @@ export default function ComplaintHistory() {
               <p className="text-sm mt-1">
                 {t("complaints.noComplaintsDesc", "You haven't reported any civic complaints yet.")}
               </p>
-              {!search && statusFilter === "all" && (
-                <Link to="/complaint/new">
+              {!search && statusFilter === "all" && user?.role === "citizen" && (
+                <Link to="/complaint/create">
                   <Button className="mt-4" size="sm">{t("complaints.newComplaint", "File New Complaint")}</Button>
                 </Link>
               )}
@@ -184,6 +190,7 @@ export default function ComplaintHistory() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-slate-50">
+                      <TableHead className="font-semibold">{t("table.evidence", "Evidence")}</TableHead>
                       <TableHead className="font-semibold">{t("table.id", "Ticket ID")}</TableHead>
                       <TableHead className="font-semibold">{t("table.title", "Title")}</TableHead>
                       <TableHead className="font-semibold hidden md:table-cell">{t("table.category", "Category")}</TableHead>
@@ -195,6 +202,16 @@ export default function ComplaintHistory() {
                   <TableBody>
                     {complaints.map((c) => (
                       <TableRow key={c._id} className="hover:bg-slate-50/80">
+                        <TableCell>
+                          <div className="h-10 w-10 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                            <img
+                              src={getImageUrl(c.attachments && c.attachments[0])}
+                              onError={handleImageError}
+                              alt="Evidence"
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        </TableCell>
                         <TableCell className="font-mono text-xs text-slate-600">{c.complaintId}</TableCell>
                         <TableCell>
                           <p className="font-medium text-slate-800 line-clamp-1 max-w-[200px]">{c.title}</p>

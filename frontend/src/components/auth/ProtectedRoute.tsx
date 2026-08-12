@@ -26,9 +26,9 @@ export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
 
   // Role check — redirect user to their authorized dashboard if role not allowed for this route
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    if (user.role === "worker") return <Navigate to="/worker-dashboard" replace />
-    if (user.role === "officer") return <Navigate to="/officer/dashboard" replace />
-    if (user.role === "admin") return <Navigate to="/admin/dashboard" replace />
+    if (user.role === "worker") return <Navigate to="/worker-queue" replace />
+    if (user.role === "officer") return <Navigate to="/officer-portal" replace />
+    if (user.role === "admin") return <Navigate to="/admin" replace />
     return <Navigate to="/dashboard" replace />
   }
 

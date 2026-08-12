@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Building2, Filter, Loader2, AlertCircle, MapPin, Users, CheckCircle2, FileCheck, X, Camera } from "lucide-react";
 import { complaintApi, type Complaint, type ComplaintStatus } from "../services/complaintApi";
+import { getImageUrl, handleImageError } from "@/utils/imageUrl";
+import { ComplaintDetailModal } from "@/components/common/ComplaintDetailModal";
 
 const CATEGORY_LABELS: Record<string, string> = {
   pothole: "Pothole/Road Damage",
@@ -10,7 +12,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   other: "Other Civic Issue",
 };
 
-const STATUS_CONFIG: Record<ComplaintStatus | "pending", { label: string; color: string; bg: string; border: string }> = {
+const STATUS_CONFIG: Partial<Record<ComplaintStatus, { label: string; color: string; bg: string; border: string }>> = {
   submitted: { label: "Filed", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300" },
   pending: { label: "Filed", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300" },
   ai_verified: { label: "AI Verified", color: "text-blue-700", bg: "bg-blue-100", border: "border-blue-300" },
@@ -20,7 +22,9 @@ const STATUS_CONFIG: Record<ComplaintStatus | "pending", { label: string; color:
   in_progress: { label: "In Progress", color: "text-amber-700", bg: "bg-amber-100", border: "border-amber-300" },
   resolution_submitted: { label: "Proof Uploaded", color: "text-teal-700", bg: "bg-teal-100", border: "border-teal-300" },
   resolved: { label: "Resolved", color: "text-emerald-700", bg: "bg-emerald-100", border: "border-emerald-300" },
+  closed: { label: "Closed", color: "text-slate-700", bg: "bg-slate-100", border: "border-slate-300" },
   reopened: { label: "Reopened", color: "text-red-700", bg: "bg-red-100", border: "border-red-300" },
+  rejected: { label: "Rejected", color: "text-rose-700", bg: "bg-rose-100", border: "border-rose-300" },
 };
 
 export default function OfficerDashboard() {
@@ -29,6 +33,7 @@ export default function OfficerDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [wardFilter, setWardFilter] = useState<string>("all");
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
+  const [detailModalComplaint, setDetailModalComplaint] = useState<Complaint | null>(null);
 
   // Modal Resolution Form State
   const [resolutionFile, setResolutionFile] = useState<File | null>(null);
@@ -54,11 +59,18 @@ export default function OfficerDashboard() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Fetch complaints
-  const loadComplaints = async () => {
+  const loadComplaints = useCallback(async () => {
     setIsLoading(true);
     setFetchError(null);
     try {
-      const data = await complaintApi.getAll({ limit: 50 });
+      const params: Record<string, string | number> = { limit: 50 };
+      if (wardFilter && wardFilter !== "all") {
+        params.ward = wardFilter;
+      }
+      if (statusFilter && statusFilter !== "all") {
+        params.status = statusFilter;
+      }
+      const data = await complaintApi.getAll(params);
       setComplaints(data.complaints || []);
     } catch (err: any) {
       console.error("Error loading officer task queue:", err);
@@ -66,11 +78,11 @@ export default function OfficerDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [wardFilter, statusFilter]);
 
   useEffect(() => {
     loadComplaints();
-  }, []);
+  }, [loadComplaints]);
 
   // File Upload Handlers for Resolution Proof
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,7 +225,12 @@ export default function OfficerDashboard() {
 
   const filteredComplaints = complaints.filter((c) => {
     const matchesStatus = statusFilter === "all" || c.status === statusFilter;
-    const matchesWard = wardFilter === "all" || (c.wardName || "UNASSIGNED") === wardFilter;
+    let matchesWard = wardFilter === "all";
+    if (!matchesWard) {
+      const targetWard = wardFilter.split("(")[0].trim().toLowerCase();
+      const compWard = (c.ward || c.wardName || c.zone || c.wardCode || "").toLowerCase();
+      matchesWard = compWard.includes(targetWard) || targetWard.includes(compWard);
+    }
     return matchesStatus && matchesWard;
   });
 
@@ -247,9 +264,14 @@ export default function OfficerDashboard() {
             >
               <option value="all">All BMC Wards</option>
               <option value="Ward A">Ward A (Colaba/Fort)</option>
+              <option value="Ward C">Ward C (Chandanwadi)</option>
+              <option value="Ward D">Ward D (Grant Road)</option>
+              <option value="Ward F-South">Ward F-South (Parel)</option>
               <option value="Ward G-South">Ward G-South (Worli)</option>
               <option value="Ward H-West">Ward H-West (Bandra)</option>
               <option value="Ward K-East">Ward K-East (Andheri)</option>
+              <option value="Ward L">Ward L (Kurla)</option>
+              <option value="Ward M-East">Ward M-East (Govandi)</option>
             </select>
           </div>
 
@@ -293,15 +315,18 @@ export default function OfficerDashboard() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredComplaints.map((c) => {
-            const statusCfg = STATUS_CONFIG[c.status as ComplaintStatus] || STATUS_CONFIG.pending;
+            const statusCfg = STATUS_CONFIG[c.status as ComplaintStatus] || { label: c.status || "Unknown", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300" };
             const priorityStyle = priorityColors[c.priority || "medium"];
 
             return (
               <div
                 key={c._id}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between"
+                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all p-5 flex flex-col justify-between"
               >
-                <div>
+                <div
+                  className="cursor-pointer group"
+                  onClick={() => setDetailModalComplaint(c)}
+                >
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-1.5">
                       <span
@@ -329,10 +354,11 @@ export default function OfficerDashboard() {
                   <p className="text-sm text-gray-600 mt-2 line-clamp-2">{c.description}</p>
 
                   {c.attachments && c.attachments[0] && (
-                    <div className="mt-3 overflow-hidden rounded-lg border border-gray-200 h-32 bg-gray-100">
+                    <div className="mt-3 overflow-hidden rounded-lg border border-gray-200 h-36 bg-gray-100">
                       <img
-                        src={c.attachments[0].url}
-                        alt="Issue Evidence"
+                        src={getImageUrl(c.attachments[0])}
+                        onError={handleImageError}
+                        alt="User Uploaded Evidence"
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -398,7 +424,7 @@ export default function OfficerDashboard() {
                         <p className="text-gray-600 mb-2">{c.resolutionNotes || "No notes provided."}</p>
                         {c.resolutionImage && c.resolutionImage.url && (
                           <div className="mt-2 rounded-lg overflow-hidden border border-gray-300 h-24 bg-gray-100">
-                             <img src={c.resolutionImage.url} alt="Resolution" className="w-full h-full object-cover" />
+                             <img src={getImageUrl(c.resolutionImage)} onError={handleImageError} alt="Resolution" className="w-full h-full object-cover" />
                           </div>
                         )}
                       </div>
@@ -649,6 +675,12 @@ export default function OfficerDashboard() {
           </div>
         </div>
       )}
+
+      {/* Complaint Detail Modal Popup */}
+      <ComplaintDetailModal
+        complaint={detailModalComplaint}
+        onClose={() => setDetailModalComplaint(null)}
+      />
     </div>
   );
 }

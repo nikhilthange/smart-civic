@@ -15,11 +15,13 @@ import {
   type Complaint, type ComplaintStatus
 } from "@/services/complaintApi"
 import { useAuth } from "@/context/AuthContext"
+import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import ComplaintMap from "@/components/ui/ComplaintMap"
 import FeedbackModal from "@/components/ui/FeedbackModal"
 
-const STATUS_ICONS: Record<ComplaintStatus, React.ElementType> = {
+const STATUS_ICONS: Partial<Record<ComplaintStatus, React.ElementType>> = {
   submitted:            Clock,
+  pending:              Clock,
   ai_verified:          Bot,
   ward_assigned:        MapPin,
   officer_assigned:     UserCheck,
@@ -27,7 +29,9 @@ const STATUS_ICONS: Record<ComplaintStatus, React.ElementType> = {
   in_progress:          Wrench,
   resolution_submitted: FileCheck,
   resolved:             CheckCircle2,
+  closed:               CheckCircle2,
   reopened:             AlertCircle,
+  rejected:             AlertCircle,
 }
 
 const ALL_STATUSES: ComplaintStatus[] = [
@@ -244,7 +248,7 @@ export default function ComplaintTracking() {
             <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-6">{t("tracking.timelineTitle")}</h2>
             <div className="relative space-y-6">
               {ALL_STATUSES.map((status, index) => {
-                const Icon = STATUS_ICONS[status]
+                const Icon = STATUS_ICONS[status] || Clock
                 const isCompleted = index <= currentStatusIndex
                 const isCurrent = index === currentStatusIndex
                 const historyEntry = historyMap.get((status === "submitted" ? "pending" : status) as ComplaintStatus)
@@ -484,7 +488,8 @@ export default function ComplaintTracking() {
                 <div>
                   <div className="rounded-xl overflow-hidden border border-emerald-200 dark:border-emerald-900 shadow-inner max-h-56 bg-slate-100 dark:bg-slate-800">
                     <img
-                      src={complaint.resolutionImage.url.startsWith("http") ? complaint.resolutionImage.url : `http://localhost:5000${complaint.resolutionImage.url}`}
+                      src={getImageUrl(complaint.resolutionImage)}
+                      onError={handleImageError}
                       alt="Resolution Proof"
                       className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
                     />
@@ -526,18 +531,27 @@ export default function ComplaintTracking() {
                   {t("tracking.attachments")} ({complaint.attachments.length})
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-3">
                 {complaint.attachments.map((att, i) => (
-                  <a
-                    key={i}
-                    href={`http://localhost:5000${att.url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-primary hover:underline font-medium"
-                  >
-                    <ExternalLink className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{att.filename}</span>
-                  </a>
+                  <div key={i} className="flex items-center gap-3 p-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                    <div className="h-12 w-12 rounded-md overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                      <img
+                        src={getImageUrl(att)}
+                        onError={handleImageError}
+                        alt={att.filename || "Attachment"}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <a
+                      href={getImageUrl(att)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-primary hover:underline font-medium truncate flex-1"
+                    >
+                      <ExternalLink className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{att.filename || `Attachment ${i + 1}`}</span>
+                    </a>
+                  </div>
                 ))}
               </CardContent>
             </Card>

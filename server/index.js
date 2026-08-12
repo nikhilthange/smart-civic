@@ -74,7 +74,15 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 // ─── Static uploads ───────────────────────────────────────────────────────────
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    next();
+  },
+  express.static(path.join(__dirname, "uploads"))
+);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 //  ROUTES
@@ -97,14 +105,18 @@ app.use("/api/reports",       require("./routes/reportRoutes"));
 app.use("/api/admin",         require("./routes/adminRoutes"));
 
 // ─── Health check (no rate limit — used by load balancers) ────────────────────
-app.get("/api/health", (req, res) => {
+const healthHandler = (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Smart Civic API is running",
-    env:     process.env.NODE_ENV,
-    uptime:  Math.floor(process.uptime()) + "s",
+    status:  "HEALTHY",
+    service: "Smart Civic AI Platform API",
+    uptime:  process.uptime(),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
   });
-});
+};
+app.get("/health", healthHandler);
+app.get("/api/health", healthHandler);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 //  ERROR HANDLING (must be LAST)

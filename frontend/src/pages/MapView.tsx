@@ -7,6 +7,7 @@ import {
   Search, Eye, AlertTriangle, Building2
 } from "lucide-react"
 import { complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
+import { getImageUrl, handleImageError, FALLBACK_IMAGE } from "@/utils/imageUrl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -16,34 +17,34 @@ const MUMBAI_CENTER: [number, number] = [19.0760, 72.8777]
 
 // Ward Coordinates fallback dictionary
 const WARD_COORDINATES: Record<string, [number, number]> = {
-  "Ward A":      [18.9322, 72.8277], // Colaba / Fort
+  "Ward A": [18.9322, 72.8277], // Colaba / Fort
   "Ward H-West": [19.0596, 72.8347], // Bandra West
-  "Ward G-South":[19.0178, 72.8427], // Worli / Parel
+  "Ward G-South": [19.0178, 72.8427], // Worli / Parel
   "Ward K-East": [19.1136, 72.8697], // Andheri East
 }
 
 const SEVERITY_COLORS: Record<string, { bg: string; border: string; text: string; fill: string }> = {
   critical: { bg: "#fee2e2", border: "#ef4444", text: "#991b1b", fill: "#dc2626" },
-  high:     { bg: "#ffedd5", border: "#f97316", text: "#9a3412", fill: "#ea580c" },
-  medium:   { bg: "#fef3c7", border: "#f59e0b", text: "#92400e", fill: "#d97706" },
-  low:      { bg: "#dcfce7", border: "#22c55e", text: "#166534", fill: "#16a34a" },
+  high: { bg: "#ffedd5", border: "#f97316", text: "#9a3412", fill: "#ea580c" },
+  medium: { bg: "#fef3c7", border: "#f59e0b", text: "#92400e", fill: "#d97706" },
+  low: { bg: "#dcfce7", border: "#22c55e", text: "#166534", fill: "#16a34a" },
 }
 
 export default function MapView() {
   const [complaints, setComplaints] = useState<Complaint[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState<string | null>(null)
-  
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
   // Filter States
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [selectedStatus, setSelectedStatus]     = useState<string>("all")
-  const [selectedWard, setSelectedWard]         = useState<string>("all")
+  const [selectedStatus, setSelectedStatus] = useState<string>("all")
+  const [selectedWard, setSelectedWard] = useState<string>("all")
   const [selectedSeverity, setSelectedSeverity] = useState<string>("all")
-  const [searchQuery, setSearchQuery]           = useState<string>("")
-  const [activeTab, setActiveTab]               = useState<"map" | "grid">("map")
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [activeTab, setActiveTab] = useState<"map" | "grid">("map")
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
-  const mapInstanceRef  = useRef<L.Map | null>(null)
+  const mapInstanceRef = useRef<L.Map | null>(null)
   const markersGroupRef = useRef<L.LayerGroup | null>(null)
 
   // Fetch Complaints
@@ -185,6 +186,10 @@ export default function MapView() {
           <h4 style="font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 6px 0; line-height: 1.3;">
             ${c.title}
           </h4>
+          ${c.attachments && c.attachments[0] ? `
+          <div style="margin-bottom: 8px; border-radius: 6px; overflow: hidden; height: 90px; background-color: #f1f5f9;">
+            <img src="${getImageUrl(c.attachments[0])}" onerror="this.src='${FALLBACK_IMAGE}'" alt="Evidence" style="width: 100%; height: 100%; object-fit: cover;" />
+          </div>` : ''}
           <div style="font-size: 12px; color: #475569; margin-bottom: 8px;">
             <div><strong>Category:</strong> ${categoryLabel}</div>
             <div><strong>Ward:</strong> ${c.ward || "Ward A"}</div>
@@ -214,7 +219,7 @@ export default function MapView() {
 
     if (bounds.length > 0 && map) {
       try {
-        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 })
+        map.fitBounds(bounds as any, { padding: [40, 40], maxZoom: 14 })
       } catch {
         // fallback
       }
@@ -390,6 +395,16 @@ export default function MapView() {
                     </Badge>
                   </div>
                   <h3 className="font-bold text-slate-900 text-sm line-clamp-1 mb-1">{c.title}</h3>
+                  {c.attachments && c.attachments[0] && (
+                    <div className="h-28 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 mb-2">
+                      <img
+                        src={getImageUrl(c.attachments[0])}
+                        onError={handleImageError}
+                        alt="Evidence"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
                   <p className="text-xs text-slate-500 line-clamp-2 mb-3">{c.description}</p>
                   <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
                     <span className="text-slate-500 flex items-center gap-1">

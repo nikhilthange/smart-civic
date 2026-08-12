@@ -182,7 +182,7 @@ export default function AnalyticsDashboard() {
                 <Users className="h-6 w-6 text-purple-600" />
               </div>
             </div>
-            
+
             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500">Avg Resolution Time</p>
@@ -214,14 +214,14 @@ export default function AnalyticsDashboard() {
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                       <XAxis dataKey="_id" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                       <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                      <Tooltip 
+                      <Tooltip
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                       />
-                      <Line 
-                        type="monotone" 
-                        dataKey="count" 
+                      <Line
+                        type="monotone"
+                        dataKey="count"
                         name="Complaints"
-                        stroke="#4f46e5" 
+                        stroke="#4f46e5"
                         strokeWidth={3}
                         dot={{ r: 4, strokeWidth: 2 }}
                         activeDot={{ r: 6, strokeWidth: 0 }}
@@ -278,7 +278,7 @@ export default function AnalyticsDashboard() {
                         outerRadius={100}
                         paddingAngle={2}
                         dataKey="value"
-                        label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }: { name?: string; percent?: number }) => `${name || ''} ${((percent || 0) * 100).toFixed(0)}%`}
                         labelLine={false}
                       >
                         {formattedCategories.map((_, index) => (

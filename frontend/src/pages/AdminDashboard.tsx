@@ -9,6 +9,8 @@ import {
   ArrowRight, Shield, Download, Flame, Award, MapPin, UserPlus, X, FileText
 } from "lucide-react"
 import { complaintApi, type Complaint, STATUS_CONFIG, CATEGORY_LABELS, type ComplaintStatus, type WardScore } from "../services/complaintApi"
+import { getImageUrl, handleImageError } from "@/utils/imageUrl"
+import { ComplaintDetailModal } from "@/components/common/ComplaintDetailModal"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card"
 import { Button } from "../components/ui/button"
 import { Badge } from "../components/ui/badge"
@@ -86,6 +88,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"overview" | "complaints" | "users" | "officers">("overview")
   const [loading, setLoading]     = useState(true)
   const [statusFilter, setStatusFilter] = useState("")
+  const [wardFilter, setWardFilter]     = useState("all")
+  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null)
   const [page, setPage]           = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
@@ -131,7 +135,12 @@ export default function AdminDashboard() {
       setLoading(true)
       const [statsRes, complaintsRes, wardRes] = await Promise.all([
         complaintApi.getStats(),
-        complaintApi.getAll({ limit: 10, page, ...(statusFilter ? { status: statusFilter } : {}) }),
+        complaintApi.getAll({
+          limit: 10,
+          page,
+          ...(statusFilter ? { status: statusFilter } : {}),
+          ...(wardFilter && wardFilter !== "all" ? { ward: wardFilter } : {})
+        }),
         complaintApi.getWardPerformance().catch(() => [
           { ward: "Ward A", totalTickets: 45, resolvedTickets: 42, slaMetCount: 42, slaMetPercentage: 93.3, statusBadge: "Green" as const },
           { ward: "Ward H-West", totalTickets: 38, resolvedTickets: 35, slaMetCount: 35, slaMetPercentage: 92.1, statusBadge: "Green" as const },
@@ -148,7 +157,7 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false)
     }
-  }, [page, statusFilter])
+  }, [page, statusFilter, wardFilter])
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -598,6 +607,22 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-2">
                 <select
                   className="text-sm border rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  value={wardFilter}
+                  onChange={(e) => { setWardFilter(e.target.value); setPage(1) }}
+                >
+                  <option value="all">All BMC Wards</option>
+                  <option value="Ward A">Ward A (Colaba/Fort)</option>
+                  <option value="Ward C">Ward C (Chandanwadi)</option>
+                  <option value="Ward D">Ward D (Grant Road)</option>
+                  <option value="Ward F-South">Ward F-South (Parel)</option>
+                  <option value="Ward G-South">Ward G-South (Worli)</option>
+                  <option value="Ward H-West">Ward H-West (Bandra)</option>
+                  <option value="Ward K-East">Ward K-East (Andheri)</option>
+                  <option value="Ward L">Ward L (Kurla)</option>
+                  <option value="Ward M-East">Ward M-East (Govandi)</option>
+                </select>
+                <select
+                  className="text-sm border rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20"
                   value={statusFilter}
                   onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
                 >
@@ -614,6 +639,7 @@ export default function AdminDashboard() {
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b">
                   <tr>
+                    <th className="px-3 py-3">Evidence</th>
                     <th className="px-3 py-3">ID / Date</th>
                     <th className="px-3 py-3">Citizen</th>
                     <th className="px-3 py-3">Title</th>
@@ -625,10 +651,24 @@ export default function AdminDashboard() {
                 <tbody className="divide-y">
                   {complaints.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-10 text-slate-400">No complaints found.</td>
+                      <td colSpan={7} className="text-center py-10 text-slate-400">No complaints found.</td>
                     </tr>
                   ) : complaints.map((c) => (
-                    <tr key={c._id} className="hover:bg-slate-50 transition-colors">
+                    <tr
+                      key={c._id}
+                      className="hover:bg-slate-100/70 transition-colors cursor-pointer"
+                      onClick={() => setSelectedComplaint(c)}
+                    >
+                      <td className="px-3 py-3">
+                        <div className="h-9 w-9 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                          <img
+                            src={getImageUrl(c.attachments && c.attachments[0])}
+                            onError={handleImageError}
+                            alt="Evidence"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      </td>
                       <td className="px-3 py-3">
                         <p className="font-mono text-primary text-xs font-medium">{c.complaintId}</p>
                         <p className="text-[10px] text-slate-400">{new Date(c.createdAt).toLocaleDateString()}</p>
@@ -924,6 +964,12 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* Complaint Detail Modal Popup */}
+      <ComplaintDetailModal
+        complaint={selectedComplaint}
+        onClose={() => setSelectedComplaint(null)}
+      />
     </div>
   )
 }

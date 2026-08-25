@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Complaint = require("../models/Complaint");
 const Officer = require("../models/Officer");
+const Ward = require("../models/Ward");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 const notificationService = require("../services/notificationService");
@@ -12,18 +13,24 @@ const Department = require("../models/Department");
 const geminiService = require("../services/geminiService");
 const aiService = require("../services/aiService");
 const slaService = require("../services/slaService");
+const socketService = require("../services/socketService");
+const resolutionInspectorService = require("../services/resolutionInspectorService");
+const Inventory = require("../models/Inventory");
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const STATUS_ORDER = ["pending", "ai_verified", "assigned", "in_progress", "resolved", "closed", "rejected"];
+const STATUS_ORDER = ["pending", "submitted", "ai_verified", "ward_assigned", "officer_assigned", "worker_assigned", "assigned", "in_progress", "resolution_submitted", "resolved", "closed", "reopened", "rejected"];
 
 const DEFAULT_DEPTS = {
-  PWD: "Public Works Department",
-  WSD: "Water Supply & Sewage Department",
-  ELD: "Electricity & Streetlights Department",
+  PWD: "Public Works Department (Roads & Infrastructure)",
   SWM: "Solid Waste Management Department",
+  SWD: "Storm Water Drains Department",
+  WSD: "Water Supply & Sewage Department",
+  PRD: "Parks & Tree Authority Department",
+  ELD: "Electricity & Street Lighting Department",
+  PHD: "Public Health & Sanitation Department",
+  LIC: "Licensing & Encroachment Department",
   PSD: "Public Safety Department",
-  PRD: "Parks & Recreation Department",
-  GEN: "General Administration Department"
+  GEN: "General Grievances Administration"
 };
 
 const getBmcWardAndZone = (address = "", latNum, lngNum) => {
@@ -38,6 +45,62 @@ const getBmcWardAndZone = (address = "", latNum, lngNum) => {
     if (latNum > 18.95) return { ward: "Ward G-South", zone: "Zone 2" };
   }
   return { ward: "Ward A", zone: "Zone 1" };
+};
+
+const calculateHaversineDistanceMeters = (lat1, lon1, lat2, lon2) => {
+  const R = 6371000; // meters
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+const checkAndAwardBadges = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return;
+
+    if (!user.badges) user.badges = [];
+    const currentBadgeNames = new Set(user.badges.map((b) => b.name));
+
+    // 1. First Responder Badge (First complaint submitted)
+    const complaintsCount = await Complaint.countDocuments({ citizen: userId });
+    if (complaintsCount >= 1 && !currentBadgeNames.has("First Responder")) {
+      user.badges.push({
+        name: "First Responder",
+        icon: "🥉",
+        description: "Reported their first civic issue to improve Mumbai",
+      });
+    }
+
+    // 2. Ward Guardian (50+ karma points)
+    if ((user.karmaPoints || 0) >= 50 && !currentBadgeNames.has("Ward Guardian")) {
+      user.badges.push({
+        name: "Ward Guardian",
+        icon: "🥈",
+        description: "Earned 50+ Civic Karma points safeguarding their neighborhood",
+      });
+    }
+
+    // 3. Mumbai Civic Hero (150+ karma points)
+    if ((user.karmaPoints || 0) >= 150 && !currentBadgeNames.has("Mumbai Civic Hero")) {
+      user.badges.push({
+        name: "Mumbai Civic Hero",
+        icon: "🥇",
+        description: "Earned 150+ Civic Karma points - Top 1% active civic champion",
+      });
+    }
+
+    await user.save();
+  } catch (err) {
+    console.warn("Badge check warning:", err.message);
+  }
 };
 
 // ─── @desc    Create a complaint
@@ -72,23 +135,34 @@ const createComplaint = async (req, res) => {
 
     const AI_CATEGORY_MAP = {
       "Pothole": "roads_and_infrastructure",
+      "Road Sign": "roads_and_infrastructure",
       "Garbage": "garbage_collection",
       "Drainage": "drainage",
+      "Storm Water Drains": "storm_water_drains",
       "Water Leakage": "water_and_sanitation",
       "Street Light": "street_lighting",
       "Fallen Tree": "parks_and_recreation",
       "Illegal Parking": "other",
+      "Illegal Construction": "illegal_construction",
+      "Encroachment": "licensing_and_encroachment",
+      "Public Health Hazard": "public_health",
       "Open Manhole": "public_safety",
-      "Road Sign": "roads_and_infrastructure",
       "Other": "other"
     };
 
     const mappedCategory = aiAnalysis.category ? (AI_CATEGORY_MAP[aiAnalysis.category] || aiAnalysis.category) : null;
     const targetCategory = mappedCategory || category;
 
-    // Parse GeoJSON coordinates: MongoDB expects [longitude, latitude]
-    const parsedLat = Number(lat !== undefined ? lat : latitude);
-    const parsedLng = Number(lng !== undefined ? lng : longitude);
+    // Parse GeoJSON coordinates: prioritize client payload or auto-extracted photo EXIF GPS
+    let parsedLat = Number(lat !== undefined ? lat : latitude);
+    let parsedLng = Number(lng !== undefined ? lng : longitude);
+
+    if ((isNaN(parsedLat) || isNaN(parsedLng) || (parsedLat === 0 && parsedLng === 0)) && req.exifLocation) {
+      parsedLat = req.exifLocation.latitude;
+      parsedLng = req.exifLocation.longitude;
+      console.log(`📍 Auto-populated complaint coordinates from EXIF metadata: [${parsedLat}, ${parsedLng}]`);
+    }
+
     let coordinates = undefined;
     if (!isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat !== 0 && parsedLng !== 0) {
       coordinates = {
@@ -97,10 +171,10 @@ const createComplaint = async (req, res) => {
       };
     }
 
-    // ─── 1. Spatial Proximity Check (0.0002 degrees ~ 20 meters radius) ───
+    // ─── 1. Spatial Proximity Check (50 meters radius) ───
     if (coordinates) {
-      const activeStatuses = ["pending", "ai_verified", "assigned", "in_progress"];
-      const degRadius = 0.0002; // ~20 meters
+      const activeStatuses = ["submitted", "pending", "ai_verified", "ward_assigned", "officer_assigned", "worker_assigned", "assigned", "in_progress"];
+      const degRadius = 0.0005; // ~50 meters
       
       const duplicateQuery = {
         category: targetCategory,
@@ -109,7 +183,7 @@ const createComplaint = async (req, res) => {
           {
             "location.coordinates": {
               $geoWithin: {
-                $centerSphere: [[parsedLng, parsedLat], 20 / 6378137] // 20 meters in radians
+                $centerSphere: [[parsedLng, parsedLat], 50 / 6378137] // 50 meters in radians
               }
             }
           },
@@ -171,33 +245,130 @@ const createComplaint = async (req, res) => {
           ticketId: existingComplaint.complaintId || existingComplaint._id,
           existingTicketId: existingComplaint.complaintId || existingComplaint._id,
           complaint: existingComplaint,
-          message: "Duplicate complaint detected within 0.0002° (~20m) radius. Linked new photo and incremented upvoteCount on original ticket."
+          message: "Duplicate complaint detected within 50m radius. Linked new photo and incremented upvoteCount on original ticket."
         });
       }
     }
 
-    // ─── 3. New Complaint Creation ────────────────────────────────────────
-    // Find or create recommended department
+    // ─── 3. GeoJSON Spatial Ward Polygon Intersection ──────────────────────
+    let matchedWard = null;
+    if (coordinates) {
+      try {
+        matchedWard = await Ward.findOne({
+          boundary: {
+            $geoIntersects: {
+              $geometry: coordinates,
+            },
+          },
+        });
+      } catch (geoErr) {
+        console.warn("Ward polygon spatial intersection lookup failed:", geoErr.message);
+      }
+    }
+
+    let bmcWardName = matchedWard?.name;
+    let bmcWardCode = matchedWard?.code || matchedWard?.name;
+    let bmcZone = matchedWard?.zone;
+    let wardId = matchedWard?._id || null;
+
+    if (!matchedWard && locationPincode) {
+      matchedWard = await Ward.findOne({ pincodes: locationPincode });
+      if (matchedWard) {
+        bmcWardName = matchedWard.name;
+        bmcWardCode = matchedWard.code;
+        wardId = matchedWard._id;
+      }
+    }
+
+    if (!bmcWardName) {
+      const fallback = getBmcWardAndZone(locationAddress, parsedLat, parsedLng);
+      bmcWardName = fallback.ward;
+      bmcZone = fallback.zone;
+      const wardDoc = await Ward.findOne({ name: bmcWardName });
+      if (wardDoc) {
+        wardId = wardDoc._id;
+        bmcWardCode = wardDoc.code;
+      }
+    }
+
+    // ─── 4. Department Resolution ──────────────────────────────────────────
     let departmentId = null;
-    if (aiAnalysis.department) {
-      let dept = await Department.findOne({ code: aiAnalysis.department });
-      if (!dept) {
-        dept = await Department.create({
-          code: aiAnalysis.department,
-          name: DEFAULT_DEPTS[aiAnalysis.department] || "General Administration Department",
-          contactEmail: `contact.${aiAnalysis.department.toLowerCase()}@smartcity.gov.in`,
-        });
+    let deptCode = aiAnalysis.department || "GEN";
+    let dept = await Department.findOne({ code: deptCode });
+    if (!dept) {
+      dept = await Department.create({
+        code: deptCode,
+        name: DEFAULT_DEPTS[deptCode] || "General Grievances Administration",
+        contactEmail: `contact.${deptCode.toLowerCase()}@smartcity.gov.in`,
+      });
+    }
+    departmentId = dept._id;
+
+    // ─── 5. Workload-Based Automated Officer Dispatch ───────────────────────
+    let assignedOfficerDoc = null;
+    if (departmentId) {
+      const officerWardQuery = {
+        department: departmentId,
+        isAvailable: true,
+      };
+
+      if (wardId) {
+        officerWardQuery.$or = [{ wardId: wardId }, { wardName: bmcWardName }];
+      } else if (bmcWardName) {
+        officerWardQuery.wardName = bmcWardName;
       }
-      departmentId = dept._id;
+
+      // Query active officer with lowest activeComplaintsCount in this ward
+      assignedOfficerDoc = await Officer.findOne(officerWardQuery)
+        .sort({ activeComplaintsCount: 1 })
+        .populate("user");
+
+      // Department-level fallback if no officer assigned directly to that ward
+      if (!assignedOfficerDoc) {
+        assignedOfficerDoc = await Officer.findOne({ department: departmentId, isAvailable: true })
+          .sort({ activeComplaintsCount: 1 })
+          .populate("user");
+      }
     }
 
-    const finalStatus = aiAnalysis.verified ? "ai_verified" : "submitted";
+    let finalStatus = aiAnalysis.verified ? "ai_verified" : "submitted";
+    let assignedOfficerId = null;
+    let assignedAtDate = null;
+
+    if (assignedOfficerDoc) {
+      assignedOfficerId = assignedOfficerDoc._id;
+      finalStatus = "officer_assigned";
+      assignedAtDate = new Date();
+      // Increment officer active workload
+      assignedOfficerDoc.activeComplaintsCount = (assignedOfficerDoc.activeComplaintsCount || 0) + 1;
+      await assignedOfficerDoc.save();
+    }
+
     const effectivePriority = aiAnalysis.severity || priority || "medium";
     const slaDeadline = slaService.calculateSlaDeadline(effectivePriority);
-    const bmcLocation = getBmcWardAndZone(locationAddress, parsedLat, parsedLng);
 
     const userCorp = req.body.corporationId || req.user.corporationId || "BMC";
     const userJurisdiction = req.body.jurisdictionType || "municipal";
+
+    const statusHistory = [
+      { status: "submitted", changedBy: req.user.id, note: "Complaint submitted" }
+    ];
+
+    if (aiAnalysis.verified) {
+      statusHistory.push({
+        status: "ai_verified",
+        changedBy: req.user.id,
+        note: `AI verification passed. Detected: ${aiAnalysis.category || targetCategory} (${deptCode}). Severity: ${effectivePriority}.`
+      });
+    }
+
+    if (assignedOfficerDoc) {
+      statusHistory.push({
+        status: "officer_assigned",
+        changedBy: req.user.id,
+        note: `Auto-dispatched to Officer ${assignedOfficerDoc.user?.name || assignedOfficerDoc.employeeId} (${dept.name}) via workload-balanced queue.`
+      });
+    }
 
     const complaint = await Complaint.create({
       title,
@@ -206,8 +377,11 @@ const createComplaint = async (req, res) => {
       priority: effectivePriority,
       corporationId: userCorp,
       jurisdictionType: userJurisdiction,
-      ward: bmcLocation.ward,
-      zone: bmcLocation.zone,
+      ward: bmcWardName,
+      wardName: bmcWardName,
+      wardCode: bmcWardCode || bmcWardName,
+      wardId,
+      zone: bmcZone || "Zone 1",
       slaDeadline,
       slaStatus: "on_time",
       isAnonymous: isAnonymous === "true" || isAnonymous === true,
@@ -221,6 +395,9 @@ const createComplaint = async (req, res) => {
       },
       attachments,
       department: departmentId,
+      departmentName: dept.name,
+      assignedOfficer: assignedOfficerId,
+      assignedAt: assignedAtDate,
       status: finalStatus,
       aiAnalysis,
       affectedCitizensCount: 1,
@@ -228,14 +405,51 @@ const createComplaint = async (req, res) => {
       reportedByCitizens: [req.user.id],
       upvotes: 1,
       upvoteCount: 1,
-      statusHistory: [
-        { status: "submitted", changedBy: req.user.id, note: "Complaint submitted" },
-        ...(aiAnalysis.verified ? [{ status: "ai_verified", changedBy: req.user.id, note: `AI verification passed. Detected issue: ${aiAnalysis.category}. Recommended Department: ${aiAnalysis.department}` }] : []),
-      ],
+      statusHistory,
     });
 
     // Award +10 Civic Karma points to reporting user
     await User.findByIdAndUpdate(req.user.id, { $inc: { karmaPoints: 10 } });
+    await checkAndAwardBadges(req.user.id);
+
+    // ─── Predictive Monsoon Flood & Emergency Hotspot Radar ──────────────────────
+    if (coordinates && coordinates.coordinates) {
+      const [lngVal, latVal] = coordinates.coordinates;
+      const isDrainageOrFlood =
+        ["water_and_sanitation", "drainage", "SWD", "swd", "flooding"].includes(targetCategory) ||
+        (title + " " + description).toLowerCase().match(/flood|waterlog|drain|submerged|overflow|puddle|monsoon/i);
+
+      if (isDrainageOrFlood) {
+        try {
+          const fortyFiveMinsAgo = new Date(Date.now() - 45 * 60 * 1000);
+          const nearbyFloodCount = await Complaint.countDocuments({
+            _id: { $ne: complaint._id },
+            "location.coordinates": {
+              $geoWithin: {
+                $centerSphere: [[lngVal, latVal], 500 / 6378137], // 500m radius
+              },
+            },
+            createdAt: { $gte: fortyFiveMinsAgo },
+          });
+
+          if (nearbyFloodCount + 1 >= 3) {
+            complaint.isHotspotActive = true;
+            await complaint.save();
+
+            socketService.broadcastHotspotAlert({
+              ward: bmcWardName || "Ward A",
+              lat: latVal,
+              lng: lngVal,
+              count: nearbyFloodCount + 1,
+              message: `🌊 Active Monsoon Flood Hotspot in ${bmcWardName || "Ward A"} (${nearbyFloodCount + 1} incidents nearby)`,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        } catch (hotspotErr) {
+          console.warn("Hotspot radar calculation warning:", hotspotErr.message);
+        }
+      }
+    }
 
     // ─── Trigger Notifications ──────────────────────────────────────────────────
     try {
@@ -253,15 +467,19 @@ const createComplaint = async (req, res) => {
       }
       
       // If Officer Assigned
-      if (complaint.assignedOfficer) {
-        const officerDoc = await Officer.findById(complaint.assignedOfficer).populate("user");
-        if (officerDoc && officerDoc.user) {
-          await notificationService.officerAssignedToCitizen(req.user.id, complaint, officerDoc.user.name);
-          await notificationService.newComplaintAssignedToOfficer(officerDoc.user._id, complaint);
-        }
+      if (assignedOfficerDoc && assignedOfficerDoc.user) {
+        await notificationService.officerAssignedToCitizen(req.user.id, complaint, assignedOfficerDoc.user.name);
+        await notificationService.newComplaintAssignedToOfficer(assignedOfficerDoc.user._id, complaint);
       }
     } catch (notifErr) {
       console.error("Failed to send creation notifications", notifErr);
+    }
+
+    // Broadcast Real-time WebSocket event across platform
+    try {
+      socketService.broadcastComplaintCreated(complaint);
+    } catch (wsErr) {
+      console.warn("WebSocket broadcast error:", wsErr.message);
     }
 
     return res.status(201).json({ success: true, isDuplicate: false, complaint });
@@ -708,6 +926,13 @@ const assignOfficer = async (req, res) => {
     const officerUser = await require("../models/User").findById(officer.user).select("name").lean();
     await notificationService.officerAssignedToCitizen(complaint.citizen, complaint, officerUser?.name || "an officer");
 
+    // Broadcast Real-time WebSocket event
+    try {
+      socketService.broadcastComplaintAssigned(complaint, "officer");
+    } catch (wsErr) {
+      console.warn("WebSocket broadcast error:", wsErr.message);
+    }
+
     res.status(200).json({ success: true, message: "Officer assigned successfully", complaint });
   } catch (error) {
     console.error("Assign Officer Error:", error.message);
@@ -774,6 +999,13 @@ const resolveComplaint = async (req, res) => {
       await notificationService.complaintResolved(complaint.citizen, complaint);
     }
 
+    // Broadcast Real-time WebSocket event
+    try {
+      socketService.broadcastComplaintResolved(complaint);
+    } catch (wsErr) {
+      console.warn("WebSocket broadcast error:", wsErr.message);
+    }
+
     return res.status(200).json({
       success: true,
       message: "Complaint marked as resolved successfully!",
@@ -824,10 +1056,28 @@ const reopenComplaint = async (req, res) => {
     complaint.slaStatus = "escalated";
     complaint.slaDeadline = new Date(Date.now() + 12 * 60 * 60 * 1000); // 12-hour critical SLA
 
+    let penaltyNote = "";
+    if (complaint.contractor) {
+      try {
+        const Contractor = require("../models/Contractor");
+        const contractorDoc = await Contractor.findById(complaint.contractor);
+        if (contractorDoc) {
+          contractorDoc.escrowBalance = Math.max(0, (contractorDoc.escrowBalance || 500000) - 5000);
+          contractorDoc.slaBreaches = (contractorDoc.slaBreaches || 0) + 1;
+          contractorDoc.accumulatedPenalties = (contractorDoc.accumulatedPenalties || 0) + 5000;
+          await contractorDoc.save();
+          complaint.contractorPenalty = (complaint.contractorPenalty || 0) + 5000;
+          penaltyNote = ` Deducted ₹5,000 SLA penalty from contractor (${contractorDoc.name}) escrow deposit.`;
+        }
+      } catch (cErr) {
+        console.warn("Contractor penalty deduction warning:", cErr.message);
+      }
+    }
+
     complaint.statusHistory.push({
       status: "reopened",
       changedBy: req.user.id,
-      note: `Ticket REOPENED by citizen. Reason: ${reason || "Unsatisfactory resolution"}. Escalated to CRITICAL priority.`
+      note: `Ticket REOPENED by citizen. Reason: ${reason || "Unsatisfactory resolution"}. Escalated to CRITICAL priority.${penaltyNote}`
     });
 
     await complaint.save();
@@ -860,9 +1110,11 @@ const assignWorker = async (req, res) => {
       return res.status(400).json({ success: false, message: "Worker ID is required." });
     }
 
-    const complaint = await Complaint.findById(id);
-    if (!complaint) {
-      return res.status(404).json({ success: false, message: "Complaint not found." });
+    const Worker = require("../models/Worker");
+    const workerDoc = await Worker.findById(workerId).populate("user");
+    if (workerDoc) {
+      workerDoc.activeComplaintsCount = (workerDoc.activeComplaintsCount || 0) + 1;
+      await workerDoc.save();
     }
 
     complaint.assignedWorker = workerId;
@@ -870,10 +1122,21 @@ const assignWorker = async (req, res) => {
     complaint.statusHistory.push({
       status: "worker_assigned",
       changedBy: req.user.id,
-      note: `Assigned to field worker (ID: ${workerId}).`
+      note: `Assigned to field worker ${workerDoc?.user?.name || workerId}.`
     });
 
     await complaint.save();
+
+    // Trigger Real-Time Notification Events
+    try {
+      if (workerDoc && workerDoc.user) {
+        await notificationService.complaintAssignedToWorker(workerDoc.user._id, complaint);
+      }
+      await notificationService.workerAssignedToCitizen(complaint.citizen, complaint, workerDoc?.user?.name || "a field worker");
+    } catch (notifErr) {
+      console.error("Worker dispatch notification error:", notifErr.message);
+    }
+
     return res.status(200).json({ success: true, message: "Worker assigned successfully!", complaint });
   } catch (error) {
     console.error("AssignWorker Error:", error.message);
@@ -943,6 +1206,52 @@ const workerSubmitProof = async (req, res) => {
       return res.status(400).json({ success: false, message: "Mandatory after-resolution proof image is required." });
     }
 
+    // ─── Geo-Fenced Resolution Proof (Anti-Fraud Check) ──────────────────────────
+    const workerLat = parseFloat(req.body.workerLat || req.headers["x-worker-lat"]);
+    const workerLng = parseFloat(req.body.workerLng || req.headers["x-worker-lng"]);
+    let geofenceNote = "";
+
+    const targetCoords = complaint.location?.coordinates?.coordinates;
+    if (targetCoords && targetCoords.length === 2 && !isNaN(workerLat) && !isNaN(workerLng)) {
+      const targetLng = targetCoords[0];
+      const targetLat = targetCoords[1];
+      const distanceMeters = calculateHaversineDistanceMeters(targetLat, targetLng, workerLat, workerLng);
+
+      if (distanceMeters > 100) {
+        return res.status(400).json({
+          success: false,
+          message: `Geo-fence validation failed: You must be on-site within 100m of the reported defect location to submit resolution proof (Current distance: ${Math.round(distanceMeters)}m).`,
+        });
+      }
+      geofenceNote = ` (Verified on-site: ${Math.round(distanceMeters)}m from target location)`;
+    }
+
+    // ─── Automated AI Resolution Quality Inspector ──────────────────────────────
+    let beforeImageSource = null;
+    if (complaint.attachments && complaint.attachments.length > 0) {
+      beforeImageSource = complaint.attachments[0].url || complaint.attachments[0].path;
+    }
+    const afterImageSource = req.file.buffer || req.file.path;
+
+    let inspectionResult = { isAcceptable: true, confidenceScore: 0.92, analysis: "AI quality verified.", flags: [] };
+    try {
+      inspectionResult = await resolutionInspectorService.inspectResolutionProof(
+        beforeImageSource,
+        afterImageSource,
+        complaint.category
+      );
+
+      if (inspectionResult.flags.includes("SAME_IMAGE_DETECTED") || inspectionResult.flags.includes("BLANK_SURFACE_DETECTED")) {
+        return res.status(422).json({
+          success: false,
+          message: `Resolution proof rejected by AI Quality Inspector: ${inspectionResult.analysis}`,
+          inspection: inspectionResult,
+        });
+      }
+    } catch (inspectErr) {
+      console.warn("Resolution inspection warning:", inspectErr.message);
+    }
+
     let imageUrl = `/uploads/${req.file.filename}`;
     if (req.file.path && (req.file.path.startsWith("http://") || req.file.path.startsWith("https://"))) {
       imageUrl = req.file.path;
@@ -956,13 +1265,56 @@ const workerSubmitProof = async (req, res) => {
     complaint.resolutionNotes = resolutionDescription || notes || "Worker submitted resolution proof.";
     if (workNotes) complaint.workNotes = workNotes;
 
+    complaint.resolutionAiCheck = {
+      isAcceptable: inspectionResult.isAcceptable,
+      confidenceScore: inspectionResult.confidenceScore,
+      analysis: inspectionResult.analysis,
+      flags: inspectionResult.flags,
+      inspectedAt: new Date(),
+    };
+
     complaint.status = "resolution_submitted";
 
     complaint.statusHistory.push({
       status: "resolution_submitted",
       changedBy: req.user.id,
-      note: "Worker submitted resolution proof.",
+      note: `Worker submitted resolution proof.${geofenceNote}`,
     });
+
+    // ─── Material Consumption Ledger ──────────────────────────────────────────
+    if (req.body.materialsUsed) {
+      try {
+        const materialsList = typeof req.body.materialsUsed === "string" ? JSON.parse(req.body.materialsUsed) : req.body.materialsUsed;
+        if (Array.isArray(materialsList) && materialsList.length > 0) {
+          complaint.materialsUsed = materialsList;
+          const materialsNoteArr = [];
+
+          for (const mat of materialsList) {
+            const qty = Number(mat.quantity) || 1;
+            materialsNoteArr.push(`${qty}x ${mat.itemName || mat.itemCode}`);
+            try {
+              await Inventory.findOneAndUpdate(
+                { itemCode: String(mat.itemCode).toUpperCase(), wardName: complaint.wardName || "Ward A" },
+                { $inc: { currentStock: -qty } },
+                { upsert: false }
+              );
+            } catch (invErr) {
+              console.warn("Inventory deduction warning:", invErr.message);
+            }
+          }
+
+          if (materialsNoteArr.length > 0) {
+            complaint.statusHistory.push({
+              status: "resolution_submitted",
+              changedBy: req.user.id,
+              note: `Warehouse Materials Consumed: ${materialsNoteArr.join(", ")}.`,
+            });
+          }
+        }
+      } catch (matErr) {
+        console.warn("Materials parsing warning:", matErr.message);
+      }
+    }
 
     await complaint.save();
     

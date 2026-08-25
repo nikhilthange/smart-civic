@@ -7,6 +7,8 @@ import {
 import { type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import { getTravelDetails, getGoogleMapsDirUrl, type TravelDetails } from "@/utils/geoUtils"
+import { BeforeAfterSlider } from "./BeforeAfterSlider"
+import { LiveNavigationModal } from "@/components/navigation/LiveNavigationModal"
 
 interface ComplaintDetailModalProps {
   complaint: Complaint | null
@@ -25,6 +27,7 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
   const [loadingGeo, setLoadingGeo] = useState(false)
   const [copied, setCopied] = useState(false)
   const [zoomImage, setZoomImage] = useState<string | null>(null)
+  const [isLiveNavOpen, setIsLiveNavOpen] = useState(false)
 
   useEffect(() => {
     if (!complaint) {
@@ -249,16 +252,27 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
                 </div>
               </div>
 
-              {/* Google Maps Button */}
-              <a
-                href={mapDirUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3 px-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Navigate on Google Maps
-              </a>
+              {/* Navigation Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsLiveNavOpen(true)}
+                  className="w-full sm:flex-1 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30"
+                >
+                  <Navigation className="w-4 h-4" />
+                  Start In-App Live Navigation
+                </button>
+
+                <a
+                  href={mapDirUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 border border-slate-700"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Google Maps ↗
+                </a>
+              </div>
             </div>
 
             {/* ─── Metadata Grid ─────────────────────────────────────────── */}
@@ -315,18 +329,28 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
                 <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Submitted Resolution Proof
                 </h4>
-                <p className="text-sm text-emerald-900 dark:text-emerald-200 italic">
-                  "{complaint.resolutionNotes || "Resolution proof submitted by field worker."}"
-                </p>
-                <div className="relative rounded-lg overflow-hidden border border-emerald-300 dark:border-emerald-800 h-48 bg-slate-950 group">
-                  <img
-                    src={resolutionImageUrl}
-                    onError={handleImageError}
-                    alt="Resolution Proof"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
-                    onClick={() => setZoomImage(resolutionImageUrl)}
+                {complaint.resolutionNotes && (
+                  <p className="text-sm text-emerald-900 dark:text-emerald-200 italic">
+                    "{complaint.resolutionNotes}"
+                  </p>
+                )}
+                {attachmentUrl ? (
+                  <BeforeAfterSlider
+                    beforeImage={attachmentUrl}
+                    afterImage={resolutionImageUrl}
+                    className="mt-2"
                   />
-                </div>
+                ) : (
+                  <div className="relative rounded-lg overflow-hidden border border-emerald-300 dark:border-emerald-800 h-48 bg-slate-950 group">
+                    <img
+                      src={resolutionImageUrl}
+                      onError={handleImageError}
+                      alt="Resolution Proof"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-pointer"
+                      onClick={() => setZoomImage(resolutionImageUrl)}
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -377,6 +401,27 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
             className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl animate-in zoom-in-95 duration-200"
           />
         </div>
+      )}
+
+      {/* ─── Live Turn-by-Turn GPS Navigation Modal ────────────────────── */}
+      {isLiveNavOpen && complaint && (
+        <LiveNavigationModal
+          isOpen={isLiveNavOpen}
+          onClose={() => setIsLiveNavOpen(false)}
+          targetLat={
+            complaint.location?.coordinates?.coordinates?.[1] ||
+            (complaint.location as any)?.lat ||
+            19.0596
+          }
+          targetLng={
+            complaint.location?.coordinates?.coordinates?.[0] ||
+            (complaint.location as any)?.lng ||
+            72.8295
+          }
+          targetAddress={complaint.location?.address || "Reported Defect Location"}
+          ticketTitle={complaint.title}
+          ticketId={complaint.complaintId || complaint._id}
+        />
       )}
     </>
   )

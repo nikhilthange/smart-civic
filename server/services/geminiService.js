@@ -10,13 +10,20 @@ const ai = isConfigured ? new GoogleGenAI({ apiKey }) : null;
 
 // Categories supported by application
 const CATEGORY_MAP = {
-  "roads_and_infrastructure": ["pothole", "potholes", "road"],
-  "water_and_sanitation":     ["water leakage", "leak", "water"],
-  "electricity":              ["broken street light", "electricity", "street light"],
-  "garbage_collection":       ["garbage", "trash", "waste"],
-  "public_safety":            ["open manhole", "manhole", "safety"],
-  "parks_and_recreation":     ["fallen tree", "tree", "park"],
-  "other":                    ["illegal parking"]
+  "roads_and_infrastructure": ["pothole", "potholes", "road", "footpath", "bridge", "asphalt"],
+  "water_and_sanitation":     ["water leakage", "leak", "pipeline", "sewage", "contaminated water"],
+  "electricity":              ["broken street light", "electricity", "transformer", "exposed wire"],
+  "street_lighting":          ["dark street", "light pole", "street light not working"],
+  "garbage_collection":       ["garbage", "trash", "waste", "debris", "overflowing bin"],
+  "drainage":                 ["drainage", "blocked drain", "gutter"],
+  "storm_water_drains":       ["storm water", "waterlogging", "nallah", "monsoon flood"],
+  "public_safety":            ["open manhole", "manhole", "safety hazard", "structural damage"],
+  "parks_and_recreation":     ["fallen tree", "tree branch", "park maintenance", "garden"],
+  "public_health":            ["mosquito breeding", "dead animal", "stagnant water", "epidemic", "sanitation"],
+  "licensing_and_encroachment": ["illegal hawkers", "encroachment", "unauthorized stall"],
+  "illegal_construction":     ["unauthorized building", "illegal construction", "demolition"],
+  "noise_pollution":          ["loudspeaker", "construction noise", "noise"],
+  "other":                    ["illegal parking", "general issue"]
 };
 
 /**
@@ -58,42 +65,51 @@ const fileToGenerativePart = async (attachment) => {
  */
 const runFallbackAnalysis = (description) => {
   const descLower = description.toLowerCase();
-  let matchedCategory = "other";
+  let matchedCategory = "Other";
   let recommendedDept = "GEN";
 
-  if (descLower.includes("pothole") || descLower.includes("road")) {
+  if (descLower.includes("pothole") || descLower.includes("road") || descLower.includes("footpath")) {
     matchedCategory = "Pothole";
     recommendedDept = "PWD";
   } else if (descLower.includes("sign")) {
     matchedCategory = "Road Sign";
     recommendedDept = "PWD";
-  } else if (descLower.includes("manhole")) {
+  } else if (descLower.includes("manhole") || descLower.includes("safety")) {
     matchedCategory = "Open Manhole";
-    recommendedDept = "DRD";
-  } else if (descLower.includes("drainage") || descLower.includes("drain")) {
+    recommendedDept = "PSD";
+  } else if (descLower.includes("storm") || descLower.includes("nallah") || descLower.includes("waterlog") || descLower.includes("flood")) {
+    matchedCategory = "Storm Water Drains";
+    recommendedDept = "SWD";
+  } else if (descLower.includes("drainage") || descLower.includes("drain") || descLower.includes("gutter")) {
     matchedCategory = "Drainage";
-    recommendedDept = "DRD";
-  } else if (descLower.includes("leak") || descLower.includes("water")) {
+    recommendedDept = "SWD";
+  } else if (descLower.includes("leak") || descLower.includes("water") || descLower.includes("sewage")) {
     matchedCategory = "Water Leakage";
     recommendedDept = "WSD";
-  } else if (descLower.includes("light") || descLower.includes("electricity")) {
+  } else if (descLower.includes("light") || descLower.includes("electricity") || descLower.includes("wire")) {
     matchedCategory = "Street Light";
     recommendedDept = "ELD";
-  } else if (descLower.includes("garbage") || descLower.includes("trash") || descLower.includes("waste")) {
+  } else if (descLower.includes("garbage") || descLower.includes("trash") || descLower.includes("waste") || descLower.includes("debris")) {
     matchedCategory = "Garbage";
     recommendedDept = "SWM";
-  } else if (descLower.includes("tree")) {
+  } else if (descLower.includes("tree") || descLower.includes("park") || descLower.includes("garden")) {
     matchedCategory = "Fallen Tree";
-    recommendedDept = "GTD";
-  } else if (descLower.includes("parking")) {
-    matchedCategory = "Illegal Parking";
-    recommendedDept = "TRD";
+    recommendedDept = "PRD";
+  } else if (descLower.includes("mosquito") || descLower.includes("dead animal") || descLower.includes("health") || descLower.includes("sanitation")) {
+    matchedCategory = "Public Health Hazard";
+    recommendedDept = "PHD";
+  } else if (descLower.includes("hawker") || descLower.includes("encroach")) {
+    matchedCategory = "Encroachment";
+    recommendedDept = "LIC";
+  } else if (descLower.includes("illegal construction") || descLower.includes("unauthorized building")) {
+    matchedCategory = "Illegal Construction";
+    recommendedDept = "LIC";
   } else {
     matchedCategory = "Other";
     recommendedDept = "GEN";
   }
 
-  const severity = descLower.includes("urgent") || descLower.includes("accident") || descLower.includes("danger") ? "high" : "medium";
+  const severity = descLower.includes("urgent") || descLower.includes("accident") || descLower.includes("danger") || descLower.includes("critical") ? "high" : "medium";
 
   return {
     verified: true,
@@ -101,7 +117,7 @@ const runFallbackAnalysis = (description) => {
     confidence: 0.85,
     severity,
     department: recommendedDept,
-    explanation: "AI analysis completed via local fallback parser (Gemini API key not configured).",
+    explanation: "AI analysis completed via local BMC taxonomy rule parser.",
     source: "FALLBACK",
   };
 };
@@ -125,17 +141,27 @@ const analyzeComplaint = async (description, attachments = []) => {
     }
 
     const prompt = `
-You are the Smart Civic AI Assistant. Analyze the user's civic complaint.
+You are the Smart Civic AI Assistant for Brihanmumbai Municipal Corporation (BMC). Analyze the civic complaint.
 Description: "${description}"
 
-Look at the description and any attached image/video files (if present) to detect issues.
+Look at the description and any attached image/video files (if present) to detect civic defects.
 
 Identify:
 1. The most accurate Category matching one of these EXACT values:
-   "Pothole", "Garbage", "Drainage", "Water Leakage", "Street Light", "Fallen Tree", "Illegal Parking", "Open Manhole", "Road Sign", "Other"
+   "Pothole", "Road Sign", "Garbage", "Drainage", "Storm Water Drains", "Water Leakage", "Street Light", "Fallen Tree", "Illegal Construction", "Encroachment", "Public Health Hazard", "Open Manhole", "Other"
 2. A confidence score between 0.0 and 1.0.
 3. Severity level: "low", "medium", "high", or "critical".
-4. Recommended Department Code (must be 3 letters): "PWD" (Pothole/Road/Sign), "SWM" (Garbage), "DRD" (Drainage/Manhole), "WSD" (Water Leakage), "ELD" (Street Light), "GTD" (Fallen Tree), "TRD" (Illegal Parking), or "GEN".
+4. Recommended Department Code (must be 3 letters):
+   - "PWD" (Roads & Infrastructure / Pothole / Sign)
+   - "SWM" (Solid Waste Management / Garbage)
+   - "SWD" (Storm Water Drains / Flooding / Gutter)
+   - "WSD" (Water Supply & Sewage / Leakage)
+   - "PRD" (Parks & Tree Authority / Fallen Tree)
+   - "ELD" (Electricity & Street Lighting)
+   - "PHD" (Public Health & Sanitation / Mosquito / Dead Animal)
+   - "LIC" (Licensing & Encroachment / Illegal Construction / Hawkers)
+   - "PSD" (Public Safety / Open Manhole / Danger)
+   - "GEN" (General Grievances)
 5. A brief summary explanation of the analysis.
 `;
 
@@ -147,14 +173,17 @@ Identify:
           type: Type.STRING,
           enum: [
             "Pothole",
+            "Road Sign",
             "Garbage",
             "Drainage",
+            "Storm Water Drains",
             "Water Leakage",
             "Street Light",
             "Fallen Tree",
-            "Illegal Parking",
+            "Illegal Construction",
+            "Encroachment",
+            "Public Health Hazard",
             "Open Manhole",
-            "Road Sign",
             "Other"
           ],
         },
@@ -165,7 +194,7 @@ Identify:
         },
         department: {
           type: Type.STRING,
-          enum: ["PWD", "SWM", "DRD", "WSD", "ELD", "GTD", "TRD", "GEN"],
+          enum: ["PWD", "SWM", "SWD", "WSD", "PRD", "ELD", "PHD", "LIC", "PSD", "GEN"],
         },
         explanation: { type: Type.STRING },
       },

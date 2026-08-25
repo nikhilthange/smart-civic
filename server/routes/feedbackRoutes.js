@@ -3,7 +3,7 @@ const router = express.Router();
 const { body } = require("express-validator");
 const { protect, authorize } = require("../middlewares/auth");
 const validate = require("../middlewares/validate");
-const { submitFeedback } = require("../controllers/feedbackController");
+const { submitFeedback, getFeedbackStats } = require("../controllers/feedbackController");
 
 const feedbackValidation = [
   body("complaintId").isMongoId().withMessage("Invalid complaint ID"),
@@ -11,6 +11,9 @@ const feedbackValidation = [
   body("comment").optional().trim().isLength({ max: 1000 }).withMessage("Comment cannot exceed 1000 characters"),
   body("tags").optional().isArray().withMessage("Tags must be an array"),
 ];
+
+// GET /api/feedback/stats
+router.get("/stats", getFeedbackStats);
 
 // POST /api/feedback
 router.post(

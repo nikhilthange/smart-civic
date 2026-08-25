@@ -18,6 +18,9 @@ import { useAuth } from "@/context/AuthContext"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import ComplaintMap from "@/components/ui/ComplaintMap"
 import FeedbackModal from "@/components/ui/FeedbackModal"
+import { BeforeAfterSlider } from "@/components/common/BeforeAfterSlider"
+import api from "@/lib/axios"
+import toast from "react-hot-toast"
 
 const STATUS_ICONS: Partial<Record<ComplaintStatus, React.ElementType>> = {
   submitted:            Clock,
@@ -77,6 +80,23 @@ export default function ComplaintTracking() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
+  const [isReopenModalOpen, setIsReopenModalOpen] = useState(false)
+  const [reopenReason, setReopenReason] = useState("")
+  const [isReopening, setIsReopening] = useState(false)
+
+  const load = async () => {
+    if (!targetId) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const data = await complaintApi.getOne(targetId)
+      setComplaint(data)
+    } catch {
+      setError("Complaint not found or access restricted.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (!targetId) {
@@ -84,20 +104,30 @@ export default function ComplaintTracking() {
       setIsLoading(false)
       return
     }
-    const load = async () => {
-      setIsLoading(true)
-      setError(null)
-      try {
-        const data = await complaintApi.getOne(targetId)
-        setComplaint(data)
-      } catch {
-        setError("Complaint not found or access restricted.")
-      } finally {
-        setIsLoading(false)
-      }
-    }
     load()
   }, [targetId])
+
+  const handleReopenComplaint = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!complaint) return
+    if (!reopenReason.trim()) {
+      toast.error("Please explain why the civic issue is still unresolved.")
+      return
+    }
+
+    setIsReopening(true)
+    try {
+      await api.post(`/complaints/${complaint._id}/reopen`, { reason: reopenReason })
+      toast.success("🚨 Complaint reopened and escalated to Critical priority!")
+      setIsReopenModalOpen(false)
+      setReopenReason("")
+      load()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to reopen complaint.")
+    } finally {
+      setIsReopening(false)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -298,7 +328,16 @@ export default function ComplaintTracking() {
                         </time>
                       )}
                       {historyEntry?.note && (
-                        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">{historyEntry.note}</p>
+                        <div className="mt-1.5 space-y-1">
+                          <p className="text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                            {historyEntry.note}
+                          </p>
+                          {historyEntry.note.includes("Verified on-site") && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800 shadow-sm">
+                              📍 Geo-Fenced On-Site GPS Verified (&le;100m)
+                            </span>
+                          )}
+                        </div>
                       )}
                       {!historyEntry && !isCompleted && (
                         <p className="text-xs text-slate-400 mt-0.5">{t("tracking.pending")}</p>
@@ -486,14 +525,22 @@ export default function ComplaintTracking() {
             <CardContent className="space-y-3">
               {complaint.resolutionImage?.url ? (
                 <div>
-                  <div className="rounded-xl overflow-hidden border border-emerald-200 dark:border-emerald-900 shadow-inner max-h-56 bg-slate-100 dark:bg-slate-800">
-                    <img
-                      src={getImageUrl(complaint.resolutionImage)}
-                      onError={handleImageError}
-                      alt="Resolution Proof"
-                      className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                  {complaint.attachments && complaint.attachments[0] ? (
+                    <BeforeAfterSlider
+                      beforeImage={getImageUrl(complaint.attachments[0])}
+                      afterImage={getImageUrl(complaint.resolutionImage)}
+                      className="mb-3"
                     />
-                  </div>
+                  ) : (
+                    <div className="rounded-xl overflow-hidden border border-emerald-200 dark:border-emerald-900 shadow-inner max-h-56 bg-slate-100 dark:bg-slate-800">
+                      <img
+                        src={getImageUrl(complaint.resolutionImage)}
+                        onError={handleImageError}
+                        alt="Resolution Proof"
+                        className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
                   <div className="mt-2.5 flex items-center justify-between flex-wrap gap-1">
                     <Badge className="bg-emerald-600 text-white text-[11px]">
                       {t("tracking.verifiedProofUploaded")}
@@ -508,6 +555,28 @@ export default function ComplaintTracking() {
                     <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 bg-white/90 dark:bg-slate-900/90 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900">
                       <strong>Resolution Note:</strong> {complaint.resolutionNotes}
                     </p>
+                  )}
+
+                  {/* Citizen Satisfaction & Reopen Action Buttons */}
+                  {complaint.status === "resolved" && (
+                    <div className="mt-4 pt-3 border-t border-emerald-200 dark:border-emerald-900 space-y-2">
+                      <Button
+                        onClick={() => setIsFeedbackOpen(true)}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs gap-1.5 shadow-sm"
+                      >
+                        <Star className="w-3.5 h-3.5 fill-current text-amber-300" />
+                        {complaint.feedbackSubmitted ? "View / Update Rating" : "Rate Work Quality & Give Feedback"}
+                      </Button>
+
+                      <Button
+                        onClick={() => setIsReopenModalOpen(true)}
+                        variant="outline"
+                        className="w-full border-red-300 text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-semibold gap-1.5"
+                      >
+                        <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                        Reopen Grievance / Incomplete (48h Window)
+                      </Button>
+                    </div>
                   )}
                 </div>
               ) : (
@@ -570,6 +639,85 @@ export default function ComplaintTracking() {
           )}
         </div>
       </div>
+
+      {/* Citizen Feedback Modal */}
+      {isFeedbackOpen && (
+        <FeedbackModal
+          isOpen={isFeedbackOpen}
+          onClose={() => setIsFeedbackOpen(false)}
+          complaintId={complaint._id}
+          onSuccess={() => {
+            setIsFeedbackOpen(false)
+            load()
+          }}
+        />
+      )}
+
+      {/* Reopen Complaint Dialog */}
+      {isReopenModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <AlertCircle className="w-5 h-5" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Reopen Civic Grievance</h3>
+              </div>
+              <button
+                onClick={() => setIsReopenModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              If the on-site resolution was incomplete or defective, please explain why. Reopening this ticket will instantly escalate its priority to <strong>CRITICAL</strong> and notify the ward officer.
+            </p>
+
+            <form onSubmit={handleReopenComplaint} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Reason for Reopening <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={reopenReason}
+                  onChange={(e) => setReopenReason(e.target.value)}
+                  rows={4}
+                  required
+                  placeholder="e.g. The pothole was only filled with loose sand and washed away, or the streetlight is still flickering..."
+                  className="w-full text-xs p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsReopenModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isReopening || !reopenReason.trim()}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold gap-1.5"
+                >
+                  {isReopening ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Reopening...
+                    </>
+                  ) : (
+                    "Confirm & Reopen Ticket"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

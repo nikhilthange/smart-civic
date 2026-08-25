@@ -3,7 +3,7 @@ const router = express.Router();
 const { body, param } = require("express-validator");
 const { protect, authorize } = require("../middlewares/auth");
 const validate = require("../middlewares/validate");
-const { upload, handleUploadError } = require("../middlewares/upload");
+const { upload, handleUploadError, processExifMetadata } = require("../middlewares/upload");
 const {
   createComplaint,
   getComplaints,
@@ -32,7 +32,8 @@ const createValidation = [
       "roads_and_infrastructure", "water_and_sanitation", "electricity",
       "garbage_collection", "public_safety", "parks_and_recreation",
       "noise_pollution", "illegal_construction", "street_lighting",
-      "public_transport", "drainage", "other",
+      "public_transport", "drainage", "storm_water_drains",
+      "public_health", "licensing_and_encroachment", "other",
     ])
     .withMessage("Invalid category"),
   body("locationAddress").trim().notEmpty().withMessage("Location address is required"),
@@ -66,6 +67,7 @@ router.post(
   authorize("citizen", "admin"),
   upload.array("attachments", 5),
   handleUploadError,
+  processExifMetadata,
   createValidation,
   validate,
   createComplaint

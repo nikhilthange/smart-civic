@@ -3,6 +3,7 @@ import { Building2, Filter, Loader2, AlertCircle, MapPin, Users, CheckCircle2, F
 import { complaintApi, type Complaint, type ComplaintStatus } from "../services/complaintApi";
 import { getImageUrl, handleImageError } from "@/utils/imageUrl";
 import { ComplaintDetailModal } from "@/components/common/ComplaintDetailModal";
+import { useSocket } from "@/context/SocketContext";
 
 const CATEGORY_LABELS: Record<string, string> = {
   pothole: "Pothole/Road Damage",
@@ -59,8 +60,8 @@ export default function OfficerDashboard() {
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   // Fetch complaints
-  const loadComplaints = useCallback(async () => {
-    setIsLoading(true);
+  const loadComplaints = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
     setFetchError(null);
     try {
       const params: Record<string, string | number> = { limit: 50 };
@@ -73,16 +74,40 @@ export default function OfficerDashboard() {
       const data = await complaintApi.getAll(params);
       setComplaints(data.complaints || []);
     } catch (err: any) {
-      console.error("Error loading officer task queue:", err);
-      setFetchError(err.response?.data?.message || "Failed to load officer task queue. Please retry.");
+      if (!silent) {
+        console.error("Error loading officer task queue:", err);
+        setFetchError(err.response?.data?.message || "Failed to load officer task queue. Please retry.");
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   }, [wardFilter, statusFilter]);
 
+  const { lastEvent } = useSocket();
+
   useEffect(() => {
     loadComplaints();
+
+    // Auto-sync polling every 10s
+    const timer = setInterval(() => {
+      loadComplaints(true);
+    }, 10000);
+
+    const onFocus = () => loadComplaints(true);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", onFocus);
+    };
   }, [loadComplaints]);
+
+  // Instant reactive WebSocket event refresh
+  useEffect(() => {
+    if (lastEvent) {
+      loadComplaints(true);
+    }
+  }, [lastEvent, loadComplaints]);
 
   // File Upload Handlers for Resolution Proof
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -296,7 +321,7 @@ export default function OfficerDashboard() {
           <h3 className="text-base font-semibold text-red-800">Task Queue Error</h3>
           <p className="text-sm text-red-600 mt-1 max-w-md">{fetchError}</p>
           <button
-            onClick={loadComplaints}
+            onClick={() => loadComplaints(false)}
             className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium text-xs rounded-lg transition-colors"
           >
             Retry Loading

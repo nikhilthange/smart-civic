@@ -79,6 +79,23 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    badges: [
+      {
+        name: { type: String, required: true },
+        icon: { type: String, default: "🥉" },
+        description: { type: String, default: "" },
+        awardedAt: { type: Date, default: Date.now },
+      },
+    ],
+    redeemedRewards: [
+      {
+        rewardId: { type: String, required: true },
+        title: { type: String, required: true },
+        pointsCost: { type: Number, required: true },
+        voucherCode: { type: String, required: true },
+        redeemedAt: { type: Date, default: Date.now },
+      },
+    ],
     // For officers: link to their department
     department: {
       type: mongoose.Schema.Types.ObjectId,

@@ -103,6 +103,8 @@ app.use("/api/donations",     require("./routes/donationRoutes"));
 app.use("/api/analytics",     require("./routes/analyticsRoutes"));
 app.use("/api/reports",       require("./routes/reportRoutes"));
 app.use("/api/admin",         require("./routes/adminRoutes"));
+app.use("/api/webhooks",      require("./routes/webhookRoutes"));
+app.use("/api/iot",           require("./routes/iotRoutes"));
 
 // ─── Health check (no rate limit — used by load balancers) ────────────────────
 const healthHandler = (req, res) => {
@@ -129,6 +131,11 @@ const PORT = process.env.PORT || 5000;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode`);
   
+  // ─── Initialize Native WebSocket Gateway ────────────────────────────────────
+  const { initSocket } = require("./services/socketService");
+  initSocket(server);
+  console.log("🔌 Native WebSocket Gateway initialized on HTTP server.");
+
   // ─── Initialize SLA Background Worker ──────────────────────────────────────
   const slaService = require("./services/slaService");
   setTimeout(() => slaService.checkSlaBreaches(), 5000);

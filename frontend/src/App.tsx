@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
+import { SocketProvider } from "./context/SocketContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
 import Home from "./pages/Home"
 import Auth from "./pages/Auth"
@@ -15,6 +16,7 @@ import SearchComplaints from "./pages/SearchComplaints"
 import DashboardLayout from "./components/layout/DashboardLayout"
 import OfficerDashboard from "./pages/OfficerDashboard"
 import WorkerDashboard from "./pages/WorkerDashboard"
+import KarmaRewards from "./pages/KarmaRewards"
 
 import { GoogleOAuthProvider } from '@react-oauth/google'
 
@@ -26,7 +28,8 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <AuthProvider>
-      <Router>
+        <SocketProvider>
+          <Router>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -55,6 +58,7 @@ function App() {
               <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
               <Route path="/map" element={<MapView />} />
               <Route path="/donate" element={<Donation />} />
+              <Route path="/rewards" element={<KarmaRewards />} />
               <Route path="/search" element={<SearchComplaints />} />
             </Route>
           </Route>
@@ -92,8 +96,9 @@ function App() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
-    </AuthProvider>
-    </GoogleOAuthProvider>
+    </SocketProvider>
+  </AuthProvider>
+</GoogleOAuthProvider>
   )
 }
 

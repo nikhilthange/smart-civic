@@ -88,6 +88,70 @@ if (!hasCloudinary) {
   );
 }
 
+let exifr = null;
+try {
+  exifr = require("exifr");
+} catch (e) {
+  console.warn("⚠️ exifr optional dependency loading note:", e.message);
+}
+
+/**
+ * Extracts GPS coordinates and timestamp from image file path or buffer
+ */
+const extractExifGps = async (filePathOrBuffer) => {
+  if (!exifr) return null;
+  try {
+    const data = await exifr.parse(filePathOrBuffer, {
+      gps: true,
+      tiff: true,
+      exif: true,
+    });
+    if (data && (data.latitude || data.latitude === 0) && (data.longitude || data.longitude === 0)) {
+      return {
+        latitude: Number(data.latitude),
+        longitude: Number(data.longitude),
+        dateTime: data.DateTimeOriginal || data.CreateDate || null,
+      };
+    }
+  } catch (err) {
+    // Silently ignore images without EXIF header
+  }
+  return null;
+};
+
+/**
+ * Express middleware to automatically extract EXIF GPS coordinates from uploaded photo(s)
+ * and attach to req.exifLocation
+ */
+const processExifMetadata = async (req, _res, next) => {
+  try {
+    req.exifLocation = null;
+    const files = req.files || (req.file ? [req.file] : []);
+    if (files && files.length > 0) {
+      for (const file of files) {
+        if (file.path && !file.path.startsWith("http") && fs.existsSync(file.path)) {
+          const gps = await extractExifGps(file.path);
+          if (gps) {
+            req.exifLocation = gps;
+            console.log(`📍 EXIF GPS extracted from uploaded photo: [Lat: ${gps.latitude}, Lng: ${gps.longitude}]`);
+            break;
+          }
+        } else if (file.buffer) {
+          const gps = await extractExifGps(file.buffer);
+          if (gps) {
+            req.exifLocation = gps;
+            console.log(`📍 EXIF GPS extracted from uploaded buffer: [Lat: ${gps.latitude}, Lng: ${gps.longitude}]`);
+            break;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("EXIF processing warning:", err.message);
+  }
+  next();
+};
+
 // ─── Multer instance ──────────────────────────────────────────────────────────
 const upload = multer({
   storage,
@@ -133,4 +197,11 @@ const normaliseAttachments = (files = []) =>
     };
   });
 
-module.exports = { upload, handleUploadError, normaliseAttachments, hasCloudinary };
+module.exports = {
+  upload,
+  handleUploadError,
+  processExifMetadata,
+  extractExifGps,
+  normaliseAttachments,
+  hasCloudinary,
+};

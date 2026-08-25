@@ -14,8 +14,13 @@ LABEL_TO_CATEGORY = {
     "illegal_dumping": "garbage_collection",
     "water_leakage": "water_and_sanitation",
     "drainage_blockage": "drainage",
+    "storm_water_overflow": "storm_water_drains",
     "open_manhole": "public_safety",
     "broken_streetlight": "street_lighting",
+    "fallen_tree": "parks_and_recreation",
+    "illegal_construction": "illegal_construction",
+    "health_hazard": "public_health",
+    "encroachment": "licensing_and_encroachment",
 }
 
 LABEL_TO_DEPARTMENT = {
@@ -24,9 +29,14 @@ LABEL_TO_DEPARTMENT = {
     "garbage": "SWM",
     "illegal_dumping": "SWM",
     "water_leakage": "WSD",
-    "drainage_blockage": "WSD",
+    "drainage_blockage": "SWD",
+    "storm_water_overflow": "SWD",
     "open_manhole": "PSD",
     "broken_streetlight": "ELD",
+    "fallen_tree": "PRD",
+    "illegal_construction": "LIC",
+    "health_hazard": "PHD",
+    "encroachment": "LIC",
 }
 
 class ModelRunner:

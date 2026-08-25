@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import {
-  Wrench, MapPin, CheckCircle2, Camera, X, Loader2, Navigation
+  Wrench, MapPin, CheckCircle2, Camera, X, Loader2, Navigation, WifiOff, CloudUpload, Route, Sparkles
 } from "lucide-react"
 import { complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
@@ -8,43 +8,132 @@ import api from "@/lib/axios"
 import toast from "react-hot-toast"
 import { CameraCaptureModal } from "@/components/common/CameraCaptureModal"
 import { ComplaintDetailModal } from "@/components/common/ComplaintDetailModal"
+import { LiveNavigationModal } from "@/components/navigation/LiveNavigationModal"
+import { useSocket } from "@/context/SocketContext"
+import { saveOfflineResolution, syncOfflineQueue, getOfflineQueue } from "@/utils/offlineQueue"
+import { optimizeDailyTaskRoute, type OptimizedRouteResult, getTaskCoordinates } from "@/utils/routeOptimizer"
 
 export default function WorkerDashboard() {
+  const { lastEvent } = useSocket()
   const [tasks, setTasks] = useState<Complaint[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedTask, setSelectedTask] = useState<Complaint | null>(null)
   const [detailModalTask, setDetailModalTask] = useState<Complaint | null>(null)
+  const [navigatingTask, setNavigatingTask] = useState<Complaint | null>(null)
   const [isCameraOpen, setIsCameraOpen] = useState(false)
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [offlineCount, setOfflineCount] = useState(getOfflineQueue().length)
+  const [routeOptResult, setRouteOptResult] = useState<OptimizedRouteResult | null>(null)
+  const [isOptimizing, setIsOptimizing] = useState(false)
 
   // Resolution Form State
   const [proofFile, setProofFile] = useState<File | null>(null)
   const [filePreview, setFilePreview] = useState<string | null>(null)
   const [notes, setNotes] = useState("")
+  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const fetchWorkerTasks = async () => {
-    setIsLoading(true)
+  const fetchWorkerTasks = async (silent = false) => {
+    if (!silent) setIsLoading(true)
     try {
       const res = await api.get("/complaints/worker-tasks")
       setTasks(res.data.complaints || [])
     } catch {
       // Fallback to fetch assigned complaints
       try {
-        const fallback = await complaintApi.getAll({ status: "assigned,in_progress" })
+        const fallback = await complaintApi.getAll({ status: "assigned,in_progress,worker_assigned" })
         setTasks(fallback.complaints || [])
       } catch {
-        toast.error("Failed to load assigned field tasks.")
+        if (!silent) toast.error("Failed to load assigned field tasks.")
       }
     } finally {
-      setIsLoading(false)
+      if (!silent) setIsLoading(false)
     }
   }
 
   useEffect(() => {
     fetchWorkerTasks()
+
+    // Auto-sync polling every 10s
+    const timer = setInterval(() => {
+      fetchWorkerTasks(true)
+      setOfflineCount(getOfflineQueue().length)
+    }, 10000)
+
+    const handleOnline = () => {
+      setIsOnline(true)
+      toast.success("📶 Connection restored. Syncing offline tasks...")
+      syncOfflineQueue(() => {
+        setOfflineCount(getOfflineQueue().length)
+        fetchWorkerTasks(true)
+      })
+    }
+
+    const handleOffline = () => {
+      setIsOnline(false)
+      toast.error("⚠️ Offline mode active. Action queue enabled.")
+    }
+
+    const onFocus = () => fetchWorkerTasks(true)
+    window.addEventListener("focus", onFocus)
+    window.addEventListener("online", handleOnline)
+    window.addEventListener("offline", handleOffline)
+
+    return () => {
+      clearInterval(timer)
+      window.removeEventListener("focus", onFocus)
+      window.removeEventListener("online", handleOnline)
+      window.removeEventListener("offline", handleOffline)
+    }
   }, [])
+
+  // Reactive WebSocket event sync
+  useEffect(() => {
+    if (lastEvent) {
+      fetchWorkerTasks(true)
+    }
+  }, [lastEvent])
+
+  const handleOptimizeRoute = async () => {
+    if (tasks.length === 0) {
+      toast.error("No active tasks to optimize.")
+      return
+    }
+
+    setIsOptimizing(true)
+    try {
+      let startCoords: [number, number] = [19.0596, 72.8295]
+      if (navigator.geolocation) {
+        try {
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000, enableHighAccuracy: true })
+          })
+          startCoords = [pos.coords.latitude, pos.coords.longitude]
+        } catch {
+          startCoords = getTaskCoordinates(tasks[0])
+        }
+      }
+
+      const result = optimizeDailyTaskRoute(startCoords, tasks)
+      setTasks(result.orderedTasks)
+      setRouteOptResult(result)
+
+      const hrs = Math.floor(result.totalDurationMins / 60)
+      const mins = result.totalDurationMins % 60
+      const durationStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins} mins`
+
+      toast.success(
+        `🚀 Daily TSP Route Optimized: ${result.orderedTasks.length} stops (${result.totalDistanceKm} km • ~${durationStr})!`,
+        { duration: 5000, icon: "⚡" }
+      )
+    } catch {
+      toast.error("Failed to compute optimal route.")
+    } finally {
+      setIsOptimizing(false)
+    }
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -65,16 +154,53 @@ export default function WorkerDashboard() {
   const handleSubmitResolution = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedTask) return
-    if (!proofFile) {
+    if (!proofFile && !filePreview) {
       toast.error("Mandatory after-resolution proof photo is required!")
       return
+    }
+
+    // Check if device is offline
+    if (!navigator.onLine) {
+      if (filePreview) {
+        saveOfflineResolution({
+          complaintId: selectedTask._id,
+          notes,
+          imageBase64: filePreview,
+          filename: proofFile?.name || "offline_proof.jpg",
+        })
+        setOfflineCount(getOfflineQueue().length)
+        setSelectedTask(null)
+        handleRemoveFile()
+        setNotes("")
+        return
+      }
     }
 
     setIsSubmitting(true)
     try {
       const formData = new FormData()
-      formData.append("resolutionImage", proofFile)
+      if (proofFile) {
+        formData.append("resolutionImage", proofFile)
+      }
       formData.append("notes", notes)
+
+      // Try capturing worker on-site GPS coordinates for anti-fraud geo-fence check
+      if (navigator.geolocation) {
+        try {
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000, enableHighAccuracy: true })
+          })
+          formData.append("workerLat", String(pos.coords.latitude))
+          formData.append("workerLng", String(pos.coords.longitude))
+        } catch {
+          // If GPS denied/timed out, allow submission without hard client crash
+        }
+      }
+
+      if (selectedMaterials.length > 0) {
+        const matObjects = selectedMaterials.map((code) => ({ itemCode: code, quantity: 1 }))
+        formData.append("materialsUsed", JSON.stringify(matObjects))
+      }
 
       await api.put(`/complaints/${selectedTask._id}/worker-submit`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -84,9 +210,24 @@ export default function WorkerDashboard() {
       setSelectedTask(null)
       handleRemoveFile()
       setNotes("")
+      setSelectedMaterials([])
       fetchWorkerTasks()
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to submit resolution proof.")
+      // If network error, fallback to offline queue
+      if (!err.response && filePreview) {
+        saveOfflineResolution({
+          complaintId: selectedTask._id,
+          notes,
+          imageBase64: filePreview,
+          filename: proofFile?.name || "offline_proof.jpg",
+        })
+        setOfflineCount(getOfflineQueue().length)
+        setSelectedTask(null)
+        handleRemoveFile()
+        setNotes("")
+      } else {
+        toast.error(err.response?.data?.message || "Failed to submit resolution proof.")
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -94,8 +235,23 @@ export default function WorkerDashboard() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Offline Status Banner */}
+      {!isOnline && (
+        <div className="flex items-center justify-between p-4 bg-amber-500 text-white rounded-xl shadow-md animate-pulse">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <WifiOff className="w-5 h-5" />
+            Offline Mode: Working without internet. Task proofs will be stored locally and synced automatically when online.
+          </div>
+          {offlineCount > 0 && (
+            <span className="text-xs bg-amber-700 px-3 py-1 rounded-full font-bold">
+              {offlineCount} Queued Actions
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Header */}
-      <div className="flex items-center justify-between bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl border border-slate-200 shadow-sm gap-4">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-amber-100 text-amber-700 rounded-lg">
             <Wrench className="w-6 h-6" />
@@ -105,12 +261,80 @@ export default function WorkerDashboard() {
             <p className="text-slate-500 text-sm mt-0.5">Assigned On-Site Repair & Resolution Task Queue</p>
           </div>
         </div>
-        <div className="text-right">
-          <span className="text-xs font-semibold px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-full">
-            {tasks.length} Active Field Tasks
+        <div className="flex items-center flex-wrap gap-2.5">
+          {/* TSP Route Optimizer Action */}
+          <button
+            type="button"
+            onClick={handleOptimizeRoute}
+            disabled={isOptimizing || tasks.length === 0}
+            className="flex items-center gap-2 text-xs font-extrabold px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-lg shadow-md shadow-indigo-600/20 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {isOptimizing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4 text-amber-300" />
+            )}
+            {isOptimizing ? "Optimizing Route..." : "⚡ Optimize Daily Route (TSP)"}
+          </button>
+
+          {offlineCount > 0 && (
+            <button
+              onClick={() => syncOfflineQueue(() => {
+                setOfflineCount(getOfflineQueue().length)
+                fetchWorkerTasks(true)
+              })}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <CloudUpload className="w-4 h-4" />
+              Sync {offlineCount} Queued
+            </button>
+          )}
+          <span className="text-xs font-semibold px-3 py-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg">
+            {tasks.length} Active Tasks
           </span>
         </div>
       </div>
+
+      {/* Optimized Daily Route Statistics Banner */}
+      {routeOptResult && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white shadow-lg border border-indigo-700/50 gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-white/10 rounded-lg text-amber-300">
+              <Route className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm flex items-center gap-2">
+                Optimal Daily Shift Circuit (TSP)
+                <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-mono px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  Shortest Path
+                </span>
+              </h3>
+              <p className="text-xs text-indigo-200 mt-0.5">
+                Tasks arranged in optimal driving sequence to minimize travel time across Mumbai wards.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs font-mono font-bold bg-white/10 px-4 py-2 rounded-lg border border-white/10">
+            <div>
+              <span className="text-[10px] text-indigo-300 uppercase block font-sans">Stops</span>
+              {routeOptResult.orderedTasks.length} Sites
+            </div>
+            <div className="h-6 w-px bg-white/20" />
+            <div>
+              <span className="text-[10px] text-indigo-300 uppercase block font-sans">Distance</span>
+              {routeOptResult.totalDistanceKm} km
+            </div>
+            <div className="h-6 w-px bg-white/20" />
+            <div>
+              <span className="text-[10px] text-indigo-300 uppercase block font-sans">Est. Shift</span>
+              {Math.floor(routeOptResult.totalDurationMins / 60) > 0
+                ? `${Math.floor(routeOptResult.totalDurationMins / 60)}h ${routeOptResult.totalDurationMins % 60}m`
+                : `${routeOptResult.totalDurationMins}m`}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Task Grid */}
       {isLoading ? (
@@ -125,7 +349,7 @@ export default function WorkerDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tasks.map((task) => {
+          {tasks.map((task, idx) => {
             const statusCfg = STATUS_CONFIG[task.status] || STATUS_CONFIG.assigned
             const isResolved = task.status === "resolved" || task.status === "closed"
 
@@ -139,9 +363,16 @@ export default function WorkerDashboard() {
                   onClick={() => setDetailModalTask(task)}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                      {task.priority || "medium"} Priority
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {routeOptResult && (
+                        <span className="text-xs font-black font-mono px-2.5 py-0.5 rounded-full bg-indigo-600 text-white shadow-sm">
+                          Stop #{idx + 1}
+                        </span>
+                      )}
+                      <span className="text-xs font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                        {task.priority || "medium"} Priority
+                      </span>
+                    </div>
                     <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${statusCfg.color} ${statusCfg.bg} ${statusCfg.border}`}>
                       {statusCfg.label}
                     </span>
@@ -171,17 +402,31 @@ export default function WorkerDashboard() {
                       <span className="line-clamp-2">{task.location?.address || "Mumbai Location"}</span>
                     </div>
 
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        task.location?.address || "Mumbai"
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline mt-1"
-                    >
-                      <Navigation className="w-3.5 h-3.5" />
-                      Get Live GPS Directions
-                    </a>
+                    <div className="flex items-center gap-3 pt-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setNavigatingTask(task)
+                        }}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-colors"
+                      >
+                        <Navigation className="w-3.5 h-3.5 text-indigo-600" />
+                        Start Live GPS Navigation
+                      </button>
+
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          task.location?.address || "Mumbai"
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-slate-800 hover:underline"
+                      >
+                        External Maps ↗
+                      </a>
+                    </div>
                   </div>
                 </div>
 
@@ -283,10 +528,48 @@ export default function WorkerDashboard() {
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  rows={3}
+                  rows={2}
                   placeholder="Describe repair actions performed..."
                   className="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-[#0284C7]"
                 />
+              </div>
+
+              {/* Warehouse Material Consumption Ledger Chips */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5 flex items-center justify-between">
+                  <span>Warehouse Material Consumption (Optional)</span>
+                  {selectedMaterials.length > 0 && (
+                    <span className="text-indigo-600 text-[11px] font-semibold">{selectedMaterials.length} item(s) logged</span>
+                  )}
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { itemCode: "ASP-25", label: "+1 Asphalt Bag (25kg)", name: "Asphalt Bag (25kg)" },
+                    { itemCode: "LED-40W", label: "+1 LED 40W Luminaire", name: "LED 40W Luminaire" },
+                    { itemCode: "PVC-5M", label: "+5m PVC High-Pressure Pipe", name: "5m PVC Pipe" },
+                    { itemCode: "DIS-50L", label: "+1 Disinfectant Drum", name: "Disinfectant Drum" },
+                  ].map((mat) => {
+                    const isSelected = selectedMaterials.includes(mat.itemCode)
+                    return (
+                      <button
+                        key={mat.itemCode}
+                        type="button"
+                        onClick={() => {
+                          setSelectedMaterials((prev) =>
+                            isSelected ? prev.filter((c) => c !== mat.itemCode) : [...prev, mat.itemCode]
+                          )
+                        }}
+                        className={`text-xs px-2.5 py-1 rounded-lg border font-semibold transition-all ${
+                          isSelected
+                            ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                            : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                        }`}
+                      >
+                        {mat.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">
@@ -316,6 +599,30 @@ export default function WorkerDashboard() {
         complaint={detailModalTask}
         onClose={() => setDetailModalTask(null)}
       />
+
+      {/* Live Turn-by-Turn GPS Navigation HUD Modal */}
+      {navigatingTask && (
+        <LiveNavigationModal
+          isOpen={!!navigatingTask}
+          onClose={() => setNavigatingTask(null)}
+          targetLat={
+            navigatingTask.location?.coordinates?.coordinates?.[1] ||
+            (navigatingTask as any).lat ||
+            19.0596
+          }
+          targetLng={
+            navigatingTask.location?.coordinates?.coordinates?.[0] ||
+            (navigatingTask as any).lng ||
+            72.8295
+          }
+          targetAddress={navigatingTask.location?.address || "Reported BMC Defect Location"}
+          ticketTitle={navigatingTask.title}
+          ticketId={navigatingTask.complaintId || navigatingTask._id}
+          onArrived={() => {
+            setSelectedTask(navigatingTask)
+          }}
+        />
+      )}
     </div>
   )
 }

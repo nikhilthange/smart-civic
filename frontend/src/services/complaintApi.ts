@@ -26,6 +26,9 @@ export type ComplaintCategory =
   | "street_lighting"
   | "public_transport"
   | "drainage"
+  | "storm_water_drains"
+  | "public_health"
+  | "licensing_and_encroachment"
   | "other"
 
 export interface Attachment {
@@ -143,6 +146,9 @@ export const CATEGORY_LABELS: Record<ComplaintCategory, string> = {
   street_lighting: "Street Lighting",
   public_transport: "Public Transport",
   drainage: "Drainage",
+  storm_water_drains: "Storm Water Drains",
+  public_health: "Public Health & Sanitation",
+  licensing_and_encroachment: "Licensing & Encroachment",
   other: "Other",
 }
 

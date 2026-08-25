@@ -14,6 +14,7 @@ import {
   LineChart,
   Wrench,
   MapPin,
+  Award,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,6 +51,7 @@ const navItems: NavItem[] = [
   { key: "nav.mapView", defaultName: "Map View", href: "/map", icon: MapPin },
   { key: "nav.createComplaint", defaultName: "Create Complaint", href: "/complaint/create", icon: FileEdit, citizenOnly: true },
   { key: "nav.complaintHistory", defaultName: "Complaint History", href: "/complaints", icon: History },
+  { key: "nav.rewards", defaultName: "Civic Hero Rewards", href: "/rewards", icon: Award },
   { key: "nav.search", defaultName: "Search", href: "/search", icon: Search },
   { key: "nav.donations", defaultName: "Donations", href: "/donate", icon: HeartHandshake },
   { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true },

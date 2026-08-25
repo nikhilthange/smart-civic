@@ -117,6 +117,9 @@ const ComplaintSchema = new mongoose.Schema(
           "street_lighting",
           "public_transport",
           "drainage",
+          "storm_water_drains",
+          "public_health",
+          "licensing_and_encroachment",
           "other",
         ],
         message: "Please select a valid category",
@@ -153,6 +156,11 @@ const ComplaintSchema = new mongoose.Schema(
     assignedWorker: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Worker",
+      default: null,
+    },
+    contractor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Contractor",
       default: null,
     },
     department: {
@@ -225,6 +233,15 @@ const ComplaintSchema = new mongoose.Schema(
       enum: ["on_time", "escalated", "breached"],
       default: "on_time",
     },
+    escalationTier: {
+      type: Number,
+      enum: [1, 2, 3],
+      default: 1,
+    },
+    escalatedAt: {
+      type: Date,
+      default: null,
+    },
     contractorPenalty: {
       type: Number,
       default: 0,
@@ -234,6 +251,14 @@ const ComplaintSchema = new mongoose.Schema(
       vendorId: { type: String, trim: true, default: null },
       assignedAt: { type: Date, default: null },
     },
+    materialsUsed: [
+      {
+        itemCode: { type: String, trim: true },
+        itemName: { type: String, trim: true },
+        quantity: { type: Number, default: 1 },
+        unit: { type: String, default: "units" },
+      },
+    ],
 
     // ─── Timeline ─────────────────────────────────────────────────────────────
     statusHistory: [StatusHistorySchema],
@@ -268,6 +293,15 @@ const ComplaintSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: [500, "Rejection reason cannot exceed 500 characters"],
+    },
+
+    // ─── Automated AI Resolution Quality Inspection ───────────────────────────
+    resolutionAiCheck: {
+      isAcceptable: { type: Boolean, default: true },
+      confidenceScore: { type: Number, default: 0.90 },
+      analysis: { type: String, default: "" },
+      flags: [{ type: String }],
+      inspectedAt: { type: Date, default: null },
     },
 
     // ─── Engagement ───────────────────────────────────────────────────────────

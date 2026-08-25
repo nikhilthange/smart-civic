@@ -11,6 +11,7 @@ const {
   googleAuth,
   getUsers,
   createStaff,
+  redeemKarmaReward,
 } = require("../controllers/authController");
 
 const { protect, authorize } = require("../middlewares/auth");
@@ -90,5 +91,8 @@ router.get("/users", protect, authorize("admin"), getUsers);
 
 // @route  POST /api/auth/create-staff  (Admin only)
 router.post("/create-staff", protect, authorize("admin"), createStaff);
+
+// @route  POST /api/auth/redeem-reward (Citizen reward redemption)
+router.post("/redeem-reward", protect, redeemKarmaReward);
 
 module.exports = router;

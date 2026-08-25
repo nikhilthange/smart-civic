@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
-  CheckCircle2, Loader2, Bot, Info, Camera
+  CheckCircle2, Loader2, Bot, Info, Camera, QrCode
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { complaintApi, CATEGORY_LABELS, type ComplaintCategory } from "@/services/complaintApi"
 import { CameraCaptureModal } from "@/components/common/CameraCaptureModal"
-import VoiceInput from "@/components/common/VoiceInput"
+import { VoiceInput } from "@/components/common/VoiceInput"
+import { QrScannerModal, type ScannedAssetData } from "@/components/common/QrScannerModal"
 
 const CATEGORIES = Object.entries(CATEGORY_LABELS) as [ComplaintCategory, string][]
 
@@ -26,6 +27,18 @@ export default function CreateComplaint() {
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isCameraOpen, setIsCameraOpen] = useState(false)
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false)
+
+  const handleQrScan = (asset: ScannedAssetData) => {
+    setForm((prev) => ({
+      ...prev,
+      title: `[Asset #${asset.assetId}] - Civic Issue Report`,
+      category: (asset.category as ComplaintCategory) || prev.category || "street_lighting",
+      locationAddress: asset.address || prev.locationAddress || `Asset Location (${asset.ward || "Mumbai"})`,
+      lat: asset.lat ?? prev.lat,
+      lng: asset.lng ?? prev.lng,
+    }))
+  }
 
   const [form, setForm] = useState({
     title: "",
@@ -385,21 +398,39 @@ export default function CreateComplaint() {
                   />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsCameraOpen(true)}
-                  className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-emerald-300 bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-800 rounded-xl transition-colors min-w-[140px]"
-                >
-                  <Camera className="h-8 w-8 mb-2 text-emerald-600" />
-                  <span className="text-sm font-semibold">Live Camera</span>
-                  <span className="text-xs text-emerald-700 mt-1">Snap photo now</span>
-                </button>
+                <div className="flex flex-row sm:flex-col gap-2 min-w-[140px]">
+                  <button
+                    type="button"
+                    onClick={() => setIsCameraOpen(true)}
+                    className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-dashed border-emerald-300 bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-800 rounded-xl transition-colors"
+                  >
+                    <Camera className="h-6 w-6 mb-1 text-emerald-600" />
+                    <span className="text-xs font-bold">Live Camera</span>
+                    <span className="text-[10px] text-emerald-700">Snap photo</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsQrScannerOpen(true)}
+                    className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-dashed border-indigo-300 bg-indigo-50/60 hover:bg-indigo-100/70 text-indigo-800 rounded-xl transition-colors"
+                  >
+                    <QrCode className="h-6 w-6 mb-1 text-indigo-600" />
+                    <span className="text-xs font-bold">Scan Asset QR</span>
+                    <span className="text-[10px] text-indigo-700">Auto-fill defect</span>
+                  </button>
+                </div>
               </div>
 
               <CameraCaptureModal
                 isOpen={isCameraOpen}
                 onClose={() => setIsCameraOpen(false)}
                 onCapture={(file) => addFiles([file] as unknown as FileList)}
+              />
+
+              <QrScannerModal
+                isOpen={isQrScannerOpen}
+                onClose={() => setIsQrScannerOpen(false)}
+                onScan={handleQrScan}
               />
 
               {/* Preview */}

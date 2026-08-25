@@ -335,4 +335,65 @@ const createStaff = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getMe, logoutUser, createUser, googleAuth, getUsers, createStaff };
+// ─── @desc    Redeem Karma Points for Municipal Perks
+// ─── @route   POST /api/auth/redeem-reward
+// ─── @access  Private (citizen)
+const redeemKarmaReward = async (req, res) => {
+  try {
+    const { rewardId, title, pointsCost } = req.body;
+    if (!rewardId || !title || !pointsCost) {
+      return res.status(400).json({ success: false, message: "Reward details (rewardId, title, pointsCost) are required." });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    const cost = Number(pointsCost);
+    if ((user.karmaPoints || 0) < cost) {
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient Karma points! You have ${user.karmaPoints || 0} pts, but this perk requires ${cost} pts.`,
+      });
+    }
+
+    user.karmaPoints = Math.max(0, (user.karmaPoints || 0) - cost);
+    const voucherCode = `MUM-${rewardId.toUpperCase().slice(0, 4)}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const redeemedRecord = {
+      rewardId,
+      title,
+      pointsCost: cost,
+      voucherCode,
+      redeemedAt: new Date(),
+    };
+
+    if (!user.redeemedRewards) user.redeemedRewards = [];
+    user.redeemedRewards.push(redeemedRecord);
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `🎉 Successfully redeemed perk: ${title}!`,
+      voucher: redeemedRecord,
+      remainingPoints: user.karmaPoints,
+    });
+  } catch (error) {
+    console.error("RedeemKarmaReward Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error redeeming karma reward." });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getMe,
+  logoutUser,
+  createUser,
+  googleAuth,
+  getUsers,
+  createStaff,
+  redeemKarmaReward,
+};

@@ -74,11 +74,28 @@ const checkSlaBreaches = async () => {
       count++;
 
       if (complaint.citizen) {
-        await notificationService.statusUpdated(
-          complaint.citizen,
-          complaint,
-          `SLA Breached (Tier 1 Escalation)`
-        );
+        try {
+          if (typeof notificationService.statusUpdated === 'function') {
+            await notificationService.statusUpdated(
+              complaint.citizen,
+              complaint,
+              `SLA Breached (Tier 1 Escalation)`
+            );
+          } else if (typeof notificationService.notifyStatusUpdate === 'function') {
+            await notificationService.notifyStatusUpdate(complaint);
+          } else if (typeof notificationService.send === 'function') {
+            await notificationService.send({
+              recipientId: complaint.citizen,
+              complaintId: complaint._id,
+              type: "complaint_status_update",
+              title: "SLA Breached (Tier 1 Escalation) ⚠️",
+              message: `Your complaint "${complaint.title}" has exceeded SLA resolution deadline. Penalty has been assessed.`,
+              actionUrl: `/complaint/${complaint._id}/track`,
+            });
+          }
+        } catch (notifErr) {
+          console.warn("SLA notification warning:", notifErr.message);
+        }
       }
     }
 

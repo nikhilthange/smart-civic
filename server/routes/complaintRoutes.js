@@ -21,6 +21,9 @@ const {
   workerStartWork,
   rejectResolution,
   reassignWorker,
+  bulkReassignComplaints,
+  bulkEscalateComplaints,
+  getWardSlaChoropleth,
 } = require("../controllers/complaintController");
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
@@ -50,6 +53,15 @@ const statusValidation = [
 
 // GET /api/complaints/stats  — must come before /:id
 router.get("/stats", protect, authorize("admin", "officer"), getStats);
+
+// GET /api/complaints/ward-sla-choropleth
+router.get("/ward-sla-choropleth", getWardSlaChoropleth);
+
+// POST /api/complaints/bulk-reassign
+router.post("/bulk-reassign", protect, authorize("admin", "officer"), bulkReassignComplaints);
+
+// POST /api/complaints/bulk-escalate
+router.post("/bulk-escalate", protect, authorize("admin", "officer"), bulkEscalateComplaints);
 
 // GET /api/complaints/all — Admin only route for all complaints
 router.get("/all", protect, authorize("admin"), getComplaints);

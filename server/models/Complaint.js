@@ -366,6 +366,8 @@ ComplaintSchema.index({ createdAt: -1 });
 ComplaintSchema.index({ status: 1, department: 1 }); // Admin dashboard
 ComplaintSchema.index({ citizen: 1, status: 1 }); // Citizen view
 ComplaintSchema.index({ "location.coordinates": "2dsphere" }); // Geo queries
+ComplaintSchema.index({ status: 1, "location.coordinates": "2dsphere", createdAt: -1 }); // Compound geospatial triage
+ComplaintSchema.index({ ward: 1, status: 1, createdAt: -1 }); // Ward SLA ranking
 
 // ─── Auto-generate complaint ID before saving ─────────────────────────────────
 ComplaintSchema.pre("save", function () {

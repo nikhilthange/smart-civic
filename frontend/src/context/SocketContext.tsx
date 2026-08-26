@@ -25,9 +25,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       : "http://localhost:5000"
 
     const socketInstance: Socket = io(backendUrl, {
-      transports: ["websocket", "polling"],
-      reconnectionAttempts: 5,
-      reconnectionDelay: 2000,
+      transports: ["polling", "websocket"],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
+      autoConnect: true,
+      withCredentials: true,
     })
 
     socketInstance.on("connect", () => {
@@ -35,8 +40,13 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setIsConnected(true)
     })
 
-    socketInstance.on("disconnect", () => {
-      console.log("🔌 Disconnected from Native WebSocket Gateway");
+    socketInstance.on("disconnect", (reason) => {
+      console.log(`🔌 Disconnected from Native WebSocket Gateway: ${reason}`);
+      setIsConnected(false)
+    })
+
+    socketInstance.on("connect_error", (error) => {
+      console.warn("⚠️ WebSocket connection retry in progress:", error.message);
       setIsConnected(false)
     })
 
@@ -59,6 +69,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSocket(socketInstance)
 
     return () => {
+      socketInstance.removeAllListeners()
       socketInstance.disconnect()
     }
   }, [])

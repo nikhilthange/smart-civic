@@ -17,7 +17,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
         'civic-emerald': '#10B981',

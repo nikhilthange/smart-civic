@@ -66,22 +66,34 @@ app.use(sanitizeInput);
 // 7. HTTP Parameter Pollution prevention
 app.use(hppMiddleware);
 
-// 8. Request logger (skip in test environment)
+// 8. High-Performance Gzip/Brotli Response Compression (Threshold > 1KB)
+const compression = require("compression");
+app.use(
+  compression({
+    threshold: 1024,
+    filter: (req, res) => {
+      if (req.headers["x-no-compression"]) return false;
+      return compression.filter(req, res);
+    },
+  })
+);
+
+// 9. Request logger (skip in test environment)
 if (process.env.NODE_ENV !== "test") {
   app.use(
     morgan(process.env.NODE_ENV === "production" ? "combined" : "dev")
   );
 }
 
-// ─── Static uploads ───────────────────────────────────────────────────────────
+// ─── Static uploads with Caching Headers ─────────────────────────────────────
 app.use(
   "/uploads",
   (req, res, next) => {
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=3600");
     next();
   },
-  express.static(path.join(__dirname, "uploads"))
+  express.static(path.join(__dirname, "uploads"), { maxAge: "1d" })
 );
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -105,9 +117,41 @@ app.use("/api/reports",       require("./routes/reportRoutes"));
 app.use("/api/admin",         require("./routes/adminRoutes"));
 app.use("/api/webhooks",      require("./routes/webhookRoutes"));
 app.use("/api/iot",           require("./routes/iotRoutes"));
+app.use("/api/monsoon",       require("./routes/monsoonRoutes"));
+app.use("/api/dlp",           require("./routes/dlpRoutes"));
+app.use("/api/swm",           require("./routes/swmFleetRoutes"));
+app.use("/api/encroachment",  require("./routes/encroachmentRoutes"));
+app.use("/api/ward-budget",   require("./routes/wardBudgetRoutes"));
+app.use("/api/trenching",     require("./routes/trenchingRoutes"));
+app.use("/api/aqi",           require("./routes/aqiRoutes"));
+app.use("/api/water",         require("./routes/waterRoutes"));
+app.use("/api/vector",        require("./routes/vectorRoutes"));
+app.use("/api/turf",          require("./routes/turfRoutes"));
+app.use("/api/disaster",      require("./routes/disasterRoutes"));
+app.use("/api/structural",    require("./routes/structuralHealthRoutes"));
+app.use("/api/coastal",       require("./routes/coastalSentinelRoutes"));
+app.use("/api/fire-safety",   require("./routes/fireSafetyRoutes"));
+app.use("/api/tax-audit",     require("./routes/taxAuditRoutes"));
+app.use("/api/transit-lane",  require("./routes/transitLaneRoutes"));
+app.use("/api/animal-welfare", require("./routes/animalWelfareRoutes"));
+app.use("/api/audit",         require("./routes/auditRoutes"));
+app.use("/api/copilot",       require("./routes/copilotRoutes"));
+app.use("/api/cctv",          require("./routes/cctvRoutes"));
+app.use("/api/notices",       require("./routes/noticeRoutes"));
+app.use("/api/green-bonds",   require("./routes/greenBondRoutes"));
+app.use("/api/appeals",       require("./routes/appealRoutes"));
+app.use("/api/social",        require("./routes/socialRoutes"));
+app.use("/api/karma",         require("./routes/civicKarmaRoutes"));
+app.use("/api/contractors",   require("./routes/contractorRoutes"));
+app.use("/api/alm",           require("./routes/almRoutes"));
+app.use("/api/worker",        require("./routes/workerRoutes"));
+app.use("/api/sitrep",        require("./routes/sitrepRoutes"));
+app.use("/api/broadcast",     require("./routes/broadcastRoutes"));
 
 // ─── Health check (no rate limit — used by load balancers) ────────────────────
+const mongoose = require("mongoose");
 const healthHandler = (req, res) => {
+  const mem = process.memoryUsage();
   res.status(200).json({
     success: true,
     status:  "HEALTHY",
@@ -115,6 +159,16 @@ const healthHandler = (req, res) => {
     uptime:  process.uptime(),
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "development",
+    database: {
+      status: mongoose.connection.readyState === 1 ? "CONNECTED" : "DISCONNECTED",
+      host: mongoose.connection.host || "localhost",
+      name: mongoose.connection.name || "smart-civic",
+    },
+    memory: {
+      rssMb: Math.round(mem.rss / 1024 / 1024),
+      heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024),
+      heapTotalMb: Math.round(mem.heapTotal / 1024 / 1024),
+    },
   });
 };
 app.get("/health", healthHandler);

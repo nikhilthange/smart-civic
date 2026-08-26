@@ -71,26 +71,26 @@ const SEVERITY_COLORS: Record<string, { bg: string; border: string; text: string
 // ─── Custom Recharts Velocity Tooltip ──────────────────────────────────────────
 const CustomVelocityTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
-    const ingested = payload[0]?.value || 0
-    const resolved = payload[1]?.value || 0
+    const ingested = payload.find((p: any) => p.dataKey === 'Ingested')?.value || payload[0]?.value || 0
+    const resolved = payload.find((p: any) => p.dataKey === 'Resolved')?.value || payload[1]?.value || 0
     const netDelta = ingested - resolved
     const isClearing = netDelta <= 0
     return (
-      <div className="bg-slate-950/95 backdrop-blur-md text-white p-3 rounded-xl border border-slate-700 shadow-xl text-xs space-y-1.5 min-w-[180px]">
-        <p className="font-extrabold text-slate-300 border-b border-slate-800 pb-1">
+      <div className="backdrop-blur-md bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-white/[0.08] shadow-xl rounded-xl p-3 font-sans text-xs space-y-1.5 min-w-[180px]">
+        <p className="font-bold text-slate-800 dark:text-white font-mono border-b border-slate-100 dark:border-slate-800 pb-1">
           {label} Ticket Velocity
         </p>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-indigo-400 font-medium">📥 Ingested:</span>
-          <span className="font-mono font-bold">{ingested} tickets</span>
+        <div className="flex items-center justify-between gap-4 text-slate-600 dark:text-slate-300">
+          <span className="flex items-center gap-1.5 font-medium"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block"/> Ingested:</span>
+          <span className="font-mono font-bold font-tabular text-teal-600 dark:text-teal-400">{ingested} tickets</span>
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-emerald-400 font-medium">✅ Resolved:</span>
-          <span className="font-mono font-bold">{resolved} tickets</span>
+        <div className="flex items-center justify-between gap-4 text-slate-600 dark:text-slate-300">
+          <span className="flex items-center gap-1.5 font-medium"><span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"/> Resolved:</span>
+          <span className="font-mono font-bold font-tabular text-emerald-600 dark:text-emerald-400">{resolved} tickets</span>
         </div>
-        <div className="pt-1.5 border-t border-slate-800 flex items-center justify-between">
-          <span className="text-slate-400 text-[11px]">Net Backlog:</span>
-          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${isClearing ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-rose-500/20 text-rose-300 border border-rose-500/30"}`}>
+        <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <span className="text-slate-500 text-[11px]">Net Backlog:</span>
+          <span className={`text-[11px] font-bold font-mono px-2 py-0.5 rounded-full ${isClearing ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20" : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20"}`}>
             {netDelta > 0 ? `+${netDelta}` : netDelta} {isClearing ? "Clearing" : "Surge"}
           </span>
         </div>
@@ -576,20 +576,20 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6 pb-12 max-w-[1600px] mx-auto w-full px-2 sm:px-4">
       {/* ── Top Executive Command Center Header ── */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white shadow-xl border border-slate-800">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-emerald-950/90 text-white shadow-xl shadow-slate-950/20 border border-slate-800/80 backdrop-blur-xl">
         <div className="flex items-center gap-3.5">
-          <div className="p-3 bg-indigo-600/30 text-indigo-400 border border-indigo-500/30 rounded-xl shrink-0">
+          <div className="p-3 bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 text-emerald-400 border border-emerald-500/30 rounded-xl shrink-0 shadow-inner">
             <Shield className="w-6 h-6 sm:w-7 sm:h-7" />
           </div>
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight">Smart City Command Center</h1>
-              <span className="bg-emerald-500/20 text-emerald-400 text-xs font-mono px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <h1 className="text-xl sm:text-2xl font-extrabold font-display tracking-tight">Smart City Command Center</h1>
+              <span className="bg-emerald-500/10 text-emerald-400 text-xs font-mono px-2.5 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                 LIVE MUNICIPAL TELEMETRY
               </span>
             </div>
-            <p className="text-slate-400 text-xs mt-1">
+            <p className="text-slate-400 text-xs mt-1 font-sans">
               BMC Real-Time Ward Governance, Multi-Tier SLA Enforcement, and GIS Dispatch Radar
             </p>
           </div>
@@ -606,10 +606,10 @@ export default function AdminDashboard() {
                 duration: 3000
               })
             }}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border shadow-sm ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center gap-1.5 border shadow-sm ${
               isMonsoonSurgeActive
                 ? "bg-blue-600 text-white border-blue-400 animate-pulse shadow-blue-500/30"
-                : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                : "bg-slate-800/80 text-slate-300 border-slate-700/80 hover:bg-slate-700/80"
             }`}
           >
             <CloudRain className="w-3.5 h-3.5" />
@@ -618,7 +618,7 @@ export default function AdminDashboard() {
 
           <Button
             onClick={() => setIsIotSimulatorOpen(true)}
-            className="gap-1.5 bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-400/30 shadow-md text-xs"
+            className="gap-1.5 bg-blue-600/90 hover:bg-blue-600 text-white border border-blue-400/30 shadow-sm text-xs font-medium"
           >
             <Radio className="h-3.5 w-3.5 animate-pulse" />
             IoT Simulator
@@ -627,7 +627,7 @@ export default function AdminDashboard() {
           <Button
             onClick={handleExportPdf}
             disabled={isGeneratingPdf}
-            className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs shadow-md shadow-emerald-600/20"
+            className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium shadow-sm shadow-emerald-600/20"
           >
             {isGeneratingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
             {isGeneratingPdf ? "PDF..." : "Executive PDF"}
@@ -635,7 +635,7 @@ export default function AdminDashboard() {
 
           <Button
             onClick={() => setIsStaffModalOpen(true)}
-            className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs"
+            className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium shadow-sm shadow-emerald-600/20 active:scale-[0.98] transition"
           >
             <UserPlus className="h-3.5 w-3.5" />
             Staff
@@ -645,7 +645,7 @@ export default function AdminDashboard() {
             onClick={fetchAll}
             variant="outline"
             size="sm"
-            className="gap-1.5 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 text-xs"
+            className="gap-1.5 border-slate-700/80 text-slate-300 hover:text-white hover:bg-slate-800/80 text-xs font-mono"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
             Sync
@@ -656,91 +656,91 @@ export default function AdminDashboard() {
       {/* ── 1. Top KPI Row (4 High-Contrast Glassmorphic Cards with Micro-Sparklines) ── */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Card 1: Active Incidents */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/[0.04] transition-all duration-200 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Active Incidents</span>
-            <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-950/50 text-amber-600">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500 font-display">Active Incidents</span>
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
               <Activity className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-slate-900 dark:text-white">{activeIncidentsCount}</span>
+              <span className="font-mono tracking-tight font-bold text-3xl text-slate-900 dark:text-white font-tabular">{activeIncidentsCount}</span>
               {criticalCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 text-xs font-bold animate-pulse">
+                <span className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-mono font-medium animate-pulse">
                   {criticalCount} Critical
                 </span>
               )}
             </div>
             <div className="flex items-center gap-1.5 mt-2">
-              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-medium text-xs px-2 py-0.5 rounded-md border border-emerald-500/20">
                 ▲ +4.2%
               </span>
-              <span className="text-slate-400 text-xs">vs yesterday load</span>
+              <span className="text-slate-400 text-xs font-sans">vs yesterday load</span>
             </div>
           </div>
         </div>
 
         {/* Card 2: City SLA Compliance */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/[0.04] transition-all duration-200 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">City SLA Compliance</span>
-            <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500 font-display">City SLA Compliance</span>
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               <Zap className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-slate-900 dark:text-white">{citySlaComplianceRate}%</span>
-              <Badge className="bg-emerald-500 text-white text-[10px]">On Target</Badge>
+              <span className="font-mono tracking-tight font-bold text-3xl text-slate-900 dark:text-white font-tabular">{citySlaComplianceRate}%</span>
+              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md text-[10px] font-mono font-medium">On Target</span>
             </div>
             <div className="flex items-center gap-1.5 mt-2">
-              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-medium text-xs px-2 py-0.5 rounded-md border border-emerald-500/20">
                 ▲ +2.1%
               </span>
-              <span className="text-slate-400 text-xs">compliance boost</span>
+              <span className="text-slate-400 text-xs font-sans">compliance boost</span>
             </div>
           </div>
         </div>
 
         {/* Card 3: Mean Time to Resolution (MTTR) */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/[0.04] transition-all duration-200 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Mean Time to Resolve (MTTR)</span>
-            <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-950/50 text-blue-600">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500 font-display">Mean Time to Resolve (MTTR)</span>
+            <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
               <Clock className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-slate-900 dark:text-white">4.8 hrs</span>
+              <span className="font-mono tracking-tight font-bold text-3xl text-slate-900 dark:text-white font-tabular">4.8 hrs</span>
               <span className="text-xs text-slate-400 font-mono">Target: &lt;24h</span>
             </div>
             <div className="flex items-center gap-1.5 mt-2">
-              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-medium text-xs px-2 py-0.5 rounded-md border border-emerald-500/20">
                 ▼ -1.2h
               </span>
-              <span className="text-slate-400 text-xs">faster turnaround</span>
+              <span className="text-slate-400 text-xs font-sans">faster turnaround</span>
             </div>
           </div>
         </div>
 
         {/* Card 4: Contractor Escrow Penalties */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/[0.04] transition-all duration-200 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500">Contractor Escrow Deductions</span>
-            <div className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-950/50 text-rose-600">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-slate-500 font-display">Contractor Escrow Deductions</span>
+            <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
               <Award className="w-5 h-5" />
             </div>
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-rose-600">₹{totalPenaltiesAmount.toLocaleString("en-IN")}</span>
-              <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">
+              <span className="font-mono tracking-tight font-bold text-3xl text-rose-600 dark:text-rose-400 font-tabular">₹{totalPenaltiesAmount.toLocaleString("en-IN")}</span>
+              <span className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-mono font-medium border border-rose-500/20">
                 {totalSlaBreachesCount} Breaches
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-normal mt-2">
+            <p className="text-xs text-slate-400 font-sans mt-2">
               Deducted from ₹500K Base Pool
             </p>
           </div>
@@ -771,7 +771,7 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             {/* Left Column: Embedded Leaflet GIS Map */}
             <div
-              className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md p-4 sm:p-5 flex flex-col justify-between ${
+              className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02] p-4 sm:p-5 flex flex-col justify-between ${
                 isMapFullscreen
                   ? "fixed inset-0 z-50 p-4 sm:p-6 bg-white dark:bg-slate-950 rounded-none h-screen w-screen"
                   : "lg:col-span-8"
@@ -779,28 +779,28 @@ export default function AdminDashboard() {
             >
               <div className="flex items-center justify-between mb-3 sm:mb-4 flex-wrap gap-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 rounded-lg">
+                  <div className="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 rounded-lg">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">
+                    <h3 className="font-extrabold font-display text-sm text-slate-900 dark:text-white">
                       Live Municipal Spatial Command Radar
                     </h3>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 font-sans">
                       {isMonsoonSurgeActive ? "Showing Filtered Monsoon & Drainage Hotspots" : "Clustered Defect Coordinates across 24 BMC Wards"}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 text-xs">
+                  <div className="flex items-center bg-slate-100/80 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200/80 dark:border-white/[0.08] text-xs">
                     <button
                       type="button"
                       onClick={() => setMapLayerMode("clusters")}
-                      className={`px-3 py-1 rounded-md font-bold text-xs transition-all ${
+                      className={`px-3 py-1 rounded-md font-mono font-medium text-xs transition-all ${
                         mapLayerMode === "clusters"
-                          ? "bg-white dark:bg-slate-900 text-indigo-600 shadow-sm"
-                          : "text-slate-500 hover:text-slate-900"
+                          ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                          : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                       }`}
                     >
                       Pins
@@ -808,10 +808,10 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => setMapLayerMode("heatmap")}
-                      className={`px-3 py-1 rounded-md font-bold text-xs transition-all ${
+                      className={`px-3 py-1 rounded-md font-mono font-medium text-xs transition-all ${
                         mapLayerMode === "heatmap"
                           ? "bg-gradient-to-r from-red-600 to-amber-600 text-white shadow-sm"
-                          : "text-slate-500 hover:text-slate-900"
+                          : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                       }`}
                     >
                       Heatmap
@@ -822,7 +822,7 @@ export default function AdminDashboard() {
                     type="button"
                     onClick={() => setIsMapFullscreen(!isMapFullscreen)}
                     title={isMapFullscreen ? "Exit Fullscreen" : "Expand Map Fullscreen"}
-                    className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
+                    className="p-1.5 rounded-lg border border-slate-200/80 dark:border-white/[0.08] text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 transition-colors"
                   >
                     {isMapFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                   </button>
@@ -832,7 +832,7 @@ export default function AdminDashboard() {
               {/* Map Canvas */}
               <div
                 ref={mapContainerRef}
-                className={`w-full rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-inner z-0 ${
+                className={`w-full rounded-xl overflow-hidden border border-slate-200/80 dark:border-white/[0.08] shadow-inner z-0 ${
                   isMapFullscreen ? "h-[calc(100vh-120px)]" : "h-[380px] sm:h-[420px]"
                 }`}
               />
@@ -840,14 +840,14 @@ export default function AdminDashboard() {
 
             {/* Right Column: Real-Time Live Activity Stream */}
             {!isMapFullscreen && (
-              <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md p-4 sm:p-5 flex flex-col justify-between">
+              <div className="lg:col-span-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02] p-4 sm:p-5 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3 border-b pb-3 border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                      <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Live Activity Stream</h3>
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                      <h3 className="font-extrabold font-display text-sm text-slate-900 dark:text-white">Live Activity Stream</h3>
                     </div>
-                    <Badge variant="outline" className="text-[10px] font-mono">
+                    <Badge variant="outline" className="text-[10px] font-mono border-slate-200 dark:border-slate-700">
                       {displayedComplaints.length} Tickets
                     </Badge>
                   </div>
@@ -860,30 +860,37 @@ export default function AdminDashboard() {
                       return (
                         <div
                           key={c._id}
-                          className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-indigo-50/50 transition-all flex items-start justify-between gap-2"
+                          className="p-3 rounded-xl border border-slate-200/80 dark:border-white/[0.06] bg-slate-50/70 dark:bg-slate-800/40 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 hover:border-indigo-500/30 transition-all flex items-start justify-between gap-2.5"
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-1.5 mb-1">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusCfg.color} ${statusCfg.bg} ${statusCfg.border}`}>
+                              <span className="font-mono text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                                #{c.complaintId || c._id.slice(-6)}
+                              </span>
+                              <span className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded-md border ${statusCfg.color} ${statusCfg.bg} ${statusCfg.border}`}>
                                 {statusCfg.label}
                               </span>
                               {isCritical && (
-                                <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-rose-600 text-white animate-pulse">
+                                <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-600 text-white animate-pulse">
                                   CRITICAL
                                 </span>
                               )}
                             </div>
                             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{c.title}</h4>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
-                              {c.wardName || c.ward || "Ward A"} • {(CATEGORY_LABELS as any)[c.category] || c.category}
-                            </p>
+                            <div className="flex items-center justify-between text-[11px] text-slate-500 mt-1">
+                              <span className="truncate">{c.wardName || c.ward || "Ward A"} • {(CATEGORY_LABELS as any)[c.category] || c.category}</span>
+                              <span className="font-mono text-[10px] text-slate-400 shrink-0 ml-1">
+                                <Clock className="w-2.5 h-2.5 inline mr-0.5" />
+                                {new Date(c.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => centerMapOnComplaint(c)}
                             title="Center GIS Map"
-                            className="p-1.5 rounded-lg bg-white dark:bg-slate-700 text-indigo-600 hover:bg-indigo-600 hover:text-white border border-slate-200 transition-colors shrink-0"
+                            className="p-1.5 rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white border border-slate-200/80 dark:border-white/[0.08] transition-colors shrink-0 shadow-sm"
                           >
                             <Navigation className="w-3.5 h-3.5" />
                           </button>
@@ -893,7 +900,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-400 text-center pt-3 border-t border-slate-100 dark:border-slate-800">
+                <p className="text-[11px] text-slate-400 text-center pt-3 border-t border-slate-100 dark:border-slate-800 font-sans">
                   Click 🎯 navigation button to zoom into any incident coordinates
                 </p>
               </div>
@@ -903,38 +910,38 @@ export default function AdminDashboard() {
           {/* ── 3. Analytical Intelligence Section (Recharts) ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Stacked Horizontal Bar Chart for all 10 Departments */}
-            <Card className="shadow-md border-slate-200 dark:border-slate-800">
+            <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02]">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold flex items-center justify-between">
+                <CardTitle className="text-sm font-bold font-display flex items-center justify-between">
                   <span>10-Department Workload Breakdown</span>
-                  <span className="text-xs text-slate-400 font-normal">Resolved vs In Progress vs Breached</span>
+                  <span className="text-xs text-slate-400 font-normal font-sans">Resolved vs In Progress vs Breached</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={departmentStackedData} layout="horizontal" margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="department" tick={{ fontSize: 10, fontWeight: 700 }} />
-                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.6} />
+                    <XAxis dataKey="department" tick={{ fontSize: 10, fontWeight: 700, fontFamily: 'JetBrains Mono' }} />
+                    <YAxis tick={{ fontSize: 11, fontFamily: 'JetBrains Mono' }} allowDecimals={false} />
                     <Tooltip
-                      contentStyle={{ borderRadius: 8, fontSize: 12 }}
+                      contentStyle={{ borderRadius: 12, fontSize: 12, backgroundColor: 'rgba(15, 23, 42, 0.95)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontFamily: 'JetBrains Mono' }}
                       formatter={(val, name, item) => [`${val} tickets`, `${name} (${item.payload.deptLabel})`]}
                     />
                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-                    <Bar dataKey="Resolved" stackId="a" fill="#22c55e" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="In Progress" stackId="a" fill="#06b6d4" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="Breached" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Resolved" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="In Progress" stackId="a" fill="#0d9488" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="Breached" stackId="a" fill="#f43f5e" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
             {/* Dual-Area Trend Line Chart (7-Day Ingestion vs Resolution Velocity) */}
-            <Card className="shadow-md border-slate-200 dark:border-slate-800">
+            <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02]">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold flex items-center justify-between">
+                <CardTitle className="text-sm font-bold font-display flex items-center justify-between">
                   <span>7-Day Velocity: Ingestion vs Resolution</span>
-                  <span className="text-xs text-slate-400 font-normal">Municipal Ticket Inflow / Outflow</span>
+                  <span className="text-xs text-slate-400 font-normal font-sans">Municipal Ticket Inflow / Outflow</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -942,20 +949,20 @@ export default function AdminDashboard() {
                   <AreaChart data={velocityTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="ingestGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25}/>
-                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#0d9488" stopOpacity={0.25}/>
+                        <stop offset="95%" stopColor="#0d9488" stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id="resolveGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/>
                         <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.6} />
+                    <XAxis dataKey="day" tick={{ fontSize: 11, fontFamily: 'JetBrains Mono' }} />
+                    <YAxis tick={{ fontSize: 11, fontFamily: 'JetBrains Mono' }} allowDecimals={false} />
                     <Tooltip content={<CustomVelocityTooltip />} />
                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
-                    <Area type="monotone" dataKey="Ingested" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#ingestGrad)" />
+                    <Area type="monotone" dataKey="Ingested" stroke="#0d9488" strokeWidth={2.5} fillOpacity={1} fill="url(#ingestGrad)" />
                     <Area type="monotone" dataKey="Resolved" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#resolveGrad)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -964,19 +971,19 @@ export default function AdminDashboard() {
           </div>
 
           {/* ── 4. Governance & Contractor Escrow Table ── */}
-          <Card className="shadow-md border-slate-200 dark:border-slate-800">
+          <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02]">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Award className="h-5 w-5 text-indigo-600" />
+                  <CardTitle className="text-base font-display flex items-center gap-2">
+                    <Award className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     Municipal Contractor Escrow & SLA Reliability Scorecard
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-500">
+                  <CardDescription className="text-xs text-slate-500 font-sans">
                     Live contractor ranking with in-cell SLA progress bars, active job volume, and escrow deductions
                   </CardDescription>
                 </div>
-                <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 font-mono text-xs">
                   ₹500,000 Base Escrow Pool
                 </Badge>
               </div>
@@ -984,7 +991,7 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 uppercase font-extrabold">
+                  <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 uppercase font-mono font-bold text-[11px] border-y border-slate-200/80 dark:border-white/[0.08]">
                     <tr>
                       <th className="px-4 py-3">Contractor Agency</th>
                       <th className="px-4 py-3">Dept & Wards</th>
@@ -994,17 +1001,17 @@ export default function AdminDashboard() {
                       <th className="px-4 py-3">Remaining Escrow</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                  <tbody className="divide-y divide-slate-200/80 dark:divide-white/[0.06]">
                     {contractors.map((c) => {
                       const compliancePct = Math.round(((c.completedJobs || 1) / (c.totalJobs || 1)) * 100)
                       const isHigh = compliancePct >= 90
                       return (
-                        <tr key={c._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <tr key={c._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                           <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">
                             {c.name}
                           </td>
                           <td className="px-4 py-3">
-                            <span className="font-semibold text-indigo-600">{c.departmentCode}</span> • {c.assignedWards?.join(", ")}
+                            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{c.departmentCode}</span> • {c.assignedWards?.join(", ")}
                           </td>
                           <td className="px-4 py-3 min-w-[140px]">
                             <div className="flex items-center gap-2">
@@ -1014,18 +1021,18 @@ export default function AdminDashboard() {
                                   style={{ width: `${compliancePct}%` }}
                                 />
                               </div>
-                              <span className="font-mono font-bold">{compliancePct}%</span>
+                              <span className="font-mono font-bold font-tabular">{compliancePct}%</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 font-mono">
+                          <td className="px-4 py-3 font-mono font-tabular">
                             {c.completedJobs} / {c.totalJobs}
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`px-2 py-0.5 rounded-full font-bold font-mono ${c.slaBreaches > 0 ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"}`}>
+                            <span className={`px-2 py-0.5 rounded-md font-bold font-mono text-[11px] border ${c.slaBreaches > 0 ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"}`}>
                               {c.slaBreaches}
                             </span>
                           </td>
-                          <td className="px-4 py-3 font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          <td className="px-4 py-3 font-mono font-bold font-tabular text-emerald-600 dark:text-emerald-400">
                             ₹{c.escrowBalance?.toLocaleString("en-IN") || "500,000"}
                           </td>
                         </tr>
@@ -1041,15 +1048,15 @@ export default function AdminDashboard() {
 
       {/* ═══ TAB 2: COMPLAINTS MANAGEMENT ════════════════════════════════════ */}
       {activeTab === "complaints" && (
-        <Card className="shadow-md">
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02]">
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <CardTitle className="text-base">City-Wide Grievance Register</CardTitle>
+              <CardTitle className="text-base font-display">City-Wide Grievance Register</CardTitle>
               <div className="flex items-center gap-2">
                 <select
                   value={statusFilter}
                   onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-                  className="text-xs border rounded-lg px-2.5 py-1.5 bg-white dark:bg-slate-800"
+                  className="text-xs border border-slate-200/80 dark:border-white/[0.08] rounded-lg px-2.5 py-1.5 bg-white dark:bg-slate-800 font-mono"
                 >
                   <option value="">All Statuses</option>
                   <option value="pending">Pending</option>
@@ -1061,7 +1068,7 @@ export default function AdminDashboard() {
                 <select
                   value={wardFilter}
                   onChange={(e) => { setWardFilter(e.target.value); setPage(1) }}
-                  className="text-xs border rounded-lg px-2.5 py-1.5 bg-white dark:bg-slate-800"
+                  className="text-xs border border-slate-200/80 dark:border-white/[0.08] rounded-lg px-2.5 py-1.5 bg-white dark:bg-slate-800 font-mono"
                 >
                   <option value="all">All 24 Wards</option>
                   <option value="Ward A">Ward A</option>
@@ -1075,7 +1082,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
-                <thead className="bg-slate-100 dark:bg-slate-800 text-slate-700 uppercase font-extrabold">
+                <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 uppercase font-mono font-bold text-[11px] border-y border-slate-200/80 dark:border-white/[0.08]">
                   <tr>
                     <th className="px-4 py-3">ID & Title</th>
                     <th className="px-4 py-3">Category</th>
@@ -1085,27 +1092,27 @@ export default function AdminDashboard() {
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                <tbody className="divide-y divide-slate-200/80 dark:divide-white/[0.06]">
                   {complaints.map((c) => {
                     const statusCfg = STATUS_CONFIG[c.status] || STATUS_CONFIG.submitted
                     return (
-                      <tr key={c._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <tr key={c._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
                         <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
-                          <div>{c.complaintId || c._id.slice(-6)}</div>
-                          <div className="text-slate-500 font-normal truncate max-w-xs">{c.title}</div>
+                          <div className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{c.complaintId || c._id.slice(-6)}</div>
+                          <div className="text-slate-500 font-normal truncate max-w-xs font-sans">{c.title}</div>
                         </td>
                         <td className="px-4 py-3">{(CATEGORY_LABELS as any)[c.category] || c.category}</td>
                         <td className="px-4 py-3">{c.wardName || c.ward || "Ward A"}</td>
                         <td className="px-4 py-3">
-                          <span className="capitalize font-bold">{c.priority || "medium"}</span>
+                          <span className="capitalize font-mono font-medium">{c.priority || "medium"}</span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-0.5 rounded-full font-bold border ${statusCfg.color} ${statusCfg.bg} ${statusCfg.border}`}>
+                          <span className={`px-2 py-0.5 rounded-md font-mono text-[11px] font-medium border ${statusCfg.color} ${statusCfg.bg} ${statusCfg.border}`}>
                             {statusCfg.label}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Button size="sm" variant="outline" onClick={() => setSelectedComplaint(c)} className="text-xs">
+                          <Button size="sm" variant="outline" onClick={() => setSelectedComplaint(c)} className="text-xs font-mono border-slate-200/80 dark:border-white/[0.08]">
                             Inspect
                           </Button>
                         </td>
@@ -1121,14 +1128,14 @@ export default function AdminDashboard() {
 
       {/* ═══ TAB 3: USER DIRECTORY ═══════════════════════════════════════════ */}
       {activeTab === "users" && (
-        <Card className="shadow-md">
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02]">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Registered Citizens & Municipal Staff</CardTitle>
+            <CardTitle className="text-base font-display">Registered Citizens & Municipal Staff</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left">
-                <thead className="bg-slate-100 dark:bg-slate-800 text-slate-700 uppercase font-extrabold">
+                <thead className="bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 uppercase font-mono font-bold text-[11px] border-y border-slate-200/80 dark:border-white/[0.08]">
                   <tr>
                     <th className="px-4 py-3">Name</th>
                     <th className="px-4 py-3">Email</th>
@@ -1136,14 +1143,14 @@ export default function AdminDashboard() {
                     <th className="px-4 py-3">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                <tbody className="divide-y divide-slate-200/80 dark:divide-white/[0.06]">
                   {users.map((u) => (
-                    <tr key={u._id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-bold">{u.name}</td>
-                      <td className="px-4 py-3 text-slate-500">{u.email}</td>
-                      <td className="px-4 py-3 font-semibold uppercase">{u.role}</td>
+                    <tr key={u._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{u.name}</td>
+                      <td className="px-4 py-3 text-slate-500 font-mono">{u.email}</td>
+                      <td className="px-4 py-3 font-mono font-semibold uppercase">{u.role}</td>
                       <td className="px-4 py-3">
-                        <Badge className="bg-emerald-600 text-white">Active</Badge>
+                        <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md font-mono text-[11px] font-medium">Active</span>
                       </td>
                     </tr>
                   ))}
@@ -1156,11 +1163,11 @@ export default function AdminDashboard() {
 
       {/* ═══ TAB 4: OFFICERS ROSTER ══════════════════════════════════════════ */}
       {activeTab === "officers" && (
-        <Card className="shadow-md">
+        <Card className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-slate-200/80 dark:border-white/[0.08] shadow-sm shadow-slate-950/[0.02]">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Municipal Officers Roster</CardTitle>
-              <Button onClick={() => setIsAddOfficerOpen(true)} size="sm" className="bg-indigo-600 text-white text-xs">
+              <CardTitle className="text-base font-display">Municipal Officers Roster</CardTitle>
+              <Button onClick={() => setIsAddOfficerOpen(true)} size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium shadow-sm">
                 Add Officer
               </Button>
             </div>
@@ -1168,10 +1175,10 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {officers.map((off) => (
-                <div key={off._id} className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm">
-                  <h4 className="font-bold text-sm text-slate-900">{off.user?.name || "Officer"}</h4>
-                  <p className="text-xs text-slate-500">{off.department?.name || "Department"}</p>
-                  <p className="text-xs text-indigo-600 font-semibold mt-1">{off.designation || "Municipal Officer"}</p>
+                <div key={off._id} className="p-4 rounded-xl border border-slate-200/80 dark:border-white/[0.08] bg-white/60 dark:bg-slate-800/50 shadow-sm hover:border-indigo-500/30 transition-all">
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white font-display">{off.user?.name || "Officer"}</h4>
+                  <p className="text-xs text-slate-500 font-sans">{off.department?.name || "Department"}</p>
+                  <p className="text-xs text-indigo-600 dark:text-indigo-400 font-mono font-medium mt-1.5">{off.designation || "Municipal Officer"}</p>
                 </div>
               ))}
             </div>

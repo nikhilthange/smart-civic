@@ -1,0 +1,26 @@
+{
+  "name": "BMC Smart Civic Operating System",
+  "short_name": "SmartCivic",
+  "description": "Brihanmumbai Municipal Corporation (BMC) Enterprise CityOS & Grievance Resolution Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#0284c7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/vite.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["government", "utilities", "productivity"],
+  "lang": "en"
+}

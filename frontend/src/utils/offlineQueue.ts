@@ -5,8 +5,8 @@ export interface OfflineResolutionItem {
   id: string
   complaintId: string
   notes: string
-  imageBase64: string
-  filename: string
+  imageBase64?: string
+  filename?: string
   timestamp: number
 }
 
@@ -86,9 +86,11 @@ export const syncOfflineQueue = async (onSuccess?: () => void) => {
   let syncedCount = 0
   for (const item of queue) {
     try {
-      const file = dataURLtoFile(item.imageBase64, item.filename || "offline_proof.jpg")
       const formData = new FormData()
-      formData.append("resolutionImage", file)
+      if (item.imageBase64) {
+        const file = dataURLtoFile(item.imageBase64, item.filename || "offline_proof.jpg")
+        formData.append("resolutionImage", file)
+      }
       formData.append("notes", item.notes || "Offline synced resolution proof")
 
       await api.put(`/complaints/${item.complaintId}/worker-submit`, formData, {

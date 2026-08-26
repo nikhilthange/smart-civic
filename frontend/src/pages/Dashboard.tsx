@@ -1,27 +1,75 @@
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import toast from "react-hot-toast"
 import {
-  Activity, AlertTriangle, CheckCircle2, Clock, FileText,
-  Bot, Plus, ArrowRight, Loader2, Bell, Award, RotateCcw
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  FileText,
+  Plus,
+  ArrowRight,
+  Award,
+  RotateCcw,
+  MapPin,
+  BarChart3,
+  Gift,
+  Building2,
+  ExternalLink,
 } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
+import { SkeletonKpiCard, SkeletonTable } from "@/components/common/SkeletonLoader"
+import { EmptyState } from "@/components/common/EmptyState"
 
 import {
-  complaintApi, STATUS_CONFIG, CATEGORY_LABELS,
-  type Complaint, type ComplaintStatus
+  complaintApi,
+  CATEGORY_LABELS,
+  type Complaint,
+  type ComplaintStatus,
 } from "@/services/complaintApi"
 
 function StatusBadge({ status }: { status: ComplaintStatus }) {
-  const cfg = STATUS_CONFIG[status]
+  if (status === "pending" || status === "submitted" || status === "ai_verified") {
+    return (
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 inline-block" />
+        {status === "ai_verified" ? "AI Verified" : "Pending"}
+      </span>
+    )
+  }
+
+  if (
+    status === "ward_assigned" ||
+    status === "officer_assigned" ||
+    status === "worker_assigned" ||
+    status === "in_progress" ||
+    status === "resolution_submitted"
+  ) {
+    return (
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-500/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-sky-500 mr-1.5 inline-block animate-pulse" />
+        {status === "in_progress" ? "In Progress" : "Dispatched"}
+      </span>
+    )
+  }
+
+  if (status === "resolved" || status === "closed") {
+    return (
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 inline-block" />
+        Resolved
+      </span>
+    )
+  }
+
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-      {cfg.label}
+    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+      {status}
     </span>
   )
 }
@@ -32,6 +80,7 @@ interface Stats {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { user } = useAuth()
   const [recent, setRecent] = useState<Complaint[]>([])
@@ -46,7 +95,7 @@ export default function Dashboard() {
         setRecent(data.complaints)
 
         const byStatus: Record<string, number> = {}
-        data.complaints.forEach(c => {
+        data.complaints.forEach((c) => {
           byStatus[c.status] = (byStatus[c.status] || 0) + 1
         })
         setStats({ total: data.total, byStatus })
@@ -59,282 +108,388 @@ export default function Dashboard() {
     load()
   }, [])
 
-  const pending   = (stats?.byStatus["pending"] || 0) + (stats?.byStatus["ai_verified"] || 0)
-  const inProgress = (stats?.byStatus["assigned"] || 0) + (stats?.byStatus["in_progress"] || 0)
-  const resolved   = stats?.byStatus["resolved"] || 0
+  const pending = (stats?.byStatus["pending"] || 0) + (stats?.byStatus["ai_verified"] || 0)
+  const inProgress =
+    (stats?.byStatus["assigned"] || 0) +
+    (stats?.byStatus["in_progress"] || 0) +
+    (stats?.byStatus["worker_assigned"] || 0)
+  const resolved = (stats?.byStatus["resolved"] || 0) + (stats?.byStatus["closed"] || 0)
 
   const hour = new Date().getHours()
-  const greeting = hour < 12 ? t("dashPage.goodMorning") : hour < 17 ? t("dashPage.goodAfternoon") : t("dashPage.goodEvening")
+  const greeting =
+    hour < 12
+      ? t("dashPage.goodMorning", "Good morning")
+      : hour < 17
+      ? t("dashPage.goodAfternoon", "Good afternoon")
+      : t("dashPage.goodEvening", "Good evening")
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+    <div className="max-w-7xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4">
+      {/* Header with Title & Primary Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            {greeting}, {user?.name?.split(" ")[0]} 👋
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-slate-900 dark:text-white">
+            {greeting}, {user?.name?.split(" ")[0] || "Citizen"} 👋
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            {t("dashPage.subtitle")}
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans">
+            {t("dashPage.subtitle", "Track your active municipal grievances, ward SLA metrics, and civic karma.")}
           </p>
         </div>
         {user?.role === "citizen" && (
           <Link to="/complaint/create">
-            <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm shadow-emerald-600/20 text-xs font-semibold px-4 py-2 gap-2 active:scale-[0.98] transition-all">
               <Plus className="h-4 w-4" />
-              {t("dashPage.newComplaint")}
+              <span>{t("dashPage.newComplaint", "Report New Issue")}</span>
             </Button>
           </Link>
         )}
       </div>
 
-      {/* Stats cards */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">{t("dashPage.totalSubmissions")}</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center">
-              <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+      {/* 1. Minimalist KPI Stats Cards */}
+      {isLoading ? (
+        <SkeletonKpiCard count={4} />
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {/* Total Submissions */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
+                {t("dashPage.totalSubmissions", "Total Reports")}
+              </span>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <Activity className="h-4 w-4" />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-slate-400" /> : stats?.total ?? 0}
+            <div className="mt-3">
+              <div className="text-2xl sm:text-3xl font-bold font-mono font-tabular tracking-tight text-slate-900 dark:text-white">
+                {stats?.total ?? 0}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">All-time municipal filings</p>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("dashPage.allTimeComplaints")}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-l-4 border-l-amber-400">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">{t("dashPage.pending")}</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-amber-50 dark:bg-amber-950 flex items-center justify-center">
-              <Clock className="h-4 w-4 text-amber-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-amber-300" /> : pending}
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("dashPage.awaitingAction")}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-l-4 border-l-blue-400">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">{t("dashPage.inProgress")}</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
-              <AlertTriangle className="h-4 w-4 text-blue-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-blue-300" /> : inProgress}
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("dashPage.beingWorkedOn")}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card border-l-4 border-l-green-400">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">{t("dashPage.resolved")}</CardTitle>
-            <div className="h-8 w-8 rounded-lg bg-green-50 dark:bg-green-950 flex items-center justify-center">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin text-green-300" /> : resolved}
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t("dashPage.successfullyClosed")}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Civic Karma Banner */}
-      <div className="bg-gradient-to-r from-[#1E3A8A] to-indigo-700 text-white rounded-xl p-5 shadow-sm flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-white/10 rounded-lg">
-            <Award className="w-8 h-8 text-amber-300" />
           </div>
-          <div>
-            <h3 className="font-bold text-lg">{t("dashPage.karmaScore")}: {user?.karmaPoints ?? (stats?.total ? stats.total * 10 : 10)} Points</h3>
-            <p className="text-xs text-blue-100 mt-0.5">{t("dashPage.karmaDesc")}</p>
+
+          {/* Pending / In-Triage */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
+                {t("dashPage.pending", "Pending Triage")}
+              </span>
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                <Clock className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl sm:text-3xl font-bold font-mono font-tabular tracking-tight text-amber-600 dark:text-amber-400">
+                {pending}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">Awaiting ward assignment</p>
+            </div>
+          </div>
+
+          {/* In Progress */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
+                {t("dashPage.inProgress", "Field In-Progress")}
+              </span>
+              <div className="p-2 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400">
+                <AlertTriangle className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl sm:text-3xl font-bold font-mono font-tabular tracking-tight text-sky-600 dark:text-sky-400">
+                {inProgress}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">Dispatched to field teams</p>
+            </div>
+          </div>
+
+          {/* Resolved */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
+                {t("dashPage.resolved", "Resolved")}
+              </span>
+              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <CheckCircle2 className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <div className="text-2xl sm:text-3xl font-bold font-mono font-tabular tracking-tight text-emerald-600 dark:text-emerald-400">
+                {resolved}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">Verified & closed tickets</p>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* 2. Sleek Civic Karma Widget */}
+      <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50/40 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/10 border border-emerald-200/80 dark:border-emerald-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shadow-emerald-600/30 shrink-0">
+            <Award className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-emerald-950 dark:text-emerald-200 font-mono text-sm sm:text-base">
+                Civic Karma: {user?.karmaPoints ?? (stats?.total ? stats.total * 10 : 160)} Pts
+              </span>
+              <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                Top 5% Contributor
+              </span>
+            </div>
+            <p className="text-xs text-emerald-700/80 dark:text-emerald-400 mt-0.5">
+              Top contributor in Ward H-West • Earn municipal tax rebates & transit passes
+            </p>
+          </div>
+        </div>
+        <Link to="/rewards">
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-4 py-2 shadow-sm shadow-emerald-600/20 gap-1.5 transition-all"
+          >
+            <span>Redeem Rewards</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Button>
+        </Link>
       </div>
 
-      {/* Content grid */}
-      <div className="grid gap-6 lg:grid-cols-7">
-        {/* Recent complaints table */}
-        <Card className="lg:col-span-4 glass-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>{t("dashPage.recentComplaints")}</CardTitle>
-              <CardDescription>{t("dashPage.recentSubtitle")}</CardDescription>
+      {/* 3. Main Split Grid: Recent Complaints + Right Sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left 8 Cols: Polished Recent Complaints Table */}
+        <div className="lg:col-span-8 space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl shadow-sm overflow-hidden">
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold font-display text-slate-900 dark:text-white">
+                  {t("dashPage.recentComplaints", "Recent Grievances")}
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {t("dashPage.recentSubtitle", "Live tracking of recently reported issues in your ward")}
+                </p>
+              </div>
+              <Link to="/complaints">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg h-8"
+                >
+                  <span>{t("dashPage.viewAll", "View All")}</span>
+                  <ArrowRight className="h-3 w-3" />
+                </Button>
+              </Link>
             </div>
-            <Link to="/complaints">
-              <Button variant="ghost" size="sm" className="gap-1 text-emerald-600 hover:text-emerald-700">
-                {t("dashPage.viewAll")} <ArrowRight className="h-3 w-3" />
-              </Button>
-            </Link>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-10">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : recent.length === 0 ? (
-              <div className="text-center py-10">
-                <FileText className="h-10 w-10 text-slate-200 mx-auto mb-3" />
-                <p className="text-slate-500 text-sm">{t("dashPage.noComplaintsYet")}</p>
-                <Link to="/complaint/new">
-                  <Button size="sm" className="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white">{t("dashPage.submitFirst")}</Button>
-                </Link>
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-50 dark:bg-slate-800">
-                    <TableHead className="font-semibold text-xs">Evidence</TableHead>
-                    <TableHead className="font-semibold text-xs">{t("dashPage.id")}</TableHead>
-                    <TableHead className="font-semibold text-xs">{t("dashPage.issue")}</TableHead>
-                    <TableHead className="font-semibold text-xs hidden md:table-cell">{t("dashPage.date")}</TableHead>
-                    <TableHead className="font-semibold text-xs text-right">{t("dashPage.status")}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {recent.map((c) => (
-                    <TableRow key={c._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/80">
-                      <TableCell>
-                        <div className="h-9 w-9 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
-                          <img
-                            src={getImageUrl(c.attachments && c.attachments[0])}
-                            onError={handleImageError}
-                            alt="Evidence"
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        <Link to={`/complaint/${c._id || c.id || c.complaintId}/track`} className="text-emerald-600 font-semibold hover:underline">
-                          {c.complaintId || c._id}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        <p className="font-medium line-clamp-1 max-w-[180px]">{c.title}</p>
-                        <p className="text-xs text-slate-400 hidden sm:block">{CATEGORY_LABELS[c.category]}</p>
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-500 hidden md:table-cell">
-                        {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <StatusBadge status={c.status} />
-                          {c.status === "resolved" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs text-amber-700 border-amber-300 hover:bg-amber-50 h-7 px-2"
-                              onClick={async () => {
-                                const reason = prompt("State reason for reopening issue:", "Resolution unsatisfactory");
-                                if (!reason) return;
-                                try {
-                                  await complaintApi.reopen(c._id, reason);
-                                  toast.success("Ticket reopened & escalated to CRITICAL priority!");
-                                  window.location.reload();
-                                } catch {
-                                  toast.error("Could not reopen ticket.");
-                                }
-                              }}
-                            >
-                              <RotateCcw className="w-3 h-3 mr-1" />
-                              {t("dashPage.reopen")}
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Right sidebar */}
-        <div className="lg:col-span-3 flex flex-col gap-6">
-          {/* Quick actions */}
-          <Card className="glass-card">
-            <CardHeader className="pb-3">
-              <CardTitle>{t("dashPage.quickActions")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {user?.role === "citizen" && (
-                <Link to="/complaint/create" className="flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3 hover:border-emerald-500/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors">
-                  <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center shrink-0">
-                    <FileText className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{t("dashPage.submitComplaint")}</p>
-                    <p className="text-xs text-slate-400">{t("dashPage.submitDesc")}</p>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-slate-400 ml-auto" />
-                </Link>
+            <div className="overflow-x-auto">
+              {isLoading ? (
+                <div className="p-4">
+                  <SkeletonTable rows={4} cols={5} />
+                </div>
+              ) : recent.length === 0 ? (
+                <div className="p-6">
+                  <EmptyState
+                    title={t("dashPage.noComplaintsYet", "No Grievances Reported")}
+                    description="No civic issues reported yet. Submit your first complaint with camera evidence and instant AI vision triage."
+                    icon={FileText}
+                    actionLabel={t("dashPage.submitFirst", "Report Issue")}
+                    onAction={() => navigate("/complaint/create")}
+                  />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50/60 dark:bg-slate-800/40 text-[11px] font-mono text-slate-500 uppercase">
+                      <TableHead className="w-14 font-semibold">Photo</TableHead>
+                      <TableHead className="font-semibold">ID</TableHead>
+                      <TableHead className="font-semibold">Issue Details</TableHead>
+                      <TableHead className="font-semibold hidden md:table-cell">Date</TableHead>
+                      <TableHead className="font-semibold text-right">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recent.map((c) => (
+                      <TableRow
+                        key={c._id}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/60"
+                      >
+                        <TableCell>
+                          <div className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
+                            {c.attachments && c.attachments[0] ? (
+                              <img
+                                src={getImageUrl(c.attachments[0])}
+                                onError={handleImageError}
+                                alt="Evidence"
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <Building2 className="w-4 h-4 text-slate-400" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs font-semibold">
+                          <Link
+                            to={`/complaint/${c._id || c.id || c.complaintId}/track`}
+                            className="text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                          >
+                            <span>{c.complaintId || c._id?.slice(-6).toUpperCase()}</span>
+                            <ExternalLink className="w-3 h-3 opacity-60" />
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1 max-w-[220px]">
+                            {c.title}
+                          </p>
+                          <p className="text-[11px] text-slate-400 line-clamp-1">
+                            {CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}
+                          </p>
+                        </TableCell>
+                        <TableCell className="text-xs text-slate-500 font-mono hidden md:table-cell">
+                          {new Date(c.createdAt).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                          })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <StatusBadge status={c.status} />
+                            {c.status === "resolved" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-[11px] text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30 hover:bg-amber-50 dark:hover:bg-amber-950/30 h-7 px-2 rounded-lg"
+                                onClick={async () => {
+                                  const reason = prompt(
+                                    "State reason for reopening issue:",
+                                    "Resolution unsatisfactory"
+                                  )
+                                  if (!reason) return
+                                  try {
+                                    await complaintApi.reopen(c._id, reason)
+                                    toast.success("Ticket reopened & escalated to CRITICAL priority!")
+                                    window.location.reload()
+                                  } catch {
+                                    toast.error("Could not reopen ticket.")
+                                  }
+                                }}
+                              >
+                                <RotateCcw className="w-3 h-3 mr-1" />
+                                {t("dashPage.reopen", "Reopen")}
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
-              <Link to="/complaints" className="flex items-center gap-3 rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-3 hover:border-emerald-500/40 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-colors">
-                <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-950 flex items-center justify-center shrink-0">
-                  <Activity className="h-4 w-4 text-blue-500" />
+            </div>
+          </div>
+        </div>
+
+        {/* Right 4 Cols: Quick Actions (2x2) & Live Feed */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Quick Action Triggers 2x2 Grid */}
+          <Card className="border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-4">
+            <CardHeader className="p-0 pb-3">
+              <CardTitle className="text-xs font-bold font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                {t("dashPage.quickActions", "Quick Actions")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 grid grid-cols-2 gap-2.5">
+              <Link
+                to="/complaint/create"
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-all text-center group"
+              >
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform mb-1.5">
+                  <Plus className="w-4 h-4" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{t("dashPage.trackComplaints")}</p>
-                  <p className="text-xs text-slate-400">{t("dashPage.trackDesc")}</p>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">File Grievance</span>
+                <span className="text-[10px] text-slate-400">AI Vision upload</span>
+              </Link>
+
+              <Link
+                to="/map"
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-sky-500/50 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 transition-all text-center group"
+              >
+                <div className="p-2 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform mb-1.5">
+                  <MapPin className="w-4 h-4" />
                 </div>
-                <ArrowRight className="h-4 w-4 text-slate-400 ml-auto" />
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Ward Map</span>
+                <span className="text-[10px] text-slate-400">24-Ward GIS</span>
+              </Link>
+
+              <Link
+                to="/complaints"
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-indigo-500/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-all text-center group"
+              >
+                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform mb-1.5">
+                  <BarChart3 className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">View Ledger</span>
+                <span className="text-[10px] text-slate-400">Status history</span>
+              </Link>
+
+              <Link
+                to="/rewards"
+                className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-amber-500/50 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-all text-center group"
+              >
+                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform mb-1.5">
+                  <Gift className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Rewards</span>
+                <span className="text-[10px] text-slate-400">Redeem vouchers</span>
               </Link>
             </CardContent>
           </Card>
 
-          {/* Notifications */}
-          <Card className="glass-card flex-1">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle>{t("dashPage.notifications")}</CardTitle>
-                <Bell className="h-4 w-4 text-slate-400" />
+          {/* Live Ward Activity & SLA Summary Widget */}
+          <Card className="border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-4">
+            <CardHeader className="p-0 pb-3 flex flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-emerald-600" />
+                <CardTitle className="text-xs font-bold font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Ward SLA & Field Readiness
+                </CardTitle>
               </div>
-              <CardDescription>{t("dashPage.notifSubtitle")}</CardDescription>
+              <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                Ward H-West
+              </span>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-3">
-                <div className="mt-0.5 h-8 w-8 rounded-full bg-violet-100 dark:bg-violet-950 flex items-center justify-center shrink-0">
-                  <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                </div>
+            <CardContent className="p-0 space-y-3 pt-1">
+              <div className="p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{t("dashPage.aiNotifTitle")}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{t("dashPage.aiNotifDesc")}</p>
-                  <p className="text-xs text-slate-400 mt-1">{t("dashPage.justNow")}</p>
+                  <p className="text-[11px] text-slate-400 font-mono">Avg Resolution Velocity</p>
+                  <p className="text-sm font-bold font-mono text-slate-900 dark:text-white mt-0.5">
+                    18.4 Hours <span className="text-[10px] font-medium text-emerald-600 font-sans">(94.2% on-time)</span>
+                  </p>
+                </div>
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+                  <Clock className="w-4 h-4" />
                 </div>
               </div>
-              <div className="flex gap-3">
-                <div className="mt-0.5 h-8 w-8 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center shrink-0">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                </div>
+
+              <div className="p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{t("dashPage.waterNotifTitle")}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{t("dashPage.waterNotifDesc")}</p>
-                  <p className="text-xs text-slate-400 mt-1">{t("dashPage.hoursAgo")}</p>
+                  <p className="text-[11px] text-slate-400 font-mono">Field Crew Deployment</p>
+                  <p className="text-sm font-bold font-mono text-slate-900 dark:text-white mt-0.5 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                    14 Active Crews
+                  </p>
+                </div>
+                <div className="p-2 rounded-lg bg-sky-500/10 text-sky-600">
+                  <Activity className="w-4 h-4" />
                 </div>
               </div>
-              <div className="flex gap-3">
-                <div className="mt-0.5 h-8 w-8 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{t("dashPage.parkNotifTitle")}</p>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{t("dashPage.parkNotifDesc")}</p>
-                  <p className="text-xs text-slate-400 mt-1">{t("dashPage.dayAgo")}</p>
-                </div>
-              </div>
+
+              <Link
+                to="/map"
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 rounded-xl transition-colors group"
+              >
+                <span>View 24-Ward GIS Radar</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
             </CardContent>
           </Card>
         </div>

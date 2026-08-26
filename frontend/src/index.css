@@ -20,7 +20,7 @@
     --secondary-foreground: 222.2 47.4% 11.2%;
  
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 215.4 16.3% 38.0%;
  
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
@@ -45,8 +45,8 @@
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 40% 98%;
  
-    --primary: 230 100% 65%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 210 40% 98%;
  
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -62,7 +62,7 @@
  
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 230 100% 65%;
+    --ring: 160 84% 39%;
   }
 }
  
@@ -72,28 +72,102 @@
   }
   html {
     scroll-behavior: smooth;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-    letter-spacing: -0.02em;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.025em;
   }
   .font-mono, code, pre {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-feature-settings: "tnum" 1, "zero" 1;
   }
   body {
     @apply bg-background text-foreground;
-    background-color: #F8FAFC;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: #FAFAFA;
+    font-feature-settings: "rlig" 1, "calt" 1, "cv02" 1, "cv03" 1, "cv04" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background-color: #09090B;
+  }
+
+  /* Clean Minimal Custom Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(113, 113, 122, 0.25);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(113, 113, 122, 0.45);
   }
 }
 
 @layer utilities {
+  .font-tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
   .glass {
-    @apply bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-white/20 dark:border-slate-800/50 shadow-sm;
+    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)];
   }
   
   .glass-card {
-    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-all hover:shadow-md;
+    @apply bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-lg shadow-sm transition-all duration-150 hover:border-zinc-300 dark:hover:border-zinc-700;
+  }
+}
+
+/* Linear/Vercel Layout & Card Standard */
+.page-container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6;
+}
+
+.panel-card {
+  @apply bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-lg p-5 sm:p-6 shadow-sm;
+}
+
+.subtle-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700;
+}
+
+/* Accessibility: Easy View High-Contrast & Large Touch Target Mode */
+html.easy-view-mode {
+  font-size: 118%;
+}
+
+html.easy-view-mode button,
+html.easy-view-mode a,
+html.easy-view-mode input,
+html.easy-view-mode select {
+  min-height: 46px;
+  font-weight: 700;
+}
+
+html.easy-view-mode .badge {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.65rem;
+}
+
+@layer utilities {
+  .btn-primary-gradient {
+    @apply bg-zinc-900 dark:bg-zinc-50 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm transition active:scale-[0.98];
+  }
+
+  .badge-chip {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-mono font-medium border;
   }
 }

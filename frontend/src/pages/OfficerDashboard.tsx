@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Building2, Filter, Loader2, AlertCircle, MapPin, Users, CheckCircle2, FileCheck, X, Camera } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Building2, Filter, Loader2, AlertCircle, MapPin, Users, CheckCircle2, FileCheck, X, Camera, LayoutGrid, Kanban } from "lucide-react";
 import { complaintApi, type Complaint, type ComplaintStatus } from "../services/complaintApi";
 import { getImageUrl, handleImageError } from "@/utils/imageUrl";
 import { ComplaintDetailModal } from "@/components/common/ComplaintDetailModal";
+import { SkeletonActivityFeed } from "@/components/common/SkeletonLoader";
+import { EmptyState } from "@/components/common/EmptyState";
 import { useSocket } from "@/context/SocketContext";
+import { ComplaintsKanbanBoard } from "@/components/admin/ComplaintsKanbanBoard";
+import { BulkOperationsToolbar } from "@/components/admin/BulkOperationsToolbar";
 
 const CATEGORY_LABELS: Record<string, string> = {
   pothole: "Pothole/Road Damage",
@@ -35,6 +39,8 @@ export default function OfficerDashboard() {
   const [wardFilter, setWardFilter] = useState<string>("all");
   const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [detailModalComplaint, setDetailModalComplaint] = useState<Complaint | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
+  const [selectedComplaintIds, setSelectedComplaintIds] = useState<string[]>([]);
 
   // Modal Resolution Form State
   const [resolutionFile, setResolutionFile] = useState<File | null>(null);
@@ -248,44 +254,46 @@ export default function OfficerDashboard() {
     }
   };
 
-  const filteredComplaints = complaints.filter((c) => {
+  const filteredComplaints = complaints.filter((c: Complaint) => {
     const matchesStatus = statusFilter === "all" || c.status === statusFilter;
     let matchesWard = wardFilter === "all";
     if (!matchesWard) {
       const targetWard = wardFilter.split("(")[0].trim().toLowerCase();
-      const compWard = (c.ward || c.wardName || c.zone || c.wardCode || "").toLowerCase();
+      const compWard = (c.ward || c.wardName || (c as any).zone || (c as any).wardCode || "").toLowerCase();
       matchesWard = compWard.includes(targetWard) || targetWard.includes(compWard);
     }
     return matchesStatus && matchesWard;
   });
 
   const priorityColors: Record<string, string> = {
-    critical: "bg-red-100 text-red-800 border-red-300",
-    high: "bg-amber-100 text-amber-800 border-amber-300",
-    medium: "bg-blue-100 text-blue-800 border-blue-300",
-    low: "bg-slate-100 text-slate-800 border-slate-300",
+    critical: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20",
+    high: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+    medium: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+    low: "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20",
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
         <div>
-          <div className="flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-[#1E3A8A]" />
-            <h1 className="text-2xl font-bold text-[#1E293B]">Municipal Officer Field Portal</h1>
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <Building2 className="w-6 h-6" />
+            </div>
+            <h1 className="text-2xl font-bold font-display text-slate-900 dark:text-white">Municipal Officer Field Portal</h1>
           </div>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             BMC Ward Governance Task Queue & SLA Breach Monitor
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-500" />
+            <Filter className="w-4 h-4 text-slate-500" />
             <select
               value={wardFilter}
               onChange={(e) => setWardFilter(e.target.value)}
-              className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg px-3 py-2 focus:ring-[#0284C7] focus:border-[#0284C7]"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500"
             >
               <option value="all">All BMC Wards</option>
               <option value="Ward A">Ward A (Colaba/Fort)</option>
@@ -303,7 +311,7 @@ export default function OfficerDashboard() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg px-3 py-2 focus:ring-[#0284C7] focus:border-[#0284C7]"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500"
           >
             <option value="all">All Statuses</option>
             <option value="officer_assigned">Officer Assigned</option>
@@ -312,6 +320,34 @@ export default function OfficerDashboard() {
             <option value="resolution_submitted">Proof Uploaded</option>
             <option value="resolved">Resolved</option>
           </select>
+
+          {/* Grid vs Kanban View Mode Switcher */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+                viewMode === "grid"
+                  ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Grid
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("kanban")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+                viewMode === "kanban"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+              }`}
+            >
+              <Kanban className="w-3.5 h-3.5" />
+              Kanban
+            </button>
+          </div>
         </div>
       </div>
 
@@ -328,26 +364,60 @@ export default function OfficerDashboard() {
           </button>
         </div>
       ) : isLoading ? (
-        <div className="flex justify-center items-center h-64 bg-white rounded-xl border border-gray-200">
-          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
-        </div>
+        <SkeletonActivityFeed count={6} />
       ) : filteredComplaints.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-gray-200 p-8">
-          <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-gray-800">No Pending Field Issues</h3>
-          <p className="text-sm text-gray-500 mt-1">All ward tickets are resolved or up-to-date.</p>
-        </div>
+        <EmptyState
+          title="No Pending Field Issues"
+          description="All municipal ward tickets in this queue are resolved or up-to-date."
+          icon={CheckCircle2}
+        />
+      ) : viewMode === "kanban" ? (
+        <ComplaintsKanbanBoard
+          complaints={filteredComplaints}
+          onSelectComplaint={(c) => setDetailModalComplaint(c)}
+          onStatusChange={async (complaintId, newStatus) => {
+            try {
+              await complaintApi.updateStatus(complaintId, { status: newStatus as any, note: "Kanban matrix quick update" });
+              loadComplaints(true);
+            } catch {
+              // fallback
+            }
+          }}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredComplaints.map((c) => {
+          {filteredComplaints.map((c: Complaint) => {
             const statusCfg = STATUS_CONFIG[c.status as ComplaintStatus] || { label: c.status || "Unknown", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300" };
             const priorityStyle = priorityColors[c.priority || "medium"];
+            const isSelected = selectedComplaintIds.includes(c._id);
 
             return (
               <div
                 key={c._id}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all p-5 flex flex-col justify-between"
+                className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border transition-all p-5 flex flex-col justify-between ${
+                  isSelected
+                    ? "border-emerald-500 ring-2 ring-emerald-500/20 shadow-md"
+                    : "border-slate-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-lg"
+                }`}
               >
+                {/* Multi-select checkbox bar */}
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800 mb-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-mono text-slate-500 select-none">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        setSelectedComplaintIds((prev: string[]) =>
+                          isSelected ? prev.filter((id: string) => id !== c._id) : [...prev, c._id]
+                        );
+                      }}
+                      className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                    />
+                    <span>Select for Bulk Action</span>
+                  </label>
+                  <span className="text-[10px] font-mono text-slate-400">{c.complaintId}</span>
+                </div>
                 <div
                   className="cursor-pointer group"
                   onClick={() => setDetailModalComplaint(c)}
@@ -355,31 +425,32 @@ export default function OfficerDashboard() {
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-1.5">
                       <span
-                        className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase border ${priorityStyle}`}
+                        className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-bold uppercase border ${priorityStyle}`}
                       >
                         {c.priority || "medium"}
                       </span>
-                      <span className="text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                        {c.wardName || "UNASSIGNED"}
+                      <span
+                        className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-medium border ${statusCfg.color} ${statusCfg.bg} ${statusCfg.border}`}
+                      >
+                        {statusCfg.label}
                       </span>
                     </div>
-
-                    <span
-                      className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${statusCfg.color} ${statusCfg.bg} ${statusCfg.border}`}
-                    >
-                      {statusCfg.label}
+                    <span className="text-[11px] font-mono text-slate-400">
+                      {new Date(c.createdAt).toLocaleDateString()}
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-gray-900 text-lg line-clamp-1">{c.title}</h3>
-                  <p className="text-xs text-[#0284C7] font-semibold mt-0.5">
+                  <h3 className="font-bold font-display text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors line-clamp-1">
+                    {c.title}
+                  </h3>
+                  <p className="text-xs text-emerald-700 dark:text-emerald-400 font-mono font-semibold mt-0.5">
                     {CATEGORY_LABELS[c.category] || c.category}
                   </p>
 
-                  <p className="text-sm text-gray-600 mt-2 line-clamp-2">{c.description}</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 line-clamp-2">{c.description}</p>
 
                   {c.attachments && c.attachments[0] && (
-                    <div className="mt-3 overflow-hidden rounded-lg border border-gray-200 h-36 bg-gray-100">
+                    <div className="mt-3 overflow-hidden rounded-xl border border-slate-200/80 dark:border-white/[0.08] h-36 bg-slate-100 dark:bg-slate-800">
                       <img
                         src={getImageUrl(c.attachments[0])}
                         onError={handleImageError}
@@ -389,24 +460,24 @@ export default function OfficerDashboard() {
                     </div>
                   )}
 
-                  <div className="mt-4 pt-3 border-t border-gray-100 space-y-1.5 text-xs text-gray-500">
+                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
                       <span className="truncate">{c.location?.address}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-amber-700 font-medium">
+                    <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-medium">
                       <Users className="w-4 h-4 flex-shrink-0 text-amber-600" />
-                      <span>{c.affectedCitizensCount || 1} Citizens Affected</span>
+                      <span className="font-mono font-tabular">{c.affectedCitizensCount || 1} Citizens Affected</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-gray-100 flex flex-col gap-2">
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     {c.status === "officer_assigned" && (
                       <button
                         onClick={() => handleFetchEligibleWorkers(c)}
-                        className="w-full py-2.5 px-4 bg-[#8B5CF6] text-white rounded-lg text-sm font-semibold hover:bg-violet-700 transition-colors"
+                        className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-emerald-600/20 active:scale-[0.98] transition-all"
                       >
                         Assign Field Worker
                       </button>
@@ -414,7 +485,7 @@ export default function OfficerDashboard() {
                     {(c.status === "worker_assigned" || c.status === "in_progress") && (
                       <button
                         onClick={() => handleFetchEligibleWorkers(c, true)}
-                        className="w-full py-2.5 px-4 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700 transition-colors"
+                        className="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all"
                       >
                         Reassign Worker
                       </button>
@@ -422,7 +493,7 @@ export default function OfficerDashboard() {
                     {c.status === "worker_assigned" && (
                       <button
                         onClick={() => handleStartWork(c._id)}
-                        className="w-full py-2.5 px-4 bg-[#0284C7] text-white rounded-lg text-sm font-semibold hover:bg-sky-700 transition-colors"
+                        className="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-teal-600/20 active:scale-[0.98] transition-all"
                       >
                         Start Work
                       </button>
@@ -435,7 +506,7 @@ export default function OfficerDashboard() {
                         setSelectedComplaint(c);
                         setFeedback(null);
                       }}
-                      className="w-full py-2.5 px-4 bg-[#1E3A8A] text-white rounded-lg text-sm font-semibold hover:bg-blue-900 transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-emerald-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                     >
                       <FileCheck className="w-4 h-4" />
                       Submit Resolution Proof
@@ -444,11 +515,11 @@ export default function OfficerDashboard() {
 
                   {c.status === "resolution_submitted" && (
                     <div className="flex flex-col gap-2">
-                      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm mb-2">
-                        <p className="font-semibold text-gray-700 text-xs uppercase mb-1">Worker Description</p>
-                        <p className="text-gray-600 mb-2">{c.resolutionNotes || "No notes provided."}</p>
+                      <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm mb-2">
+                        <p className="font-semibold text-slate-700 dark:text-slate-300 text-xs uppercase mb-1 font-mono">Worker Description</p>
+                        <p className="text-slate-600 dark:text-slate-300 mb-2">{c.resolutionNotes || "No notes provided."}</p>
                         {c.resolutionImage && c.resolutionImage.url && (
-                          <div className="mt-2 rounded-lg overflow-hidden border border-gray-300 h-24 bg-gray-100">
+                          <div className="mt-2 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 h-24 bg-slate-100 dark:bg-slate-800">
                              <img src={getImageUrl(c.resolutionImage)} onError={handleImageError} alt="Resolution" className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -456,14 +527,14 @@ export default function OfficerDashboard() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleApproveResolution(c._id)}
-                          className="flex-1 py-2 px-3 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 px-3 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 shadow-sm transition-colors flex items-center justify-center gap-1.5"
                         >
                           <CheckCircle2 className="w-4 h-4" />
                           Approve
                         </button>
                         <button
                           onClick={() => setSelectedForReject(c)}
-                          className="flex-1 py-2 px-3 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 px-3 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700 shadow-sm transition-colors flex items-center justify-center gap-1.5"
                         >
                           <X className="w-4 h-4" />
                           Rework
@@ -473,7 +544,7 @@ export default function OfficerDashboard() {
                   )}
 
                   {c.status === "resolved" && (
-                    <span className="w-full text-center py-2 text-xs font-bold text-green-700 bg-green-50 rounded-lg border border-green-200">
+                    <span className="w-full text-center py-2 text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
                       Resolved on {new Date(c.resolvedAt || c.updatedAt).toLocaleDateString()}
                     </span>
                   )}
@@ -650,7 +721,7 @@ export default function OfficerDashboard() {
               {eligibleWorkers.length === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-4">No eligible workers found.</p>
               ) : (
-                eligibleWorkers.map((worker) => (
+                eligibleWorkers.map((worker: any) => (
                   <div key={worker._id} className="flex justify-between p-3 border rounded-lg">
                     <p className="font-bold">{worker.user.name}</p>
                     <button
@@ -705,6 +776,13 @@ export default function OfficerDashboard() {
       <ComplaintDetailModal
         complaint={detailModalComplaint}
         onClose={() => setDetailModalComplaint(null)}
+      />
+
+      {/* Bulk Operations Toolbar */}
+      <BulkOperationsToolbar
+        selectedIds={selectedComplaintIds}
+        onClearSelection={() => setSelectedComplaintIds([])}
+        onActionComplete={() => loadComplaints(true)}
       />
     </div>
   );

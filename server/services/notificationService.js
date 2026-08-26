@@ -195,6 +195,26 @@ const notificationService = {
       actionUrl: `/complaint/${complaint._id}/track`,
     }),
 
+  statusUpdated: (userId, complaint, note) =>
+    sendNotification({
+      recipientId: userId,
+      complaintId: complaint._id,
+      type: "complaint_status_update",
+      title: "Complaint Status Update ⚠️",
+      message: note || `Your complaint "${complaint.title}" status has been updated.`,
+      actionUrl: `/complaint/${complaint._id}/track`,
+    }),
+
+  notifyStatusUpdate: (complaint, note) =>
+    sendNotification({
+      recipientId: complaint.citizen,
+      complaintId: complaint._id,
+      type: "complaint_status_update",
+      title: "Complaint Status Update ⚠️",
+      message: note || `Your complaint "${complaint.title}" status has been updated.`,
+      actionUrl: `/complaint/${complaint._id}/track`,
+    }),
+
   aiVerified: (userId, complaint) =>
     sendNotification({
       recipientId: userId,

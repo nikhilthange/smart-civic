@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  # ─── MongoDB Database Container (Local Deployment) ──────────────────────────
+  mongodb:
+    image: mongo:7.0-jammy
+    container_name: smart_civic_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: smart-civic
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - smart_civic_net
+
+  # ─── Backend API Container ──────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: smart_civic_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGO_URI: mongodb://mongodb:27017/smart-civic
+      JWT_SECRET: super_secret_production_jwt_key_min_32_chars_long_12345
+      CLIENT_ORIGIN: http://localhost
+    depends_on:
+      - mongodb
+    networks:
+      - smart_civic_net
+
+  # ─── Frontend Nginx Reverse-Proxy Container ─────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smart_civic_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - smart_civic_net
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  smart_civic_net:
+    driver: bridge

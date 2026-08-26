@@ -8,7 +8,8 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 import "leaflet.heat"
 import {
   Filter, MapPin, Layers, RefreshCw, Flame,
-  Search, Eye, AlertTriangle, Building2, Radio
+  Search, Eye, AlertTriangle, Building2, Radio,
+  Download, FileSpreadsheet, Clock
 } from "lucide-react"
 import { complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
 import { getImageUrl, handleImageError, FALLBACK_IMAGE } from "@/utils/imageUrl"
@@ -16,6 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { IotTelemetrySimulatorModal } from "@/components/common/IotTelemetrySimulatorModal"
+import { SkeletonMap } from "@/components/common/SkeletonLoader"
+import { EmptyState } from "@/components/common/EmptyState"
 
 import { useSocket } from "@/context/SocketContext"
 
@@ -52,7 +55,8 @@ export default function MapView() {
   const [selectedSeverity, setSelectedSeverity] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [activeTab, setActiveTab] = useState<"map" | "grid">("map")
-  const [mapLayerMode, setMapLayerMode] = useState<"clusters" | "heatmap">("clusters")
+  const [mapLayerMode, setMapLayerMode] = useState<"clusters" | "heatmap" | "choropleth">("clusters")
+  const [timeWindowHours, setTimeWindowHours] = useState<number>(72)
 
   const [activeHotspotAlert, setActiveHotspotAlert] = useState<{
     ward?: string
@@ -231,12 +235,35 @@ export default function MapView() {
     clusterGroupRef.current = clusterGroup
     mapInstanceRef.current = map
 
+    // Trigger map invalidation to avoid grey/blank tiles
+    setTimeout(() => {
+      map.invalidateSize()
+    }, 100)
+    setTimeout(() => {
+      map.invalidateSize()
+    }, 400)
+
+    const handleResize = () => {
+      map.invalidateSize()
+    }
+    window.addEventListener("resize", handleResize)
+
     return () => {
+      window.removeEventListener("resize", handleResize)
       map.remove()
       mapInstanceRef.current = null
       clusterGroupRef.current = null
     }
   }, [])
+
+  // Invalidate map size whenever user switches back to the Map tab
+  useEffect(() => {
+    if (activeTab === "map" && mapInstanceRef.current) {
+      setTimeout(() => {
+        mapInstanceRef.current?.invalidateSize()
+      }, 100)
+    }
+  }, [activeTab])
 
   // Update Markers or Heatmap on Filter, Mode, or Complaints change
   useEffect(() => {
@@ -506,8 +533,91 @@ export default function MapView() {
                 <Flame className="w-3.5 h-3.5" />
                 Defect Heatmap
               </button>
+              <button
+                type="button"
+                onClick={() => setMapLayerMode("choropleth")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-bold transition-all ${
+                  mapLayerMode === "choropleth"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                24-Ward Choropleth
+              </button>
             </div>
           )}
+
+          {/* Export Suite Buttons */}
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const geojson = {
+                  type: "FeatureCollection",
+                  features: filteredComplaints.map((c) => {
+                    const coords = c.location?.coordinates as [number, number] | undefined
+                    return {
+                      type: "Feature",
+                      geometry: {
+                        type: "Point",
+                        coordinates: [coords?.[0] || 72.8437, coords?.[1] || 19.0178],
+                      },
+                      properties: {
+                        id: c.complaintId || c._id,
+                        title: c.title,
+                        category: c.category,
+                        priority: c.priority,
+                        status: c.status,
+                        ward: c.ward,
+                      },
+                    }
+                  }),
+                }
+                const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: "application/geo+json" })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement("a")
+                a.href = url
+                a.download = `mumbai_civic_defects_${Date.now()}.geojson`
+                a.click()
+                toast.success("Exported GeoJSON dataset!", { icon: "🗺️" })
+              }}
+              className="text-xs h-9 rounded-xl border-slate-200 dark:border-slate-800 gap-1"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>GeoJSON</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const headers = ["Complaint ID", "Title", "Category", "Ward", "Priority", "Status", "Address"]
+                const rows = filteredComplaints.map((c) => [
+                  `"${c.complaintId || c._id}"`,
+                  `"${c.title.replace(/"/g, '""')}"`,
+                  `"${c.category}"`,
+                  `"${c.ward || 'Ward A'}"`,
+                  `"${c.priority}"`,
+                  `"${c.status}"`,
+                  `"${(c.location?.address || '').replace(/"/g, '""')}"`,
+                ])
+                const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n")
+                const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement("a")
+                a.href = url
+                a.download = `mumbai_complaints_${Date.now()}.csv`
+                a.click()
+                toast.success("Exported CSV spreadsheet!", { icon: "📊" })
+              }}
+              className="text-xs h-9 rounded-xl border-slate-200 dark:border-slate-800 gap-1"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>CSV</span>
+            </Button>
+          </div>
 
           <Button
             variant="outline"
@@ -622,7 +732,7 @@ export default function MapView() {
             </select>
 
             {/* Total Badge */}
-            <Badge className="bg-indigo-600 text-white font-mono text-xs ml-auto">
+            <Badge className="bg-emerald-600 text-white font-mono text-xs ml-auto">
               {filteredComplaints.length} Tickets Found
             </Badge>
           </div>
@@ -631,75 +741,117 @@ export default function MapView() {
 
       {/* Main Content Area */}
       {activeTab === "map" ? (
-        <Card className="shadow-md overflow-hidden border-slate-200">
-          <CardHeader className="pb-3 bg-slate-50 border-b border-slate-200">
+        <Card className="shadow-md overflow-hidden border-slate-200 dark:border-white/[0.08]">
+          <CardHeader className="pb-3 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900">
-                <MapPin className="h-4 w-4 text-indigo-600" />
+              <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white font-display">
+                <MapPin className="h-4 w-4 text-emerald-600" />
                 Live Map View (Leaflet OpenStreetMap)
               </CardTitle>
-              <div className="flex items-center gap-4 text-xs font-medium text-slate-600">
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-600"></span> Critical</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span> High</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Medium</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-600"></span> Low</span>
+              <div className="flex items-center gap-4 text-xs font-medium text-slate-600 dark:text-slate-300">
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-600"></span> Critical</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> High</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-yellow-500"></span> Medium</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Low</span>
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-0 relative">
             {error && (
-              <div className="p-4 bg-red-50 text-red-700 text-xs border-b border-red-200 flex items-center gap-2">
+              <div className="p-4 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 text-xs border-b border-rose-200 dark:border-rose-900 flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
                 {error}
               </div>
             )}
             <div
               ref={mapContainerRef}
-              className="w-full h-[620px] bg-slate-100 z-10"
-              style={{ minHeight: "500px" }}
+              className="w-full h-[650px] bg-slate-900 z-1 rounded-b-2xl"
+              style={{ height: "650px", width: "100%", zIndex: 1, minHeight: "550px" }}
             />
+            {loading && (
+              <div className="absolute inset-0 z-20 pointer-events-none">
+                <SkeletonMap height="650px" />
+              </div>
+            )}
+
+            {/* Interactive Timeline Playback Scrubber */}
+            <div className="p-4 bg-slate-900 text-white border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-cyan-400" />
+                <div>
+                  <span className="text-xs font-bold font-display text-white">
+                    Historical Incident Timeline Scrubber
+                  </span>
+                  <p className="text-[11px] text-slate-400">
+                    Filter incidents registered within past {timeWindowHours} hours ({timeWindowHours >= 24 ? `${(timeWindowHours / 24).toFixed(0)} day(s)` : `${timeWindowHours}h`})
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 w-full sm:w-72">
+                <input
+                  type="range"
+                  min="1"
+                  max="168"
+                  value={timeWindowHours}
+                  onChange={(e) => setTimeWindowHours(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                />
+                <Badge className="bg-cyan-500 text-slate-950 font-mono text-xs px-2 shrink-0">
+                  {timeWindowHours}H
+                </Badge>
+              </div>
+            </div>
           </CardContent>
         </Card>
       ) : (
         /* Grid Fallback View */
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredComplaints.map((c) => {
-            const color = SEVERITY_COLORS[c.priority] || SEVERITY_COLORS.medium
-            return (
-              <Card key={c._id} className="hover:shadow-md transition-shadow border-slate-200">
-                <CardContent className="pt-4 pb-4">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-mono font-bold text-slate-500">{c.complaintId}</span>
-                    <Badge className="text-[10px] uppercase font-bold" style={{ backgroundColor: color.bg, color: color.text, border: `1px solid ${color.border}` }}>
-                      {c.priority}
-                    </Badge>
-                  </div>
-                  <h3 className="font-bold text-slate-900 text-sm line-clamp-1 mb-1">{c.title}</h3>
-                  {c.attachments && c.attachments[0] && (
-                    <div className="h-28 w-full rounded-lg overflow-hidden border border-slate-200 bg-slate-100 mb-2">
-                      <img
-                        src={getImageUrl(c.attachments[0])}
-                        onError={handleImageError}
-                        alt="Evidence"
-                        className="w-full h-full object-cover"
-                      />
+        filteredComplaints.length === 0 ? (
+          <EmptyState
+            title="No Complaints Found on Map"
+            description="No civic tickets match your currently active ward or priority filters."
+            icon={MapPin}
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredComplaints.map((c) => {
+              const color = SEVERITY_COLORS[c.priority] || SEVERITY_COLORS.medium
+              return (
+                <Card key={c._id} className="hover:shadow-md transition-shadow border-slate-200 dark:border-white/[0.08] bg-white/80 dark:bg-slate-900/80">
+                  <CardContent className="pt-4 pb-4">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-xs font-mono font-bold text-slate-500">{c.complaintId}</span>
+                      <Badge className="text-[10px] uppercase font-bold font-mono" style={{ backgroundColor: color.bg, color: color.text, border: `1px solid ${color.border}` }}>
+                        {c.priority}
+                      </Badge>
                     </div>
-                  )}
-                  <p className="text-xs text-slate-500 line-clamp-2 mb-3">{c.description}</p>
-                  <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
-                    <span className="text-slate-500 flex items-center gap-1">
-                      <Building2 className="h-3.5 w-3.5 text-indigo-600" />
-                      {c.ward || "Ward A"}
-                    </span>
-                    <Link to={`/complaint/${c._id}/track`} className="font-semibold text-indigo-600 hover:underline">
-                      Track &rarr;
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm line-clamp-1 mb-1 font-display">{c.title}</h3>
+                    {c.attachments && c.attachments[0] && (
+                      <div className="h-28 w-full rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 mb-2">
+                        <img
+                          src={getImageUrl(c.attachments[0])}
+                          onError={handleImageError}
+                          alt="Evidence"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <p className="text-xs text-slate-500 line-clamp-2 mb-3">{c.description}</p>
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <span className="text-slate-500 flex items-center gap-1">
+                        <Building2 className="h-3.5 w-3.5 text-emerald-600" />
+                        {c.ward || "Ward A"}
+                      </span>
+                      <Link to={`/complaint/${c._id}/track`} className="font-semibold text-emerald-600 hover:text-emerald-700 hover:underline">
+                        Track &rarr;
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )
       )}
     </div>
   )

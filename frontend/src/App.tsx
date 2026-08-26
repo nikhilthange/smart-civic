@@ -17,6 +17,33 @@ import DashboardLayout from "./components/layout/DashboardLayout"
 import OfficerDashboard from "./pages/OfficerDashboard"
 import WorkerDashboard from "./pages/WorkerDashboard"
 import KarmaRewards from "./pages/KarmaRewards"
+import Notifications from "./pages/Notifications"
+import MonsoonRadar from "./pages/MonsoonRadar"
+import DlpRegistry from "./pages/DlpRegistry"
+import SwmFleetRadar from "./pages/SwmFleetRadar"
+import ParticipatoryBudget from "./pages/ParticipatoryBudget"
+import TrenchingCoordinator from "./pages/TrenchingCoordinator"
+import AqiEnforcement from "./pages/AqiEnforcement"
+import WaterGovernance from "./pages/WaterGovernance"
+import DisasterSubways from "./pages/DisasterSubways"
+import StructuralCollapseRadar from "./pages/StructuralCollapseRadar"
+import CoastalSentinel from "./pages/CoastalSentinel"
+import FireSafetyRadar from "./pages/FireSafetyRadar"
+import PropertyTaxAudit from "./pages/PropertyTaxAudit"
+import BestTransitRadar from "./pages/BestTransitRadar"
+import AnimalWelfareRadar from "./pages/AnimalWelfareRadar"
+import WhatsAppSandbox from "./pages/WhatsAppSandbox"
+import AuditLedger from "./pages/AuditLedger"
+import CctvSurveillanceRadar from "./pages/CctvSurveillanceRadar"
+import DigitalTwinSim from "./pages/DigitalTwinSim"
+import GreenBondLedger from "./pages/GreenBondLedger"
+import SocialMediaRadar from "./pages/SocialMediaRadar"
+import CivicRewardsLeaderboard from "./pages/CivicRewardsLeaderboard"
+import ContractorRegistry from "./pages/ContractorRegistry"
+import AlmSocietyDashboard from "./pages/AlmSocietyDashboard"
+import DailySitrepDashboard from "./pages/DailySitrepDashboard"
+import EmergencyBroadcastHub from "./pages/EmergencyBroadcastHub"
+import QuickReport from "./pages/QuickReport"
 
 import { GoogleOAuthProvider } from '@react-oauth/google'
 
@@ -44,6 +71,7 @@ function App() {
             <Route element={<DashboardLayout />}>
               <Route path="/complaint/create" element={<CreateComplaint />} />
               <Route path="/complaint/new" element={<CreateComplaint />} />
+              <Route path="/quick-report" element={<QuickReport />} />
               <Route path="/complaints/new" element={<CreateComplaint />} />
               <Route path="/create-complaint" element={<CreateComplaint />} />
             </Route>
@@ -59,6 +87,32 @@ function App() {
               <Route path="/map" element={<MapView />} />
               <Route path="/donate" element={<Donation />} />
               <Route path="/rewards" element={<KarmaRewards />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/monsoon-radar" element={<MonsoonRadar />} />
+              <Route path="/dlp-registry" element={<DlpRegistry />} />
+              <Route path="/swm-fleet" element={<SwmFleetRadar />} />
+              <Route path="/ward-budget" element={<ParticipatoryBudget />} />
+              <Route path="/trenching-coordinator" element={<TrenchingCoordinator />} />
+              <Route path="/aqi-enforcement" element={<AqiEnforcement />} />
+              <Route path="/water-governance" element={<WaterGovernance />} />
+              <Route path="/disaster-subways" element={<DisasterSubways />} />
+              <Route path="/structural-collapse" element={<StructuralCollapseRadar />} />
+              <Route path="/coastal-sentinel" element={<CoastalSentinel />} />
+              <Route path="/fire-safety" element={<FireSafetyRadar />} />
+              <Route path="/property-tax-audit" element={<PropertyTaxAudit />} />
+              <Route path="/best-transit" element={<BestTransitRadar />} />
+              <Route path="/animal-welfare" element={<AnimalWelfareRadar />} />
+              <Route path="/whatsapp-sandbox" element={<WhatsAppSandbox />} />
+              <Route path="/audit-ledger" element={<AuditLedger />} />
+              <Route path="/cctv-surveillance" element={<CctvSurveillanceRadar />} />
+              <Route path="/digital-twin" element={<DigitalTwinSim />} />
+              <Route path="/green-bonds" element={<GreenBondLedger />} />
+              <Route path="/social-radar" element={<SocialMediaRadar />} />
+              <Route path="/civic-karma" element={<CivicRewardsLeaderboard />} />
+              <Route path="/contractor-registry" element={<ContractorRegistry />} />
+              <Route path="/alm-societies" element={<AlmSocietyDashboard />} />
+              <Route path="/sitrep" element={<DailySitrepDashboard />} />
+              <Route path="/emergency-broadcast" element={<EmergencyBroadcastHub />} />
               <Route path="/search" element={<SearchComplaints />} />
             </Route>
           </Route>

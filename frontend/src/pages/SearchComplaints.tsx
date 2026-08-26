@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { EmptyState } from "@/components/common/EmptyState"
 import {
   complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG,
   type ComplaintStatus, type ComplaintCategory
@@ -341,21 +342,26 @@ export default function SearchComplaints() {
               {loading && (
                 <tr>
                   <td colSpan={8} className="py-16 text-center text-slate-400">
-                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
-                    Loading complaints...
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-emerald-600" />
+                    Searching civic complaints...
                   </td>
                 </tr>
               )}
               {!loading && error && (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center text-red-500">{error}</td>
+                  <td colSpan={8} className="py-16 text-center text-rose-500">{error}</td>
                 </tr>
               )}
               {!loading && !error && complaints.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center text-slate-400">
-                    <Search className="h-8 w-8 mx-auto mb-3 opacity-30" />
-                    No complaints match your filters.
+                  <td colSpan={8} className="p-6">
+                    <EmptyState
+                      title="No complaints match your search"
+                      description="Try adjusting your keywords, selecting different ward boundaries, or resetting your active filter criteria."
+                      icon={Search}
+                      actionLabel="Reset Filters"
+                      onAction={resetFilters}
+                    />
                   </td>
                 </tr>
               )}

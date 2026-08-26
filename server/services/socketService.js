@@ -4,16 +4,50 @@ let io = null;
 
 /**
  * Initializes Native Socket.IO WebSocket Gateway on HTTP Server
+ * Supports Redis Pub/Sub Adapter for multi-core clustering when REDIS_URL is provided
  */
 const initSocket = (httpServer, corsOptions) => {
   io = new Server(httpServer, {
     cors: {
-      origin: "*",
+      origin: [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
+        ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+        ...(corsOptions?.origin && Array.isArray(corsOptions.origin) ? corsOptions.origin : []),
+      ],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-      credentials: false,
+      credentials: true,
     },
-    transports: ["websocket", "polling"],
+    transports: ["polling", "websocket"],
+    allowEIO3: true,
+    pingTimeout: 60000,
+    pingInterval: 25000,
   });
+
+  // Optional Redis Adapter for Cluster Mode
+  if (process.env.REDIS_URL) {
+    try {
+      const { createAdapter } = require("@socket.io/redis-adapter");
+      const { createClient } = require("redis");
+      const pubClient = createClient({ url: process.env.REDIS_URL });
+      const subClient = pubClient.duplicate();
+
+      Promise.all([pubClient.connect(), subClient.connect()])
+        .then(() => {
+          io.adapter(createAdapter(pubClient, subClient));
+          console.log("📡 Distributed Redis WebSocket Adapter Mounted for PM2 Cluster");
+        })
+        .catch((err) => {
+          console.warn("⚠️ Redis Adapter connection failed, falling back to in-memory:", err.message);
+        });
+    } catch {
+      console.log("ℹ️ In-Memory WebSocket Adapter Active");
+    }
+  } else {
+    console.log("ℹ️ In-Memory WebSocket Adapter Active");
+  }
 
   io.on("connection", (socket) => {
     console.log(`🔌 WebSocket Client Connected: ${socket.id}`);
@@ -144,12 +178,42 @@ const broadcastHotspotAlert = (hotspotData) => {
   }
 };
 
+/**
+ * Broadcasts generic notification or event to a specific user
+ */
+const notifyUser = (userId, data) => {
+  if (!io || !userId) return;
+  io.to(`user:${userId}`).emit("notification", data);
+};
+
+/**
+ * Broadcasts to a specific ward room
+ */
+const broadcastToWard = (ward, event, data) => {
+  if (!io || !ward) return;
+  io.to(`ward:${ward}`).emit(event, data);
+};
+
+/**
+ * Broadcasts to a specific department room
+ */
+const broadcastToDepartment = (dept, event, data) => {
+  if (!io || !dept) return;
+  io.to(`dept:${dept}`).emit(event, data);
+};
+
 module.exports = {
   initSocket,
+  init: initSocket,
   getIO,
   broadcastComplaintCreated,
+  broadcastComplaintUpdated: broadcastStatusUpdated,
   broadcastComplaintAssigned,
   broadcastComplaintResolved,
   broadcastStatusUpdated,
+  broadcastStatusChange: broadcastStatusUpdated,
   broadcastHotspotAlert,
+  notifyUser,
+  broadcastToWard,
+  broadcastToDepartment,
 };

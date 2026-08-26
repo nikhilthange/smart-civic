@@ -6,13 +6,11 @@ import {
   ShieldCheck,
   MapPin,
   BarChart3,
-  BrainCircuit,
   Zap,
   Clock,
   CheckCircle2,
   Users,
   MessageSquare,
-  AlertTriangle,
   Sparkles,
   Camera,
   Award,
@@ -20,6 +18,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import AiPipelineHeroVisual from "@/components/common/AiPipelineHeroVisual"
 
 export default function Home() {
   const fadeUpVariant = {
@@ -68,12 +67,12 @@ export default function Home() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full py-24 md:py-32 lg:py-48 overflow-hidden bg-white dark:bg-slate-950">
+        <section className="relative w-full py-20 md:py-28 lg:py-36 overflow-hidden bg-white dark:bg-slate-950">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-70"></div>
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
           <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 h-[400px] w-[800px] rounded-full bg-primary/20 opacity-30 blur-[120px]"></div>
 
-          <div className="container relative px-4 md:px-6 mx-auto text-center">
+          <div className="container relative px-4 md:px-6 mx-auto text-center max-w-5xl">
             <motion.div
               initial="hidden"
               animate="visible"
@@ -92,7 +91,7 @@ export default function Home() {
               <motion.p variants={fadeUpVariant} className="mx-auto max-w-[700px] text-slate-500 md:text-xl/relaxed lg:text-lg/relaxed xl:text-xl/relaxed dark:text-slate-400">
                 Report civic issues instantly, track resolution progress in real-time, and let our advanced AI engine route your complaints to the right department automatically.
               </motion.p>
-              <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row justify-center gap-4 mt-8 w-full sm:w-auto">
+              <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row justify-center gap-4 mt-4 w-full sm:w-auto">
                 <Link to="/auth" className="w-full sm:w-auto">
                   <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 text-base shadow-lg shadow-primary/30 transition-all hover:scale-105">
                     Report an Issue
@@ -309,22 +308,13 @@ export default function Home() {
                 </ul>
               </motion.div>
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
-                className="relative mx-auto w-full max-w-[500px] aspect-square"
+                className="w-full"
               >
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-blue-500/20 rounded-full blur-3xl"></div>
-                <div className="relative h-full w-full bg-white dark:bg-slate-800 rounded-2xl border shadow-xl flex items-center justify-center p-8">
-                  <BrainCircuit className="h-32 w-32 text-primary" strokeWidth={1} />
-                  <div className="absolute top-1/4 -left-6 bg-white dark:bg-slate-900 p-3 rounded-lg shadow-lg border text-sm font-medium flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-amber-500" /> High Priority
-                  </div>
-                  <div className="absolute bottom-1/3 -right-6 bg-white dark:bg-slate-900 p-3 rounded-lg shadow-lg border text-sm font-medium flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-blue-500" /> Sector 4 Mapped
-                  </div>
-                </div>
+                <AiPipelineHeroVisual />
               </motion.div>
             </div>
           </div>
@@ -565,3 +555,4 @@ export default function Home() {
     </div>
   )
 }
+

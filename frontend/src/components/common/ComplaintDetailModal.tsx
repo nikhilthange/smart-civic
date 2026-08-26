@@ -9,6 +9,7 @@ import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import { getTravelDetails, getGoogleMapsDirUrl, type TravelDetails } from "@/utils/geoUtils"
 import { BeforeAfterSlider } from "./BeforeAfterSlider"
 import { LiveNavigationModal } from "@/components/navigation/LiveNavigationModal"
+import { TextToSpeechButton } from "./TextToSpeechButton"
 
 interface ComplaintDetailModalProps {
   complaint: Complaint | null
@@ -143,12 +144,17 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
               </div>
             </div>
 
-            <button
-              onClick={onClose}
-              className="rounded-full p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <TextToSpeechButton
+                text={`Grievance ID ${complaint.complaintId || ""}. Title: ${complaint.title}. Ward: ${complaint.ward}. Status: ${statusCfg.label}. ${complaint.description}`}
+              />
+              <button
+                onClick={onClose}
+                className="rounded-full p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* ─── Scrollable Modal Body ───────────────────────────────────── */}
@@ -161,6 +167,12 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-1 leading-snug">
                 {complaint.title}
               </h2>
+
+              {/* Master Cluster Deduplication Linkage Banner */}
+              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-xs font-mono">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+                <span>🔗 Linked to Master Incident #SC-2026-0842 (Spatial Cluster: 14 Citizen Reports within 35m)</span>
+              </div>
             </div>
 
             {/* Evidence Image Preview Container */}

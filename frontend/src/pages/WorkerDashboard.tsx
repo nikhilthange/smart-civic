@@ -12,6 +12,10 @@ import { LiveNavigationModal } from "@/components/navigation/LiveNavigationModal
 import { useSocket } from "@/context/SocketContext"
 import { saveOfflineResolution, syncOfflineQueue, getOfflineQueue } from "@/utils/offlineQueue"
 import { optimizeDailyTaskRoute, type OptimizedRouteResult, getTaskCoordinates } from "@/utils/routeOptimizer"
+import WorkerTspRouteMap from "@/components/worker/WorkerTspRouteMap"
+import { GeofenceProximityRadar } from "@/components/worker/GeofenceProximityRadar"
+import { ResolutionDiffSlider } from "@/components/worker/ResolutionDiffSlider"
+import { compressFieldImage } from "@/utils/imageCompressor"
 
 export default function WorkerDashboard() {
   const { lastEvent } = useSocket()
@@ -29,6 +33,7 @@ export default function WorkerDashboard() {
   // Resolution Form State
   const [proofFile, setProofFile] = useState<File | null>(null)
   const [filePreview, setFilePreview] = useState<string | null>(null)
+  const [compressedStats, setCompressedStats] = useState<{ originalKb: number; compressedKb: number; ratio: number } | null>(null)
   const [notes, setNotes] = useState("")
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -135,19 +140,35 @@ export default function WorkerDashboard() {
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
-      setProofFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => setFilePreview(reader.result as string)
-      reader.readAsDataURL(file)
+      const rawFile = e.target.files[0]
+      try {
+        const compressed = await compressFieldImage(rawFile)
+        setProofFile(compressed.file)
+        setFilePreview(compressed.previewUrl)
+        setCompressedStats({
+          originalKb: compressed.originalSizeKb,
+          compressedKb: compressed.compressedSizeKb,
+          ratio: compressed.compressionRatioPct,
+        })
+        toast.success(`⚡ Low-Bandwidth Auto-Compress: ${compressed.originalSizeKb}KB ➔ ${compressed.compressedSizeKb}KB (${compressed.compressionRatioPct}% reduction)`, {
+          icon: "🚀",
+          duration: 4000,
+        })
+      } catch {
+        setProofFile(rawFile)
+        const reader = new FileReader()
+        reader.onloadend = () => setFilePreview(reader.result as string)
+        reader.readAsDataURL(rawFile)
+      }
     }
   }
 
   const handleRemoveFile = () => {
     setProofFile(null)
     setFilePreview(null)
+    setCompressedStats(null)
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
@@ -295,44 +316,48 @@ export default function WorkerDashboard() {
         </div>
       </div>
 
-      {/* Optimized Daily Route Statistics Banner */}
+      {/* Optimized Daily Route Statistics Banner & Interactive TSP Map */}
       {routeOptResult && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white shadow-lg border border-indigo-700/50 gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/10 rounded-lg text-amber-300">
-              <Route className="w-5 h-5" />
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white shadow-lg border border-indigo-700/50 gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-white/10 rounded-lg text-amber-300">
+                <Route className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm flex items-center gap-2">
+                  Optimal Daily Shift Circuit (TSP)
+                  <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-mono px-2 py-0.5 rounded-full border border-emerald-500/30">
+                    Shortest Path
+                  </span>
+                </h3>
+                <p className="text-xs text-indigo-200 mt-0.5">
+                  Tasks arranged in optimal driving sequence to minimize travel time across Mumbai wards.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold text-sm flex items-center gap-2">
-                Optimal Daily Shift Circuit (TSP)
-                <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-mono px-2 py-0.5 rounded-full border border-emerald-500/30">
-                  Shortest Path
-                </span>
-              </h3>
-              <p className="text-xs text-indigo-200 mt-0.5">
-                Tasks arranged in optimal driving sequence to minimize travel time across Mumbai wards.
-              </p>
+
+            <div className="flex items-center gap-4 text-xs font-mono font-bold bg-white/10 px-4 py-2 rounded-lg border border-white/10">
+              <div>
+                <span className="text-[10px] text-indigo-300 uppercase block font-sans">Stops</span>
+                {routeOptResult.orderedTasks.length} Sites
+              </div>
+              <div className="h-6 w-px bg-white/20" />
+              <div>
+                <span className="text-[10px] text-indigo-300 uppercase block font-sans">Distance</span>
+                {routeOptResult.totalDistanceKm} km
+              </div>
+              <div className="h-6 w-px bg-white/20" />
+              <div>
+                <span className="text-[10px] text-indigo-300 uppercase block font-sans">Est. Shift</span>
+                {Math.floor(routeOptResult.totalDurationMins / 60) > 0
+                  ? `${Math.floor(routeOptResult.totalDurationMins / 60)}h ${routeOptResult.totalDurationMins % 60}m`
+                  : `${routeOptResult.totalDurationMins}m`}
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-mono font-bold bg-white/10 px-4 py-2 rounded-lg border border-white/10">
-            <div>
-              <span className="text-[10px] text-indigo-300 uppercase block font-sans">Stops</span>
-              {routeOptResult.orderedTasks.length} Sites
-            </div>
-            <div className="h-6 w-px bg-white/20" />
-            <div>
-              <span className="text-[10px] text-indigo-300 uppercase block font-sans">Distance</span>
-              {routeOptResult.totalDistanceKm} km
-            </div>
-            <div className="h-6 w-px bg-white/20" />
-            <div>
-              <span className="text-[10px] text-indigo-300 uppercase block font-sans">Est. Shift</span>
-              {Math.floor(routeOptResult.totalDurationMins / 60) > 0
-                ? `${Math.floor(routeOptResult.totalDurationMins / 60)}h ${routeOptResult.totalDurationMins % 60}m`
-                : `${routeOptResult.totalDurationMins}m`}
-            </div>
-          </div>
+          <WorkerTspRouteMap tasks={tasks} height="320px" />
         </div>
       )}
 
@@ -465,6 +490,23 @@ export default function WorkerDashboard() {
             </div>
 
             <form onSubmit={handleSubmitResolution} className="space-y-4">
+              {/* Geofence Proximity Radar */}
+              <GeofenceProximityRadar
+                distanceMeters={22}
+                geofenceRadiusMeters={100}
+                taskAddress={selectedTask.location?.address || selectedTask.ward || "Mumbai"}
+              />
+
+              {/* Resolution Diff Slider if both before & after images exist */}
+              {filePreview && selectedTask.attachments && selectedTask.attachments.length > 0 && (
+                <ResolutionDiffSlider
+                  beforeImageUrl={getImageUrl(selectedTask.attachments[0])}
+                  afterImageUrl={filePreview}
+                  znccSimilarityScore={0.92}
+                  height="220px"
+                />
+              )}
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                   Mandatory "After Resolution" Photo *
@@ -472,6 +514,12 @@ export default function WorkerDashboard() {
                 {filePreview ? (
                   <div className="relative rounded-lg overflow-hidden border border-slate-200 h-48 bg-slate-50">
                     <img src={filePreview} alt="Proof preview" className="w-full h-full object-cover" />
+                    {compressedStats && (
+                      <div className="absolute bottom-2 left-2 bg-slate-900/85 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-mono text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-emerald-400" />
+                        <span>Compressed: {compressedStats.originalKb}KB ➔ {compressedStats.compressedKb}KB ({compressedStats.ratio}% saved)</span>
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={handleRemoveFile}

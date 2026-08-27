@@ -64,6 +64,7 @@ jobs:
           REDIS_URL: redis://localhost:6379
           META_APP_SECRET: bmc_smart_civic_meta_app_secret_2026
         run: |
+          node server/scripts/create_production_indexes.js
           node server/scripts/generate_health_badge.js
           node tests/load/run_artillery_runner.js
           node server/scripts/daily_sre_health_check.js

@@ -30,18 +30,22 @@ const initSocket = (httpServer, corsOptions) => {
     pingInterval: 25000,
   });
 
-  // Optional Redis Adapter for Cluster Mode
-  if (process.env.REDIS_URL) {
+  // Optional Redis Adapter for Multi-Replica Cluster Mode
+  if (process.env.REDIS_URL || process.env.REDIS_HOST) {
     try {
       const { createAdapter } = require("@socket.io/redis-adapter");
       const { createClient } = require("redis");
-      const pubClient = createClient({ url: process.env.REDIS_URL });
+      const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || 6379}`;
+      const pubClient = createClient({ url: redisUrl, socket: { reconnectStrategy: (retries) => Math.min(retries * 100, 3000) } });
       const subClient = pubClient.duplicate();
+
+      pubClient.on("error", (err) => console.warn("⚠️ Redis PubClient warning:", err.message));
+      subClient.on("error", (err) => console.warn("⚠️ Redis SubClient warning:", err.message));
 
       Promise.all([pubClient.connect(), subClient.connect()])
         .then(() => {
           io.adapter(createAdapter(pubClient, subClient));
-          console.log("📡 Distributed Redis WebSocket Adapter Mounted for PM2 Cluster");
+          console.log("📡 Distributed Redis Pub/Sub WebSocket Adapter Mounted for Multi-Replica Mesh");
         })
         .catch((err) => {
           console.warn("⚠️ Redis Adapter connection failed, falling back to in-memory:", err.message);
@@ -61,6 +65,14 @@ const initSocket = (httpServer, corsOptions) => {
       if (room) {
         socket.join(room);
         console.log(`📡 Socket ${socket.id} joined room: ${room}`);
+      }
+    });
+
+    socket.on("join:ward", (ward) => {
+      if (ward) {
+        socket.join(`ward:${ward}`);
+        socket.join(`ward-${ward}`);
+        console.log(`📡 Socket ${socket.id} joined ward room: ward:${ward}`);
       }
     });
 

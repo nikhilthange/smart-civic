@@ -94,7 +94,10 @@ class AsyncJobQueue extends EventEmitter {
     if (!this.redisClient || !this.redisClient.isReady) return;
     try {
       const lockKey = `job:lock:${jobId}`;
-      await this.redisClient.del(lockKey);
+      const currentHolder = await this.redisClient.get(lockKey);
+      if (currentHolder === this.workerId) {
+        await this.redisClient.del(lockKey);
+      }
     } catch {
       // Non-blocking catch
     }

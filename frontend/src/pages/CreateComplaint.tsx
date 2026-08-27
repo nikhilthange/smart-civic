@@ -2,8 +2,9 @@ import { useState, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
-  CheckCircle2, Loader2, Bot, Info, Camera, QrCode, Sparkles
+  CheckCircle2, Loader2, Bot, Info, Camera, QrCode, Sparkles, ShieldCheck
 } from "lucide-react"
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -211,59 +212,61 @@ export default function CreateComplaint() {
   if (success) {
     return (
       <div className="max-w-lg mx-auto w-full py-12">
-        <Card className="shadow-lg border-t-4 border-t-green-500 text-center">
-          <CardContent className="pt-10 pb-8 flex flex-col items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900">Complaint Submitted!</h2>
-            <p className="text-slate-500">Your complaint has been received.</p>
-
-            <div className="bg-slate-50 rounded-lg px-6 py-3 w-full">
-              <p className="text-xs text-slate-500 mb-1">Complaint ID</p>
-              <p className="text-lg font-mono font-bold text-primary">{success.complaintId}</p>
-            </div>
-
-            {success.aiVerified && (
-              <div className="flex items-center gap-2 text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-4 py-2 w-full">
-                <Bot className="h-4 w-4 shrink-0" />
-                <p className="text-sm font-medium">AI Verified — Your complaint passed automated verification and will be prioritized.</p>
+        <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}>
+          <Card className="shadow-sm border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/80 text-center rounded-2xl">
+            <CardContent className="pt-10 pb-8 flex flex-col items-center gap-4">
+              <div className="h-14 w-14 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                <CheckCircle2 className="h-7 w-7" />
               </div>
-            )}
+              <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Grievance Registered Successfully</h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Your ticket has been ingested and routed into the municipal triage engine.</p>
 
-            <div className="flex gap-3 w-full pt-2">
-              <Button variant="outline" className="flex-1" onClick={() => navigate("/complaints")}>
-                View History
-              </Button>
-              <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => navigate(`/complaint/${success.rawId || success.complaintId}/track`)}>
-                Track Complaint
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="bg-zinc-50 dark:bg-zinc-900/90 rounded-xl px-6 py-3.5 w-full border border-zinc-200/60 dark:border-zinc-800/60">
+                <p className="text-[11px] font-mono uppercase text-zinc-400 mb-0.5">Tracking Ticket ID</p>
+                <p className="text-base font-mono font-bold text-zinc-900 dark:text-zinc-100">{success.complaintId}</p>
+              </div>
+
+              {success.aiVerified && (
+                <div className="flex items-center gap-2.5 text-zinc-700 dark:text-zinc-300 bg-zinc-100/70 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60 rounded-xl px-4 py-2.5 w-full text-left">
+                  <Bot className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <p className="text-xs font-medium">AI Verified — Priority score evaluated and ward supervisor notified.</p>
+                </div>
+              )}
+
+              <div className="flex gap-2.5 w-full pt-2">
+                <Button variant="outline" className="flex-1 text-xs" onClick={() => navigate("/complaints")}>
+                  View Ledger
+                </Button>
+                <Button className="flex-1 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold shadow-sm" onClick={() => navigate(`/complaint/${success.rawId || success.complaintId}/track`)}>
+                  Track Ticket
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-3xl mx-auto w-full">
+    <div className="max-w-3xl mx-auto w-full space-y-6">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-          <FileText className="h-5 w-5 text-primary" />
+      <div className="flex items-center gap-3">
+        <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-sm">
+          <FileText className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Submit a Complaint</h1>
-          <p className="text-sm text-slate-500">Report civic issues to the appropriate department</p>
+          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Submit Civic Grievance</h1>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Report neighborhood defects directly to the BMC ward triage mesh</p>
         </div>
       </div>
 
       {/* AI info banner */}
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-violet-200 bg-violet-50 px-4 py-3">
-        <Bot className="h-5 w-5 text-violet-600 mt-0.5 shrink-0" />
+      <div className="flex items-start gap-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/50 px-4 py-3">
+        <Bot className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-violet-800">AI-Powered Verification</p>
-          <p className="text-xs text-violet-600 mt-0.5">Complaints with a detailed description (50+ characters) are automatically verified by our AI and prioritized for faster resolution.</p>
+          <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Automated AI Triage & Verification</p>
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Complaints with 50+ characters and clear photo evidence are classified by our neural model and expedited to ward field workers.</p>
         </div>
       </div>
 
@@ -277,48 +280,52 @@ export default function CreateComplaint() {
             </div>
           )}
 
-          {/* Category */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Issue Details</CardTitle>
+          {/* Step 1: Category & Details */}
+          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm">
+            <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-mono font-bold items-center justify-center">1</span>
+                <CardTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Issue Category & Details</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category <span className="text-red-500">*</span></Label>
+            <CardContent className="space-y-4 pt-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="category" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Category <span className="text-rose-500">*</span></Label>
                 <select
                   id="category"
                   name="category"
                   value={form.category}
                   onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex h-9 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-400"
                   required
                 >
-                  <option value="">Select a category...</option>
+                  <option value="">Select an infrastructure category...</option>
                   {CATEGORIES.map(([val, label]) => (
                     <option key={val} value={val}>{label}</option>
                   ))}
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="title">Issue Title <span className="text-red-500">*</span></Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="title" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Issue Title <span className="text-rose-500">*</span></Label>
                 <Input
                   id="title"
                   name="title"
-                  placeholder="e.g. Large pothole on Main Street causing accidents"
+                  placeholder="e.g. Severe road surface pothole near junction"
                   value={form.title}
                   onChange={handleChange}
                   required
                   minLength={10}
                   maxLength={150}
+                  className="h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800"
                 />
-                <p className="text-xs text-slate-400">{form.title.length}/150</p>
+                <p className="text-[10px] font-mono text-zinc-400">{form.title.length}/150</p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="description">Detailed Description <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="description" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Detailed Description <span className="text-rose-500">*</span></Label>
                     <VoiceInput
                       onTranscript={(text) =>
                         setForm((prev) => ({
@@ -331,13 +338,13 @@ export default function CreateComplaint() {
                   {form.description.length > 0 && (
                     <Badge
                       variant="outline"
-                      className={aiWillVerify
-                        ? "border-violet-300 text-violet-700 bg-violet-50"
-                        : "border-amber-300 text-amber-700 bg-amber-50"
-                      }
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded ${aiWillVerify
+                        ? "border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                        : "border-amber-500/20 text-amber-600 dark:text-amber-400 bg-amber-500/10"
+                      }`}
                     >
                       {aiWillVerify ? (
-                        <><Bot className="h-3 w-3 mr-1" />AI will verify</>
+                        <><Bot className="h-3 w-3 mr-1" />AI Verified</>
                       ) : (
                         <><Info className="h-3 w-3 mr-1" />{50 - form.description.length} more chars for AI verification</>
                       )}
@@ -349,27 +356,27 @@ export default function CreateComplaint() {
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  className="flex min-h-[140px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  placeholder="Describe the problem in detail: its location, duration, impact on residents, and any safety concerns..."
+                  className="flex min-h-[110px] w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                  placeholder="Describe the defect, hazards, traffic impact, and location markers..."
                   required
                   minLength={20}
                   maxLength={2000}
                 />
-                <p className="text-xs text-slate-400">{form.description.length}/2000</p>
+                <p className="text-[10px] font-mono text-zinc-400">{form.description.length}/2000</p>
               </div>
 
-              <div className="space-y-2">
-                <Label>Priority</Label>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Priority Level</Label>
                 <div className="flex gap-2 flex-wrap">
                   {PRIORITY_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
                       type="button"
                       onClick={() => setForm(prev => ({ ...prev, priority: opt.value }))}
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                      className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all ${
                         form.priority === opt.value
-                          ? `border-current ${opt.color} bg-current/5`
-                          : "border-slate-200 text-slate-500 hover:border-slate-300"
+                          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-transparent shadow-sm"
+                          : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
                       }`}
                     >
                       {opt.label}
@@ -380,14 +387,17 @@ export default function CreateComplaint() {
             </CardContent>
           </Card>
 
-          {/* Location */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Location</CardTitle>
+          {/* Step 2: Location */}
+          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm">
+            <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-mono font-bold items-center justify-center">2</span>
+                <CardTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Municipal Location</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Street Address <span className="text-red-500">*</span></Label>
+            <CardContent className="space-y-4 pt-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Street Address / Landmark <span className="text-rose-500">*</span></Label>
                 <div className="flex gap-2">
                   <Input
                     name="locationAddress"
@@ -395,38 +405,47 @@ export default function CreateComplaint() {
                     value={form.locationAddress}
                     onChange={handleChange}
                     required
-                    className="flex-1"
+                    className="flex-1 h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800"
                   />
-                  <Button type="button" variant="outline" className="shrink-0" onClick={handleGetLocation} disabled={geoLoading}>
-                    {geoLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
-                    <span className="ml-2 hidden sm:inline">Detect</span>
+                  <Button type="button" variant="outline" size="sm" className="shrink-0 text-xs h-9" onClick={handleGetLocation} disabled={geoLoading}>
+                    {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}
+                    <span className="ml-1.5 hidden sm:inline">Detect GPS</span>
                   </Button>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-2">
-                  <Label>City</Label>
-                  <Input name="locationCity" placeholder="City" value={form.locationCity} onChange={handleChange} />
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">City</Label>
+                  <Input name="locationCity" placeholder="City" value={form.locationCity} onChange={handleChange} className="h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
                 </div>
-                <div className="space-y-2">
-                  <Label>State</Label>
-                  <Input name="locationState" placeholder="State" value={form.locationState} onChange={handleChange} />
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">State</Label>
+                  <Input name="locationState" placeholder="State" value={form.locationState} onChange={handleChange} className="h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
                 </div>
-                <div className="space-y-2">
-                  <Label>Pincode</Label>
-                  <Input name="locationPincode" placeholder="6-digit" value={form.locationPincode} onChange={handleChange} maxLength={6} />
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Pincode</Label>
+                  <Input name="locationPincode" placeholder="6-digit" value={form.locationPincode} onChange={handleChange} maxLength={6} className="h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 font-mono" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Attachments */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">Photo / Video Evidence</CardTitle>
-              <CardDescription>Upload up to 5 images, videos or PDFs (max 10MB each)</CardDescription>
+          {/* Step 3: Evidence & EXIF Sanitization */}
+          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm">
+            <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/60 flex flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-mono font-bold items-center justify-center">3</span>
+                <div>
+                  <CardTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Photo / Video Evidence</CardTitle>
+                  <CardDescription className="text-[11px] text-zinc-400 mt-0.5">Upload images or videos (max 10MB each)</CardDescription>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <ShieldCheck className="w-3 h-3" />
+                <span>EXIF Sanitized</span>
+              </span>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-4">
               {/* Drop zone & Camera Snap Action */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <div

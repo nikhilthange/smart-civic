@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
+import { motion } from "framer-motion"
 import {
   Building2,
   Database,
@@ -183,32 +184,32 @@ export default function DashboardLayout() {
 
   const roleBadgeColor: Record<string, string> = {
     admin: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
-    officer: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20",
+    officer: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
     worker: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
     citizen: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
   }
 
   const Sidebar = () => (
-    <div className="flex h-full flex-col py-4">
-      <div className="flex h-14 items-center px-5 lg:h-[60px] lg:px-6 mb-2">
-        <Link to="/" className="flex items-center gap-3 font-semibold transition-transform hover:scale-[1.02]">
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-2 rounded-xl shadow-sm shadow-emerald-500/30">
-            <Building2 className="h-5 w-5" />
+    <div className="flex h-full flex-col py-4 bg-white dark:bg-[#090A0F]">
+      <div className="flex h-14 items-center px-5 mb-2">
+        <Link to="/" className="flex items-center gap-2.5 font-semibold transition-opacity hover:opacity-80">
+          <div className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 p-2 rounded-xl shadow-sm">
+            <Building2 className="h-4.5 w-4.5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-extrabold tracking-tight font-display text-slate-900 dark:text-white">Smart Civic</span>
-            <span className="text-[10px] font-mono tracking-wider uppercase text-emerald-600 dark:text-emerald-400 font-bold -mt-1">Enterprise AI</span>
+            <span className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Smart Civic</span>
+            <span className="text-[10px] font-mono tracking-wider uppercase text-zinc-400 dark:text-zinc-500 font-semibold">Enterprise AI</span>
           </div>
         </Link>
       </div>
 
       {/* User identity card */}
       {user && (
-        <div className="mx-4 mb-4 rounded-xl bg-slate-50/80 dark:bg-slate-800/60 p-3 border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
-          <p className="text-xs font-bold text-slate-800 dark:text-white truncate">
+        <div className="mx-3.5 mb-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 p-3 border border-zinc-200/70 dark:border-zinc-800/70">
+          <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
             {user.name}
           </p>
-          <p className="text-[11px] text-slate-500 truncate mb-2">{user.email}</p>
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mb-2">{user.email}</p>
           <Badge
             variant="outline"
             className={`text-[10px] capitalize font-mono font-medium px-2 py-0.5 rounded-md border ${roleBadgeColor[user.role] || ""}`}
@@ -265,18 +266,25 @@ export default function DashboardLayout() {
                     <Link
                       key={item.key}
                       to={item.href}
-                      className={`flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-all ${
+                      className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                         isActive
-                          ? "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-semibold border-r-2 border-emerald-600 shadow-sm"
-                          : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/[0.04]"
+                          ? "text-zinc-900 dark:text-zinc-100 font-semibold"
+                          : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60"
                       }`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-active-pill"
+                          className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg -z-10 border border-zinc-200/50 dark:border-zinc-700/50"
+                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                        />
+                      )}
                       <item.icon
                         className={`h-4 w-4 shrink-0 transition-colors ${
                           isActive
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-slate-400 group-hover:text-emerald-600"
+                            ? "text-zinc-900 dark:text-zinc-100"
+                            : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300"
                         }`}
                       />
                       <span className="truncate">{t(item.key, item.defaultName)}</span>
@@ -301,7 +309,7 @@ export default function DashboardLayout() {
   )
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50/50 dark:bg-[#030712]">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#FAFAFA] dark:bg-[#090A0F]">
       {/* Global Command Palette Modal */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
@@ -309,7 +317,7 @@ export default function DashboardLayout() {
       />
 
       {/* Permanent Fixed Sidebar */}
-      <div className="hidden md:block shrink-0 w-[250px] lg:w-[265px] h-full border-r border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
+      <div className="hidden md:block shrink-0 w-[240px] lg:w-[255px] h-full border-r border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-[#090A0F]/70 backdrop-blur-xl">
         <Sidebar />
       </div>
 
@@ -322,7 +330,7 @@ export default function DashboardLayout() {
         <OfflineSyncBanner />
 
         {/* Permanent Fixed Top Header */}
-        <header className="shrink-0 z-40 flex h-16 items-center gap-4 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl px-4 lg:px-8 shadow-sm shadow-slate-950/[0.02]">
+        <header className="shrink-0 z-40 flex h-14 items-center gap-4 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-[#090A0F]/70 backdrop-blur-xl px-4 lg:px-8 shadow-sm">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon" className="shrink-0 md:hidden">
@@ -460,17 +468,31 @@ export default function DashboardLayout() {
 
           if (isFullBleed) {
             return (
-              <main className="flex-1 w-full h-[calc(100dvh-4rem)] p-0 m-0 overflow-hidden relative overscroll-none bg-transparent">
-                <Outlet />
+              <main className="flex-1 w-full h-[calc(100dvh-3.5rem)] p-0 m-0 overflow-hidden relative overscroll-none bg-transparent">
+                <motion.div
+                  key={location.pathname}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="w-full h-full"
+                >
+                  <Outlet />
+                </motion.div>
               </main>
             )
           }
 
           return (
             <main className="flex-1 overflow-y-auto overscroll-y-contain bg-transparent">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
+              >
                 <Outlet />
-              </div>
+              </motion.div>
             </main>
           )
         })()}

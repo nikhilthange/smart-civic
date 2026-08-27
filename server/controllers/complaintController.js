@@ -17,7 +17,7 @@ const socketService = require("../services/socketService");
 const resolutionInspectorService = require("../services/resolutionInspectorService");
 const Inventory = require("../models/Inventory");
 const { invalidateCache } = require("../middlewares/cacheMiddleware");
-const { scrubPii } = require("../utils/piiScrubber");
+const { scrubPii, sanitizeCitizenProfile } = require("../utils/piiScrubber");
 
 // ─── Broad Pattern Cache Invalidation Helper ─────────────────────────────────
 const purgeComplaintCaches = (id, complaintId) => {
@@ -716,13 +716,20 @@ const getComplaint = async (req, res) => {
     // Admins, officers, and workers have unrestricted access to track any complaint
     const isStaff = ["admin", "officer", "worker"].includes(userRole);
 
+    // Zero-Trust Citizen Privacy: Mask PII if viewer is not an admin and not the ticket creator
+    const complaintCitizenId = complaint.citizen?._id
+      ? complaint.citizen._id.toString()
+      : complaint.citizen?.toString();
+    const isOwner = Boolean(complaintCitizenId && complaintCitizenId === userId);
+
     if (!isStaff && userRole === "citizen") {
-      const complaintCitizenId = complaint.citizen?._id
-        ? complaint.citizen._id.toString()
-        : complaint.citizen?.toString();
-      if (complaintCitizenId && complaintCitizenId !== userId) {
+      if (complaintCitizenId && !isOwner) {
         return res.status(403).json({ success: false, message: "Access denied to this complaint." });
       }
+    }
+
+    if (userRole !== "admin" && !isOwner && complaint.citizen && typeof complaint.citizen === "object") {
+      complaint.citizen = sanitizeCitizenProfile(complaint.citizen);
     }
 
     return res.status(200).json({ success: true, complaint });
@@ -830,9 +837,11 @@ const deleteComplaint = async (req, res) => {
           }
         } else if (attachment.url && attachment.url.startsWith("/uploads/")) {
           // Local file
-          const localPath = path.join(__dirname, "..", attachment.url);
+          const localPath = path.join(__dirname, "../uploads", path.basename(attachment.url));
           fs.unlink(localPath, (err) => {
-            if (err) console.error(`Failed to delete local file (${localPath}):`, err.message);
+            if (err && err.code !== "ENOENT") {
+              console.warn(`Non-fatal notice deleting local file (${localPath}):`, err.message);
+            }
           });
         }
       }

@@ -22,14 +22,25 @@ jobs:
   sre-master-governance:
     name: SRE Master Verification & Telemetry Governance
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     services:
       mongodb:
         image: mongo:7.0
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 5s
+          --health-timeout 2s
+          --health-retries 3
         ports:
           - 27017:27017
       redis:
         image: redis:7.2-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 2s
+          --health-retries 3
         ports:
           - 6379:6379
 
@@ -101,3 +112,7 @@ jobs:
           else
             echo "No changes in STATUS.md detected. Skipping commit."
           fi
+
+      - name: Teardown Lingering Processes
+        if: always()
+        run: pkill -f node || true

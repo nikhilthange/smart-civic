@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import {
   Send,
   Mic,
@@ -22,22 +22,43 @@ import {
   FileText,
   X,
   ShieldCheck,
+  RotateCcw,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import api from "@/lib/axios"
 
+interface InteractiveButton {
+  id: string
+  title: string
+  payload: string
+}
+
 interface Message {
   id: string
   sender: "user" | "bot"
-  type: "text" | "image" | "voice" | "location" | "document"
+  type: "text" | "image" | "voice" | "location" | "document" | "interactive_buttons" | "interactive_list"
   content: string
   timestamp: string
   mediaUrl?: string
   duration?: string
+  audioBlobUrl?: string
+  interactiveButtons?: InteractiveButton[]
+  listSections?: { title: string; rows: { id: string; title: string; description?: string }[] }[]
   complaintId?: string
-  ticketDetails?: any
+  ticketDetails?: {
+    category?: string
+    ward?: string
+    slaDeadline?: string
+    priority?: string
+    karmaAwarded?: number
+  }
 }
+
+type DialogueStage = "IDLE" | "AWAITING_MEDIA_OR_LOCATION" | "AWAITING_WARD" | "CONFIRMING"
 
 const QUICK_ACTIONS = [
   {
@@ -67,17 +88,34 @@ const QUICK_ACTIONS = [
   {
     icon: Search,
     label: "Track Status",
-    payload: "Track ticket status for complaint #SC-2026-90D20FF0",
+    payload: "status",
     color: "hover:bg-violet-500/10 hover:border-violet-500/30 hover:text-violet-600 dark:hover:text-violet-400",
   },
 ]
 
-// Pure Web Audio API synthesized tones
-function playWebAudioChime(type: "send" | "receive") {
+// Pure Web Audio API Synthesizer with lazy-initialized AudioContext
+let audioContextInstance: AudioContext | null = null
+
+function getAudioContext(): AudioContext | null {
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
-    if (!AudioContextClass) return
-    const ctx = new AudioContextClass()
+    if (!AudioContextClass) return null
+    if (!audioContextInstance) {
+      audioContextInstance = new AudioContextClass()
+    }
+    if (audioContextInstance.state === "suspended") {
+      audioContextInstance.resume()
+    }
+    return audioContextInstance
+  } catch {
+    return null
+  }
+}
+
+function playWebAudioChime(type: "send" | "receive") {
+  try {
+    const ctx = getAudioContext()
+    if (!ctx) return
 
     if (type === "send") {
       const osc = ctx.createOscillator()
@@ -92,11 +130,10 @@ function playWebAudioChime(type: "send" | "receive") {
       osc.start()
       osc.stop(ctx.currentTime + 0.08)
     } else {
-      // Two-tone pleasant notification chime
       const osc1 = ctx.createOscillator()
       const gain1 = ctx.createGain()
       osc1.type = "sine"
-      osc1.frequency.setValueAtTime(587.33, ctx.currentTime)
+      osc1.frequency.setValueAtTime(587.33, ctx.currentTime) // D5
       gain1.gain.setValueAtTime(0.12, ctx.currentTime)
       gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12)
       osc1.connect(gain1)
@@ -107,7 +144,7 @@ function playWebAudioChime(type: "send" | "receive") {
       const osc2 = ctx.createOscillator()
       const gain2 = ctx.createGain()
       osc2.type = "sine"
-      osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.1)
+      osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.1) // A5
       gain2.gain.setValueAtTime(0.12, ctx.currentTime + 0.1)
       gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.28)
       osc2.connect(gain2)
@@ -116,19 +153,24 @@ function playWebAudioChime(type: "send" | "receive") {
       osc2.stop(ctx.currentTime + 0.28)
     }
   } catch {
-    // AudioContext blocked or unsupported
+    // Suppress audio failure
   }
 }
 
 export default function WhatsAppSandbox() {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: "msg-01",
+      id: "msg-init",
       sender: "bot",
-      type: "text",
+      type: "interactive_buttons",
       content:
-        "नमस्कार! Brihanmumbai Municipal Corporation (BMC) २४x७ WhatsApp Citizen Care Bot मध्ये आपले स्वागत आहे. 🙏\n\nआपण रस्ता खड्डे, कचरा, पाणी गळती, किंवा इतर नागरी तक्रार फोटो, व्हॉईस नोट किंवा लाईव्ह लोकेशन पाठवून त्वरित नोंदवू शकता.",
+        "नमस्कार! Brihanmumbai Municipal Corporation (BMC) २४x७ WhatsApp Grievance Bot मध्ये आपले स्वागत आहे. 🙏\n\nकृपया तक्रारीचा प्रकार निवडा किंवा थेट मेसेज टाईप करा:",
       timestamp: "10:45 AM",
+      interactiveButtons: [
+        { id: "btn-pothole", title: "🚧 खड्डे / Roads", payload: "रस्ता खड्डे (Road Pothole defect)" },
+        { id: "btn-swm", title: "🗑️ कचरा / Waste", payload: "कचरा समस्या (Overflowing Garbage)" },
+        { id: "btn-water", title: "💧 पाणी / Water", payload: "पाणी गळती (Water Pipeline Leak)" },
+      ],
     },
   ])
 
@@ -136,18 +178,56 @@ export default function WhatsAppSandbox() {
   const [phoneNumber] = useState("+91 98200 12345")
   const [isSending, setIsSending] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
+  const [dialogueStage, setDialogueStage] = useState<DialogueStage>("IDLE")
+  const [currentGrievanceContext, setCurrentGrievanceContext] = useState<{
+    category?: string
+    ward?: string
+    photoAttached?: boolean
+    locationAttached?: boolean
+  }>({})
+
+  // Audio Recording states
   const [isRecording, setIsRecording] = useState(false)
   const [recordingSeconds, setRecordingSeconds] = useState(0)
   const [activePlayingAudioId, setActivePlayingAudioId] = useState<string | null>(null)
   const [isAttachMenuOpen, setIsAttachMenuOpen] = useState(false)
+  const [isListMenuExpanded, setIsListMenuExpanded] = useState<Record<string, boolean>>({})
   const [imageModalPreview, setImageModalPreview] = useState<{ url: string; caption: string } | null>(null)
 
   const chatBottomRef = useRef<HTMLDivElement | null>(null)
   const recordingTimerRef = useRef<any>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const createdAudioUrls = useRef<string[]>([])
+  const audioElementRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, isSending, isRecording])
+
+  // Cleanup Object URLs on unmount
+  useEffect(() => {
+    const urls = createdAudioUrls.current
+    return () => {
+      urls.forEach((url) => {
+        try {
+          URL.revokeObjectURL(url)
+        } catch (_) {}
+      })
+    }
+  }, [])
+
+  // Keyboard shortcut listener (Escape to close modals/speed-dials)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsAttachMenuOpen(false)
+        setImageModalPreview(null)
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [])
 
   // Recording Timer
   useEffect(() => {
@@ -164,77 +244,255 @@ export default function WhatsAppSandbox() {
     }
   }, [isRecording])
 
-  const handleSendMessage = async (
-    textToSend?: string,
-    options?: { type?: Message["type"]; mediaUrl?: string; duration?: string }
-  ) => {
-    const text = textToSend ?? inputMessage
-    if (!text.trim() && !options?.mediaUrl && !options?.duration) return
+  // Multi-Turn Conversational Handler
+  const handleSendMessage = useCallback(
+    async (
+      textToSend?: string,
+      options?: {
+        type?: Message["type"]
+        mediaUrl?: string
+        duration?: string
+        audioBlobUrl?: string
+      }
+    ) => {
+      const text = textToSend ?? inputMessage
+      if (!text.trim() && !options?.mediaUrl && !options?.duration && !options?.audioBlobUrl) return
 
-    const type = options?.type || "text"
+      const type = options?.type || "text"
+      const nowStr = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
 
-    const userMsg: Message = {
-      id: `msg-${Date.now()}`,
-      sender: "user",
-      type,
-      content: text,
-      mediaUrl: options?.mediaUrl,
-      duration: options?.duration,
-      timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
-    }
+      const userMsg: Message = {
+        id: `msg-${Date.now()}`,
+        sender: "user",
+        type,
+        content: text,
+        mediaUrl: options?.mediaUrl,
+        duration: options?.duration,
+        audioBlobUrl: options?.audioBlobUrl,
+        timestamp: nowStr,
+      }
 
-    setMessages((prev) => [...prev, userMsg])
-    setInputMessage("")
-    setIsSending(true)
+      setMessages((prev) => [...prev, userMsg])
+      setInputMessage("")
+      setIsSending(true)
 
-    if (!isMuted) playWebAudioChime("send")
+      if (!isMuted) playWebAudioChime("send")
 
+      // Check Keyword Routing Commands
+      const lowerText = text.toLowerCase().trim()
+      if (lowerText === "reset" || lowerText === "menu" || lowerText === "help") {
+        setDialogueStage("IDLE")
+        setCurrentGrievanceContext({})
+        setTimeout(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `bot-${Date.now()}`,
+              sender: "bot",
+              type: "interactive_buttons",
+              content:
+                "🔄 संभाषण रीसेट केले आहे. Brihanmumbai Municipal Corporation (BMC) Citizen Bot मेन्यू:\n\nकृपया पर्याय निवडा:",
+              timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+              interactiveButtons: [
+                { id: "btn-pothole", title: "🚧 खड्डे / Roads", payload: "रस्ता खड्डे (Road Pothole defect)" },
+                { id: "btn-swm", title: "🗑️ कचरा / Waste", payload: "कचरा समस्या (Overflowing Garbage)" },
+                { id: "btn-water", title: "💧 पाणी / Water", payload: "पाणी गळती (Water Pipeline Leak)" },
+              ],
+            },
+          ])
+          setIsSending(false)
+          if (!isMuted) playWebAudioChime("receive")
+        }, 700)
+        return
+      }
+
+      if (lowerText === "status") {
+        setTimeout(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `bot-${Date.now()}`,
+              sender: "bot",
+              type: "text",
+              content:
+                "📋 **सक्रिय तक्रार स्थिती (Live Ticket Status)**:\n\n• तिकीट क्र: **#SC-2026-90D20FF0**\n• प्रभाग: **Ward H-West (Bandra West)**\n• स्थिती: 🟡 **IN_PROGRESS (Worker Allocated: Santosh Gaikwad)**\n• SLA डेडलाईन: **24 तास शिल्लक**\n\nसविस्तर पाहण्यासाठी: http://localhost:5173/complaints",
+              timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+            },
+          ])
+          setIsSending(false)
+          if (!isMuted) playWebAudioChime("receive")
+        }, 700)
+        return
+      }
+
+      // Multi-Turn Stateful Flow Transitions
+      try {
+        let botResponse: Partial<Message> = {}
+
+        if (dialogueStage === "IDLE") {
+          // Progress from Category Selection to Stage 2: Media/Location Request
+          setDialogueStage("AWAITING_MEDIA_OR_LOCATION")
+          setCurrentGrievanceContext((prev) => ({ ...prev, category: text }))
+
+          botResponse = {
+            type: "interactive_buttons",
+            content: `📍 तक्रार विषय नोंदवला: *${text}*.\n\nकृपया तक्रार निवारणासाठी संबंधित जागेचा **फोटो (Camera Photo)** किंवा **लाईव्ह GPS लोकेशन** शेअर करा:`,
+            interactiveButtons: [
+              { id: "btn-cam", title: "📸 फोटो पाठवा", payload: "📸 Camera Photo Attached" },
+              { id: "btn-loc", title: "📍 GPS Location", payload: "📍 Live Location: 19.0596° N, 72.8347° E" },
+              { id: "btn-skip", title: "⏭️ पुढे जा (Skip)", payload: "Skip media attachment" },
+            ],
+          }
+        } else if (dialogueStage === "AWAITING_MEDIA_OR_LOCATION") {
+          // Progress to Stage 3: Ward Selection
+          setDialogueStage("AWAITING_WARD")
+          botResponse = {
+            type: "interactive_list",
+            content: `✅ पुरावा जोडला गेला आहे. कृपया आपला **BMC प्रभाग (Ward)** निवडा:`,
+            listSections: [
+              {
+                title: "Western Suburbs (पश्चिम उपनगरे)",
+                rows: [
+                  { id: "ward-h-west", title: "Ward H-West", description: "Bandra, Khar, Santa Cruz West" },
+                  { id: "ward-k-west", title: "Ward K-West", description: "Andheri West, Juhu, Versova" },
+                  { id: "ward-r-north", title: "Ward R-North", description: "Dahisar, Borivali North" },
+                ],
+              },
+              {
+                title: "City Island & Central (शहर व मध्य मुंबई)",
+                rows: [
+                  { id: "ward-g-north", title: "Ward G-North", description: "Dadar, Dharavi, Mahim" },
+                  { id: "ward-f-south", title: "Ward F-South", description: "Parel, Sewri, Naigaon" },
+                ],
+              },
+            ],
+          }
+        } else if (dialogueStage === "AWAITING_WARD") {
+          // Progress to Final Stage 4: Ticket Issuance & Karma Credit
+          setDialogueStage("IDLE")
+          const ticketId = `SC-2026-${Math.floor(100000 + Math.random() * 900000)}`
+
+          botResponse = {
+            type: "text",
+            content: `🎉 **तक्रार अधिकृतरीत्या नोंदवण्यात आली आहे!**\n\n═══════════════════════════\n🎫 **तिकीट क्र**: *#${ticketId}*\n📍 **प्रभाग**: *${text}*\n⏱️ **SLA डेडलाईन**: *24 तास (On-Time Guaranteed)*\n🏆 **Civic Karma**: *+50 Points जमा झाले!*\n🛡️ **Zero-Trust Privacy**: *EXIF व वैयक्तिक माहिती सुरक्षित (Scrubbed)*\n═══════════════════════════\n\nसंबंधित कनिष्ठ अभियंता व फील्ड कामगारास (Field Worker) त्वरित कार्य आदेश जारी करण्यात आला आहे.\n\nLive Tracking Link: http://localhost:5173/complaints`,
+            complaintId: ticketId,
+            ticketDetails: {
+              ward: text,
+              karmaAwarded: 50,
+              priority: "high",
+            },
+          }
+        }
+
+        // Send to backend API
+        try {
+          await api.post("/webhooks/whatsapp", {
+            From: `whatsapp:${phoneNumber.replace(/\s+/g, "")}`,
+            Body: text,
+          })
+        } catch (_) {}
+
+        setTimeout(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `bot-${Date.now()}`,
+              sender: "bot",
+              type: botResponse.type || "text",
+              content: botResponse.content || "✅ संदेश प्राप्त झाला.",
+              timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+              interactiveButtons: botResponse.interactiveButtons,
+              listSections: botResponse.listSections,
+              complaintId: botResponse.complaintId,
+              ticketDetails: botResponse.ticketDetails,
+            },
+          ])
+          setIsSending(false)
+          if (!isMuted) playWebAudioChime("receive")
+        }, 600)
+      } catch {
+        setIsSending(false)
+      }
+    },
+    [dialogueStage, inputMessage, isMuted, phoneNumber]
+  )
+
+  // Real Browser MediaRecorder Audio Capture
+  const handleStartRealRecording = async () => {
     try {
-      // Dispatch payload to backend WhatsApp Webhook
-      const res = await api.post("/webhooks/whatsapp", {
-        From: `whatsapp:${phoneNumber.replace(/\s+/g, "")}`,
-        Body: text || (type === "voice" ? "[Citizen Voice Note]" : "[Grievance Photo Attachment]"),
-      })
-
-      const botReplyText =
-        res.data?.replyText ||
-        `✅ तक्रार नोंदवली आहे! तिकीट क्र: SC-2026-${Math.floor(100000 + Math.random() * 900000)}. संबंधित प्रभागाकडे (Ward) त्वरित वर्ग करण्यात आले आहे.\n\nLive Track Status: http://localhost:5173/complaints`
-
-      const botMsg: Message = {
-        id: `bot-${Date.now()}`,
-        sender: "bot",
-        type: "text",
-        content: botReplyText,
-        timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
-        complaintId: res.data?.complaintId,
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setIsRecording(true)
+        return
       }
 
-      setMessages((prev) => [...prev, botMsg])
-      if (!isMuted) playWebAudioChime("receive")
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data)
+        }
+      }
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
+        const audioUrl = URL.createObjectURL(audioBlob)
+        createdAudioUrls.current.push(audioUrl)
+
+        const formattedDuration = `0:${recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}`
+        handleSendMessage("Voice Note Grievance", {
+          type: "voice",
+          duration: formattedDuration === "0:00" ? "0:04" : formattedDuration,
+          audioBlobUrl: audioUrl,
+        })
+
+        // Stop all tracks
+        stream.getTracks().forEach((track) => track.stop())
+      }
+
+      mediaRecorder.start()
+      setIsRecording(true)
     } catch {
-      // Fallback bot response
-      const fallbackMsg: Message = {
-        id: `bot-${Date.now()}`,
-        sender: "bot",
-        type: "text",
-        content: `✅ तक्रार यशस्वीरीत्या नोंदवली! तिकीट क्र: SC-2026-${Math.floor(100000 + Math.random() * 900000)}. Live Track: http://localhost:5173/complaints`,
-        timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
-      }
-      setMessages((prev) => [...prev, fallbackMsg])
-      if (!isMuted) playWebAudioChime("receive")
-    } finally {
-      setIsSending(false)
+      // Permission denied or unsupported — fall back gracefully to simulation
+      setIsRecording(true)
     }
   }
 
   // Voice Note Recording Finish
   const handleStopRecording = () => {
     setIsRecording(false)
-    const formattedDuration = `0:${recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}`
-    handleSendMessage("Voice Note Grievance (0:0" + Math.max(3, recordingSeconds) + ")", {
-      type: "voice",
-      duration: formattedDuration === "0:00" ? "0:04" : formattedDuration,
-    })
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop()
+    } else {
+      const formattedDuration = `0:${recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}`
+      handleSendMessage("Voice Note Grievance", {
+        type: "voice",
+        duration: formattedDuration === "0:00" ? "0:04" : formattedDuration,
+      })
+    }
+  }
+
+  // Audio Playback toggle
+  const handleToggleAudioPlay = (msgId: string, audioUrl?: string) => {
+    if (activePlayingAudioId === msgId) {
+      if (audioElementRef.current) {
+        audioElementRef.current.pause()
+      }
+      setActivePlayingAudioId(null)
+    } else {
+      if (audioElementRef.current) {
+        audioElementRef.current.pause()
+      }
+      if (audioUrl) {
+        const audio = new Audio(audioUrl)
+        audioElementRef.current = audio
+        audio.onended = () => setActivePlayingAudioId(null)
+        audio.play().catch(() => {})
+      }
+      setActivePlayingAudioId(msgId)
+    }
   }
 
   // Staged Image Submission
@@ -264,13 +522,24 @@ export default function WhatsAppSandbox() {
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans">
-            Interactive simulator for testing citizen grievance intake via WhatsApp bot with automated NLP entity extraction, voice note PTT, and instant ticket generation.
+            Interactive multi-turn conversational simulator with real MediaRecorder PTT, interactive list templates, and automated municipal SLA triage.
           </p>
         </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => handleSendMessage("reset")}
+          className="self-start sm:self-auto rounded-xl gap-1.5 border-slate-200 dark:border-zinc-800 text-xs font-semibold"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Reset Dialogue</span>
+        </Button>
       </div>
 
       {/* WhatsApp Chat Mock Interface */}
-      <div className="rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xl overflow-hidden flex flex-col h-[600px] sm:h-[660px] relative bg-[#EFEAE2] dark:bg-[#0B141A]">
+      <div className="rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xl overflow-hidden flex flex-col h-[600px] sm:h-[680px] relative bg-[#EFEAE2] dark:bg-[#0B141A]">
         {/* Authentic WhatsApp Doodle Background Pattern */}
         <div
           className="absolute inset-0 pointer-events-none opacity-35 dark:opacity-10"
@@ -296,7 +565,9 @@ export default function WhatsAppSandbox() {
               </div>
               <span className="text-[11px] text-emerald-100 dark:text-zinc-400 flex items-center gap-1">
                 {isSending ? (
-                  <span className="text-emerald-300 font-medium animate-pulse">typing...</span>
+                  <span className="text-emerald-300 font-medium animate-pulse">typing response...</span>
+                ) : isRecording ? (
+                  <span className="text-red-300 font-medium animate-pulse">recording voice note...</span>
                 ) : (
                   <>
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -324,12 +595,20 @@ export default function WhatsAppSandbox() {
         </div>
 
         {/* Chat Message Scroll Area */}
-        <div className="relative z-10 flex-1 p-3 sm:p-4 overflow-y-auto space-y-3.5 font-sans">
+        <div
+          className="relative z-10 flex-1 p-3 sm:p-4 overflow-y-auto space-y-3.5 font-sans"
+          aria-live="polite"
+        >
           {/* Quick Action Chips Overlay */}
           <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2">
-            <p className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
-              Quick Municipal Action Chips
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+                Quick Municipal Presets
+              </p>
+              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                Stage: {dialogueStage} {currentGrievanceContext.category ? `• ${currentGrievanceContext.category}` : ""}
+              </span>
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {QUICK_ACTIONS.map((action, idx) => {
                 const Icon = action.icon
@@ -354,7 +633,7 @@ export default function WhatsAppSandbox() {
             return (
               <div key={m.id} className={`flex ${isUser ? "justify-end" : "justify-start"} relative group`}>
                 <div
-                  className={`max-w-[85%] sm:max-w-[75%] px-3.5 py-2.5 shadow-sm text-xs sm:text-[13px] space-y-1 relative ${
+                  className={`max-w-[88%] sm:max-w-[78%] px-3.5 py-2.5 shadow-sm text-xs sm:text-[13px] space-y-2 relative ${
                     isUser
                       ? "bg-[#D9FDD3] dark:bg-[#005C4B] text-slate-900 dark:text-emerald-50 rounded-2xl rounded-tr-none"
                       : "bg-white dark:bg-[#202C33] text-slate-900 dark:text-zinc-100 rounded-2xl rounded-tl-none border border-slate-100/80 dark:border-zinc-700/40"
@@ -369,7 +648,7 @@ export default function WhatsAppSandbox() {
                     }`}
                   />
 
-                  {/* Render Message by Type */}
+                  {/* Render Image Message */}
                   {m.type === "image" && m.mediaUrl && (
                     <div className="space-y-1.5 pb-1">
                       <div className="rounded-xl overflow-hidden border border-black/10 dark:border-white/10">
@@ -382,6 +661,26 @@ export default function WhatsAppSandbox() {
                     </div>
                   )}
 
+                  {/* Render Location Card */}
+                  {m.type === "location" && (
+                    <div className="space-y-2 pb-1">
+                      <div className="rounded-xl overflow-hidden bg-slate-200 dark:bg-zinc-800 p-3 flex items-center gap-3 border border-slate-300 dark:border-zinc-700">
+                        <div className="w-10 h-10 rounded-lg bg-rose-500 text-white flex items-center justify-center font-bold shrink-0 shadow">
+                          <MapPin className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                            Bandra Reclamation Arterial
+                          </p>
+                          <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
+                            19.0596° N, 72.8347° E
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Render Voice Note */}
                   {m.type === "voice" ? (
                     <div className="flex items-center gap-3 py-1 min-w-[200px] sm:min-w-[240px]">
                       <div className="relative">
@@ -395,7 +694,7 @@ export default function WhatsAppSandbox() {
 
                       <button
                         type="button"
-                        onClick={() => setActivePlayingAudioId(activePlayingAudioId === m.id ? null : m.id)}
+                        onClick={() => handleToggleAudioPlay(m.id, m.audioBlobUrl)}
                         className="w-8 h-8 rounded-full bg-[#00A884] text-white flex items-center justify-center shadow transition active:scale-95 shrink-0"
                       >
                         {activePlayingAudioId === m.id ? (
@@ -427,6 +726,77 @@ export default function WhatsAppSandbox() {
                     </div>
                   ) : (
                     <p className="leading-relaxed whitespace-pre-wrap font-sans">{m.content}</p>
+                  )}
+
+                  {/* WhatsApp Interactive Buttons Template */}
+                  {m.interactiveButtons && m.interactiveButtons.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/60 flex flex-col gap-1.5">
+                      {m.interactiveButtons.map((btn) => (
+                        <button
+                          key={btn.id}
+                          type="button"
+                          onClick={() => handleSendMessage(btn.payload)}
+                          className="w-full py-2 px-3 text-center text-xs font-semibold text-[#00A884] dark:text-[#25D366] bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-700/80 rounded-xl transition border border-slate-200 dark:border-zinc-700/40 active:scale-[0.98] shadow-sm flex items-center justify-center gap-1.5"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>{btn.title}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* WhatsApp Interactive List Menu Template */}
+                  {m.listSections && m.listSections.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/60 space-y-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setIsListMenuExpanded((prev) => ({
+                            ...prev,
+                            [m.id]: !prev[m.id],
+                          }))
+                        }
+                        className="w-full py-2 px-3 text-xs font-bold text-white bg-[#00A884] hover:bg-[#008f6f] rounded-xl flex items-center justify-between shadow-sm transition"
+                      >
+                        <span>📋 View Options (पर्याय निवडा)</span>
+                        {isListMenuExpanded[m.id] ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </button>
+
+                      {isListMenuExpanded[m.id] && (
+                        <div className="bg-slate-50 dark:bg-zinc-800/95 rounded-xl p-2.5 space-y-2.5 border border-slate-200 dark:border-zinc-700 animate-in fade-in duration-150">
+                          {m.listSections.map((sec, sIdx) => (
+                            <div key={sIdx} className="space-y-1">
+                              <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider px-1">
+                                {sec.title}
+                              </p>
+                              <div className="space-y-1">
+                                {sec.rows.map((row) => (
+                                  <button
+                                    key={row.id}
+                                    type="button"
+                                    onClick={() => handleSendMessage(row.title)}
+                                    className="w-full text-left p-2 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition flex flex-col group/row"
+                                  >
+                                    <span className="font-semibold text-xs text-slate-800 dark:text-zinc-200 group-hover/row:text-emerald-600">
+                                      {row.title}
+                                    </span>
+                                    {row.description && (
+                                      <span className="text-[10px] text-slate-500 dark:text-zinc-400">
+                                        {row.description}
+                                      </span>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )}
 
                   <div className="flex items-center justify-end gap-1 text-[10px] text-slate-400 dark:text-zinc-400 pt-0.5">
@@ -510,7 +880,7 @@ export default function WhatsAppSandbox() {
             <div className="flex items-center gap-2.5">
               <span className="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
               <span className="text-xs font-mono font-bold text-red-600 dark:text-red-400">
-                0:0{recordingSeconds}
+                0:{recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}
               </span>
               <span className="text-xs text-slate-500 dark:text-zinc-400">Recording voice grievance...</span>
             </div>
@@ -570,6 +940,12 @@ export default function WhatsAppSandbox() {
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSendMessage()
+                }
+              }}
               placeholder="Type Marathi, Hindi or English grievance..."
               className="flex-1 px-4 py-2.5 rounded-full bg-white dark:bg-[#2A3942] border border-slate-200 dark:border-zinc-700 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00A884]"
             />
@@ -586,7 +962,7 @@ export default function WhatsAppSandbox() {
             ) : (
               <button
                 type="button"
-                onClick={() => setIsRecording(true)}
+                onClick={handleStartRealRecording}
                 className="bg-[#00A884] hover:bg-[#008f6f] text-white w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm transition active:scale-95"
                 title="Push to talk voice note"
                 aria-label="Record Voice Note"

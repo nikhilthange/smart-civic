@@ -25,13 +25,14 @@ function validateK8sManifests() {
       assert.ok(content.includes("kind:"), `${file} contains kind`);
       assert.ok(content.includes("metadata:"), `${file} contains metadata`);
       assert.ok(content.includes("name:"), `${file} contains resource name`);
+      assert.ok(content.includes("namespace:"), `${file} defines metadata.namespace`);
 
       if (file.includes("deployment") || file.includes("cronjob")) {
         assert.ok(content.includes("runAsNonRoot: true") || content.includes("securityContext:"), `${file} enforces security context`);
         assert.ok(content.includes("resources:"), `${file} enforces CPU/Memory resources`);
       }
 
-      console.log(`  ✅ PASSED: ${file} declarative schema verified`);
+      console.log(`  ✅ PASSED: ${file} declarative schema verified (apiVersion, kind, metadata.namespace)`);
       passed++;
     } catch (err) {
       console.error(`  ❌ FAILED: ${file} - ${err.message}`);

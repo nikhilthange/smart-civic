@@ -332,8 +332,9 @@ class SimulationService {
       const defaultBins = [
         {
           binId: "BIN-HW-042",
+          rfidTag: "RFID-HW-042",
           ward: "Ward H-West",
-          locationName: "Bandra Bandstand Promenade",
+          locality: "Bandra Bandstand Promenade",
           currentFillPercentage: 72,
           batteryLevel: 94,
           status: "NORMAL",
@@ -342,8 +343,9 @@ class SimulationService {
         },
         {
           binId: "BIN-GN-018",
+          rfidTag: "RFID-GN-018",
           ward: "Ward G-North",
-          locationName: "Dadar Flower Market Central",
+          locality: "Dadar Flower Market Central",
           currentFillPercentage: 91,
           batteryLevel: 88,
           status: "OVERFLOWING",

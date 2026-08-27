@@ -93,6 +93,10 @@ async function runZeroMockComplianceSuite() {
   console.log("\n▶ [Test 3] Testing Universal batchSeedAllModules() Execution...");
   try {
     const simulationService = require("../services/simulationService");
+    
+    // Ensure clean baseline before test seeding
+    await simulationService.cleanupSimulatedData().catch(() => {});
+    
     const seedResult = await simulationService.batchSeedAllModules();
 
     assert.strictEqual(seedResult.success, true, "batchSeedAllModules must return success: true");
@@ -134,6 +138,12 @@ async function runZeroMockComplianceSuite() {
     reportPass(`Simulated data cleanup successfully pruned ${cleanupResult.deletedTotal} test records`);
   } catch (err) {
     reportFail("cleanupSimulatedData Execution", err);
+  } finally {
+    try {
+      if (mongoose.connection && mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+      }
+    } catch (_) {}
   }
 
   // Final Summary

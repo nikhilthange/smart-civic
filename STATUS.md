@@ -42,4 +42,4 @@
 
 ---
 
-*Last Synchronized: `2026-08-27T19:20:48.342Z` | Platform Release: `v1.0.0`*
+*Last Synchronized: `2026-08-27T19:21:15.548Z` | Platform Release: `v1.0.1`*

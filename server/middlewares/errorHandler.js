@@ -42,7 +42,7 @@ const handleCORSError    = () => new AppError("CORS policy violation. Request bl
 
 // ─── Response formatters ──────────────────────────────────────────────────────
 const sendErrorDev = (err, req, res) => {
-  res.status(err.statusCode).json({
+  return res.status(err.statusCode).json({
     success: false,
     status:  err.statusCode,
     message: err.message,
@@ -82,9 +82,9 @@ const globalErrorHandler = (err, req, res, next) => {
   if (error.message && error.message.startsWith("CORS:")) error = handleCORSError();
 
   if (process.env.NODE_ENV === "development") {
-    sendErrorDev(error, req, res);
+    return sendErrorDev(error, req, res);
   } else {
-    sendErrorProd(error, req, res);
+    return sendErrorProd(error, req, res);
   }
 };
 

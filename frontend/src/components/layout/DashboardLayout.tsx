@@ -333,12 +333,12 @@ export default function DashboardLayout() {
         <header className="shrink-0 z-40 flex h-14 items-center gap-4 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-[#090A0F]/70 backdrop-blur-xl px-4 lg:px-8 shadow-sm">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+              <Button variant="outline" size="icon" className="shrink-0 md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-0">
+            <SheetContent side="left" className="flex flex-col p-0 w-[280px] max-w-[85vw]">
               <Sidebar isMobile={true} />
             </SheetContent>
           </Sheet>
@@ -365,13 +365,13 @@ export default function DashboardLayout() {
             variant="ghost"
             size="icon"
             onClick={() => setIsCommandPaletteOpen(true)}
-            className="md:hidden text-zinc-500"
+            className="md:hidden text-zinc-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
             title="Search (⌘K)"
           >
             <Search className="w-4 h-4" />
           </Button>
 
-          <div className="flex items-center gap-3 ml-auto">
+          <div className="flex items-center gap-2 sm:gap-3 ml-auto">
             {/* Accessibility: Easy View Toggle */}
             <Button
               type="button"
@@ -404,9 +404,9 @@ export default function DashboardLayout() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="icon" className="rounded-full">
+                <Button variant="secondary" size="icon" className="rounded-full min-h-[40px] min-w-[40px]">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-emerald-600 text-white text-xs font-bold font-mono">
+                    <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold font-mono">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
@@ -424,7 +424,7 @@ export default function DashboardLayout() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setIsCommandPaletteOpen(true)}>
-                  <Command className="mr-2 h-4 w-4 text-emerald-600" />
+                  <Command className="mr-2 h-4 w-4 text-zinc-900 dark:text-zinc-100" />
                   Command Palette (⌘K)
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setIsCopilotOpen(true)}>
@@ -489,7 +489,7 @@ export default function DashboardLayout() {
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
-                className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
+                className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6"
               >
                 <Outlet />
               </motion.div>

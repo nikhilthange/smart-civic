@@ -69,34 +69,76 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
+
   html {
     scroll-behavior: smooth;
-    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
   }
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  h1 {
+    font-size: clamp(1.4rem, 3.5vw + 0.5rem, 2.25rem);
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+
+  h2 {
+    font-size: clamp(1.2rem, 2.5vw + 0.25rem, 1.75rem);
     letter-spacing: -0.025em;
+    line-height: 1.2;
   }
+
+  h3 {
+    font-size: clamp(1.05rem, 1.8vw + 0.2rem, 1.35rem);
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
   .font-mono, code, pre {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-feature-settings: "tnum" 1, "zero" 1;
   }
+
   body {
     @apply bg-background text-foreground;
     background-color: #FAFAFA;
     font-feature-settings: "rlig" 1, "calt" 1, "cv02" 1, "cv03" 1, "cv04" 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
     min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   .dark body {
     background-color: #09090B;
+  }
+
+  /* Responsive image and media constraints */
+  img, svg, video, canvas, audio, iframe, embed, object {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Focus visible accessibility standards */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* Touch Hit-Target Ergonomics */
+  @media (pointer: coarse) {
+    button, a, input, select, textarea, [role="button"] {
+      min-height: 44px;
+    }
   }
 
   /* Clean Minimal Custom Scrollbars */
@@ -123,25 +165,45 @@
   }
 
   .glass {
-    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)];
+    @apply bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)];
   }
   
   .glass-card {
-    @apply bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-lg shadow-sm transition-all duration-150 hover:border-zinc-300 dark:hover:border-zinc-700;
+    @apply bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-xl shadow-sm transition-all duration-150;
+  }
+
+  /* Safe area padding utilities */
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
 /* Linear/Vercel Layout & Card Standard */
 .page-container {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6;
+  @apply max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6;
 }
 
 .panel-card {
-  @apply bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-lg p-5 sm:p-6 shadow-sm;
+  @apply bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-4 sm:p-6 shadow-sm;
 }
 
 .subtle-badge {
   @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700;
+}
+
+/* Reduced Motion User Preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Accessibility: Easy View High-Contrast & Large Touch Target Mode */
@@ -153,21 +215,11 @@ html.easy-view-mode button,
 html.easy-view-mode a,
 html.easy-view-mode input,
 html.easy-view-mode select {
-  min-height: 46px;
+  min-height: 48px;
   font-weight: 700;
 }
 
 html.easy-view-mode .badge {
   font-size: 0.85rem;
   padding: 0.35rem 0.65rem;
-}
-
-@layer utilities {
-  .btn-primary-gradient {
-    @apply bg-zinc-900 dark:bg-zinc-50 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium shadow-sm transition active:scale-[0.98];
-  }
-
-  .badge-chip {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-mono font-medium border;
-  }
 }

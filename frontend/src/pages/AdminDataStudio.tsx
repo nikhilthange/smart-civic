@@ -13,6 +13,12 @@ import {
   Building,
   Coins,
   ExternalLink,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  AlertTriangle,
+  RotateCcw,
+  Terminal,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -29,6 +35,7 @@ type ActiveTab =
   | "contracts"
   | "societies"
   | "projects"
+  | "queues"
 
 const MUMBAI_WARDS = [
   "Ward A", "Ward B", "Ward C", "Ward D", "Ward E",
@@ -43,6 +50,11 @@ export default function AdminDataStudio() {
   const [stats, setStats] = useState<any>({
     counts: { complaints: 0, subways: 0, bins: 0, cctvCameras: 0, dilapidatedBuildings: 0 },
   })
+
+  // Dead Letter Queue (DLQ) State
+  const [failedJobs, setFailedJobs] = useState<any[]>([])
+  const [loadingDlq, setLoadingDlq] = useState(false)
+  const [expandedJobId, setExpandedJobId] = useState<string | null>(null)
 
   // 1. Complaint Form State
   const [complaintForm, setComplaintForm] = useState({
@@ -145,9 +157,45 @@ export default function AdminDataStudio() {
     }
   }, [])
 
+  const fetchFailedJobs = useCallback(async () => {
+    setLoadingDlq(true)
+    try {
+      const res = await api.get("/admin/queues/failed")
+      if (res.data?.success) {
+        setFailedJobs(res.data.failedJobs || [])
+      }
+    } catch (err: any) {
+      console.warn("Failed to fetch DLQ records:", err?.message)
+    } finally {
+      setLoadingDlq(false)
+    }
+  }, [])
+
   useEffect(() => {
     fetchStatus()
-  }, [fetchStatus])
+    fetchFailedJobs()
+  }, [fetchStatus, fetchFailedJobs])
+
+  useEffect(() => {
+    if (activeTab === "queues") {
+      fetchFailedJobs()
+    }
+  }, [activeTab, fetchFailedJobs])
+
+  const handleRetryJob = async (jobId: string) => {
+    try {
+      toast.loading(`Replaying dead-letter job ${jobId}...`, { id: `retry-${jobId}` })
+      const res = await api.post(`/admin/queues/retry/${jobId}`)
+      if (res.data?.success) {
+        toast.success(`Job ${jobId} re-enqueued for asynchronous execution!`, { id: `retry-${jobId}` })
+        setFailedJobs((prev) => prev.filter((j) => j.id !== jobId))
+      } else {
+        toast.error(res.data?.message || "Failed to retry job", { id: `retry-${jobId}` })
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Error replaying job", { id: `retry-${jobId}` })
+    }
+  }
 
   // Universal Seed All Modules
   const handleSeedAllModules = async () => {
@@ -341,6 +389,7 @@ export default function AdminDataStudio() {
     { id: "contracts", label: "Road DLP Contracts", icon: ShieldAlert, route: "/dlp-registry" },
     { id: "societies", label: "Housing Societies (ALM)", icon: Building, route: "/alm-societies" },
     { id: "projects", label: "Participatory Projects", icon: Coins, route: "/ward-budget" },
+    { id: "queues", label: "Dead Letter Queue (DLQ)", icon: RotateCcw, route: "/admin" },
   ]
 
   return (
@@ -969,6 +1018,118 @@ export default function AdminDataStudio() {
                 <span>Open Project for Citizen Voting in MongoDB</span>
               </Button>
             </form>
+          )}
+
+          {/* TAB 9: DEAD LETTER QUEUE (DLQ) MONITOR */}
+          {activeTab === "queues" && (
+            <div className="space-y-5">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg ${failedJobs.length > 0 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"}`}>
+                    {failedJobs.length > 0 ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      Dead Letter Queue Status
+                    </h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {failedJobs.length > 0
+                        ? `${failedJobs.length} poisoned tasks isolated in Dead Letter Queue (DLQ)`
+                        : "Background async queue is 100% healthy with zero poisoned jobs"}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={fetchFailedJobs}
+                  disabled={loadingDlq}
+                  className="text-xs gap-1.5"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingDlq ? "animate-spin" : ""}`} />
+                  <span>Refresh DLQ</span>
+                </Button>
+              </div>
+
+              {failedJobs.length === 0 ? (
+                <div className="py-12 text-center rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2.5 opacity-80" />
+                  <h4 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">No Failed Tasks in Queue</h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-md mx-auto">
+                    All asynchronous background worker tasks (PDF generation, SMS notices, siren broadcasts) completed successfully.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-zinc-50 dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 uppercase font-mono">
+                      <tr>
+                        <th className="px-4 py-3">Job ID & Type</th>
+                        <th className="px-4 py-3">Attempts</th>
+                        <th className="px-4 py-3">Error Cause</th>
+                        <th className="px-4 py-3">Failed At</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                      {failedJobs.map((job) => {
+                        const isExpanded = expandedJobId === job.id
+                        return (
+                          <tr key={job.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/40 transition-colors">
+                            <td className="px-4 py-3">
+                              <div className="font-mono font-medium text-zinc-900 dark:text-zinc-100">{job.id}</div>
+                              <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                {job.type}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 font-mono">
+                              <span className="text-rose-600 dark:text-rose-400 font-semibold">{job.attempts}</span>
+                              <span className="text-zinc-400">/{job.maxRetries || 3}</span>
+                            </td>
+                            <td className="px-4 py-3 max-w-xs truncate text-rose-600 dark:text-rose-400 font-mono text-[11px]">
+                              {job.error || "Execution exhausted maximum retry backoff limit"}
+                            </td>
+                            <td className="px-4 py-3 font-mono text-zinc-500">
+                              {job.failedAt ? new Date(job.failedAt).toLocaleTimeString() : new Date(job.createdAt).toLocaleTimeString()}
+                            </td>
+                            <td className="px-4 py-3 text-right space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setExpandedJobId(isExpanded ? null : job.id)}
+                                className="text-[11px] h-7 px-2"
+                              >
+                                <Terminal className="w-3 h-3 mr-1" />
+                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleRetryJob(job.id)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] h-7 px-2.5 gap-1 shadow-sm"
+                              >
+                                <RotateCcw className="w-3 h-3" />
+                                <span>Replay</span>
+                              </Button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                  {expandedJobId && (
+                    <div className="p-4 bg-zinc-950 border-t border-zinc-800 text-emerald-400 font-mono text-[11px]">
+                      <div className="text-xs text-zinc-400 mb-1.5 flex items-center gap-1.5">
+                        <Terminal className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>Payload Inspector for Job: <span className="text-zinc-200">{expandedJobId}</span></span>
+                      </div>
+                      <pre className="overflow-x-auto p-2.5 rounded bg-zinc-900/90 text-zinc-300 border border-zinc-800">
+                        {JSON.stringify(failedJobs.find((j) => j.id === expandedJobId)?.payload || {}, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>

@@ -31,13 +31,23 @@ const initSocket = (httpServer, corsOptions) => {
     pingInterval: 10000,    // 10s ping interval for rapid health detection
   });
 
+const jwt = require("jsonwebtoken");
+
   // Optional Redis Adapter for Multi-Replica Cluster Mode
   if (process.env.REDIS_URL || process.env.REDIS_HOST) {
     try {
       const { createAdapter } = require("@socket.io/redis-adapter");
       const { createClient } = require("redis");
       const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || 6379}`;
-      const pubClient = createClient({ url: redisUrl, socket: { reconnectStrategy: (retries) => Math.min(retries * 100, 3000) } });
+      const pubClient = createClient({
+        url: redisUrl,
+        socket: {
+          reconnectStrategy: (retries) => {
+            const jitter = Math.floor(Math.random() * 200); // 0-200ms randomized jitter
+            return Math.min(retries * 100 + jitter, 3000);
+          },
+        },
+      });
       const subClient = pubClient.duplicate();
 
       pubClient.on("error", (err) => console.warn("⚠️ Redis PubClient warning:", err.message));
@@ -58,15 +68,48 @@ const initSocket = (httpServer, corsOptions) => {
     console.log("ℹ️ In-Memory WebSocket Adapter Active");
   }
 
+  // ─── Socket Authentication Middleware ───────────────────────────────────────
+  io.use((socket, next) => {
+    try {
+      const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.replace("Bearer ", "");
+      if (token) {
+        const decoded = jwt.decode(token);
+        if (decoded) {
+          socket.user = decoded;
+        }
+      }
+    } catch {
+      // Allow unauthenticated connection for public broadcasts
+    }
+    next();
+  });
+
   io.on("connection", (socket) => {
     console.log(`🔌 WebSocket Client Connected: ${socket.id}`);
 
-    // Join specific rooms: user_id, ward_name, department_id, role
+    // Join specific rooms: user_id, ward_name, department_id, role with authorization checks
     socket.on("join:room", (room) => {
-      if (room) {
-        socket.join(room);
-        console.log(`📡 Socket ${socket.id} joined room: ${room}`);
+      if (!room) return;
+
+      // ─── Privileged Room Authorization Guard ──────────────────────────────
+      if (room.startsWith("admin")) {
+        if (!socket.user || socket.user.role !== "admin") {
+          return socket.emit("error", { message: "Unauthorized room subscription: admin privilege required" });
+        }
+      } else if (room.startsWith("user:")) {
+        const targetUserId = room.replace("user:", "");
+        const currentUserId = socket.user?.id || socket.user?._id;
+        if (!socket.user || (currentUserId !== targetUserId && socket.user.role !== "admin")) {
+          return socket.emit("error", { message: "Unauthorized room subscription: private user channel" });
+        }
+      } else if (room.startsWith("dept:")) {
+        if (!socket.user || (socket.user.role !== "admin" && socket.user.role !== "officer")) {
+          return socket.emit("error", { message: "Unauthorized room subscription: departmental channel" });
+        }
       }
+
+      socket.join(room);
+      console.log(`📡 Socket ${socket.id} joined room: ${room}`);
     });
 
     socket.on("join:ward", (ward) => {

@@ -3,10 +3,11 @@
 /**
  * ─── Resilient Asynchronous Job Queue & DLQ Service ───────────────────────────
  * Enterprise-grade distributed job queue abstraction with:
- * 1. Redis pub/sub & key-value durability with In-Memory fallback
+ * 1. Redis pub/sub & distributed atomic locks (SETNX) across worker pods
  * 2. Exponential backoff retry engine (up to 3 attempts)
  * 3. Dead Letter Queue (DLQ) tracking for failed municipal background tasks
- * 4. Administrative DLQ inspection and replay APIs
+ * 4. Automatic memory leak mitigation and LRU pruning cycle (< 5,000 entries)
+ * 5. Administrative DLQ inspection and replay APIs
  */
 
 const crypto = require("crypto");
@@ -21,6 +22,12 @@ class AsyncJobQueue extends EventEmitter {
     this.concurrency = 4;
     this.activeWorkers = 0;
     this.handlers = new Map();
+    this.workerId = `worker_${process.pid}_${crypto.randomBytes(3).toString("hex")}`;
+    this.maxStoredJobs = 5000;
+    this.redisClient = null;
+
+    // Connect Redis if configured for distributed atomic locks
+    this._initRedisLock();
 
     // Register built-in job handlers
     this.registerHandler("SPATIAL_DEDUP_AND_CLUSTER_MERGE", async (payload) => {
@@ -50,6 +57,47 @@ class AsyncJobQueue extends EventEmitter {
         status: "DELIVERED",
       };
     });
+
+    // Start background memory pruning timer (every 10 minutes)
+    if (typeof setInterval !== "undefined") {
+      this.pruneInterval = setInterval(() => this.pruneStaleJobs(), 10 * 60 * 1000);
+      if (this.pruneInterval.unref) this.pruneInterval.unref();
+    }
+  }
+
+  async _initRedisLock() {
+    if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+      try {
+        const { createClient } = require("redis");
+        const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || 6379}`;
+        this.redisClient = createClient({ url: redisUrl });
+        this.redisClient.on("error", (err) => console.warn("⚠️ Queue RedisLock notice:", err.message));
+        await this.redisClient.connect();
+      } catch {
+        this.redisClient = null;
+      }
+    }
+  }
+
+  async acquireLock(jobId, ttlSeconds = 60) {
+    if (!this.redisClient || !this.redisClient.isReady) return true;
+    try {
+      const lockKey = `job:lock:${jobId}`;
+      const result = await this.redisClient.set(lockKey, this.workerId, { NX: true, EX: ttlSeconds });
+      return result === "OK";
+    } catch {
+      return true; // Fallback to local execution
+    }
+  }
+
+  async releaseLock(jobId) {
+    if (!this.redisClient || !this.redisClient.isReady) return;
+    try {
+      const lockKey = `job:lock:${jobId}`;
+      await this.redisClient.del(lockKey);
+    } catch {
+      // Non-blocking catch
+    }
   }
 
   registerHandler(jobType, handlerFn) {
@@ -60,6 +108,11 @@ class AsyncJobQueue extends EventEmitter {
    * Enqueue a new background task
    */
   enqueueJob(jobType, payload, options = {}) {
+    // Check if map needs pruning
+    if (this.jobs.size >= this.maxStoredJobs) {
+      this.pruneStaleJobs();
+    }
+
     const jobId = `job_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
     const job = {
       id: jobId,
@@ -89,7 +142,7 @@ class AsyncJobQueue extends EventEmitter {
   }
 
   /**
-   * Worker loop with exponential backoff & DLQ routing
+   * Worker loop with distributed atomic locks, exponential backoff & DLQ routing
    */
   async processNext() {
     if (this.activeWorkers >= this.concurrency || this.queue.length === 0) {
@@ -99,6 +152,13 @@ class AsyncJobQueue extends EventEmitter {
     const jobId = this.queue.shift();
     const job = this.jobs.get(jobId);
     if (!job) return;
+
+    // Acquire atomic distributed lock across worker replicas
+    const lockAcquired = await this.acquireLock(jobId);
+    if (!lockAcquired) {
+      console.log(`🔒 Job ${jobId} locked by another worker pod. Skipping local execution.`);
+      return;
+    }
 
     this.activeWorkers++;
     job.status = "RUNNING";
@@ -115,9 +175,12 @@ class AsyncJobQueue extends EventEmitter {
       job.status = "COMPLETED";
       job.result = result;
       job.updatedAt = new Date();
+      await this.releaseLock(jobId);
       this.emit("job_completed", { jobId, result });
     } catch (err) {
       console.error(`[QUEUE ERROR] Job ${jobId} failed (Attempt ${job.attempts}/${job.maxRetries}):`, err.message);
+      await this.releaseLock(jobId);
+
       if (job.attempts < job.maxRetries) {
         job.status = "RETRYING";
         const delayMs = Math.pow(2, job.attempts) * 100; // Exponential backoff: 200ms, 400ms, 800ms
@@ -137,6 +200,32 @@ class AsyncJobQueue extends EventEmitter {
       this.activeWorkers--;
       if (this.queue.length > 0) {
         setImmediate(() => this.processNext());
+      }
+    }
+  }
+
+  /**
+   * Memory Leak Mitigation: Prunes completed and failed jobs older than 1 hour
+   */
+  pruneStaleJobs(maxAgeMs = 3600000) {
+    const now = Date.now();
+    for (const [id, job] of this.jobs.entries()) {
+      if (job.status === "COMPLETED" || job.status === "FAILED") {
+        const age = now - new Date(job.updatedAt).getTime();
+        if (age > maxAgeMs) {
+          this.jobs.delete(id);
+        }
+      }
+    }
+
+    // Hard ceiling safety: if still > maxStoredJobs, prune oldest completed/failed
+    if (this.jobs.size > this.maxStoredJobs) {
+      const entries = Array.from(this.jobs.entries());
+      for (const [id, job] of entries) {
+        if (job.status === "COMPLETED" || job.status === "FAILED") {
+          this.jobs.delete(id);
+          if (this.jobs.size <= this.maxStoredJobs) break;
+        }
       }
     }
   }

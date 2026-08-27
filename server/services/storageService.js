@@ -36,7 +36,10 @@ class StorageService {
         const marker = buffer[offset + 1];
         if (marker === 0xda || marker === 0xd9) break; // Start of Scan or End of Image
 
+        if (offset + 4 > buffer.length) break;
         const length = buffer.readUInt16BE(offset + 2);
+        if (offset + 2 + length > buffer.length) break;
+
         if (marker === 0xe1) {
           // APP1 EXIF Segment — Strip it
           const before = buffer.slice(0, offset);

@@ -85,18 +85,21 @@ const defaultLimiter = rateLimit({
     if (req.user && (req.user.role === "admin" || req.user.role === "officer")) {
       return 500;
     }
-    // 2. Early decode Authorization header if available before route auth
+    // 2. Early verify Authorization header if available before route auth
     try {
       const authHeader = req.headers.authorization;
       if (authHeader && authHeader.startsWith("Bearer ")) {
         const token = authHeader.split(" ")[1];
-        const decoded = jwt.decode(token);
-        if (decoded && (decoded.role === "admin" || decoded.role === "officer")) {
-          return 500;
+        const secret = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? null : "ci_production_grade_jwt_secret_2026");
+        if (secret) {
+          const verified = jwt.verify(token, secret);
+          if (verified && (verified.role === "admin" || verified.role === "officer")) {
+            return 500;
+          }
         }
       }
     } catch {
-      // Ignore parsing errors and fall back to default
+      // Ignore parsing/signature errors and fall back to default
     }
     return process.env.NODE_ENV === "production" ? 60 : 2000;
   },

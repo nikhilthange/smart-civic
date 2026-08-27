@@ -73,13 +73,16 @@ const jwt = require("jsonwebtoken");
     try {
       const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization?.replace("Bearer ", "");
       if (token) {
-        const decoded = jwt.decode(token);
-        if (decoded) {
-          socket.user = decoded;
+        const secret = process.env.JWT_SECRET || (process.env.NODE_ENV === "production" ? null : "ci_production_grade_jwt_secret_2026");
+        if (secret) {
+          const verified = jwt.verify(token, secret);
+          if (verified) {
+            socket.user = verified;
+          }
         }
       }
     } catch {
-      // Allow unauthenticated connection for public broadcasts
+      // Allow unauthenticated connection for public broadcasts, but without socket.user
     }
     next();
   });

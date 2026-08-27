@@ -62,3 +62,9 @@ spec:
                       key: JWT_SECRET
                 - name: API_URL
                   value: "http://smart-civic-backend-service.smart-civic.svc.cluster.local:5000"
+              volumeMounts:
+                - name: tmp-volume
+                  mountPath: /tmp
+          volumes:
+            - name: tmp-volume
+              emptyDir: {}

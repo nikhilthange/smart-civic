@@ -34,6 +34,7 @@ async function runDisasterRecoveryDrill() {
       ],
       contractors: [
         { _id: "cnt_101", name: "Mumbai Infra Works", escrowBalance: 45000, uncollectedPenalties: 5000, slaBreaches: 1 }
+
       ],
       escrowLedgers: [
         { _id: "led_5001", contractorId: "cnt_101", amount: 5000, type: "PENALTY_DEDUCTION", complaintId: "cmp_9001", timestamp: new Date().toISOString() }

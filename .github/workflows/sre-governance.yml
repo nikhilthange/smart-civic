@@ -1,0 +1,100 @@
+name: SRE Governance, Observability & Continuous Verification
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sre-governance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sre-master-governance:
+    name: SRE Master Verification & Telemetry Governance
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7.2-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Repository (Full Depth)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js 20.x LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: |
+            server/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install Server Dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Execute Master Verification Pipeline (17-Stage Suite)
+        env:
+          NODE_ENV: test
+          MONGO_URI: mongodb://localhost:27017/smart-civic-sre
+          JWT_SECRET: ci_production_grade_jwt_secret_2026
+          REDIS_URL: redis://localhost:6379
+          META_APP_SECRET: bmc_smart_civic_meta_app_secret_2026
+        run: |
+          node server/scripts/generate_health_badge.js
+          node tests/load/run_artillery_runner.js
+          node server/scripts/daily_sre_health_check.js
+          node server/scripts/test_k8s_manifest_validation.js
+          node server/scripts/test_alert_rules_simulation.js
+          node server/scripts/test_surge_benchmark.js
+          node server/scripts/test_db_disconnect_chaos_drill.js
+          node server/scripts/test_sla_escrow_deficit_smoke.js
+          node server/scripts/test_worker_lifecycle_smoke.js
+          node server/scripts/test_concurrency_chaos_validation.js
+          node server/scripts/test_image_ai_triage_flow.js
+          node server/scripts/test_adversarial_break_it.js
+          node server/scripts/test_full_lifecycle_e2e.js
+          node server/scripts/test_zero_mock_compliance.js
+          node server/scripts/test_complete_system_health.js
+          node server/scripts/test_mission_critical_hardening.js
+          node server/scripts/test_disaster_recovery_restore.js
+
+      - name: Compile Frontend Production Bundle (TypeScript & Vite)
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Commit & Push Updated STATUS.md
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          if [[ -n $(git status -s STATUS.md) ]]; then
+            git add STATUS.md
+            git commit -m "chore(telemetry): update live STATUS.md telemetry snapshot [skip ci]"
+            git push origin main
+          else
+            echo "No changes in STATUS.md detected. Skipping commit."
+          fi

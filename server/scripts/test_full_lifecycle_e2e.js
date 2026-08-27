@@ -497,14 +497,21 @@ async function runFullLifecycleSuite() {
   // Cleanup Test Actors
   console.log("\n▶ [Cleanup] Pruning Temporary E2E Test Data...");
   try {
-    if (primaryComplaint?._id) await Complaint.deleteMany({ _id: primaryComplaint._id });
-    if (citizenUser?._id) await User.deleteMany({ _id: { $in: [citizenUser._id, officerUser._id, workerUser._id] } });
-    if (officerDoc?._id) await Officer.deleteMany({ _id: officerDoc._id });
-    if (workerDoc?._id) await Worker.deleteMany({ _id: workerDoc._id });
-    if (roadContractDoc?._id) await RoadContract.deleteMany({ _id: roadContractDoc._id });
+    if (primaryComplaint && primaryComplaint._id) await Complaint.deleteMany({ _id: primaryComplaint._id });
+    const userIds = [citizenUser?._id, officerUser?._id, workerUser?._id].filter(Boolean);
+    if (userIds.length > 0) await User.deleteMany({ _id: { $in: userIds } });
+    if (officerDoc && officerDoc._id) await Officer.deleteMany({ _id: officerDoc._id });
+    if (workerDoc && workerDoc._id) await Worker.deleteMany({ _id: workerDoc._id });
+    if (roadContractDoc && roadContractDoc._id) await RoadContract.deleteMany({ _id: roadContractDoc._id });
     reportPass("All test data and transient actors purged cleanly");
   } catch (err) {
     reportFail("Test Cleanup", err);
+  } finally {
+    try {
+      if (mongoose.connection && mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+      }
+    } catch (_) {}
   }
 
   // Final Summary

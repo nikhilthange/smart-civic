@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
@@ -135,10 +135,22 @@ export default function CreateComplaint() {
     })
   }, [])
 
+  // Cleanup object URL memory on unmount or URL replacement
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [previewUrl])
+
   const removeFile = (index: number) => {
-    setFiles(prev => {
+    setFiles((prev) => {
       const next = prev.filter((_, i) => i !== index)
       if (next.length === 0) {
+        if (previewUrl && previewUrl.startsWith("blob:")) {
+          URL.revokeObjectURL(previewUrl)
+        }
         setPreviewUrl(null)
         setExifData(null)
       }

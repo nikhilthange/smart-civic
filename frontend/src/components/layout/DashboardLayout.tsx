@@ -189,7 +189,7 @@ export default function DashboardLayout() {
     citizen: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
   }
 
-  const Sidebar = () => (
+  const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex h-full flex-col py-4 bg-white dark:bg-[#090A0F]">
       <div className="flex h-14 items-center px-5 mb-2">
         <Link to="/" className="flex items-center gap-2.5 font-semibold transition-opacity hover:opacity-80">
@@ -221,7 +221,7 @@ export default function DashboardLayout() {
       )}
 
       {/* Grouped Navigation */}
-      <div className="flex-1 overflow-y-auto px-3 space-y-5">
+      <div className="flex-1 overflow-y-auto px-2.5 space-y-4">
         {navGroups.map((group) => {
           // Filter items based on user role
           const visibleItems = group.items.filter((item) => {
@@ -240,8 +240,8 @@ export default function DashboardLayout() {
           if (visibleItems.length === 0) return null
 
           return (
-            <div key={group.label} className="space-y-1">
-              <p className="px-3 text-[10px] font-bold font-mono tracking-wider uppercase text-slate-400 dark:text-slate-500">
+            <div key={group.label} className="space-y-0.5">
+              <p className="px-3 text-[10px] font-semibold font-mono tracking-wider uppercase text-zinc-400 dark:text-zinc-500">
                 {group.label}
               </p>
               <nav className="space-y-0.5">
@@ -275,7 +275,7 @@ export default function DashboardLayout() {
                     >
                       {isActive && (
                         <motion.div
-                          layoutId="sidebar-active-pill"
+                          layoutId={isMobile ? "mobile-sidebar-active-pill" : "desktop-sidebar-active-pill"}
                           className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg -z-10 border border-zinc-200/50 dark:border-zinc-700/50"
                           transition={{ type: "spring", stiffness: 350, damping: 30 }}
                         />
@@ -297,10 +297,10 @@ export default function DashboardLayout() {
         })}
       </div>
 
-      <div className="mt-auto px-4 py-3 border-t border-slate-100 dark:border-slate-800/80">
-        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-white/[0.06]">
+      <div className="mt-auto px-4 py-3 border-t border-zinc-200/60 dark:border-zinc-800/60">
+        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/60 dark:border-zinc-800/60">
           <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 inline-block animate-pulse" />
-          <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 truncate">
+          <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 truncate">
             BMC System Online • Ward H-West
           </span>
         </div>
@@ -318,7 +318,7 @@ export default function DashboardLayout() {
 
       {/* Permanent Fixed Sidebar */}
       <div className="hidden md:block shrink-0 w-[240px] lg:w-[255px] h-full border-r border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-[#090A0F]/70 backdrop-blur-xl">
-        <Sidebar />
+        <Sidebar isMobile={false} />
       </div>
 
       {/* Main Content Area */}
@@ -339,7 +339,7 @@ export default function DashboardLayout() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0">
-              <Sidebar />
+              <Sidebar isMobile={true} />
             </SheetContent>
           </Sheet>
 

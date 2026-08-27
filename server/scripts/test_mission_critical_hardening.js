@@ -146,8 +146,12 @@ async function runTests() {
   assert(jobReceipt.status === "QUEUED", "Initial job status is QUEUED");
 
   // Wait for worker loop
-  await new Promise((resolve) => setTimeout(resolve, 100));
-  const finalStatus = queueService.getJobStatus(jobReceipt.jobId);
+  let finalStatus = queueService.getJobStatus(jobReceipt.jobId);
+  let retries = 30;
+  while (retries-- > 0 && finalStatus && finalStatus.status !== "COMPLETED") {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    finalStatus = queueService.getJobStatus(jobReceipt.jobId);
+  }
   assert(finalStatus.status === "COMPLETED", `Job completed asynchronously (Status: ${finalStatus.status})`);
   assert(finalStatus.result?.noticeId?.startsWith("NOT-"), "Job result populated with valid Notice ID");
 

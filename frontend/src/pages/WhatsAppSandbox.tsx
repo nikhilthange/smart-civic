@@ -31,9 +31,12 @@ import {
   Award,
   Clock,
   Zap,
+  Download,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { useSocket } from "@/context/SocketContext"
+import toast from "react-hot-toast"
 import api from "@/lib/axios"
 
 interface InteractiveButton {
@@ -109,6 +112,22 @@ const QUICK_ACTIONS = [
   },
 ]
 
+const INITIAL_MESSAGES: Message[] = [
+  {
+    id: "msg-init",
+    sender: "bot",
+    type: "interactive_buttons",
+    content:
+      "नमस्कार! Brihanmumbai Municipal Corporation (BMC) २४x७ WhatsApp Grievance Bot मध्ये आपले स्वागत आहे. 🙏\n\nकृपया तक्रारीचा प्रकार निवडा किंवा थेट मेसेज टाईप करा:",
+    timestamp: "10:45 AM",
+    interactiveButtons: [
+      { id: "btn-pothole", title: "🚧 खड्डे / Roads", payload: "रस्ता खड्डे (Road Pothole defect)" },
+      { id: "btn-swm", title: "🗑️ कचरा / Waste", payload: "कचरा समस्या (Overflowing Garbage)" },
+      { id: "btn-water", title: "💧 पाणी / Water", payload: "पाणी गळती (Water Pipeline Leak)" },
+    ],
+  },
+]
+
 // Pure Web Audio API Synthesizer with lazy-initialized AudioContext
 let audioContextInstance: AudioContext | null = null
 
@@ -174,21 +193,17 @@ function playWebAudioChime(type: "send" | "receive") {
 }
 
 export default function WhatsAppSandbox() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "msg-init",
-      sender: "bot",
-      type: "interactive_buttons",
-      content:
-        "नमस्कार! Brihanmumbai Municipal Corporation (BMC) २४x७ WhatsApp Grievance Bot मध्ये आपले स्वागत आहे. 🙏\n\nकृपया तक्रारीचा प्रकार निवडा किंवा थेट मेसेज टाईप करा:",
-      timestamp: "10:45 AM",
-      interactiveButtons: [
-        { id: "btn-pothole", title: "🚧 खड्डे / Roads", payload: "रस्ता खड्डे (Road Pothole defect)" },
-        { id: "btn-swm", title: "🗑️ कचरा / Waste", payload: "कचरा समस्या (Overflowing Garbage)" },
-        { id: "btn-water", title: "💧 पाणी / Water", payload: "पाणी गळती (Water Pipeline Leak)" },
-      ],
-    },
-  ])
+  const { lastEvent } = useSocket()
+
+  // Persistent localStorage hydration
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem("smart_civic_wa_messages")
+      return saved ? JSON.parse(saved) : INITIAL_MESSAGES
+    } catch {
+      return INITIAL_MESSAGES
+    }
+  })
 
   const [inputMessage, setInputMessage] = useState("")
   const [phoneNumber] = useState("+91 98200 12345")
@@ -196,6 +211,7 @@ export default function WhatsAppSandbox() {
   const [isMuted, setIsMuted] = useState(false)
   const [isLiveGatewayMode, setIsLiveGatewayMode] = useState(false)
   const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false)
+  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false)
   const [dialogueStage, setDialogueStage] = useState<DialogueStage>("IDLE")
   const [currentGrievanceContext, setCurrentGrievanceContext] = useState<{
     category?: string
@@ -203,18 +219,46 @@ export default function WhatsAppSandbox() {
     photoAttached?: boolean
     locationAttached?: boolean
   }>({})
-  const [sessionKarma, setSessionKarma] = useState(120)
-  const [sessionTickets, setSessionTickets] = useState<ActiveTicketSummary[]>([
-    {
-      id: "t-1",
-      ticketId: "SC-2026-90D20FF0",
-      category: "Roads & Potholes",
-      ward: "Ward H-West",
-      timeAgo: "2h ago",
-      status: "IN_PROGRESS",
-      slaRemaining: "22h left",
-    },
-  ])
+
+  const [sessionKarma, setSessionKarma] = useState(() => {
+    try {
+      const saved = localStorage.getItem("smart_civic_wa_karma")
+      return saved ? parseInt(saved, 10) : 120
+    } catch {
+      return 120
+    }
+  })
+
+  const [sessionTickets, setSessionTickets] = useState<ActiveTicketSummary[]>(() => {
+    try {
+      const saved = localStorage.getItem("smart_civic_wa_tickets")
+      return saved
+        ? JSON.parse(saved)
+        : [
+            {
+              id: "t-1",
+              ticketId: "SC-2026-90D20FF0",
+              category: "Roads & Potholes",
+              ward: "Ward H-West",
+              timeAgo: "2h ago",
+              status: "IN_PROGRESS",
+              slaRemaining: "22h left",
+            },
+          ]
+    } catch {
+      return [
+        {
+          id: "t-1",
+          ticketId: "SC-2026-90D20FF0",
+          category: "Roads & Potholes",
+          ward: "Ward H-West",
+          timeAgo: "2h ago",
+          status: "IN_PROGRESS",
+          slaRemaining: "22h left",
+        },
+      ]
+    }
+  })
 
   // Audio Recording states
   const [isRecording, setIsRecording] = useState(false)
@@ -232,9 +276,58 @@ export default function WhatsAppSandbox() {
   const createdAudioUrls = useRef<string[]>([])
   const audioElementRef = useRef<HTMLAudioElement | null>(null)
 
+  // Save to localStorage on state changes
+  useEffect(() => {
+    try {
+      localStorage.setItem("smart_civic_wa_messages", JSON.stringify(messages))
+      localStorage.setItem("smart_civic_wa_karma", sessionKarma.toString())
+      localStorage.setItem("smart_civic_wa_tickets", JSON.stringify(sessionTickets))
+    } catch (_) {}
+  }, [messages, sessionKarma, sessionTickets])
+
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, isSending, isRecording, isTranscribing])
+
+  // Real-time WebSocket Event Listener: Listen for ticket status updates
+  useEffect(() => {
+    if (!lastEvent?.payload) return
+
+    const { type, payload } = lastEvent
+    const incomingTicketId = payload.ticketId || payload.complaintId || payload.id
+
+    if (!incomingTicketId) return
+
+    // Check if this ticket belongs to the user's active session tickets
+    const matched = sessionTickets.find(
+      (t) => t.ticketId.includes(incomingTicketId) || incomingTicketId.includes(t.ticketId)
+    )
+
+    if (matched || type === "COMPLAINT_UPDATED" || type === "COMPLAINT_ASSIGNED") {
+      const newStatus = payload.status || (type === "COMPLAINT_ASSIGNED" ? "IN_PROGRESS" : "UPDATED")
+
+      // Update session tickets
+      setSessionTickets((prev) =>
+        prev.map((t) =>
+          t.ticketId === matched?.ticketId
+            ? { ...t, status: newStatus, slaRemaining: payload.slaRemaining || "Updated" }
+            : t
+        )
+      )
+
+      // Inject authentic WhatsApp bot notification alert
+      const alertMsg: Message = {
+        id: `alert-${Date.now()}`,
+        sender: "bot",
+        type: "text",
+        content: `🔔 **[Live Municipal Status Update]**\n\n📌 **तिकीट क्र**: *#${matched?.ticketId || incomingTicketId}*\n⚡ **नवीन स्थिती**: *${newStatus}*\n👷 **फील्ड कामगार / अभियंता**: *${payload.workerName || "Santosh Gaikwad (Allocated)"}*\n\nआपल्या तक्रारीचे निवारण युद्धपातळीवर सुरू आहे.\nLive Track: http://localhost:5173/complaints`,
+        timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+      }
+
+      setMessages((prev) => [...prev, alertMsg])
+      if (!isMuted) playWebAudioChime("receive")
+    }
+  }, [lastEvent, isMuted, sessionTickets])
 
   // Cleanup Object URLs on unmount
   useEffect(() => {
@@ -255,6 +348,7 @@ export default function WhatsAppSandbox() {
         setIsAttachMenuOpen(false)
         setImageModalPreview(null)
         setIsProfileDrawerOpen(false)
+        setIsSettingsMenuOpen(false)
       }
     }
     window.addEventListener("keydown", handleKeyDown)
@@ -276,7 +370,7 @@ export default function WhatsAppSandbox() {
     }
   }, [isRecording])
 
-  // Multi-Turn Conversational Handler
+  // Multi-Turn Conversational Handler with Resilient Live Fallback
   const handleSendMessage = useCallback(
     async (
       textToSend?: string,
@@ -359,7 +453,7 @@ export default function WhatsAppSandbox() {
         return
       }
 
-      // If Live Gateway Mode is activated, dispatch payload to backend endpoint
+      // If Live Gateway Mode is activated, attempt live sync with automated fallback
       if (isLiveGatewayMode) {
         try {
           const res = await api.post("/webhooks/bot-report", {
@@ -404,7 +498,8 @@ export default function WhatsAppSandbox() {
           }, 800)
           return
         } catch {
-          // Fallback to local simulation if live server fails
+          // Graceful fallback to offline simulated triage
+          toast.error("⚠️ Live API unreachable; switched to offline simulated triage", { duration: 4000 })
         }
       }
 
@@ -610,6 +705,53 @@ export default function WhatsAppSandbox() {
     setImageModalPreview(null)
   }
 
+  // Export Chat Transcript (JSON or TXT)
+  const handleExportTranscript = (format: "json" | "txt") => {
+    setIsSettingsMenuOpen(false)
+    const sanitizedMessages = messages.map((m) => ({
+      id: m.id,
+      sender: m.sender,
+      timestamp: m.timestamp,
+      content: m.content.replace(/\+91\s?\d{10}/g, "+91 98*****1223"), // PII scrubbing
+    }))
+
+    let dataStr = ""
+    let fileName = ""
+
+    if (format === "json") {
+      dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sanitizedMessages, null, 2))
+      fileName = `smart_civic_whatsapp_transcript_${Date.now()}.json`
+    } else {
+      const textRows = sanitizedMessages
+        .map((m) => `[${m.timestamp}] ${m.sender.toUpperCase()}: ${m.content}`)
+        .join("\n\n")
+      dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(textRows)
+      fileName = `smart_civic_whatsapp_transcript_${Date.now()}.txt`
+    }
+
+    const downloadAnchor = document.createElement("a")
+    downloadAnchor.setAttribute("href", dataStr)
+    downloadAnchor.setAttribute("download", fileName)
+    document.body.appendChild(downloadAnchor)
+    downloadAnchor.click()
+    downloadAnchor.remove()
+    toast.success(`Exported chat transcript (${format.toUpperCase()})`)
+  }
+
+  // Clear Session
+  const handleClearSession = () => {
+    setIsSettingsMenuOpen(false)
+    localStorage.removeItem("smart_civic_wa_messages")
+    localStorage.removeItem("smart_civic_wa_karma")
+    localStorage.removeItem("smart_civic_wa_tickets")
+    setMessages(INITIAL_MESSAGES)
+    setSessionKarma(120)
+    setSessionTickets([])
+    setDialogueStage("IDLE")
+    setCurrentGrievanceContext({})
+    toast.success("WhatsApp chat session cleared")
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pt-2 pb-24 px-2 sm:px-4">
       {/* Page Header */}
@@ -627,7 +769,7 @@ export default function WhatsAppSandbox() {
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans">
-            Interactive multi-turn conversational simulator with real MediaRecorder PTT, Whisper STT transcriptions, and live MongoDB gateway sync.
+            Interactive multi-turn conversational simulator with real MediaRecorder PTT, Whisper STT transcriptions, and WebSocket live status updates.
           </p>
         </div>
 
@@ -725,7 +867,48 @@ export default function WhatsAppSandbox() {
             </button>
             <Video className="w-4 h-4 cursor-pointer hover:text-white transition hidden sm:block" />
             <Phone className="w-4 h-4 cursor-pointer hover:text-white transition hidden sm:block" />
-            <MoreVertical className="w-4 h-4 cursor-pointer hover:text-white transition" />
+            
+            {/* More Settings Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsSettingsMenuOpen(!isSettingsMenuOpen)}
+                className="p-1 rounded-full hover:bg-white/10 transition"
+                aria-label="Settings Menu"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+
+              {isSettingsMenuOpen && (
+                <div className="absolute right-0 top-8 z-30 bg-white dark:bg-zinc-900 rounded-xl p-1.5 shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col gap-1 min-w-[170px] animate-in fade-in duration-150 text-slate-800 dark:text-zinc-200 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleExportTranscript("txt")}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition text-left"
+                  >
+                    <Download className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Export as Text (.txt)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExportTranscript("json")}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition text-left"
+                  >
+                    <Download className="w-3.5 h-3.5 text-sky-600" />
+                    <span>Export JSON Log</span>
+                  </button>
+                  <div className="my-1 border-t border-slate-100 dark:border-zinc-800" />
+                  <button
+                    type="button"
+                    onClick={handleClearSession}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-rose-500/10 text-rose-600 transition text-left"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Clear Chat Session</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

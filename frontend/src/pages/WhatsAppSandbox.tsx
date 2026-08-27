@@ -32,6 +32,8 @@ import {
   Clock,
   Zap,
   Download,
+  Wifi,
+  WifiOff,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -128,6 +130,34 @@ const INITIAL_MESSAGES: Message[] = [
   },
 ]
 
+// Zero-Trust Client-Side Dynamic PII Sanitizer
+function sanitizeTranscriptText(text: string): string {
+  if (!text) return text
+  let cleaned = text
+
+  // 1. Mask 10-12 digit Indian phone numbers (+91 98*****1223)
+  cleaned = cleaned.replace(/(?:\+91[\s-]?)?[6-9]\d{9}/g, (match) => {
+    const digits = match.replace(/\D/g, "")
+    if (digits.length >= 10) {
+      const core = digits.slice(-10)
+      return `+91 ${core.slice(0, 2)}*****${core.slice(7)}`
+    }
+    return "+91 98*****1223"
+  })
+
+  // 2. Mask personal email addresses (j********e@domain.com)
+  cleaned = cleaned.replace(/([a-zA-Z0-9_\-.+]+)@([a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/g, (_match, user, domain) => {
+    if (user.length <= 2) return `${user}***@${domain}`
+    const maskedUser = `${user[0]}${"*".repeat(Math.min(user.length - 2, 8))}${user[user.length - 1]}`
+    return `${maskedUser}@${domain}`
+  })
+
+  // 3. Mask Aadhaar / UIDAI numbers (4-4-4 pattern)
+  cleaned = cleaned.replace(/\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, "[Aadhaar Redacted]")
+
+  return cleaned
+}
+
 // Pure Web Audio API Synthesizer with lazy-initialized AudioContext
 let audioContextInstance: AudioContext | null = null
 
@@ -193,7 +223,7 @@ function playWebAudioChime(type: "send" | "receive") {
 }
 
 export default function WhatsAppSandbox() {
-  const { lastEvent } = useSocket()
+  const { lastEvent, isConnected } = useSocket()
 
   // Persistent localStorage hydration
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -275,6 +305,12 @@ export default function WhatsAppSandbox() {
   const audioChunksRef = useRef<Blob[]>([])
   const createdAudioUrls = useRef<string[]>([])
   const audioElementRef = useRef<HTMLAudioElement | null>(null)
+  const processedEventIdsRef = useRef<Set<string>>(new Set())
+
+  // Trigger refs for keyboard focus restoration
+  const settingsBtnRef = useRef<HTMLButtonElement | null>(null)
+  const profileBtnRef = useRef<HTMLButtonElement | null>(null)
+  const attachBtnRef = useRef<HTMLButtonElement | null>(null)
 
   // Save to localStorage on state changes
   useEffect(() => {
@@ -289,12 +325,16 @@ export default function WhatsAppSandbox() {
     chatBottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, isSending, isRecording, isTranscribing])
 
-  // Real-time WebSocket Event Listener: Listen for ticket status updates
+  // Real-time WebSocket Event Deduplication & Notification Sync
   useEffect(() => {
     if (!lastEvent?.payload) return
 
     const { type, payload } = lastEvent
     const incomingTicketId = payload.ticketId || payload.complaintId || payload.id
+    const eventFingerprint = `${type}_${incomingTicketId}_${payload.status || ""}_${payload.updatedAt || Date.now()}`
+
+    if (processedEventIdsRef.current.has(eventFingerprint)) return
+    processedEventIdsRef.current.add(eventFingerprint)
 
     if (!incomingTicketId) return
 
@@ -345,15 +385,27 @@ export default function WhatsAppSandbox() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setIsAttachMenuOpen(false)
-        setImageModalPreview(null)
-        setIsProfileDrawerOpen(false)
-        setIsSettingsMenuOpen(false)
+        if (isAttachMenuOpen) {
+          setIsAttachMenuOpen(false)
+          attachBtnRef.current?.focus()
+        }
+        if (imageModalPreview) {
+          setImageModalPreview(null)
+          attachBtnRef.current?.focus()
+        }
+        if (isProfileDrawerOpen) {
+          setIsProfileDrawerOpen(false)
+          profileBtnRef.current?.focus()
+        }
+        if (isSettingsMenuOpen) {
+          setIsSettingsMenuOpen(false)
+          settingsBtnRef.current?.focus()
+        }
       }
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [])
+  }, [isAttachMenuOpen, imageModalPreview, isProfileDrawerOpen, isSettingsMenuOpen])
 
   // Recording Timer
   useEffect(() => {
@@ -705,14 +757,14 @@ export default function WhatsAppSandbox() {
     setImageModalPreview(null)
   }
 
-  // Export Chat Transcript (JSON or TXT)
+  // Export Chat Transcript (JSON or TXT) with Hardened PII Scrubbing
   const handleExportTranscript = (format: "json" | "txt") => {
     setIsSettingsMenuOpen(false)
     const sanitizedMessages = messages.map((m) => ({
       id: m.id,
       sender: m.sender,
       timestamp: m.timestamp,
-      content: m.content.replace(/\+91\s?\d{10}/g, "+91 98*****1223"), // PII scrubbing
+      content: sanitizeTranscriptText(m.content),
     }))
 
     let dataStr = ""
@@ -774,11 +826,32 @@ export default function WhatsAppSandbox() {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+          {/* Real-Time WebSocket Mesh Connectivity Indicator */}
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-mono"
+            title={isConnected ? "WebSocket Gateway Online" : "WebSocket Reconnecting / Offline Mode"}
+          >
+            {isConnected ? (
+              <>
+                <Wifi className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
+                <span className="text-slate-700 dark:text-zinc-300 text-[11px]">Mesh: Live</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-amber-600 dark:text-amber-400 text-[11px]">Mesh: Offline</span>
+              </>
+            )}
+          </div>
+
           <Button
+            ref={profileBtnRef}
             type="button"
             variant="outline"
             size="sm"
             onClick={() => setIsProfileDrawerOpen(true)}
+            aria-expanded={isProfileDrawerOpen}
+            aria-haspopup="dialog"
             className="rounded-xl gap-1.5 border-slate-200 dark:border-zinc-800 text-xs font-semibold"
           >
             <User className="w-3.5 h-3.5 text-emerald-600" />
@@ -871,8 +944,11 @@ export default function WhatsAppSandbox() {
             {/* More Settings Menu */}
             <div className="relative">
               <button
+                ref={settingsBtnRef}
                 type="button"
                 onClick={() => setIsSettingsMenuOpen(!isSettingsMenuOpen)}
+                aria-expanded={isSettingsMenuOpen}
+                aria-haspopup="menu"
                 className="p-1 rounded-full hover:bg-white/10 transition"
                 aria-label="Settings Menu"
               >
@@ -880,9 +956,13 @@ export default function WhatsAppSandbox() {
               </button>
 
               {isSettingsMenuOpen && (
-                <div className="absolute right-0 top-8 z-30 bg-white dark:bg-zinc-900 rounded-xl p-1.5 shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col gap-1 min-w-[170px] animate-in fade-in duration-150 text-slate-800 dark:text-zinc-200 text-xs">
+                <div
+                  role="menu"
+                  className="absolute right-0 top-8 z-30 bg-white dark:bg-zinc-900 rounded-xl p-1.5 shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col gap-1 min-w-[170px] animate-in fade-in duration-150 text-slate-800 dark:text-zinc-200 text-xs"
+                >
                   <button
                     type="button"
+                    role="menuitem"
                     onClick={() => handleExportTranscript("txt")}
                     className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition text-left"
                   >
@@ -891,6 +971,7 @@ export default function WhatsAppSandbox() {
                   </button>
                   <button
                     type="button"
+                    role="menuitem"
                     onClick={() => handleExportTranscript("json")}
                     className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition text-left"
                   >
@@ -900,6 +981,7 @@ export default function WhatsAppSandbox() {
                   <div className="my-1 border-t border-slate-100 dark:border-zinc-800" />
                   <button
                     type="button"
+                    role="menuitem"
                     onClick={handleClearSession}
                     className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-rose-500/10 text-rose-600 transition text-left"
                   >
@@ -1014,6 +1096,7 @@ export default function WhatsAppSandbox() {
                         <button
                           type="button"
                           onClick={() => handleToggleAudioPlay(m.id, m.audioBlobUrl)}
+                          aria-label={activePlayingAudioId === m.id ? "Pause Voice Note" : "Play Voice Note"}
                           className="w-8 h-8 rounded-full bg-[#00A884] text-white flex items-center justify-center shadow transition active:scale-95 shrink-0"
                         >
                           {activePlayingAudioId === m.id ? (
@@ -1156,9 +1239,14 @@ export default function WhatsAppSandbox() {
 
         {/* Attachment Speed-Dial Popover */}
         {isAttachMenuOpen && (
-          <div className="absolute bottom-16 left-4 z-30 bg-white dark:bg-zinc-900 rounded-2xl p-2.5 shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150">
+          <div
+            role="menu"
+            aria-label="Attachment Options"
+            className="absolute bottom-16 left-4 z-30 bg-white dark:bg-zinc-900 rounded-2xl p-2.5 shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150"
+          >
             <button
               type="button"
+              role="menuitem"
               onClick={() => {
                 setIsAttachMenuOpen(false)
                 setImageModalPreview({
@@ -1175,6 +1263,7 @@ export default function WhatsAppSandbox() {
             </button>
             <button
               type="button"
+              role="menuitem"
               onClick={() => {
                 setIsAttachMenuOpen(false)
                 handleSendMessage("📍 Live GPS Pin: 19.0596° N, 72.8347° E (Bandra Reclamation)", { type: "location" })
@@ -1188,6 +1277,7 @@ export default function WhatsAppSandbox() {
             </button>
             <button
               type="button"
+              role="menuitem"
               onClick={() => {
                 setIsAttachMenuOpen(false)
                 handleSendMessage("📄 Document: Ward_H_West_Defect_Notice.pdf (2.4 MB)", { type: "document" })
@@ -1253,8 +1343,11 @@ export default function WhatsAppSandbox() {
                 <Smile className="w-5 h-5" />
               </button>
               <button
+                ref={attachBtnRef}
                 type="button"
                 onClick={() => setIsAttachMenuOpen(!isAttachMenuOpen)}
+                aria-expanded={isAttachMenuOpen}
+                aria-haspopup="menu"
                 className={`p-1.5 rounded-full transition ${
                   isAttachMenuOpen
                     ? "bg-emerald-600 text-white"
@@ -1307,7 +1400,12 @@ export default function WhatsAppSandbox() {
 
       {/* Citizen WhatsApp Profile & Impact Drawer Modal */}
       {isProfileDrawerOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="wa-profile-title"
+          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-zinc-900 max-w-md w-full rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-zinc-800 space-y-4 p-5 animate-in fade-in duration-150">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-3">
               <div className="flex items-center gap-2">
@@ -1315,13 +1413,16 @@ export default function WhatsAppSandbox() {
                   <User className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">Citizen WhatsApp Profile</h3>
+                  <h3 id="wa-profile-title" className="text-sm font-bold text-slate-900 dark:text-white">
+                    Citizen WhatsApp Profile
+                  </h3>
                   <p className="text-[11px] text-slate-500 dark:text-zinc-400">Zero-Trust Identity Protection</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsProfileDrawerOpen(false)}
+                aria-label="Close Profile Dialog"
                 className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
@@ -1403,13 +1504,21 @@ export default function WhatsAppSandbox() {
 
       {/* Simulated Image Staging Modal */}
       {imageModalPreview && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="image-preview-title"
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+        >
           <div className="bg-white dark:bg-zinc-900 max-w-md w-full rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-zinc-800 space-y-3 p-4 animate-in fade-in duration-150">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2">
-              <span className="text-xs font-bold text-slate-900 dark:text-white">Grievance Photo Preview</span>
+              <span id="image-preview-title" className="text-xs font-bold text-slate-900 dark:text-white">
+                Grievance Photo Preview
+              </span>
               <button
                 type="button"
                 onClick={() => setImageModalPreview(null)}
+                aria-label="Close Image Preview Dialog"
                 className="p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />

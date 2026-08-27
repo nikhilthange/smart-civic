@@ -62,11 +62,12 @@ echo "  [Step 4/5] Configuring Traffic Routing, Ingress & Horizontal Pod Autosca
 kubectl apply -f "${K8S_DIR}/hpa.yaml" -n "${NAMESPACE}"
 kubectl apply -f "${K8S_DIR}/ingress.yaml" -n "${NAMESPACE}"
 
-echo "  [Step 5/5] Deploying Observability, Alertmanager, Grafana Dashboards & SRE CronJobs..."
+echo "  [Step 5/5] Deploying Observability, Alertmanager, Grafana Dashboards, SRE & Backup CronJobs..."
 kubectl apply -f "${K8S_DIR}/prometheus-rules.yaml" -n "${NAMESPACE}"
 kubectl apply -f "${K8S_DIR}/alertmanager-config.yaml" -n "${NAMESPACE}"
 kubectl apply -f "${K8S_DIR}/grafana-dashboards.yaml" -n "${NAMESPACE}"
 kubectl apply -f "${K8S_DIR}/sre-cronjob.yaml" -n "${NAMESPACE}"
+kubectl apply -f "${K8S_DIR}/backup-cronjob.yaml" -n "${NAMESPACE}"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 3. ROLLOUT STATUS VERIFICATION & CONVERGENCE

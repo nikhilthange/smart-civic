@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, param } = require("express-validator");
 const { protect, authorize } = require("../middlewares/auth");
 const validate = require("../middlewares/validate");
+const { cacheMiddleware } = require("../middlewares/cacheMiddleware");
 const { upload, handleUploadError, processExifMetadata } = require("../middlewares/upload");
 const {
   createComplaint,
@@ -24,6 +25,12 @@ const {
   bulkReassignComplaints,
   bulkEscalateComplaints,
   getWardSlaChoropleth,
+  addComment,
+  updatePriority,
+  reassignWard,
+  escalateSla,
+  updateAiTriage,
+  rateResolution,
 } = require("../controllers/complaintController");
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
@@ -85,8 +92,15 @@ router.post(
   createComplaint
 );
 
-// GET /api/complaints/:id
-router.get("/:id", protect, getComplaint);
+// GET /api/complaints/:id (with 8s in-memory cache strictly scoped by ID, User, and Role to prevent IDOR leaks)
+router.get(
+  "/:id",
+  protect,
+  cacheMiddleware(8, {
+    keyGenerator: (req) => `complaint:${req.params.id}:${req.user?._id || req.user?.id || 'anon'}:${req.user?.role || 'public'}`
+  }),
+  getComplaint
+);
 
 // PATCH /api/complaints/:id/status
 router.patch(
@@ -129,6 +143,20 @@ router.post(
   reopenComplaint
 );
 
+// POST /api/complaints/:id/rate — Citizen rates resolution and confirms completion
+router.post(
+  "/:id/rate",
+  protect,
+  authorize("citizen", "admin"),
+  rateResolution
+);
+router.post(
+  "/:id/feedback",
+  protect,
+  authorize("citizen", "admin"),
+  rateResolution
+);
+
 // PUT /api/complaints/:id/assign-worker — Officer assigns a field worker
 router.put(
   "/:id/assign-worker",
@@ -160,6 +188,22 @@ router.put(
   handleUploadError,
   workerSubmitProof
 );
+
+// POST /api/complaints/:id/comments — Add comment
+router.post("/:id/comments", protect, addComment);
+router.post("/:id/comment", protect, addComment);
+
+// PATCH /api/complaints/:id/priority — Update priority
+router.patch("/:id/priority", protect, authorize("officer", "admin"), updatePriority);
+
+// PATCH /api/complaints/:id/ward — Reassign ward jurisdiction
+router.patch("/:id/ward", protect, authorize("officer", "admin"), reassignWard);
+
+// POST /api/complaints/:id/escalate — Escalate SLA tier
+router.post("/:id/escalate", protect, authorize("officer", "admin"), escalateSla);
+
+// PATCH /api/complaints/:id/ai-triage — Update AI triage metadata
+router.patch("/:id/ai-triage", protect, authorize("officer", "admin"), updateAiTriage);
 
 // DELETE /api/complaints/:id
 router.delete("/:id", protect, deleteComplaint);

@@ -79,6 +79,8 @@ export interface Complaint {
   adminNotes?: string
   rejectionReason?: string
   feedbackSubmitted: boolean
+  rating?: number
+  citizenFeedback?: string
   upvoteCount?: number
   upvotes?: number
   aiAnalysis?: {
@@ -278,6 +280,17 @@ export const complaintApi = {
 
   startWork: async (id: string) => {
     const res = await api.put(`/complaints/${id}/start-work`)
+    return res.data
+  },
+
+  rateResolution: async (
+    id: string,
+    payload: { rating: number; comment?: string; feedback?: string; isSatisfied?: boolean }
+  ) => {
+    const res = await api.post<{ success: boolean; message: string; complaint: Complaint }>(
+      `/complaints/${id}/rate`,
+      payload
+    )
     return res.data
   },
 }

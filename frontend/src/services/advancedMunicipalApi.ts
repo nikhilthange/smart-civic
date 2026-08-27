@@ -186,4 +186,35 @@ export const advancedMunicipalApi = {
     const res = await api.post("/disaster/telemetry", payload)
     return res.data
   },
+
+  // Module 7: Live Simulation & Telemetry Triggers
+  generateSimulationData: async (count: number = 3) => {
+    const res = await api.post("/simulator/generate", { count })
+    return res.data
+  },
+  triggerSimulationTick: async () => {
+    const res = await api.post("/simulator/tick")
+    return res.data
+  },
+  simulateSubwaySpike: async (payload: { subwayId?: string; depthCm?: number }) => {
+    const res = await api.post("/simulator/subway-spike", payload)
+    return res.data
+  },
+  simulateBinFill: async (payload: { binId?: string; fillPercentage?: number }) => {
+    const res = await api.post("/simulator/bin-fill", payload)
+    return res.data
+  },
+  simulateBuildingTilt: async (payload: { buildingId?: string; tiltMm?: number }) => {
+    const res = await api.post("/simulator/building-tilt", payload)
+    return res.data
+  },
+  simulateCctvAnomaly: async (payload: { cameraId?: string; anomalyType?: string }) => {
+    const res = await api.post("/simulator/cctv-anomaly", payload)
+    return res.data
+  },
+  getSimulatorStatus: async () => {
+    const res = await api.get("/simulator/status")
+    return res.data
+  },
 }
+

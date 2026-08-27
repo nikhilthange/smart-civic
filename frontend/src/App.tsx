@@ -44,19 +44,22 @@ import AlmSocietyDashboard from "./pages/AlmSocietyDashboard"
 import DailySitrepDashboard from "./pages/DailySitrepDashboard"
 import EmergencyBroadcastHub from "./pages/EmergencyBroadcastHub"
 import QuickReport from "./pages/QuickReport"
+import AdminDataStudio from "./pages/AdminDataStudio"
 
 import { GoogleOAuthProvider } from '@react-oauth/google'
 
+import ErrorBoundary from "./components/common/ErrorBoundary"
 import MapView from "./pages/MapView"
 
 function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your_google_client_id_here'
 
   return (
-    <GoogleOAuthProvider clientId={clientId}>
-      <AuthProvider>
-        <SocketProvider>
-          <Router>
+    <ErrorBoundary>
+      <GoogleOAuthProvider clientId={clientId}>
+        <AuthProvider>
+          <SocketProvider>
+            <Router>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
@@ -143,16 +146,19 @@ function App() {
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
+              <Route path="/admin/data-studio" element={<AdminDataStudio />} />
+              <Route path="/data-studio" element={<AdminDataStudio />} />
             </Route>
           </Route>
 
           {/* Catch-all Wildcard Route */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
-      </Router>
-    </SocketProvider>
-  </AuthProvider>
-</GoogleOAuthProvider>
+          </Router>
+        </SocketProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
+  </ErrorBoundary>
   )
 }
 

@@ -1,19 +1,23 @@
 version: "3.8"
 
 services:
-  # ─── MongoDB Database Container (Local Deployment) ──────────────────────────
+  # ─── MongoDB Database Container (Isolated Internal Network) ──────────────────
   mongodb:
     image: mongo:7.0-jammy
     container_name: smart_civic_mongodb
     restart: unless-stopped
-    ports:
-      - "27017:27017"
     environment:
       MONGO_INITDB_DATABASE: smart-civic
     volumes:
       - mongo_data:/data/db
     networks:
-      - smart_civic_net
+      - backend_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # ─── Backend API Container ──────────────────────────────────────────────────
   backend:
@@ -30,10 +34,19 @@ services:
       MONGO_URI: mongodb://mongodb:27017/smart-civic
       JWT_SECRET: super_secret_production_jwt_key_min_32_chars_long_12345
       CLIENT_ORIGIN: http://localhost
+      ALLOWED_ORIGINS: http://localhost,http://localhost:80,http://127.0.0.1
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
-      - smart_civic_net
+      - backend_network
+      - frontend_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   # ─── Frontend Nginx Reverse-Proxy Container ─────────────────────────────────
   frontend:
@@ -45,14 +58,23 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
-      - smart_civic_net
+      - frontend_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
 volumes:
   mongo_data:
     driver: local
 
 networks:
-  smart_civic_net:
+  backend_network:
+    driver: bridge
+  frontend_network:
     driver: bridge

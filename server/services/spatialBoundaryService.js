@@ -199,7 +199,22 @@ class SpatialBoundaryService {
   }
 
   /**
+   * Calculates polygon centroid [lat, lng]
+   */
+  getPolygonCentroid(polygon) {
+    let latSum = 0;
+    let lngSum = 0;
+    const len = polygon.length;
+    for (const [lat, lng] of polygon) {
+      latSum += lat;
+      lngSum += lng;
+    }
+    return [latSum / (len || 1), lngSum / (len || 1)];
+  }
+
+  /**
    * Finds the exact BMC Ward for any latitude and longitude
+   * Includes coastal/reclamation resilience computing minimum Haversine distance to nearest ward centroid
    */
   findWardByCoordinates(lat, lng) {
     for (const ward of MUMBAI_24_WARDS) {
@@ -212,7 +227,33 @@ class SpatialBoundaryService {
       }
     }
 
-    // Fallback nearest centroid
+    // Coastal & Reclamation Resilience: Find nearest ward centroid via Haversine distance
+    let nearestWard = null;
+    let minDistance = Infinity;
+
+    for (const ward of MUMBAI_24_WARDS) {
+      const [cLat, cLng] = this.getPolygonCentroid(ward.polygon);
+      const d = this.distanceMeters(lat, lng, cLat, cLng);
+      if (d < minDistance) {
+        minDistance = d;
+        nearestWard = ward;
+      }
+    }
+
+    if (nearestWard) {
+      console.log(
+        `ℹ️ Coastal/Edge-case coordinate [${lat}, ${lng}] auto-assigned to nearest centroid: ${nearestWard.wardCode} (${Math.round(minDistance)}m)`
+      );
+      return {
+        found: true,
+        isCoastalFallback: true,
+        wardCode: nearestWard.wardCode,
+        name: nearestWard.name,
+        distanceToCentroidMeters: Math.round(minDistance),
+      };
+    }
+
+    // Centroid fallback default
     return {
       found: false,
       wardCode: "Ward G-North",

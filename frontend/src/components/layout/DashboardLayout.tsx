@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
 import {
   Building2,
+  Database,
   LayoutDashboard,
   FileEdit,
   History,
@@ -138,6 +139,7 @@ const navGroups: NavGroup[] = [
       { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true },
       { key: "nav.officerPortal", defaultName: "Officer Portal", href: "/officer-portal", icon: Shield, officerOnly: true },
       { key: "nav.adminDashboard", defaultName: "Admin Command", href: "/admin", icon: BarChart3, adminOnly: true },
+      { key: "nav.dataStudio", defaultName: "Admin Data Studio", href: "/admin/data-studio", icon: Database, adminOnly: true },
       { key: "nav.analytics", defaultName: "Analytics Telemetry", href: "/admin/analytics", icon: LineChart, adminOnly: true },
     ],
   },

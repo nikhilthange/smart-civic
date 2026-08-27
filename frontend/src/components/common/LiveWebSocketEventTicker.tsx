@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { useSocket } from "@/context/SocketContext"
 
 interface TickerEvent {
@@ -8,7 +8,7 @@ interface TickerEvent {
   timestamp: string
 }
 
-export function LiveWebSocketEventTicker() {
+function LiveWebSocketEventTickerComponent() {
   const { lastEvent } = useSocket()
   const [events, setEvents] = useState<TickerEvent[]>([
     {
@@ -76,3 +76,6 @@ export function LiveWebSocketEventTicker() {
     </div>
   )
 }
+
+export const LiveWebSocketEventTicker = React.memo(LiveWebSocketEventTickerComponent)
+

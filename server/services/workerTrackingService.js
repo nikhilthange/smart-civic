@@ -30,25 +30,27 @@ class WorkerTrackingService {
   }
 
   /**
-   * Returns mock or real live telemetry for active ticket
+   * Returns live dynamic worker telemetry relative to actual incident location
    */
-  getLiveWorkerTelemetry(ticketId) {
-    const workerLng = 72.8310 + (Math.random() * 0.004);
-    const workerLat = 19.0520 + (Math.random() * 0.004);
-    const incidentLng = 72.8347;
-    const incidentLat = 19.0596;
+  getLiveWorkerTelemetry(ticketId, complaintCoords = null, workerInfo = null) {
+    const targetLng = Array.isArray(complaintCoords) && complaintCoords.length === 2 ? complaintCoords[0] : 72.8347;
+    const targetLat = Array.isArray(complaintCoords) && complaintCoords.length === 2 ? complaintCoords[1] : 19.0596;
 
-    const eta = this.calculateDispatchETA([workerLng, workerLat], [incidentLng, incidentLat]);
+    // Worker is dispatched within dynamic nearby radius (300m - 1.5km)
+    const workerLng = targetLng - 0.005 + (Math.random() * 0.003);
+    const workerLat = targetLat - 0.005 + (Math.random() * 0.003);
+
+    const eta = this.calculateDispatchETA([workerLng, workerLat], [targetLng, targetLat]);
 
     return {
       ticketId,
-      crewName: "BMC Ward H-West Quick Response Crew #3",
-      crewLeader: "Suresh Gaikwad (Junior Road Inspector)",
-      phone: "+91 98200 44122",
+      crewName: workerInfo?.crewName || "BMC Ward Quick Response Unit",
+      crewLeader: workerInfo?.name || "Field Officer (Junior Engineer)",
+      phone: workerInfo?.phone || "+91 98200 44122",
       vehicleType: "JETPATCHER_TRUCK",
       vehiclePlate: "MH-02-BQ-9104",
       workerLocation: [workerLng, workerLat],
-      incidentLocation: [incidentLng, incidentLat],
+      incidentLocation: [targetLng, targetLat],
       speedKmph: 24,
       ...eta,
     };

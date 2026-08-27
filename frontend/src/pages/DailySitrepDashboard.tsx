@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import toast from "react-hot-toast"
 import api from "@/lib/axios"
+import { useAuth } from "@/context/AuthContext"
 
 interface SitrepData {
   reportId: string
@@ -46,8 +47,10 @@ interface SitrepData {
 }
 
 export default function DailySitrepDashboard() {
+  const { user } = useAuth()
   const [sitrep, setSitrep] = useState<SitrepData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const canSimulate = ["admin", "ward_officer", "superadmin", "officer"].includes(user?.role || "")
 
   const fetchSitrep = async () => {
     setIsLoading(true)
@@ -98,6 +101,27 @@ export default function DailySitrepDashboard() {
         </div>
 
         <div className="flex items-center gap-2.5 print:hidden">
+          {canSimulate && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                try {
+                  toast.loading("Spawning dynamic live municipal events...", { id: "sim-live" })
+                  const res = await api.post("/simulator/generate", { count: 3 })
+                  toast.success(res.data.message || "Simulated 3 live incidents!", { id: "sim-live" })
+                  fetchSitrep()
+                } catch (err: any) {
+                  const errMsg = err?.response?.data?.message || (err?.response?.status === 403 ? "Unauthorized: Admin privileges required" : "Simulation trigger failed")
+                  toast.error(errMsg, { id: "sim-live" })
+                }
+              }}
+              className="rounded-md text-xs gap-1.5 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+            >
+              <span>⚡ Spawn 3 Live Incidents</span>
+            </Button>
+          )}
+
           <Button
             variant="outline"
             size="sm"

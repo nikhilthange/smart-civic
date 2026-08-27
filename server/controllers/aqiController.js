@@ -6,69 +6,7 @@ const {
   processAqiTelemetry,
   verifySiteBarricadeProof,
 } = require("../services/aqiEnforcementService");
-
-const DEFAULT_SITES = [
-  {
-    siteId: "SITE-GN-01",
-    developerName: "Lodha Commercial Developers",
-    projectName: "Lodha Supremus Tower B",
-    reraPermitNo: "P51900028911",
-    ward: "Ward G-North",
-    address: "Senapati Bapat Marg, Lower Parel / Dadar",
-    has35FtBarricadeCompliance: true,
-    hasWheelWashBasin: true,
-    hasAntiSmogGun: true,
-    currentPm10: 92,
-    currentPm25: 45,
-    stopWorkNoticeIssued: false,
-    totalPenaltiesLeviedInr: 0,
-    status: "COMPLIANT",
-    location: {
-      type: "Point",
-      coordinates: [72.8310, 19.0125],
-    },
-  },
-  {
-    siteId: "SITE-HW-02",
-    developerName: "Rustomjee Luxury Estates",
-    projectName: "Rustomjee Seasons Phase 3",
-    reraPermitNo: "P51800010924",
-    ward: "Ward H-West",
-    address: "Bandra Reclamation Arterial",
-    has35FtBarricadeCompliance: false,
-    hasWheelWashBasin: false,
-    hasAntiSmogGun: true,
-    currentPm10: 184,
-    currentPm25: 88,
-    stopWorkNoticeIssued: true,
-    totalPenaltiesLeviedInr: 50000,
-    status: "STOP_WORK_NOTICE_ACTIVE",
-    location: {
-      type: "Point",
-      coordinates: [72.8250, 19.0520],
-    },
-  },
-  {
-    siteId: "SITE-KW-03",
-    developerName: "Oberoi Realty Ltd",
-    projectName: "Oberoi Sky City Commercial",
-    reraPermitNo: "P51800003582",
-    ward: "Ward K-West",
-    address: "New Link Road, Andheri West",
-    has35FtBarricadeCompliance: true,
-    hasWheelWashBasin: true,
-    hasAntiSmogGun: false,
-    currentPm10: 138,
-    currentPm25: 64,
-    stopWorkNoticeIssued: false,
-    totalPenaltiesLeviedInr: 0,
-    status: "UNDER_AUDIT",
-    location: {
-      type: "Point",
-      coordinates: [72.8335, 19.1280],
-    },
-  },
-];
+const { invalidateCache } = require("../middlewares/cacheMiddleware");
 
 /**
  * @route   GET /api/aqi/sites
@@ -78,17 +16,85 @@ const DEFAULT_SITES = [
 exports.getConstructionSites = asyncHandler(async (req, res) => {
   const { ward } = req.query;
   const filter = ward && ward !== "all" ? { ward } : {};
-  let sites = await ConstructionSite.find(filter).sort({ currentPm10: -1 });
-
-  if (sites.length === 0) {
-    sites = DEFAULT_SITES.filter((s) => !ward || ward === "all" || s.ward === ward);
-  }
+  const sites = await ConstructionSite.find(filter).sort({ currentPm10: -1 }).lean();
 
   res.status(200).json({
     success: true,
     count: sites.length,
     sites,
   });
+});
+
+/**
+ * @route   POST /api/aqi/sites
+ * @desc    Create/register new construction site in MongoDB
+ * @access  Protected (Admin, Officer)
+ */
+exports.createConstructionSite = asyncHandler(async (req, res) => {
+  const {
+    siteId = `SITE-${Date.now().toString().slice(-5)}`,
+    developerName,
+    projectName,
+    reraPermitNo,
+    ward,
+    address,
+    has35FtBarricadeCompliance = true,
+    hasWheelWashBasin = true,
+    hasAntiSmogGun = true,
+    currentPm10 = 85,
+    currentPm25 = 40,
+    coordinates,
+  } = req.body;
+
+  if (!projectName || typeof projectName !== "string" || !projectName.trim()) {
+    return res.status(400).json({ success: false, message: "Valid projectName string is required" });
+  }
+
+  if (!ward || typeof ward !== "string" || !ward.trim()) {
+    return res.status(400).json({ success: false, message: "Valid ward string is required" });
+  }
+
+  if (coordinates && (!Array.isArray(coordinates) || coordinates.length !== 2 || typeof coordinates[0] !== "number" || typeof coordinates[1] !== "number")) {
+    return res.status(400).json({ success: false, message: "Coordinates must be an array of two numbers [lng, lat]" });
+  }
+
+  try {
+    const coords = Array.isArray(coordinates) && coordinates.length === 2 ? coordinates : [72.8310, 19.0125];
+    const pm10Val = Math.max(0, Number(currentPm10) || 85);
+    const pm25Val = Math.max(0, Number(currentPm25) || 40);
+    const status = pm10Val >= 150 ? "STOP_WORK_NOTICE_ACTIVE" : pm10Val >= 100 ? "UNDER_AUDIT" : "COMPLIANT";
+
+    const site = await ConstructionSite.create({
+      siteId: String(siteId).trim(),
+      developerName: developerName ? String(developerName).trim() : "Municipal Infrastructure Developer",
+      projectName: projectName.trim(),
+      reraPermitNo: reraPermitNo ? String(reraPermitNo).trim() : `P518${Date.now().toString().slice(-6)}`,
+      ward: ward.trim(),
+      address: address ? String(address).trim() : "Ward Construction Corridor",
+      has35FtBarricadeCompliance: Boolean(has35FtBarricadeCompliance),
+      hasWheelWashBasin: Boolean(hasWheelWashBasin),
+      hasAntiSmogGun: Boolean(hasAntiSmogGun),
+      currentPm10: pm10Val,
+      currentPm25: pm25Val,
+      stopWorkNoticeIssued: pm10Val >= 150,
+      totalPenaltiesLeviedInr: pm10Val >= 150 ? 50000 : 0,
+      status,
+      location: {
+        type: "Point",
+        coordinates: coords,
+      },
+    });
+
+    invalidateCache(["aqi:", "sitrep:", "/api/sitrep"]);
+
+    return res.status(201).json({
+      success: true,
+      message: `Construction site "${site.projectName}" registered successfully`,
+      site,
+    });
+  } catch (err) {
+    return res.status(400).json({ success: false, message: err.message || "Failed to create construction site" });
+  }
 });
 
 /**

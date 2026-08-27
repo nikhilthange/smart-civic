@@ -14,11 +14,11 @@ const helmetMiddleware = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc:  ["'self'"],
-      scriptSrc:   ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com"],
-      styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc:     ["'self'", "https://fonts.gstatic.com"],
-      imgSrc:      ["'self'", "data:", "https:", "blob:"],
-      connectSrc:  ["'self'"],
+      scriptSrc:   ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com", "https://unpkg.com"],
+      styleSrc:    ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://unpkg.com"],
+      fontSrc:     ["'self'", "https://fonts.gstatic.com", "data:"],
+      imgSrc:      ["'self'", "data:", "https:", "blob:", "https://*.tile.openstreetmap.org", "https://*.mapbox.com", "https://unpkg.com"],
+      connectSrc:  ["'self'", "https:", "wss:", "ws:"],
       frameSrc:    ["https://api.razorpay.com"],
       objectSrc:   ["'none'"],
       upgradeInsecureRequests: [],

@@ -1,0 +1,63 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: smart-civic-ingress
+  namespace: smart-civic
+  labels:
+    app: smart-civic
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/websocket-services: "smart-civic-backend-service"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - civic.mumbai.gov.in
+        - api.civic.mumbai.gov.in
+      secretName: smart-civic-tls-certs
+  rules:
+    # ─── Frontend SPA Web Serving ──────────────────────────────────────────────
+    - host: civic.mumbai.gov.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: smart-civic-frontend-service
+                port:
+                  number: 80
+
+    # ─── Backend API Gateway & Real-time WebSocket Upgrades ────────────────────
+    - host: api.civic.mumbai.gov.in
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: smart-civic-backend-service
+                port:
+                  number: 5000
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: smart-civic-backend-service
+                port:
+                  number: 5000
+          - path: /socket.io
+            pathType: Prefix
+            backend:
+              service:
+                name: smart-civic-backend-service
+                port:
+                  number: 5000

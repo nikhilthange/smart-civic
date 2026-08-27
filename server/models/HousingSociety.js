@@ -69,6 +69,17 @@ const housingSocietySchema = new mongoose.Schema(
         default: "07:30 AM - 09:00 AM",
       },
     },
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number],
+        default: [72.8347, 19.0596],
+      },
+    },
   },
   {
     timestamps: true,
@@ -76,5 +87,6 @@ const housingSocietySchema = new mongoose.Schema(
 );
 
 housingSocietySchema.index({ ward: 1, segregationScorePct: -1 });
+housingSocietySchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("HousingSociety", housingSocietySchema);

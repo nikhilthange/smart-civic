@@ -20,52 +20,7 @@ export default function SwmFleetRadar() {
     try {
       setLoading(true)
       const res = await municipalApi.getSmartBins(selectedWard)
-      if (res.bins.length > 0) {
-        setBins(res.bins)
-      } else {
-        // Fallback demo smart bins
-        setBins([
-          {
-            _id: "1",
-            binId: "BIN-GN-01",
-            rfidTag: "RFID-90812-GN",
-            ward: "Ward G-North",
-            locality: "Plaza Cinema Waste Hub",
-            capacityLiters: 1100,
-            currentFillPercentage: 88,
-            status: "OVERFLOWING",
-            wasteType: "MIXED_MSW",
-            lastLiftedAt: new Date(Date.now() - 4 * 3600000).toISOString(),
-            lastGrossWeightKg: 420,
-          },
-          {
-            _id: "2",
-            binId: "BIN-GN-02",
-            rfidTag: "RFID-44120-GN",
-            ward: "Ward G-North",
-            locality: "Shivaji Park Gate 4",
-            capacityLiters: 1100,
-            currentFillPercentage: 20,
-            status: "NORMAL",
-            wasteType: "WET_WASTE",
-            lastLiftedAt: new Date(Date.now() - 1 * 3600000).toISOString(),
-            lastGrossWeightKg: 380,
-          },
-          {
-            _id: "3",
-            binId: "BIN-GN-03",
-            rfidTag: "RFID-87291-GN",
-            ward: "Ward G-North",
-            locality: "Portuguese Church Sector",
-            capacityLiters: 1100,
-            currentFillPercentage: 0,
-            status: "CLEANED",
-            wasteType: "DRY_RECYCLABLE",
-            lastLiftedAt: new Date(Date.now() - 15 * 60000).toISOString(),
-            lastGrossWeightKg: 310,
-          },
-        ])
-      }
+      setBins(res.bins || [])
     } catch {
       toast.error("Failed to load smart bin telemetry")
     } finally {

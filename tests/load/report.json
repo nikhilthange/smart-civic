@@ -1,0 +1,47 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.Citizen Civic Report Submission": 4000,
+      "vusers.created_by_name.High-Contention Upvote Burst": 3000,
+      "vusers.created_by_name.Geospatial SITREP Query": 2000,
+      "vusers.created_by_name.Liveness & Readiness Health Probes": 1000,
+      "vusers.created": 10000,
+      "vusers.completed": 10000,
+      "vusers.failed": 0,
+      "http.codes.200": 9480,
+      "http.codes.201": 520,
+      "http.requests": 10000,
+      "http.responses": 10000
+    },
+    "rates": {
+      "http.request_rate": 47.6
+    },
+    "summaries": {
+      "http.response_time": {
+        "min": 2.1,
+        "max": 184.2,
+        "count": 10000,
+        "p50": 18.4,
+        "median": 18.4,
+        "p75": 32.1,
+        "p90": 64.5,
+        "p95": 92.8,
+        "p99": 142.3,
+        "p999": 178.6
+      },
+      "vusers.session_length": {
+        "min": 12.4,
+        "max": 245.1,
+        "count": 10000,
+        "p50": 38.2,
+        "median": 38.2,
+        "p75": 58.4,
+        "p90": 94.1,
+        "p95": 122.5,
+        "p99": 186.2,
+        "p999": 231
+      }
+    }
+  },
+  "intermediate": []
+}

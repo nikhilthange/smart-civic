@@ -88,3 +88,66 @@ exports.getFleetCorridors = asyncHandler(async (req, res) => {
     totalDailyGarbageLifts: 342,
   });
 });
+
+const { invalidateCache } = require("../middlewares/cacheMiddleware");
+
+/**
+ * @route   POST /api/swm/bins
+ * @desc    Create a new Smart RFID Bin in MongoDB
+ * @access  Protected (Admin, Officer)
+ */
+exports.createSmartBin = asyncHandler(async (req, res) => {
+  const {
+    binId = `BIN-${Date.now().toString().slice(-5)}`,
+    rfidTag = `RFID-${Date.now().toString().slice(-6)}`,
+    ward,
+    locality,
+    capacityLiters = 1100,
+    currentFillPercentage = 35,
+    wasteType = "MIXED_MSW",
+    coordinates,
+  } = req.body;
+
+  if (!ward || typeof ward !== "string" || !ward.trim()) {
+    return res.status(400).json({ success: false, message: "Valid ward string is required" });
+  }
+
+  if (coordinates && (!Array.isArray(coordinates) || coordinates.length !== 2 || typeof coordinates[0] !== "number" || typeof coordinates[1] !== "number")) {
+    return res.status(400).json({ success: false, message: "Coordinates must be an array of two numbers [lng, lat]" });
+  }
+
+  const fill = Number(currentFillPercentage);
+  if (isNaN(fill) || fill < 0 || fill > 100) {
+    return res.status(400).json({ success: false, message: "currentFillPercentage must be a number between 0 and 100" });
+  }
+
+  try {
+    const coords = Array.isArray(coordinates) && coordinates.length === 2 ? coordinates : [72.8290, 19.0540];
+    const status = fill >= 90 ? "OVERFLOWING" : fill >= 75 ? "NEAR_FULL" : fill <= 10 ? "CLEANED" : "NORMAL";
+
+    const bin = await BinTelemetry.create({
+      binId: String(binId).trim(),
+      rfidTag: String(rfidTag).trim(),
+      ward: ward.trim(),
+      locality: locality ? String(locality).trim() : "Ward SWM Hub",
+      capacityLiters: Math.max(100, Number(capacityLiters) || 1100),
+      currentFillPercentage: fill,
+      status,
+      wasteType,
+      location: {
+        type: "Point",
+        coordinates: coords,
+      },
+    });
+
+    invalidateCache(["swm:", "sitrep:", "/api/sitrep"]);
+
+    return res.status(201).json({
+      success: true,
+      message: `Smart Bin "${bin.binId}" created successfully`,
+      bin,
+    });
+  } catch (err) {
+    return res.status(400).json({ success: false, message: err.message || "Failed to create smart bin" });
+  }
+});

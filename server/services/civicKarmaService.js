@@ -77,26 +77,37 @@ class CivicKarmaService {
   }
 
   /**
-   * Retrieves 24-Ward top citizen contributors leaderboard
+   * Retrieves 24-Ward top citizen contributors leaderboard dynamically from database
    */
   async getWardLeaderboard(wardFilter = "all") {
-    const mockLeaderboard = [
-      { rank: 1, name: "Aarav Deshmukh", ward: "Ward G-North", points: 840, verifiedReports: 18, tierBadge: "CIVIC_HERO" },
-      { rank: 2, name: "Priya Sundaram", ward: "Ward H-West", points: 720, verifiedReports: 15, tierBadge: "GUARDIAN" },
-      { rank: 3, name: "Vikramaditya Rao", ward: "Ward K-West", points: 610, verifiedReports: 13, tierBadge: "GUARDIAN" },
-      { rank: 4, name: "Sneha Kulkarni", ward: "Ward F-South", points: 540, verifiedReports: 11, tierBadge: "SENTINEL" },
-      { rank: 5, name: "Mohammed Zafar", ward: "Ward A", points: 490, verifiedReports: 10, tierBadge: "SENTINEL" },
-      { rank: 6, name: "Ananya Mehta", ward: "Ward L", points: 430, verifiedReports: 9, tierBadge: "STEWARD" },
-      { rank: 7, name: "Rohan Sawant", ward: "Ward D", points: 380, verifiedReports: 8, tierBadge: "STEWARD" },
-      { rank: 8, name: "Kavita Nair", ward: "Ward S", points: 350, verifiedReports: 7, tierBadge: "STEWARD" },
-    ];
-
+    const User = require("../models/User");
+    const query = { role: { $in: ["citizen", "user"] } };
     if (wardFilter && wardFilter !== "all") {
-      const filtered = mockLeaderboard.filter((u) => u.ward === wardFilter);
-      return filtered.length > 0 ? filtered : mockLeaderboard.slice(0, 3);
+      query.ward = wardFilter;
     }
 
-    return mockLeaderboard;
+    const citizens = await User.find(query)
+      .sort({ karmaPoints: -1 })
+      .limit(20)
+      .select("name ward karmaPoints badges avatar")
+      .lean();
+
+    return citizens.map((citizen, idx) => {
+      const points = citizen.karmaPoints || 0;
+      let tierBadge = "STEWARD";
+      if (points >= 800) tierBadge = "CIVIC_HERO";
+      else if (points >= 500) tierBadge = "GUARDIAN";
+      else if (points >= 300) tierBadge = "SENTINEL";
+
+      return {
+        rank: idx + 1,
+        name: citizen.name || "Civic Contributor",
+        ward: citizen.ward || "Ward A",
+        points,
+        verifiedReports: Math.max(1, Math.floor(points / 25)),
+        tierBadge,
+      };
+    });
   }
 
   /**

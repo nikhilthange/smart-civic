@@ -1,0 +1,72 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - name: "Warm-up"
+      duration: 30
+      arrivalRate: 50
+    - name: "Ramp-up"
+      duration: 60
+      arrivalRate: 50
+      rampTo: 500
+    - name: "Sustained Peak Surge"
+      duration: 120
+      arrivalRate: 500
+  ensure:
+    p95: 250
+    p99: 500
+    maxErrorRate: 0.1
+  payload:
+    path: "complaints_seed_payload.csv"
+    fields:
+      - "title"
+      - "description"
+      - "category"
+      - "department"
+      - "ward"
+      - "lat"
+      - "lng"
+
+scenarios:
+  # ─── Scenario 1: Citizen Complaint Submissions & Spatial Clustering ────────
+  - name: "Citizen Civic Report Submission"
+    weight: 40
+    flow:
+      - post:
+          url: "/api/complaints"
+          json:
+            title: "{{ title }}"
+            description: "{{ description }}"
+            category: "{{ category }}"
+            department: "{{ department }}"
+            ward: "{{ ward }}"
+            latitude: "{{ lat }}"
+            longitude: "{{ lng }}"
+          capture:
+            - json: "$.complaint._id"
+              as: "complaintId"
+      - think: 1
+
+  # ─── Scenario 2: High-Contention Atomic Upvote Bursts ──────────────────────
+  - name: "High-Contention Upvote Burst"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/complaints/{{ complaintId }}/upvote"
+          json:
+            citizenId: "citizen_{{ $randomNumber(1, 1000) }}"
+
+  # ─── Scenario 3: Real-Time SITREP Heatmap Queries ─────────────────────────
+  - name: "Geospatial SITREP Query"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/sitrep?ward=Ward%20A&radius=5000"
+
+  # ─── Scenario 4: High-Frequency Telemetry & Health Probes ──────────────────
+  - name: "Liveness & Readiness Health Probes"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/live"
+      - get:
+          url: "/api/health"

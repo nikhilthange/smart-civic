@@ -1,0 +1,118 @@
+name: Smart Civic CI/CD Pipeline & Quality Gate
+
+on:
+  push:
+    branches:
+      - main
+      - 'release/*'
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 1. FRONTEND TYPECHECK & PRODUCTION BUILD
+  # ═══════════════════════════════════════════════════════════════════════════
+  lint-and-typecheck:
+    name: Frontend Typecheck & Vite Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run TypeScript Typecheck & Production Build
+        working-directory: ./frontend
+        run: npm run build
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 2. MASTER AUTOMATED REGRESSION & CHAOS MATRIX
+  # ═══════════════════════════════════════════════════════════════════════════
+  automated-regression-suite:
+    name: Backend Regression & Chaos Suite (120 Assertions)
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7.2-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install Server Dependencies
+        working-directory: ./server
+        run: npm ci
+
+      - name: Run Full Master Regression Suite
+        env:
+          NODE_ENV: test
+          MONGO_URI: mongodb://localhost:27017/smart-civic-ci
+          JWT_SECRET: ci_jwt_secret_token_12345
+          REDIS_URL: redis://localhost:6379
+        run: |
+          node server/scripts/test_surge_benchmark.js
+          node server/scripts/test_db_disconnect_chaos_drill.js
+          node server/scripts/test_sla_escrow_deficit_smoke.js
+          node server/scripts/test_worker_lifecycle_smoke.js
+          node server/scripts/test_concurrency_chaos_validation.js
+          node server/scripts/test_image_ai_triage_flow.js
+          node server/scripts/test_adversarial_break_it.js
+          node server/scripts/test_full_lifecycle_e2e.js
+          node server/scripts/test_zero_mock_compliance.js
+          node server/scripts/test_complete_system_health.js
+          node server/scripts/test_mission_critical_hardening.js
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # 3. ARTILLERY LOAD TEST & PERFORMANCE QUALITY GATE
+  # ═══════════════════════════════════════════════════════════════════════════
+  artillery-performance-gate:
+    name: Artillery Load Test & SLA Gate
+    runs-on: ubuntu-latest
+    needs: [lint-and-typecheck, automated-regression-suite]
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Run Artillery Performance Benchmark
+        run: node tests/load/run_artillery_runner.js
+
+      - name: Upload Artillery HTML & JSON Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: artillery-performance-report
+          path: |
+            tests/load/report.html
+            tests/load/report.json
+          retention-days: 14

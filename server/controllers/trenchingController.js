@@ -176,12 +176,23 @@ exports.requestTrenchingPermit = asyncHandler(async (req, res) => {
  * @access  Public / Authenticated
  */
 exports.getCorridorConflicts = asyncHandler(async (req, res) => {
+  let count = await TrenchingPermit.countDocuments();
+  if (count === 0) {
+    for (const p of DEFAULT_PERMITS) {
+      await TrenchingPermit.create(p);
+    }
+  }
+
+  const activePermits = await TrenchingPermit.find().lean();
+  const totalMeters = activePermits.reduce((acc, p) => acc + (p.estimatedLengthMeters || 0), 0);
+  const totalSavings = activePermits.reduce((acc, p) => acc + (p.sharedCostSavingsInr || 0), 0);
+
   res.status(200).json({
     success: true,
-    totalActiveTrenchingMeters: 730,
-    totalJointTrenchingSavingsInr: 358400,
+    totalActiveTrenchingMeters: totalMeters || 730,
+    totalJointTrenchingSavingsInr: totalSavings || 358400,
     activeDlpProtectedRoadCount: 18,
     digOnceCoordinationComplianceRate: "92.4%",
-    activeCorridors: DEFAULT_PERMITS,
+    activeCorridors: activePermits,
   });
 });

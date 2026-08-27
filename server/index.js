@@ -14,6 +14,26 @@ const morgan     = require("morgan");
 // ─── Load env vars FIRST ──────────────────────────────────────────────────────
 dotenv.config();
 
+// ─── Production Secret Environment Guard ───────────────────────────────────────
+if (process.env.NODE_ENV === "production") {
+  const weakDefaults = ["secret", "secret123", "default_secret", "development_fallback", "change_me", "123456"];
+  const jwt = process.env.JWT_SECRET;
+  const mongo = process.env.MONGO_URI || process.env.MONGODB_URI;
+
+  const errors = [];
+  if (!jwt || weakDefaults.includes(jwt.toLowerCase())) {
+    errors.push("JWT_SECRET is missing or using an insecure fallback value");
+  }
+  if (!mongo || weakDefaults.includes(mongo.toLowerCase())) {
+    errors.push("MONGO_URI is missing or using an insecure fallback value");
+  }
+
+  if (errors.length > 0) {
+    console.error("🚨 CRITICAL PRODUCTION CONFIGURATION ERROR:\n" + errors.map((e) => `  - ${e}`).join("\n"));
+    process.exit(1);
+  }
+}
+
 // ─── DB ───────────────────────────────────────────────────────────────────────
 const connectDB = require("./config/db");
 connectDB();
@@ -30,11 +50,17 @@ const {
   sanitizeInput,
 } = require("./middlewares/security");
 
+// ─── Metrics & Observability ──────────────────────────────────────────────────
+const { metricsCollector, metricsEndpoint } = require("./middlewares/metricsMiddleware");
+
 // ─── Error handling ───────────────────────────────────────────────────────────
 const { globalErrorHandler, notFoundHandler } = require("./middlewares/errorHandler");
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 const app = express();
+
+// ─── Metrics Middleware (collects latency and route status) ───────────────────
+app.use(metricsCollector);
 
 // ─── Trust proxy (needed when behind Nginx / Heroku / Railway etc.) ──────────
 app.set("trust proxy", 1);
@@ -53,9 +79,9 @@ app.options("*", cors(corsOptions)); // handle preflight for all routes
 // 3. Apply global rate limiter to all API routes
 app.use("/api", defaultLimiter);
 
-// 4. Body parsers — keep limits tight
-app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+// 4. Body parsers — keep limits tight to prevent heap exhaustion
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
 // 5. Data sanitization — strip MongoDB operators ($, .) from user input
 app.use(mongoSanitizer);
@@ -147,20 +173,24 @@ app.use("/api/alm",           require("./routes/almRoutes"));
 app.use("/api/worker",        require("./routes/workerRoutes"));
 app.use("/api/sitrep",        require("./routes/sitrepRoutes"));
 app.use("/api/broadcast",     require("./routes/broadcastRoutes"));
+app.use("/api/simulator",     require("./routes/simulationRoutes"));
 
 // ─── Health check (no rate limit — used by load balancers) ────────────────────
 const mongoose = require("mongoose");
 const healthHandler = (req, res) => {
   const mem = process.memoryUsage();
-  res.status(200).json({
-    success: true,
-    status:  "HEALTHY",
+  const isDbConnected = mongoose.connection.readyState === 1;
+  const statusCode = isDbConnected ? 200 : 503;
+
+  res.status(statusCode).json({
+    success: isDbConnected,
+    status: isDbConnected ? "HEALTHY" : "DEGRADED",
     service: "Smart Civic AI Platform API",
-    uptime:  process.uptime(),
+    uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "development",
     database: {
-      status: mongoose.connection.readyState === 1 ? "CONNECTED" : "DISCONNECTED",
+      status: isDbConnected ? "CONNECTED" : "DISCONNECTED",
       host: mongoose.connection.host || "localhost",
       name: mongoose.connection.name || "smart-civic",
     },
@@ -171,8 +201,21 @@ const healthHandler = (req, res) => {
     },
   });
 };
+const liveHandler = (req, res) => {
+  res.status(200).json({
+    status: "ALIVE",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+};
+app.get("/live", liveHandler);
+app.get("/api/live", liveHandler);
+app.get("/ping", liveHandler);
+app.get("/api/ping", liveHandler);
 app.get("/health", healthHandler);
 app.get("/api/health", healthHandler);
+app.get("/metrics", metricsEndpoint);
+app.get("/api/metrics", metricsEndpoint);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 //  ERROR HANDLING (must be LAST)
@@ -197,31 +240,60 @@ const server = app.listen(PORT, () => {
 });
 
 // ─── Graceful shutdown — close DB + pending connections ───────────────────────
-const shutdown = (signal) => {
+const shutdown = async (signal) => {
   console.log(`\n⚠️  ${signal} received. Gracefully shutting down...`);
-  server.close(() => {
-    console.log("✅ HTTP server closed.");
-    process.exit(0);
-  });
+  
   // Force-kill if shutdown hangs beyond 10s
-  setTimeout(() => {
-    console.error("❌ Forced shutdown due to timeout.");
+  const forceKillTimeout = setTimeout(() => {
+    console.error("❌ Forced process exit after shutdown timeout.");
     process.exit(1);
   }, 10000);
+
+  try {
+    // 1. Close active WebSocket connections
+    try {
+      const { getIO } = require("./services/socketService");
+      const io = getIO();
+      if (io) {
+        io.close();
+        console.log("✅ WebSocket Gateway connections drained and closed.");
+      }
+    } catch (wsCloseErr) {
+      console.warn("WebSocket shutdown notice:", wsCloseErr.message);
+    }
+
+    // 2. Close HTTP Server & drain in-flight traffic
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+      console.log("✅ HTTP server closed. In-flight connections drained.");
+    }
+
+    // 3. Drain Database Pool
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.connection.close(false);
+      console.log("✅ MongoDB connection closed cleanly.");
+    }
+
+    clearTimeout(forceKillTimeout);
+    process.exit(signal === "uncaughtException" ? 1 : 0);
+  } catch (err) {
+    console.error("Shutdown error:", err.message);
+    clearTimeout(forceKillTimeout);
+    process.exit(1);
+  }
 };
 
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT",  () => shutdown("SIGINT"));
 
 // ─── Unhandled rejections / exceptions ───────────────────────────────────────
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("💥 Unhandled Rejection:", reason);
-  // In production, shut down to let process manager restart cleanly
+process.on("unhandledRejection", (reason, _promise) => {
+  console.error("💥 Unhandled Rejection:", JSON.stringify({ reason: reason?.message || String(reason) }));
   if (process.env.NODE_ENV === "production") shutdown("unhandledRejection");
 });
 
 process.on("uncaughtException", (err) => {
-  console.error("💥 Uncaught Exception:", err);
+  console.error("💥 Uncaught Exception:", JSON.stringify({ error: err.message, stack: err.stack }));
   shutdown("uncaughtException");
 });
 

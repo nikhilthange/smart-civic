@@ -71,11 +71,14 @@ const DEFAULT_WARD_PROJECTS = [
 exports.getWardProjects = asyncHandler(async (req, res) => {
   const { ward } = req.query;
   const filter = ward && ward !== "all" ? { ward } : {};
-  let projects = await WardProject.find(filter).sort({ votesCount: -1 });
-
-  if (projects.length === 0 && (!ward || ward === "all" || ward === "Ward G-North" || ward === "Ward H-West")) {
-    projects = DEFAULT_WARD_PROJECTS.filter((p) => !ward || ward === "all" || p.ward === ward);
+  let count = await WardProject.countDocuments();
+  if (count === 0) {
+    for (const p of DEFAULT_WARD_PROJECTS) {
+      await WardProject.create(p);
+    }
   }
+
+  let projects = await WardProject.find(filter).sort({ votesCount: -1 }).lean();
 
   res.status(200).json({
     success: true,
@@ -97,24 +100,6 @@ exports.castProjectVote = asyncHandler(async (req, res) => {
   let project = await WardProject.findOne({ $or: [{ _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }, { projectId: id }] });
 
   if (!project) {
-    // Seed default if voting on demo mock
-    const mock = DEFAULT_WARD_PROJECTS.find((p) => p.projectId === id);
-    if (mock) {
-      project = new WardProject({
-        ...mock,
-        votesCount: mock.votesCount + 1,
-        votersList: [{ userId, quarter }],
-      });
-      await project.save();
-
-      return res.status(200).json({
-        success: true,
-        message: `🗳️ Vote registered for "${project.title}". Total Votes: ${project.votesCount}`,
-        votesCount: project.votesCount,
-        project,
-      });
-    }
-
     res.status(404);
     throw new Error("Ward project not found");
   }
@@ -179,4 +164,62 @@ exports.getCorporatorFundLedger = asyncHandler(async (req, res) => {
     corporatorName: projects[0]?.corporatorName || "Hon. Ward Councilor (BMC)",
     auditedProjects: projects,
   });
+});
+
+const { invalidateCache } = require("../middlewares/cacheMiddleware");
+
+/**
+ * @route   POST /api/ward-budget/projects
+ * @desc    Create a new participatory budgeting project directly in MongoDB
+ * @access  Protected (Admin, Officer)
+ */
+exports.createWardProject = asyncHandler(async (req, res) => {
+  const {
+    projectId = `PRJ-${Date.now().toString().slice(-5)}`,
+    title,
+    ward,
+    category = "URBAN_GREENING",
+    estimatedBudgetInr = 1200000,
+    description = "Community development infrastructure initiative",
+    corporatorName = "Hon. Ward Councilor (BMC)",
+    estimatedBeneficiaryCitizens = 15000,
+  } = req.body;
+
+  if (!title || typeof title !== "string" || !title.trim()) {
+    return res.status(400).json({ success: false, message: "Valid project title is required" });
+  }
+
+  if (!ward || typeof ward !== "string" || !ward.trim()) {
+    return res.status(400).json({ success: false, message: "Valid ward string is required" });
+  }
+
+  const budget = Number(estimatedBudgetInr);
+  if (isNaN(budget) || budget < 0) {
+    return res.status(400).json({ success: false, message: "estimatedBudgetInr must be a non-negative number" });
+  }
+
+  try {
+    const project = await WardProject.create({
+      projectId: String(projectId).trim(),
+      title: title.trim(),
+      ward: ward.trim(),
+      category,
+      estimatedBudgetInr: budget,
+      description: description ? String(description).trim() : "Ward community improvement project",
+      corporatorName: corporatorName ? String(corporatorName).trim() : "Hon. Ward Councilor (BMC)",
+      estimatedBeneficiaryCitizens: Math.max(100, Number(estimatedBeneficiaryCitizens) || 1000),
+      status: "PROPOSED",
+      votesCount: 1,
+    });
+
+    invalidateCache(["ward-budget:", "sitrep:", "/api/sitrep"]);
+
+    return res.status(201).json({
+      success: true,
+      message: `Participatory budgeting project "${project.title}" created successfully`,
+      project,
+    });
+  } catch (err) {
+    return res.status(400).json({ success: false, message: err.message || "Failed to create project" });
+  }
 });

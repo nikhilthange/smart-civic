@@ -59,6 +59,8 @@ const WorkerSchema = new mongoose.Schema(
 
 // ─── Indexes ──────────────────────────────────────────────────────────────────
 WorkerSchema.index({ department: 1, wardId: 1, isAvailable: 1 }); // Compound for assignment queries
+WorkerSchema.index({ activeComplaintsCount: 1 }); // Least-loaded worker query
+WorkerSchema.index({ isAvailable: 1, activeComplaintsCount: 1 }); // Compound availability + workload query
 
 // ─── Virtual: complaints assigned to worker ──────────────────────────────────
 WorkerSchema.virtual("complaints", {

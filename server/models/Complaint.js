@@ -128,7 +128,21 @@ const ComplaintSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: {
-        values: ["submitted", "ai_verified", "ward_assigned", "officer_assigned", "worker_assigned", "in_progress", "resolution_submitted", "resolved", "reopened"],
+        values: [
+          "pending",
+          "submitted",
+          "ai_verified",
+          "ward_assigned",
+          "officer_assigned",
+          "assigned",
+          "worker_assigned",
+          "in_progress",
+          "resolution_submitted",
+          "resolved",
+          "closed",
+          "reopened",
+          "rejected",
+        ],
         message: "Invalid status",
       },
       default: "submitted",
@@ -238,6 +252,11 @@ const ComplaintSchema = new mongoose.Schema(
       enum: [1, 2, 3],
       default: 1,
     },
+    isEscalated: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     escalatedAt: {
       type: Date,
       default: null,
@@ -294,6 +313,14 @@ const ComplaintSchema = new mongoose.Schema(
       trim: true,
       maxlength: [500, "Rejection reason cannot exceed 500 characters"],
     },
+    comments: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        text: { type: String, required: true, trim: true, maxlength: 1000 },
+        isInternal: { type: Boolean, default: false },
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
 
     // ─── Automated AI Resolution Quality Inspection ───────────────────────────
     resolutionAiCheck: {
@@ -331,10 +358,38 @@ const ComplaintSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isSimulated: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     // Has citizen provided feedback after resolution
     feedbackSubmitted: {
       type: Boolean,
       default: false,
+    },
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null,
+    },
+    citizenFeedback: {
+      type: String,
+      trim: true,
+      maxlength: 1000,
+      default: null,
+    },
+    isDlpCovered: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    dlpContractId: {
+      type: String,
+      trim: true,
+      default: null,
+      index: true,
     },
     // AI Analysis results from Google Gemini
     aiAnalysis: {
@@ -360,12 +415,14 @@ ComplaintSchema.index({ citizen: 1 });
 ComplaintSchema.index({ status: 1 });
 ComplaintSchema.index({ department: 1 });
 ComplaintSchema.index({ assignedOfficer: 1 });
+ComplaintSchema.index({ assignedWorker: 1 });
 ComplaintSchema.index({ priority: 1 });
 ComplaintSchema.index({ category: 1 });
 ComplaintSchema.index({ createdAt: -1 });
 ComplaintSchema.index({ status: 1, department: 1 }); // Admin dashboard
 ComplaintSchema.index({ citizen: 1, status: 1 }); // Citizen view
 ComplaintSchema.index({ "location.coordinates": "2dsphere" }); // Geo queries
+ComplaintSchema.index({ "location.coordinates": "2dsphere", status: 1, department: 1 }); // SITREP heatmap aggregation
 ComplaintSchema.index({ status: 1, "location.coordinates": "2dsphere", createdAt: -1 }); // Compound geospatial triage
 ComplaintSchema.index({ ward: 1, status: 1, createdAt: -1 }); // Ward SLA ranking
 

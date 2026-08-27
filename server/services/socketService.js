@@ -7,20 +7,24 @@ let io = null;
  * Supports Redis Pub/Sub Adapter for multi-core clustering when REDIS_URL is provided
  */
 const initSocket = (httpServer, corsOptions) => {
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || process.env.CLIENT_ORIGIN || process.env.FRONTEND_URL || "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000")
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+
   io = new Server(httpServer, {
     cors: {
-      origin: [
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:3000",
-        ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
-        ...(corsOptions?.origin && Array.isArray(corsOptions.origin) ? corsOptions.origin : []),
-      ],
-      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
+          callback(null, true);
+        } else {
+          callback(new Error(`CORS: Origin '${origin}' is not allowed.`));
+        }
+      },
+      methods: ["GET", "POST"],
       credentials: true,
     },
-    transports: ["polling", "websocket"],
+    transports: ["websocket", "polling"],
     allowEIO3: true,
     pingTimeout: 60000,
     pingInterval: 25000,
@@ -68,6 +72,7 @@ const initSocket = (httpServer, corsOptions) => {
 
     socket.on("disconnect", () => {
       console.log(`🔌 WebSocket Client Disconnected: ${socket.id}`);
+      socket.removeAllListeners();
     });
   });
 

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smart-civic-config
+  namespace: smart-civic
+  labels:
+    app: smart-civic
+    tier: configuration
+data:
+  NODE_ENV: "production"
+  PORT: "5000"
+  REDIS_HOST: "smart-civic-redis-service"
+  REDIS_PORT: "6379"
+  REDIS_URL: "redis://smart-civic-redis-service:6379"
+  CORS_ORIGIN: "https://civic.mumbai.gov.in"
+  CLIENT_URL: "https://civic.mumbai.gov.in"
+  RATE_LIMIT_MAX_REQUESTS: "100"
+  RATE_LIMIT_WINDOW_MINUTES: "15"
+  CLOUDINARY_FOLDER: "smart-civic/complaints"
+  VISION_DEVICE: "cpu"

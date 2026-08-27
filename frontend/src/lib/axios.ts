@@ -1,7 +1,8 @@
 import axios from "axios"
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -19,7 +20,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// ─── Response Interceptor: Handle 401 globally ───────────────────────────────
+// ─── Response Interceptor: Handle 401 & Network Failures globally ───────────
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -31,6 +32,8 @@ api.interceptors.response.use(
       if (window.location.pathname !== "/auth") {
         window.location.href = "/auth"
       }
+    } else if (!error.response && error.message === "Network Error") {
+      console.warn("⚠️ Network connection offline. Request queued or failed gracefully.");
     }
     return Promise.reject(error)
   }

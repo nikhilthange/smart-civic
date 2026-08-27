@@ -46,6 +46,10 @@ const ContractorSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    uncollectedPenalties: {
+      type: Number,
+      default: 0,
+    },
     escrowBalance: {
       type: Number,
       default: 500000, // ₹5,00,000 Municipal Escrow Deposit

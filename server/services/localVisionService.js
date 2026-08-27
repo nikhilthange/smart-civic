@@ -2,6 +2,9 @@ const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
 
+// ─── Configure Sharp global memory controls to minimize heap footprint ────────
+sharp.cache({ files: 0, memory: 50, items: 100 });
+
 /**
  * ─── Local In-Process Computer Vision & ONNX Classification Engine ────────────
  * - Preprocessing: 224x224 RGB resizing, pixel tensor extraction, ImageNet normalization.
@@ -142,10 +145,11 @@ function calculateSoftmax(logits) {
 
 /**
  * Preprocesses image buffer into normalized tensor representation via sharp
+ * Uses aspect-ratio preserving cover resize with center crop
  */
 async function preprocessImageToTensor(imageBuffer) {
   const { data, info } = await sharp(imageBuffer)
-    .resize(224, 224, { fit: "fill" })
+    .resize(224, 224, { fit: "cover", position: "center" })
     .removeAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
@@ -154,7 +158,7 @@ async function preprocessImageToTensor(imageBuffer) {
   const numPixels = width * height;
   const float32Tensor = new Float32Array(channels * numPixels);
 
-  // Planar [C, H, W] layout with ImageNet channel normalization
+  // Planar [C, H, W] layout with ImageNet channel normalization (mean [0.485, 0.456, 0.406], std [0.229, 0.224, 0.225])
   for (let c = 0; c < channels; c++) {
     const mean = IMAGENET_MEAN[c] || 0.45;
     const std = IMAGENET_STD[c] || 0.225;
@@ -168,6 +172,8 @@ async function preprocessImageToTensor(imageBuffer) {
   const stats = await sharp(imageBuffer).stats();
   return { tensor: float32Tensor, stats, width, height, channels };
 }
+
+const preprocessImageBuffer = preprocessImageToTensor;
 
 /**
  * In-process vision classifier:
@@ -353,6 +359,7 @@ function detectYoloBoundingBoxes(predictedClass, confidence = 0.85) {
 module.exports = {
   classifyImageBuffer,
   preprocessImageToTensor,
+  preprocessImageBuffer,
   calculateSoftmax,
   detectYoloBoundingBoxes,
   BMC_CLASSES,

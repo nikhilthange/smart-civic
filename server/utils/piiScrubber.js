@@ -93,9 +93,36 @@ function stripExifMetadata(imageBuffer) {
   return imageBuffer;
 }
 
+/**
+ * Scans text content (e.g. description, title) and redacts:
+ * - Aadhaar numbers: 12 digits -> [Aadhaar Redacted]
+ * - Email addresses -> [Email Redacted]
+ * - Phone numbers: 10-digit Indian numbers -> +91 ******1234
+ */
+function scrubPii(text) {
+  if (!text || typeof text !== "string") return text;
+  let result = text;
+
+  // 1. Aadhaar numbers (e.g. 2345 6789 0123, 2345-6789-0123, 234567890123) -> [Aadhaar Redacted]
+  result = result.replace(/\b[2-9]\d{3}[\s-]?\d{4}[\s-]?\d{4}\b/g, "[Aadhaar Redacted]");
+
+  // 2. Email addresses -> [Email Redacted]
+  result = result.replace(/\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+\b/g, "[Email Redacted]");
+
+  // 3. Phone numbers (10 digits) -> +91 ******1234
+  result = result.replace(/\b(?:\+91[\s-]?)?[6-9]\d{9}\b/g, (match) => {
+    const digitsOnly = match.replace(/\D/g, "");
+    const last4 = digitsOnly.slice(-4);
+    return `+91 ******${last4}`;
+  });
+
+  return result;
+}
+
 module.exports = {
   maskPhoneNumber,
   maskEmail,
   sanitizeCitizenProfile,
   stripExifMetadata,
+  scrubPii,
 };

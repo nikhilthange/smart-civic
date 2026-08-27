@@ -16,9 +16,47 @@ const slaService = require("../services/slaService");
 const socketService = require("../services/socketService");
 const resolutionInspectorService = require("../services/resolutionInspectorService");
 const Inventory = require("../models/Inventory");
+const { invalidateCache } = require("../middlewares/cacheMiddleware");
+const { scrubPii } = require("../utils/piiScrubber");
+
+// ─── Broad Pattern Cache Invalidation Helper ─────────────────────────────────
+const purgeComplaintCaches = (id, complaintId) => {
+  const patterns = [
+    "complaint:",
+    "complaints:",
+    "sitrep:",
+    "/api/complaints",
+    "/api/sitrep",
+  ];
+  if (id) {
+    patterns.push(`complaint:${id}`);
+    patterns.push(String(id));
+  }
+  if (complaintId) {
+    patterns.push(`complaint:${complaintId}`);
+    patterns.push(String(complaintId));
+  }
+  invalidateCache(patterns);
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const STATUS_ORDER = ["pending", "submitted", "ai_verified", "ward_assigned", "officer_assigned", "worker_assigned", "assigned", "in_progress", "resolution_submitted", "resolved", "closed", "reopened", "rejected"];
+
+const VALID_TRANSITIONS = {
+  submitted: ["ai_verified", "ward_assigned", "officer_assigned", "worker_assigned", "assigned", "rejected"],
+  pending: ["submitted", "ai_verified", "ward_assigned", "officer_assigned", "worker_assigned", "assigned", "rejected"],
+  ai_verified: ["ward_assigned", "officer_assigned", "worker_assigned", "assigned", "in_progress", "rejected"],
+  ward_assigned: ["officer_assigned", "worker_assigned", "assigned", "in_progress", "rejected"],
+  officer_assigned: ["worker_assigned", "assigned", "in_progress", "rejected"],
+  assigned: ["worker_assigned", "in_progress", "rejected"],
+  worker_assigned: ["in_progress", "resolution_submitted", "rejected"],
+  in_progress: ["resolution_submitted", "resolved", "rejected"],
+  resolution_submitted: ["resolved", "in_progress", "rejected"],
+  resolved: ["closed", "reopened"],
+  closed: ["reopened"],
+  reopened: ["worker_assigned", "in_progress", "officer_assigned", "rejected"],
+  rejected: ["reopened"],
+};
 
 const DEFAULT_DEPTS = {
   PWD: "Public Works Department (Roads & Infrastructure)",
@@ -128,10 +166,13 @@ const createComplaint = async (req, res) => {
       return res.status(400).json({ success: false, message: "Title, description, category and location are required." });
     }
 
+    const sanitizedTitle = scrubPii(String(title).trim());
+    const sanitizedDescription = scrubPii(String(description).trim());
+
     const attachments = normaliseAttachments(req.files);
 
     // Call Integrated Computer Vision & AI Analysis Service
-    const aiAnalysis = await aiService.analyzeComplaintAI(description, attachments);
+    const aiAnalysis = await aiService.analyzeComplaintAI(sanitizedDescription, attachments);
 
     const AI_CATEGORY_MAP = {
       "Pothole": "roads_and_infrastructure",
@@ -156,6 +197,11 @@ const createComplaint = async (req, res) => {
     // Parse GeoJSON coordinates: prioritize client payload or auto-extracted photo EXIF GPS
     let parsedLat = Number(lat !== undefined ? lat : latitude);
     let parsedLng = Number(lng !== undefined ? lng : longitude);
+
+    if (parsedLat < -90 || parsedLat > 90 || parsedLng < -180 || parsedLng > 180) {
+      parsedLat = NaN;
+      parsedLng = NaN;
+    }
 
     if ((isNaN(parsedLat) || isNaN(parsedLng) || (parsedLat === 0 && parsedLng === 0)) && req.exifLocation) {
       parsedLat = req.exifLocation.latitude;
@@ -197,54 +243,52 @@ const createComplaint = async (req, res) => {
       const existingComplaint = await Complaint.findOne(duplicateQuery);
 
       if (existingComplaint) {
-        // ─── 2. Deduplication Logic: Link new photo & Increment upvoteCount ───
-        const userIdStr = (req.user.id || req.user._id)?.toString();
+        // ─── 2. Deduplication Logic: Link new photo & Increment upvoteCount atomically ───
+        const citizenId = req.user.id || req.user._id;
 
-        if (!existingComplaint.reportedByCitizens) {
-          existingComplaint.reportedByCitizens = [];
+        const updateOps = {
+          $addToSet: {
+            reportedByCitizens: citizenId,
+            upvoters: citizenId,
+          },
+          $inc: {
+            upvoteCount: 1,
+            upvotes: 1,
+            affectedCitizensCount: 1,
+            priorityScore: 5,
+          },
+        };
+
+        if (attachments && attachments.length > 0) {
+          updateOps.$push = {
+            attachments: {
+              $each: attachments,
+              $slice: -10,
+            },
+          };
         }
 
-        const alreadyReported = existingComplaint.reportedByCitizens.some(
-          (id) => id.toString() === userIdStr
+        const updatedComplaint = await Complaint.findByIdAndUpdate(
+          existingComplaint._id,
+          updateOps,
+          { returnDocument: "after" }
         );
 
-        if (!alreadyReported) {
-          existingComplaint.reportedByCitizens.push(req.user.id || req.user._id);
+        // Auto-escalate priority if threshold reached
+        if (updatedComplaint.priorityScore >= 35 && updatedComplaint.priority !== "critical") {
+          await Complaint.findByIdAndUpdate(existingComplaint._id, { $set: { priority: "critical" } });
+          updatedComplaint.priority = "critical";
+        } else if (updatedComplaint.priorityScore >= 20 && updatedComplaint.priority === "low") {
+          await Complaint.findByIdAndUpdate(existingComplaint._id, { $set: { priority: "high" } });
+          updatedComplaint.priority = "high";
         }
-
-        // Increment upvoteCount and upvotes fields
-        existingComplaint.upvoteCount = (existingComplaint.upvoteCount || existingComplaint.upvotes || 1) + 1;
-        existingComplaint.upvotes = (existingComplaint.upvotes || 1) + 1;
-
-        // Link new photos/attachments to the original complaint
-        if (attachments && attachments.length > 0) {
-          if (!existingComplaint.attachments) {
-            existingComplaint.attachments = [];
-          }
-          existingComplaint.attachments = [
-            ...existingComplaint.attachments,
-            ...attachments
-          ].slice(0, 10); // cap total attachments at 10
-        }
-
-        existingComplaint.affectedCitizensCount = (existingComplaint.affectedCitizensCount || 1) + 1;
-        existingComplaint.priorityScore = (existingComplaint.priorityScore || 10) + 5;
-
-        // Escalate priority based on boosted priority score
-        if (existingComplaint.priorityScore >= 35) {
-          existingComplaint.priority = "critical";
-        } else if (existingComplaint.priorityScore >= 20) {
-          existingComplaint.priority = "high";
-        }
-
-        await existingComplaint.save();
 
         return res.status(200).json({
           success: true,
           isDuplicate: true,
-          ticketId: existingComplaint.complaintId || existingComplaint._id,
-          existingTicketId: existingComplaint.complaintId || existingComplaint._id,
-          complaint: existingComplaint,
+          ticketId: updatedComplaint.complaintId || updatedComplaint._id,
+          existingTicketId: updatedComplaint.complaintId || updatedComplaint._id,
+          complaint: updatedComplaint,
           message: "Duplicate complaint detected within 50m radius. Linked new photo and incremented upvoteCount on original ticket."
         });
       }
@@ -371,8 +415,8 @@ const createComplaint = async (req, res) => {
     }
 
     const complaint = await Complaint.create({
-      title,
-      description,
+      title: sanitizedTitle,
+      description: sanitizedDescription,
       category: targetCategory,
       priority: effectivePriority,
       corporationId: userCorp,
@@ -481,6 +525,8 @@ const createComplaint = async (req, res) => {
     } catch (wsErr) {
       console.warn("WebSocket broadcast error:", wsErr.message);
     }
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
 
     return res.status(201).json({ success: true, isDuplicate: false, complaint });
   } catch (error) {
@@ -642,16 +688,20 @@ const getComplaint = async (req, res) => {
     const primaryQuery = isMongoId ? { _id: id } : { complaintId: id };
 
     let complaint = await Complaint.findOne(primaryQuery)
-      .populate("citizen", "name email avatar phoneNumber")
-      .populate("assignedWorker", "name email phoneNumber")
+      .select("-__v")
+      .populate("citizen", "name phone email avatar")
+      .populate("assignedWorker", "name phone")
+      .populate("assignedOfficer", "name email")
       .populate("department", "name code contactEmail contactPhone")
       .lean();
 
     // Fallback lookup if mongoId query failed
     if (!complaint && isMongoId) {
       complaint = await Complaint.findOne({ complaintId: id })
-        .populate("citizen", "name email avatar phoneNumber")
-        .populate("assignedWorker", "name email phoneNumber")
+        .select("-__v")
+        .populate("citizen", "name phone email avatar")
+        .populate("assignedWorker", "name phone")
+        .populate("assignedOfficer", "name email")
         .populate("department", "name code contactEmail contactPhone")
         .lean();
     }
@@ -698,7 +748,17 @@ const updateComplaintStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: "Complaint not found." });
     }
 
-    const oldStatus = complaint.status;
+    const oldStatus = complaint.status || "submitted";
+    const allowedTargets = VALID_TRANSITIONS[oldStatus] || STATUS_ORDER;
+
+    // Enforce strict state machine transitions for non-admin users
+    if (req.user?.role !== "admin" && oldStatus !== status && !allowedTargets.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status transition from '${oldStatus}' to '${status}'.`,
+      });
+    }
+
     complaint.status = status;
     complaint.statusHistory.push({ status, changedBy: req.user.id, note: note || "" });
 
@@ -726,6 +786,8 @@ const updateComplaintStatus = async (req, res) => {
         await notificationService.statusUpdated(complaint.citizen, complaint, status);
       }
     }
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
 
     res.status(200).json({ success: true, complaint, previousStatus: oldStatus });
   } catch (error) {
@@ -777,6 +839,7 @@ const deleteComplaint = async (req, res) => {
     }
 
     await complaint.deleteOne();
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
     res.status(200).json({ success: true, message: "Complaint deleted successfully." });
   } catch (error) {
     console.error("DeleteComplaint Error:", error.message);
@@ -918,9 +981,9 @@ const assignOfficer = async (req, res) => {
     complaint.assignedAt = new Date();
     await complaint.save();
 
-    // Update officer stats
-    officer.activeComplaintsCount += 1;
-    await officer.save();
+    // Update officer stats atomically
+    const Officer = require("../models/Officer");
+    await Officer.findByIdAndUpdate(officer._id, { $inc: { activeComplaintsCount: 1 } });
 
     // Notify citizen via in-app + email + FCM
     const officerUser = await require("../models/User").findById(officer.user).select("name").lean();
@@ -932,6 +995,8 @@ const assignOfficer = async (req, res) => {
     } catch (wsErr) {
       console.warn("WebSocket broadcast error:", wsErr.message);
     }
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
 
     res.status(200).json({ success: true, message: "Officer assigned successfully", complaint });
   } catch (error) {
@@ -993,6 +1058,19 @@ const resolveComplaint = async (req, res) => {
     });
 
     await complaint.save();
+    
+    // Atomically decrement worker active complaints count
+    if (complaint.assignedWorker) {
+      try {
+        const Worker = require("../models/Worker");
+        await Worker.findOneAndUpdate(
+          { _id: complaint.assignedWorker, activeComplaintsCount: { $gt: 0 } },
+          { $inc: { activeComplaintsCount: -1 } }
+        );
+      } catch (wErr) {
+        console.warn("Worker task decrement warning:", wErr.message);
+      }
+    }
 
     // Trigger Notification to Citizen
     if (notificationService.complaintResolved) {
@@ -1005,6 +1083,8 @@ const resolveComplaint = async (req, res) => {
     } catch (wsErr) {
       console.warn("WebSocket broadcast error:", wsErr.message);
     }
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
 
     return res.status(200).json({
       success: true,
@@ -1082,10 +1162,24 @@ const reopenComplaint = async (req, res) => {
 
     await complaint.save();
 
+    // Atomically increment worker active complaints count on reopen
+    if (complaint.assignedWorker) {
+      try {
+        const Worker = require("../models/Worker");
+        await Worker.findByIdAndUpdate(complaint.assignedWorker, {
+          $inc: { activeComplaintsCount: 1 }
+        });
+      } catch (wErr) {
+        console.warn("Worker task increment warning:", wErr.message);
+      }
+    }
+
     // Trigger Notification
     if (notificationService.statusUpdated) {
       await notificationService.statusUpdated(complaint.citizen, complaint, "reopened (escalated)");
     }
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
 
     return res.status(200).json({
       success: true,
@@ -1101,6 +1195,9 @@ const reopenComplaint = async (req, res) => {
 // ─── @desc    Assign field worker to complaint
 // ─── @route   PUT /api/complaints/:id/assign-worker
 // ─── @access  Private (officer, admin)
+// ─── @desc    Assign field worker to complaint
+// ─── @route   PUT /api/complaints/:id/assign-worker
+// ─── @access  Private (officer, admin)
 const assignWorker = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1110,12 +1207,17 @@ const assignWorker = async (req, res) => {
       return res.status(400).json({ success: false, message: "Worker ID is required." });
     }
 
-    const Worker = require("../models/Worker");
-    const workerDoc = await Worker.findById(workerId).populate("user");
-    if (workerDoc) {
-      workerDoc.activeComplaintsCount = (workerDoc.activeComplaintsCount || 0) + 1;
-      await workerDoc.save();
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
     }
+
+    const Worker = require("../models/Worker");
+    const workerDoc = await Worker.findByIdAndUpdate(
+      workerId,
+      { $inc: { activeComplaintsCount: 1 } },
+      { returnDocument: "after" }
+    ).populate("user");
 
     complaint.assignedWorker = workerId;
     complaint.status = "worker_assigned";
@@ -1137,10 +1239,150 @@ const assignWorker = async (req, res) => {
       console.error("Worker dispatch notification error:", notifErr.message);
     }
 
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
     return res.status(200).json({ success: true, message: "Worker assigned successfully!", complaint });
   } catch (error) {
     console.error("AssignWorker Error:", error.message);
     res.status(500).json({ success: false, message: "Server error assigning worker." });
+  }
+};
+
+// ─── @desc    Citizen rates resolution & closes ticket or requests rework
+// ─── @route   POST /api/complaints/:id/rate
+// ─── @access  Private (citizen)
+const rateResolution = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, feedback, comment, isSatisfied } = req.body;
+
+    const ratingNum = Math.min(5, Math.max(1, parseInt(rating || "5", 10)));
+    const feedbackText = feedback || comment || (isSatisfied !== undefined ? (isSatisfied ? "Satisfied with resolution." : "Unsatisfied with resolution.") : "Citizen confirmed resolution.");
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    const userId = (req.user?._id || req.user?.id || "").toString();
+    const isOwner =
+      (complaint.citizen && (complaint.citizen.toString() === userId || complaint.citizen._id?.toString() === userId)) ||
+      (complaint.citizenId && complaint.citizenId.toString() === userId) ||
+      (complaint.createdBy && complaint.createdBy.toString() === userId);
+    const isAdmin = ["admin", "superadmin"].includes(req.user?.role);
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the original complainant can submit satisfaction feedback",
+      });
+    }
+
+    const wasAlreadySubmitted = Boolean(complaint.feedbackSubmitted);
+    const satisfied = isSatisfied !== undefined ? Boolean(isSatisfied) : ratingNum >= 3;
+
+    if (satisfied) {
+      complaint.status = "closed";
+      complaint.closedAt = new Date();
+    } else {
+      complaint.status = "reopened";
+      complaint.priority = "critical";
+      complaint.slaStatus = "escalated";
+      complaint.reopenCount = (complaint.reopenCount || 0) + 1;
+    }
+
+    complaint.rating = ratingNum;
+    complaint.citizenFeedback = String(feedbackText).trim();
+    complaint.feedbackSubmitted = true;
+
+    complaint.statusHistory.push({
+      status: complaint.status,
+      changedBy: req.user.id,
+      note: satisfied
+        ? `Citizen confirmed resolution and rated ${ratingNum} ⭐. Feedback: ${complaint.citizenFeedback}`
+        : `Citizen expressed dissatisfaction (${ratingNum} ⭐). Ticket automatically REOPENED. Feedback: ${complaint.citizenFeedback}`,
+    });
+
+    await complaint.save();
+
+    // Adjust worker workload based on closure or reopen
+    if (complaint.assignedWorker) {
+      try {
+        const Worker = require("../models/Worker");
+        if (satisfied) {
+          await Worker.findOneAndUpdate(
+            { _id: complaint.assignedWorker, activeComplaintsCount: { $gt: 0 } },
+            { $inc: { activeComplaintsCount: -1 } }
+          );
+        } else {
+          await Worker.findByIdAndUpdate(complaint.assignedWorker, {
+            $inc: { activeComplaintsCount: 1 }
+          });
+        }
+      } catch (wErr) {
+        console.warn("Worker task adjustment warning on rating:", wErr.message);
+      }
+    }
+
+    // Award +20 Civic Karma points once per complaint when satisfied
+    if (!wasAlreadySubmitted && satisfied) {
+      try {
+        const user = await User.findById(req.user.id);
+        if (user) {
+          user.karmaPoints = (user.karmaPoints || 0) + 20;
+          await user.save();
+          await checkAndAwardBadges(user._id);
+        }
+      } catch (kErr) {
+        console.warn("Karma rating award note:", kErr.message);
+      }
+    }
+
+    // Flush cache partitions
+    invalidateCache([
+      "complaint:" + req.params.id,
+      "complaints:",
+      "sitrep:",
+      "/api/sitrep",
+      "/api/complaints",
+      String(complaint._id),
+      String(complaint.complaintId),
+    ]);
+
+    // Emit Real-Time Socket.IO events
+    try {
+      const io = socketService.getIO ? socketService.getIO() : null;
+      if (io) {
+        io.to("complaint_" + complaint._id).emit("COMPLAINT_UPDATED", complaint);
+        io.to("complaint:" + complaint._id).emit("COMPLAINT_UPDATED", complaint);
+        io.emit("SITREP_UPDATE", {
+          type: satisfied ? "COMPLAINT_CLOSED" : "COMPLAINT_REOPENED",
+          complaintId: complaint.complaintId || complaint._id,
+          status: complaint.status,
+          rating: complaint.rating,
+          timestamp: new Date(),
+        });
+      }
+    } catch (wsErr) {
+      console.warn("Socket broadcast note:", wsErr.message);
+    }
+
+    try {
+      socketService.broadcastComplaintUpdated(complaint);
+    } catch {}
+
+    const responseMsg = satisfied
+      ? `Thank you for your rating (${ratingNum} ⭐)! ${wasAlreadySubmitted ? "" : "+20 Civic Karma points awarded."}`.trim()
+      : `Feedback recorded. Issue reopened and escalated to Critical priority for urgent field rework.`;
+
+    return res.status(200).json({
+      success: true,
+      message: responseMsg,
+      complaint,
+    });
+  } catch (error) {
+    console.error("RateResolution Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error rating resolution." });
   }
 };
 
@@ -1207,23 +1449,44 @@ const workerSubmitProof = async (req, res) => {
     }
 
     // ─── Geo-Fenced Resolution Proof (Anti-Fraud Check) ──────────────────────────
-    const workerLat = parseFloat(req.body.workerLat || req.headers["x-worker-lat"]);
-    const workerLng = parseFloat(req.body.workerLng || req.headers["x-worker-lng"]);
+    const rawWorkerLat = req.body.workerLat !== undefined ? req.body.workerLat : (req.body.latitude !== undefined ? req.body.latitude : req.headers["x-worker-lat"]);
+    const rawWorkerLng = req.body.workerLng !== undefined ? req.body.workerLng : (req.body.longitude !== undefined ? req.body.longitude : req.headers["x-worker-lng"]);
     let geofenceNote = "";
 
     const targetCoords = complaint.location?.coordinates?.coordinates;
-    if (targetCoords && targetCoords.length === 2 && !isNaN(workerLat) && !isNaN(workerLng)) {
-      const targetLng = targetCoords[0];
-      const targetLat = targetCoords[1];
-      const distanceMeters = calculateHaversineDistanceMeters(targetLat, targetLng, workerLat, workerLng);
+    const hasTargetCoords = Array.isArray(targetCoords) && targetCoords.length === 2;
 
-      if (distanceMeters > 100) {
+    if (rawWorkerLat !== undefined || rawWorkerLng !== undefined) {
+      const workerLat = parseFloat(rawWorkerLat);
+      const workerLng = parseFloat(rawWorkerLng);
+
+      if (
+        !Number.isFinite(workerLat) ||
+        !Number.isFinite(workerLng) ||
+        workerLat < -90 ||
+        workerLat > 90 ||
+        workerLng < -180 ||
+        workerLng > 180
+      ) {
         return res.status(400).json({
           success: false,
-          message: `Geo-fence validation failed: You must be on-site within 100m of the reported defect location to submit resolution proof (Current distance: ${Math.round(distanceMeters)}m).`,
+          message: "Valid numeric resolution coordinates are required for geofenced verification",
         });
       }
-      geofenceNote = ` (Verified on-site: ${Math.round(distanceMeters)}m from target location)`;
+
+      if (hasTargetCoords) {
+        const targetLng = targetCoords[0];
+        const targetLat = targetCoords[1];
+        const distanceMeters = calculateHaversineDistanceMeters(targetLat, targetLng, workerLat, workerLng);
+
+        if (distanceMeters > 100) {
+          return res.status(400).json({
+            success: false,
+            message: `Geo-fence validation failed: You must be on-site within 100m of the reported defect location to submit resolution proof (Current distance: ${Math.round(distanceMeters)}m).`,
+          });
+        }
+        geofenceNote = ` (Verified on-site: ${Math.round(distanceMeters)}m from target location)`;
+      }
     }
 
     // ─── Automated AI Resolution Quality Inspector ──────────────────────────────
@@ -1330,6 +1593,8 @@ const workerSubmitProof = async (req, res) => {
       console.error("Notification Error:", notifErr);
     }
 
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
     return res.status(200).json({ success: true, message: "Resolution proof submitted successfully!", complaint });
   } catch (error) {
     console.error("WorkerSubmitProof Error:", error.message);
@@ -1368,6 +1633,8 @@ const workerStartWork = async (req, res) => {
     } catch (notifErr) {
       console.error("Notification Error:", notifErr);
     }
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
 
     return res.status(200).json({ success: true, message: "Work started!", complaint });
   } catch (error) {
@@ -1415,6 +1682,8 @@ const rejectResolution = async (req, res) => {
     } catch (notifErr) {
       console.error("Notification Error:", notifErr);
     }
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
 
     return res.status(200).json({ success: true, message: "Resolution rejected, sent back to worker.", complaint });
   } catch (error) {
@@ -1511,6 +1780,8 @@ const reassignWorker = async (req, res) => {
       console.error("Notification Error:", notifErr);
     }
 
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
     return res.status(200).json({ success: true, message: "Worker reassigned successfully!", complaint });
   } catch (error) {
     console.error("ReassignWorker Error:", error.message);
@@ -1531,6 +1802,7 @@ const bulkReassignComplaints = async (req, res) => {
       { _id: { $in: complaintIds } },
       { $set: { ward: targetWard, updatedAt: new Date() } }
     );
+    purgeComplaintCaches();
     return res.status(200).json({
       success: true,
       message: `Bulk reassigned ${result.modifiedCount || complaintIds.length} complaints to ${targetWard}`,
@@ -1555,6 +1827,7 @@ const bulkEscalateComplaints = async (req, res) => {
       { _id: { $in: complaintIds } },
       { $set: { priority: "critical", escalationReason: escalationReason || "Officer Bulk Escalation", updatedAt: new Date() } }
     );
+    purgeComplaintCaches();
     return res.status(200).json({
       success: true,
       message: `Bulk escalated ${result.modifiedCount || complaintIds.length} complaints to Critical SLA`,
@@ -1585,6 +1858,198 @@ const getWardSlaChoropleth = async (req, res) => {
   }
 };
 
+// ─── @desc    Add comment to complaint
+// ─── @route   POST /api/complaints/:id/comments
+// ─── @access  Private
+const addComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { text, comment, isInternal } = req.body;
+    const commentText = text || comment;
+
+    if (!commentText || !commentText.trim()) {
+      return res.status(400).json({ success: false, message: "Comment text is required." });
+    }
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    const newComment = {
+      user: req.user?._id || req.user?.id,
+      text: commentText.trim(),
+      isInternal: Boolean(isInternal),
+      createdAt: new Date(),
+    };
+
+    if (!complaint.comments) {
+      complaint.comments = [];
+    }
+    complaint.comments.push(newComment);
+    complaint.statusHistory.push({
+      status: complaint.status,
+      changedBy: req.user.id,
+      note: `Comment added: ${commentText.trim().substring(0, 80)}`,
+    });
+
+    await complaint.save();
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
+    return res.status(200).json({ success: true, message: "Comment added successfully", complaint });
+  } catch (error) {
+    console.error("AddComment Error:", error);
+    return res.status(500).json({ success: false, message: "Server error adding comment." });
+  }
+};
+
+// ─── @desc    Update complaint priority
+// ─── @route   PATCH /api/complaints/:id/priority
+// ─── @access  Private (officer, admin)
+const updatePriority = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { priority, reason } = req.body;
+
+    if (!["low", "medium", "high", "critical"].includes(priority)) {
+      return res.status(400).json({ success: false, message: "Invalid priority value." });
+    }
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    const oldPriority = complaint.priority;
+    complaint.priority = priority;
+    complaint.statusHistory.push({
+      status: complaint.status,
+      changedBy: req.user.id,
+      note: `Priority changed from ${oldPriority} to ${priority}. Reason: ${reason || "Officer update"}`,
+    });
+
+    await complaint.save();
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
+    return res.status(200).json({ success: true, message: "Priority updated successfully", complaint });
+  } catch (error) {
+    console.error("UpdatePriority Error:", error);
+    return res.status(500).json({ success: false, message: "Server error updating priority." });
+  }
+};
+
+// ─── @desc    Reassign ward jurisdiction
+// ─── @route   PATCH /api/complaints/:id/ward
+// ─── @access  Private (officer, admin)
+const reassignWard = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { ward, wardName, wardCode, zone, reason } = req.body;
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    if (wardName) complaint.wardName = wardName;
+    if (wardCode) complaint.wardCode = wardCode;
+    if (ward) complaint.ward = ward;
+    if (zone) complaint.zone = zone;
+
+    complaint.statusHistory.push({
+      status: complaint.status,
+      changedBy: req.user.id,
+      note: `Ward reassigned to ${wardName || ward || "New Ward"}. Reason: ${reason || "Jurisdiction correction"}`,
+    });
+
+    await complaint.save();
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
+    return res.status(200).json({ success: true, message: "Ward reassigned successfully", complaint });
+  } catch (error) {
+    console.error("ReassignWard Error:", error);
+    return res.status(500).json({ success: false, message: "Server error reassigning ward." });
+  }
+};
+
+// ─── @desc    Escalate complaint SLA tier
+// ─── @route   POST /api/complaints/:id/escalate
+// ─── @access  Private (officer, admin)
+const escalateSla = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { escalationReason, tier } = req.body;
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    complaint.slaStatus = "escalated";
+    complaint.escalationTier = Number(tier) || Math.min(3, (complaint.escalationTier || 1) + 1);
+    complaint.escalatedAt = new Date();
+    complaint.priority = "critical";
+    complaint.statusHistory.push({
+      status: complaint.status,
+      changedBy: req.user.id,
+      note: `SLA Escalated to Tier ${complaint.escalationTier}. Reason: ${escalationReason || "SLA Deadline Critical Breach"}`,
+    });
+
+    await complaint.save();
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
+    return res.status(200).json({ success: true, message: "Complaint SLA escalated successfully", complaint });
+  } catch (error) {
+    console.error("EscalateSla Error:", error);
+    return res.status(500).json({ success: false, message: "Server error escalating SLA." });
+  }
+};
+
+// ─── @desc    Update AI triage metadata
+// ─── @route   PATCH /api/complaints/:id/ai-triage
+// ─── @access  Private (officer, admin)
+const updateAiTriage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { verified, category, confidence, severity, explanation, department } = req.body;
+
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    if (!complaint.aiAnalysis) {
+      complaint.aiAnalysis = {};
+    }
+
+    if (typeof verified === "boolean") complaint.aiAnalysis.verified = verified;
+    if (category) complaint.aiAnalysis.category = category;
+    if (typeof confidence === "number") complaint.aiAnalysis.confidence = confidence;
+    if (severity) complaint.aiAnalysis.severity = severity;
+    if (explanation) complaint.aiAnalysis.explanation = explanation;
+    if (department) complaint.aiAnalysis.department = department;
+
+    complaint.statusHistory.push({
+      status: complaint.status,
+      changedBy: req.user.id,
+      note: `AI Triage updated by officer: ${severity || "medium"} severity, verified: ${verified !== undefined ? verified : true}.`,
+    });
+
+    await complaint.save();
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
+    return res.status(200).json({ success: true, message: "AI triage updated successfully", complaint });
+  } catch (error) {
+    console.error("UpdateAiTriage Error:", error);
+    return res.status(500).json({ success: false, message: "Server error updating AI triage." });
+  }
+};
+
 module.exports = {
   createComplaint,
   getComplaints,
@@ -1605,4 +2070,10 @@ module.exports = {
   bulkReassignComplaints,
   bulkEscalateComplaints,
   getWardSlaChoropleth,
+  addComment,
+  updatePriority,
+  reassignWard,
+  escalateSla,
+  updateAiTriage,
+  rateResolution,
 };

@@ -2,10 +2,8 @@
 
 const asyncHandler = require("express-async-handler");
 const MangroveZone = require("../models/MangroveZone");
-const {
-  DEFAULT_COASTAL_ZONES,
-  processCoastalScanTelemetry,
-} = require("../services/coastalSentinelService");
+const { processCoastalScanTelemetry } = require("../services/coastalSentinelService");
+const { invalidateCache } = require("../middlewares/cacheMiddleware");
 
 /**
  * @route   GET /api/coastal/zones
@@ -15,17 +13,80 @@ const {
 exports.getMangroveZones = asyncHandler(async (req, res) => {
   const { ward } = req.query;
   const filter = ward && ward !== "all" ? { ward } : {};
-  let zones = await MangroveZone.find(filter).sort({ vegetationLossPercentage: -1 });
-
-  if (zones.length === 0) {
-    zones = DEFAULT_COASTAL_ZONES.filter((z) => !ward || ward === "all" || z.ward === ward);
-  }
+  const zones = await MangroveZone.find(filter).sort({ vegetationLossPercentage: -1 }).lean();
 
   res.status(200).json({
     success: true,
     count: zones.length,
     zones,
   });
+});
+
+/**
+ * @route   POST /api/coastal/zones
+ * @desc    Register a new CRZ-I Mangrove Zone in MongoDB
+ * @access  Protected (Admin, Officer)
+ */
+exports.createMangroveZone = asyncHandler(async (req, res) => {
+  const {
+    zoneId = `CRZ-${Date.now().toString().slice(-5)}`,
+    zoneName,
+    ward,
+    crzClassification = "CRZ_I_ECOLOGICALLY_SENSITIVE",
+    totalAreaHectares = 45,
+    baselineNdvi = 0.78,
+    currentNdvi = 0.72,
+    debrisDumpingDetected = false,
+    coordinates,
+  } = req.body;
+
+  if (!zoneName || typeof zoneName !== "string" || !zoneName.trim()) {
+    return res.status(400).json({ success: false, message: "Valid zoneName string is required" });
+  }
+
+  if (!ward || typeof ward !== "string" || !ward.trim()) {
+    return res.status(400).json({ success: false, message: "Valid ward string is required" });
+  }
+
+  if (coordinates && (!Array.isArray(coordinates) || coordinates.length !== 2 || typeof coordinates[0] !== "number" || typeof coordinates[1] !== "number")) {
+    return res.status(400).json({ success: false, message: "Coordinates must be an array of two numbers [lng, lat]" });
+  }
+
+  try {
+    const coords = Array.isArray(coordinates) && coordinates.length === 2 ? coordinates : [72.8250, 19.1450];
+    const bNdvi = Number(baselineNdvi) || 0.78;
+    const cNdvi = Number(currentNdvi) || 0.72;
+    const lossPct = parseFloat((((bNdvi - cNdvi) / bNdvi) * 100).toFixed(1));
+    const status = lossPct >= 25 ? "IMMEDIATE_INJUNCTION_ACTIVE" : lossPct >= 10 ? "ELEVATED_SURVEILLANCE" : "HEALTHY_PROTECTED";
+
+    const zone = await MangroveZone.create({
+      zoneId: String(zoneId).trim(),
+      zoneName: zoneName.trim(),
+      ward: ward.trim(),
+      crzClassification,
+      totalAreaHectares: Math.max(1, Number(totalAreaHectares) || 10),
+      baselineNdvi: bNdvi,
+      currentNdvi: cNdvi,
+      vegetationLossPercentage: Math.max(0, lossPct),
+      debrisDumpingDetected: Boolean(debrisDumpingDetected),
+      status,
+      lastSatelliteScanAt: new Date(),
+      location: {
+        type: "Point",
+        coordinates: coords,
+      },
+    });
+
+    invalidateCache(["coastal:", "sitrep:", "/api/sitrep"]);
+
+    return res.status(201).json({
+      success: true,
+      message: `Mangrove Zone "${zone.zoneName}" registered successfully`,
+      zone,
+    });
+  } catch (err) {
+    return res.status(400).json({ success: false, message: err.message || "Failed to create mangrove zone" });
+  }
 });
 
 /**
@@ -61,7 +122,7 @@ exports.ingestCoastalScan = asyncHandler(async (req, res) => {
  */
 exports.issueMangroveInjunction = asyncHandler(async (req, res) => {
   const { zoneId = "CRZ-KW-01" } = req.body;
-  const zone = DEFAULT_COASTAL_ZONES.find((z) => z.zoneId === zoneId) || DEFAULT_COASTAL_ZONES[0];
+  const zone = await MangroveZone.findOne({ zoneId }).lean() || { zoneName: "Versova Creek Belt", ward: "Ward K-West" };
 
   res.status(200).json({
     success: true,

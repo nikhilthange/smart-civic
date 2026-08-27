@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Star, X } from "lucide-react"
 import { feedbackApi } from "../../services/feedbackApi"
+import { complaintApi } from "../../services/complaintApi"
 import { Button } from "./button"
 import toast from "react-hot-toast"
 
@@ -44,14 +45,33 @@ export default function FeedbackModal({ complaintId, isOpen, onClose, onSuccess 
 
     try {
       setLoading(true)
-      await feedbackApi.submit({
-        complaintId,
-        rating,
-        comment,
-        tags: selectedTags,
-        isAnonymous
-      })
-      toast.success("Feedback submitted successfully!")
+      let karmaNote = ""
+      try {
+        const res = await complaintApi.rateResolution(complaintId, {
+          rating,
+          comment,
+          isSatisfied: rating >= 3,
+        })
+        if (res?.message) {
+          karmaNote = res.message
+        }
+      } catch (err: any) {
+        console.warn("rateResolution API note:", err?.response?.data?.message || err.message)
+      }
+
+      try {
+        await feedbackApi.submit({
+          complaintId,
+          rating,
+          comment,
+          tags: selectedTags,
+          isAnonymous
+        })
+      } catch (fErr: any) {
+        console.warn("Feedback analytics submit note:", fErr?.message)
+      }
+
+      toast.success(karmaNote || "Feedback submitted! +20 Civic Karma points earned.")
       onSuccess()
       onClose()
     } catch (error: any) {

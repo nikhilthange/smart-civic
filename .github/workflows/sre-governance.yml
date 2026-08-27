@@ -56,10 +56,11 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
-      - name: Execute Master Verification Pipeline (17-Stage Suite)
+      - name: Execute Master Verification Pipeline (19-Stage Suite)
         env:
           NODE_ENV: test
           MONGO_URI: mongodb://localhost:27017/smart-civic-sre
+          MONGODB_URI: mongodb://localhost:27017/smart-civic-sre
           JWT_SECRET: ci_production_grade_jwt_secret_2026
           REDIS_URL: redis://localhost:6379
           META_APP_SECRET: bmc_smart_civic_meta_app_secret_2026
@@ -82,6 +83,7 @@ jobs:
           node server/scripts/test_complete_system_health.js
           node server/scripts/test_mission_critical_hardening.js
           node server/scripts/test_disaster_recovery_restore.js
+          node server/scripts/test_opentelemetry_tracing.js
 
       - name: Compile Frontend Production Bundle (TypeScript & Vite)
         working-directory: ./frontend

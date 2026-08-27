@@ -52,6 +52,7 @@ const {
 
 // ─── Metrics & Observability ──────────────────────────────────────────────────
 const { metricsCollector, metricsEndpoint } = require("./middlewares/metricsMiddleware");
+const { tracer } = require("./tracing");
 
 // ─── Error handling ───────────────────────────────────────────────────────────
 const { globalErrorHandler, notFoundHandler } = require("./middlewares/errorHandler");
@@ -59,7 +60,8 @@ const { globalErrorHandler, notFoundHandler } = require("./middlewares/errorHand
 // ─── App ──────────────────────────────────────────────────────────────────────
 const app = express();
 
-// ─── Metrics Middleware (collects latency and route status) ───────────────────
+// ─── Distributed Tracing & Metrics Middleware ────────────────────────────────
+app.use(tracer.middleware());
 app.use(metricsCollector);
 
 // ─── Trust proxy (needed when behind Nginx / Heroku / Railway etc.) ──────────

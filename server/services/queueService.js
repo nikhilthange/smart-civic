@@ -116,11 +116,15 @@ class AsyncJobQueue extends EventEmitter {
       this.pruneStaleJobs();
     }
 
+    const tracer = require("../tracing").tracer;
+    const traceContext = options.traceContext || (options.req && options.req.traceContext) || tracer.extractContext(options.headers || {});
+
     const jobId = `job_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
     const job = {
       id: jobId,
       type: jobType,
       payload,
+      traceContext,
       status: "QUEUED",
       attempts: 0,
       maxRetries: options.maxRetries || 3,
@@ -139,6 +143,7 @@ class AsyncJobQueue extends EventEmitter {
 
     return {
       jobId,
+      traceparent: traceContext.traceparent,
       status: "QUEUED",
       estimatedProcessingTimeMs: 45,
     };
@@ -168,6 +173,17 @@ class AsyncJobQueue extends EventEmitter {
     job.attempts++;
     job.updatedAt = new Date();
 
+    const tracer = require("../tracing").tracer;
+    const workerSpan = tracer.startSpan(`WORKER ${job.type}`, {
+      parentContext: job.traceContext,
+      kind: "CONSUMER",
+      attributes: {
+        "messaging.system": "redis_queue",
+        "messaging.destination": "background_worker",
+        "messaging.message_id": jobId,
+      },
+    });
+
     try {
       const handler = this.handlers.get(job.type);
       if (!handler) {
@@ -178,9 +194,12 @@ class AsyncJobQueue extends EventEmitter {
       job.status = "COMPLETED";
       job.result = result;
       job.updatedAt = new Date();
+      workerSpan.end({ code: "OK" });
       await this.releaseLock(jobId);
       this.emit("job_completed", { jobId, result });
     } catch (err) {
+      workerSpan.recordException(err);
+      workerSpan.end({ code: "ERROR", message: err.message });
       console.error(`[QUEUE ERROR] Job ${jobId} failed (Attempt ${job.attempts}/${job.maxRetries}):`, err.message);
       await this.releaseLock(jobId);
 

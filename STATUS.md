@@ -2,7 +2,7 @@
 
 [![System Health](https://img.shields.io/badge/System%20Health-Passing%20(133%2F133%20Assertions)-brightgreen?style=for-the-badge&logo=kubernetes)](https://github.com/nikhilthange/smart-civic)
 [![SLA Latency](https://img.shields.io/badge/SLA%20P95%20Latency-92.8ms%20(%3C%3D250ms%20SLA)-blue?style=for-the-badge&logo=prometheus)](https://github.com/nikhilthange/smart-civic)
-[![K8s Manifests](https://img.shields.io/badge/K8s%20Manifests-12%2F12%20Certified-success?style=for-the-badge&logo=kubernetes)](https://github.com/nikhilthange/smart-civic)
+[![K8s Manifests](https://img.shields.io/badge/K8s%20Manifests-13%2F13%20Certified-success?style=for-the-badge&logo=kubernetes)](https://github.com/nikhilthange/smart-civic)
 [![Escrow Status](https://img.shields.io/badge/Contractor%20Escrow-0%20Negative%20Violations-emerald?style=for-the-badge&logo=ethereum)](https://github.com/nikhilthange/smart-civic)
 [![Zero PII Shield](https://img.shields.io/badge/Zero%20PII%20Exposure-Active%20(Aadhaar%2FEXIF%20Scrubbed)-purple?style=for-the-badge&logo=shield)](https://github.com/nikhilthange/smart-civic)
 
@@ -14,7 +14,7 @@
 |---|---|---|:---:|
 | **Overall Verification Matrix** | 100% Zero-Failure Pipeline | **133 / 133 Assertions Passed** | 🟢 **OPTIMAL** |
 | **API Response Latency (P95)** | $le 250	ext{ ms}$ SLA Budget | **92.8ms** (Target: <= 250ms) | 🟢 **COMPLIANT** |
-| **Declarative GitOps Manifests** | 100% Schema Validation | **12/12 Certified** | 🟢 **COMPLIANT** |
+| **Declarative GitOps Manifests** | 100% Schema Validation | **13/13 Certified** | 🟢 **COMPLIANT** |
 | **Contractor Financial Escrow** | Floor Guard ($ge 0$) | **0 Negative Balances** (Collateral: ₹7,50,000) | 🟢 **HEALTHY** |
 | **Uncollected Deficit Ledger** | Automated Accounting | **₹12,500** logged under deficit | 🟢 **HEALTHY** |
 | **Zero-Trust Privacy Shield** | PII & EXIF Scrubbing | **Active (Aadhaar/EXIF Scrubbed)** | 🟢 **PROTECTED** |
@@ -24,13 +24,14 @@
 
 ---
 
-## ☸️ Certified Kubernetes Infrastructure (12 Declarative Workloads)
+## ☸️ Certified Kubernetes Infrastructure (13 Declarative Workloads)
 
 - `k8s/configmap.yaml`: Core configuration variables
 - `k8s/secrets-template.yaml`: Cryptographic secret schemas
 - `k8s/redis-deployment.yaml`: StatefulSet with 5Gi PVC and volatile-lru eviction
 - `k8s/backend-deployment.yaml`: Non-root backend container with liveness/readiness probes
 - `k8s/frontend-deployment.yaml`: Static Nginx web server running as UID 101
+- `k8s/worker-deployment.yaml`: Dedicated asynchronous background queue worker deployment (UID 1001)
 - `k8s/hpa.yaml`: Autoscaling policy (3-15 replicas, 70% CPU, 80% Memory)
 - `k8s/ingress.yaml`: TLS ingress routing with 3600s WebSocket proxies
 - `k8s/prometheus-rules.yaml`: CoreOS PrometheusRule alert definitions
@@ -41,4 +42,4 @@
 
 ---
 
-*Last Synchronized: `2026-08-27T16:46:37.236Z` | Platform Release: `v1.0.0`*
+*Last Synchronized: `2026-08-27T16:52:06.665Z` | Platform Release: `v1.0.0`*

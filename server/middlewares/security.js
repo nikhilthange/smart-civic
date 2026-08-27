@@ -1,8 +1,10 @@
 /**
  * ─── Security Middleware ───────────────────────────────────────────────────────
  * Central file for all production-grade security middleware.
- * Imported once in index.js; keeps the entry point clean.
+ * Includes distributed Redis-backed rate limiting, Helmet, Mongo sanitization, and HPP.
  */
+
+"use strict";
 
 const helmet        = require("helmet");
 const rateLimit     = require("express-rate-limit");
@@ -54,33 +56,62 @@ const corsOptions = {
   optionsSuccessStatus: 200, // Some legacy browsers (IE11) choke on 204
 };
 
-// ─── 3. Rate limiters ─────────────────────────────────────────────────────────
+// ─── 3. Distributed Redis Rate Limiter Store Helper ──────────────────────────
+let redisStoreInstance = null;
+try {
+  if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+    const { RedisStore } = require("rate-limit-redis");
+    const { createClient } = require("redis");
+    const redisUrl = process.env.REDIS_URL || `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || 6379}`;
+    const client = createClient({ url: redisUrl });
+    client.connect().catch((err) => console.warn("RateLimit Redis fallback notice:", err.message));
+    redisStoreInstance = new RedisStore({
+      sendCommand: (...args) => client.sendCommand(args),
+      prefix: "rl:",
+    });
+  }
+} catch {
+  // Graceful fallback to memory store
+}
+
+// ─── 4. Rate limiters with Granular Quotas ───────────────────────────────────
+// Authenticated Admins: 500 req/15min | Public Citizen Submissions: 60 req/15min (2000 in dev/test)
 const defaultLimiter = rateLimit({
   windowMs:        15 * 60 * 1000, // 15 minutes
-  max:             2000,           // 2000 requests per 15 min window
+  max: (req) => {
+    if (req.user && (req.user.role === "admin" || req.user.role === "officer")) {
+      return 500;
+    }
+    return process.env.NODE_ENV === "production" ? 60 : 2000;
+  },
   standardHeaders: true,
   legacyHeaders:   false,
+  store:           redisStoreInstance || undefined,
   message:         { success: false, message: "Too many requests. Please try again in 15 minutes." },
-  skip: (req) => process.env.NODE_ENV !== "production" || process.env.NODE_ENV === "test",
+  skip: (req) => process.env.NODE_ENV === "test",
 });
 
+// Auth / Login Routes: 10 attempts/15min (100 in dev/test)
 const authLimiter = rateLimit({
   windowMs:        15 * 60 * 1000, // 15 minutes
-  max:             100,            // 100 auth attempts per window
+  max:             process.env.NODE_ENV === "production" ? 10 : 100,
   standardHeaders: true,
   legacyHeaders:   false,
+  store:           redisStoreInstance || undefined,
   message:         { success: false, message: "Too many login attempts. Please wait 15 minutes before trying again." },
-  skip: (req) => process.env.NODE_ENV !== "production" || process.env.NODE_ENV === "test",
+  skip: (req) => process.env.NODE_ENV === "test",
 });
 
+// Upload Routes: 30 uploads/15min
 const uploadLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max:      100,             // max 100 file uploads per hour per IP
-  message:  { success: false, message: "Upload limit reached. Please try again in an hour." },
-  skip: (req) => process.env.NODE_ENV !== "production" || process.env.NODE_ENV === "test",
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max:      process.env.NODE_ENV === "production" ? 30 : 100,
+  store:    redisStoreInstance || undefined,
+  message:  { success: false, message: "Upload rate limit reached. Please try again in 15 minutes." },
+  skip: (req) => process.env.NODE_ENV === "test",
 });
 
-// ─── 4. MongoDB Operator Injection Sanitizer ──────────────────────────────────
+// ─── 5. MongoDB Operator Injection Sanitizer ──────────────────────────────────
 // Strips characters like $ and . from req.body, req.params, req.query
 const mongoSanitizer = mongoSanitize({
   replaceWith: "_",
@@ -89,21 +120,18 @@ const mongoSanitizer = mongoSanitize({
   },
 });
 
-// ─── 5. HPP — HTTP Parameter Pollution Prevention ────────────────────────────
+// ─── 6. HPP — HTTP Parameter Pollution Prevention ────────────────────────────
 // Prevents duplicate query string params (e.g. ?sort=asc&sort=malicious)
-// Whitelist fields that legitimately support multiple values
 const hppMiddleware = hpp({
   whitelist: ["status", "category", "priority"],
 });
 
-// ─── 6. Input sanitizer — strips HTML tags from string fields ─────────────────
-// A lightweight custom sanitizer; avoids the deprecated xss-clean package.
+// ─── 7. Input sanitizer — strips HTML tags from string fields ─────────────────
 const sanitizeInput = (req, res, next) => {
   const sanitize = (obj) => {
     if (!obj || typeof obj !== "object") return;
     for (const key of Object.keys(obj)) {
       if (typeof obj[key] === "string") {
-        // Remove script tags, on* attributes, and other dangerous HTML
         obj[key] = obj[key]
           .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
           .replace(/on\w+="[^"]*"/gi, "")

@@ -54,9 +54,10 @@ kubectl apply -f "${K8S_DIR}/secrets-template.yaml" -n "${NAMESPACE}"
 echo "  [Step 2/5] Deploying Stateful Infrastructure (Redis Cluster / Cache)..."
 kubectl apply -f "${K8S_DIR}/redis-deployment.yaml" -n "${NAMESPACE}"
 
-echo "  [Step 3/5] Deploying Core Workloads (Backend & Frontend Applications)..."
+echo "  [Step 3/5] Deploying Core Workloads (Backend, Frontend & Async Worker Workloads)..."
 kubectl apply -f "${K8S_DIR}/backend-deployment.yaml" -n "${NAMESPACE}"
 kubectl apply -f "${K8S_DIR}/frontend-deployment.yaml" -n "${NAMESPACE}"
+kubectl apply -f "${K8S_DIR}/worker-deployment.yaml" -n "${NAMESPACE}"
 
 echo "  [Step 4/5] Configuring Traffic Routing, Ingress & Horizontal Pod Autoscaling (HPA)..."
 kubectl apply -f "${K8S_DIR}/hpa.yaml" -n "${NAMESPACE}"

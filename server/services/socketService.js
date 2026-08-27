@@ -26,8 +26,9 @@ const initSocket = (httpServer, corsOptions) => {
     },
     transports: ["websocket", "polling"],
     allowEIO3: true,
-    pingTimeout: 60000,
-    pingInterval: 25000,
+    maxHttpBufferSize: 1e6, // 1MB buffer cap to prevent backpressure memory exhaustion
+    pingTimeout: 20000,     // 20s timeout for zombie connection eviction
+    pingInterval: 10000,    // 10s ping interval for rapid health detection
   });
 
   // Optional Redis Adapter for Multi-Replica Cluster Mode

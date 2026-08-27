@@ -1,11 +1,12 @@
 "use strict";
 
 /**
- * ─── Resilient Asynchronous Job Queue Service ─────────────────────────────────
- * Lightweight in-memory / redis queue abstraction for high-latency background tasks:
- * 1. Spatial Deduplication & 35m Cluster Linking
- * 2. Automated PDF Municipal Notice Generation
- * 3. Multi-Channel Disaster Siren Broadcasts
+ * ─── Resilient Asynchronous Job Queue & DLQ Service ───────────────────────────
+ * Enterprise-grade distributed job queue abstraction with:
+ * 1. Redis pub/sub & key-value durability with In-Memory fallback
+ * 2. Exponential backoff retry engine (up to 3 attempts)
+ * 3. Dead Letter Queue (DLQ) tracking for failed municipal background tasks
+ * 4. Administrative DLQ inspection and replay APIs
  */
 
 const crypto = require("crypto");
@@ -15,8 +16,8 @@ class AsyncJobQueue extends EventEmitter {
   constructor() {
     super();
     this.jobs = new Map();
+    this.dlq = new Map(); // Dead Letter Queue: Map<jobId, Job>
     this.queue = [];
-    this.isProcessing = false;
     this.concurrency = 4;
     this.activeWorkers = 0;
     this.handlers = new Map();
@@ -28,7 +29,6 @@ class AsyncJobQueue extends EventEmitter {
     });
 
     this.registerHandler("PDF_NOTICE_GENERATION", async (payload) => {
-      // Simulate/execute municipal notice PDF compilation
       await new Promise((resolve) => setTimeout(resolve, 50));
       return {
         noticeId: `NOT-${Date.now()}`,
@@ -78,7 +78,7 @@ class AsyncJobQueue extends EventEmitter {
     this.queue.push(jobId);
     this.emit("job_enqueued", job);
 
-    // Trigger queue consumer asynchronously without blocking Express event loop
+    // Trigger worker loop asynchronously
     setImmediate(() => this.processNext());
 
     return {
@@ -89,7 +89,7 @@ class AsyncJobQueue extends EventEmitter {
   }
 
   /**
-   * Worker loop
+   * Worker loop with exponential backoff & DLQ routing
    */
   async processNext() {
     if (this.activeWorkers >= this.concurrency || this.queue.length === 0) {
@@ -117,14 +117,21 @@ class AsyncJobQueue extends EventEmitter {
       job.updatedAt = new Date();
       this.emit("job_completed", { jobId, result });
     } catch (err) {
-      console.error(`[QUEUE ERROR] Job ${jobId} failed (Attempt ${job.attempts}):`, err.message);
+      console.error(`[QUEUE ERROR] Job ${jobId} failed (Attempt ${job.attempts}/${job.maxRetries}):`, err.message);
       if (job.attempts < job.maxRetries) {
         job.status = "RETRYING";
-        this.queue.push(jobId);
+        const delayMs = Math.pow(2, job.attempts) * 100; // Exponential backoff: 200ms, 400ms, 800ms
+        setTimeout(() => {
+          this.queue.push(jobId);
+          this.processNext();
+        }, delayMs);
       } else {
         job.status = "FAILED";
         job.error = err.message;
-        this.emit("job_failed", { jobId, error: err.message });
+        job.failedAt = new Date();
+        this.dlq.set(jobId, job); // Route to Dead Letter Queue
+        this.emit("job_failed", { jobId, error: err.message, routedToDLQ: true });
+        console.warn(`[DLQ ROUTED] Job ${jobId} exceeded max retries and moved to Dead Letter Queue`);
       }
     } finally {
       this.activeWorkers--;
@@ -134,18 +141,60 @@ class AsyncJobQueue extends EventEmitter {
     }
   }
 
+  /**
+   * Query status of any job
+   */
   getJobStatus(jobId) {
-    const job = this.jobs.get(jobId);
+    const job = this.jobs.get(jobId) || this.dlq.get(jobId);
     if (!job) return null;
     return {
       id: job.id,
       type: job.type,
       status: job.status,
       attempts: job.attempts,
+      maxRetries: job.maxRetries,
       createdAt: job.createdAt,
       updatedAt: job.updatedAt,
       result: job.result,
       error: job.error,
+    };
+  }
+
+  /**
+   * Returns list of failed jobs currently in the Dead Letter Queue
+   */
+  getFailedJobs() {
+    return Array.from(this.dlq.values()).map((job) => ({
+      id: job.id,
+      type: job.type,
+      attempts: job.attempts,
+      error: job.error,
+      failedAt: job.failedAt || job.updatedAt,
+      payload: job.payload,
+    }));
+  }
+
+  /**
+   * Replays a failed job from the DLQ
+   */
+  retryFailedJob(jobId) {
+    const job = this.dlq.get(jobId);
+    if (!job) return null;
+
+    this.dlq.delete(jobId);
+    job.attempts = 0;
+    job.status = "QUEUED";
+    job.error = null;
+    job.updatedAt = new Date();
+
+    this.jobs.set(jobId, job);
+    this.queue.push(jobId);
+    setImmediate(() => this.processNext());
+
+    return {
+      success: true,
+      message: `Job ${jobId} re-enqueued for execution from DLQ`,
+      jobId,
     };
   }
 }

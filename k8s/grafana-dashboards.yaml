@@ -1,0 +1,233 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smart-civic-grafana-dashboards
+  namespace: smart-civic
+  labels:
+    app.kubernetes.io/name: smart-civic-grafana-dashboards
+    app.kubernetes.io/component: monitoring
+    grafana_dashboard: "1"
+data:
+  smart-civic-overview.json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "title": "Service Health & Ingress SLA",
+          "type": "row"
+        },
+        {
+          "id": 1,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+          "title": "API Response Latency Percentiles (P50, P95, P99)",
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "smooth"
+              },
+              "unit": "s"
+            }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "P50 Latency"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "P95 Latency (SLA 250ms)"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+              "legendFormat": "P99 Latency"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+          "title": "HTTP Ingress Throughput & Status Code Distribution",
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "bars",
+                "stacking": { "mode": "normal" }
+              },
+              "unit": "reqps"
+            }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(rate(http_requests_total{status=~\"2..\"}[5m]))",
+              "legendFormat": "2xx Success"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(rate(http_requests_total{status=~\"4..\"}[5m]))",
+              "legendFormat": "4xx Client Errors"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m]))",
+              "legendFormat": "5xx Server Errors"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+          "id": 200,
+          "title": "Database & Cluster Telemetry",
+          "type": "row"
+        },
+        {
+          "id": 3,
+          "gridPos": { "h": 8, "w": 6, "x": 0, "y": 10 },
+          "title": "MongoDB Connection Health Status",
+          "type": "gauge",
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "0": { "text": "DOWN (503 Degraded)", "color": "red" }, "1": { "text": "HEALTHY (Connected)", "color": "green" } } }
+              ],
+              "max": 1,
+              "min": 0
+            }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "mongodb_connection_status",
+              "legendFormat": "MongoDB Connection"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "gridPos": { "h": 8, "w": 18, "x": 6, "y": 10 },
+          "title": "Backend Memory Utilization & Node.js Heap Allocated",
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "line",
+                "fillOpacity": 15
+              },
+              "unit": "bytes"
+            }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "process_resident_memory_bytes{service=\"smart-civic-backend\"}",
+              "legendFormat": "Resident Memory (RSS)"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "nodejs_heap_size_used_bytes{service=\"smart-civic-backend\"}",
+              "legendFormat": "Node.js Heap Used"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "nodejs_heap_size_total_bytes{service=\"smart-civic-backend\"}",
+              "legendFormat": "Node.js Heap Total"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+          "id": 300,
+          "title": "SLA Escrow & Municipal Governance",
+          "type": "row"
+        },
+        {
+          "id": 5,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 19 },
+          "title": "Contractor Escrow Balances & Uncollected Deficit Penalties",
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "line"
+              },
+              "unit": "currencyINR"
+            }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "smart_civic_contractor_escrow_balance",
+              "legendFormat": "Active Escrow Balance (₹)"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "smart_civic_escrow_deficit_penalties_total",
+              "legendFormat": "Accumulated Deficit Penalties (₹)"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 19 },
+          "title": "24 Municipal Wards Real-time Dispatch & Resolution Rates",
+          "type": "timeseries",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "drawStyle": "line"
+              },
+              "unit": "ops"
+            }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(rate(smart_civic_complaints_ingested_total[5m])) by (ward)",
+              "legendFormat": "Ingested - {{ward}}"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "expr": "sum(rate(smart_civic_complaints_resolved_total[5m])) by (ward)",
+              "legendFormat": "Resolved - {{ward}}"
+            }
+          ]
+        }
+      ],
+      "refresh": "10s",
+      "schemaVersion": 38,
+      "style": "dark",
+      "tags": ["smart-civic", "sre", "governance", "sla"],
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "timepicker": {
+        "refresh_intervals": ["5s", "10s", "30s", "1m", "5m"]
+      },
+      "timezone": "browser",
+      "title": "Smart Civic - Production SRE & Municipal Governance Overview",
+      "uid": "smart-civic-production-overview",
+      "version": 1
+    }

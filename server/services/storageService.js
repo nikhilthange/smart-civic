@@ -16,7 +16,7 @@ const crypto = require("crypto");
 class StorageService {
   constructor() {
     this.provider = process.env.STORAGE_PROVIDER || (process.env.CLOUDINARY_CLOUD_NAME ? "cloudinary" : "local");
-    this.uploadDir = path.join(__dirname, "../../uploads");
+    this.uploadDir = path.join(__dirname, "../uploads");
     if (!fs.existsSync(this.uploadDir)) {
       fs.mkdirSync(this.uploadDir, { recursive: true });
     }

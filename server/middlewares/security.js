@@ -76,11 +76,27 @@ try {
 
 // ─── 4. Rate limiters with Granular Quotas ───────────────────────────────────
 // Authenticated Admins: 500 req/15min | Public Citizen Submissions: 60 req/15min (2000 in dev/test)
+const jwt = require("jsonwebtoken");
+
 const defaultLimiter = rateLimit({
   windowMs:        15 * 60 * 1000, // 15 minutes
   max: (req) => {
+    // 1. Check req.user if populated by route-level auth
     if (req.user && (req.user.role === "admin" || req.user.role === "officer")) {
       return 500;
+    }
+    // 2. Early decode Authorization header if available before route auth
+    try {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.split(" ")[1];
+        const decoded = jwt.decode(token);
+        if (decoded && (decoded.role === "admin" || decoded.role === "officer")) {
+          return 500;
+        }
+      }
+    } catch {
+      // Ignore parsing errors and fall back to default
     }
     return process.env.NODE_ENV === "production" ? 60 : 2000;
   },

@@ -1,0 +1,56 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: smart-civic-alertmanager-config
+  namespace: smart-civic
+  labels:
+    app.kubernetes.io/name: smart-civic-alertmanager
+    app.kubernetes.io/component: monitoring
+    alertmanagerConfig: smart-civic
+spec:
+  route:
+    groupBy:
+      - alertname
+      - namespace
+      - service
+      - severity
+    groupWait: 10s
+    groupInterval: 1m
+    repeatInterval: 4h
+    receiver: sre-oncall-webhook
+    routes:
+      - receiver: critical-incident-webhook
+        matchers:
+          - name: severity
+            value: critical
+        continue: false
+      - receiver: warning-ops-webhook
+        matchers:
+          - name: severity
+            value: warning
+        continue: false
+  inhibitRules:
+    - targetMatch:
+        - name: alertname
+          value: HighLatencyP95Breach
+      sourceMatch:
+        - name: alertname
+          value: DatabaseDown
+      equal:
+        - namespace
+  receivers:
+    - name: sre-oncall-webhook
+      webhookConfigs:
+        - url: "http://smart-civic-backend.smart-civic.svc.cluster.local:5000/api/webhooks/alerts"
+          sendResolved: true
+          maxAlerts: 100
+    - name: critical-incident-webhook
+      webhookConfigs:
+        - url: "http://smart-civic-backend.smart-civic.svc.cluster.local:5000/api/webhooks/alerts/critical"
+          sendResolved: true
+          maxAlerts: 100
+    - name: warning-ops-webhook
+      webhookConfigs:
+        - url: "http://smart-civic-backend.smart-civic.svc.cluster.local:5000/api/webhooks/alerts/warning"
+          sendResolved: true
+          maxAlerts: 100

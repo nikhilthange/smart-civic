@@ -1,0 +1,66 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: smart-civic-alerts
+  namespace: smart-civic
+  labels:
+    app.kubernetes.io/name: smart-civic-alerts
+    app.kubernetes.io/component: monitoring
+    prometheus: k8s
+    role: alert-rules
+spec:
+  groups:
+    - name: smart-civic-operational-alerts
+      rules:
+        # ─── Alert 1: Database Outage & Readiness Degradation ─────────────────
+        - alert: DatabaseDown
+          expr: mongodb_connection_status == 0
+          for: 30s
+          labels:
+            severity: critical
+            tier: infrastructure
+            service: smart-civic-backend
+          annotations:
+            summary: "MongoDB connection pool severed"
+            description: "MongoDB connection pool severed. Pods degrading to 503."
+            runbook_url: "https://github.com/nikhilthange/smart-civic/blob/main/docs/runbooks/db-outage.md"
+
+        # ─── Alert 2: P95 Latency SLA Breach (> 250ms) ───────────────────────
+        - alert: HighLatencyP95Breach
+          expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.25
+          for: 2m
+          labels:
+            severity: warning
+            tier: api
+            service: smart-civic-backend
+          annotations:
+            summary: "P95 API latency exceeded SLA"
+            description: "P95 API response time exceeded 250ms SLA."
+            runbook_url: "https://github.com/nikhilthange/smart-civic/blob/main/docs/runbooks/latency-breach.md"
+
+        # ─── Alert 3: Contractor Escrow Deficit Penalty Spike (> ₹50,000) ──────
+        - alert: ContractorEscrowDeficitSurge
+          expr: increase(smart_civic_escrow_deficit_penalties_total[1h]) > 50000
+          for: 5m
+          labels:
+            severity: warning
+            tier: financial
+            service: smart-civic-sla-service
+          annotations:
+            summary: "Contractor escrow deficit surge"
+            description: "Sudden spike in uncollected contractor penalties exceeding ₹50,000."
+            runbook_url: "https://github.com/nikhilthange/smart-civic/blob/main/docs/runbooks/escrow-deficit.md"
+
+        # ─── Alert 4: Pod CrashLoopBackOff Detection ──────────────────────────
+        - alert: PodCrashLooping
+          expr: rate(kube_pod_container_status_restarts_total{namespace="smart-civic"}[15m]) > 0
+          for: 5m
+          labels:
+            severity: critical
+            tier: platform
+            service: kubernetes-workload
+          annotations:
+            summary: "Pod container restart detected"
+            description: "Pod in smart-civic namespace is restarting repeatedly or entering CrashLoopBackOff."
+            runbook_url: "https://github.com/nikhilthange/smart-civic/blob/main/docs/runbooks/crashloop.md"
+

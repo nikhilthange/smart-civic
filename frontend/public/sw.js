@@ -1,52 +1,37 @@
 /**
  * ─── BMC Smart Civic Progressive Web App (PWA) Service Worker ─────────────────
  * Implements:
- * 1. Cache-first strategy with stale-while-revalidate for static assets & OSM map tiles.
- * 2. Network-first strategy with offline fallbacks for dynamic `/api/*` endpoints.
- * 3. Native `sync` background queue sync when connection is restored.
+ * 1. Network-First strategy for HTML navigation & script chunks to guarantee fresh builds.
+ * 2. Cache-First strategy with stale-while-revalidate for OSM map tiles & images.
+ * 3. Immediate cache invalidation on activation for smooth continuous deployments.
+ * 4. Native `sync` background queue sync when connection is restored.
  */
 
-const CACHE_NAME = "bmc-smart-civic-v1"
-const STATIC_ASSETS = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/vite.svg",
-]
+const CACHE_NAME = "bmc-smart-civic-v2"
 
-// Install Event
+// Install Event - Activate immediately
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      // Safe asset prefetch that never throws unhandled errors if an icon/manifest is missing
-      for (const asset of STATIC_ASSETS) {
-        try {
-          await cache.add(asset)
-        } catch {
-          // Gracefully skip missing optional assets
-        }
-      }
-    })
-  )
   self.skipWaiting()
 })
 
-// Activate Event
+// Activate Event - Clear all outdated caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key)
+          }
+        })
       )
-    })
+    }).then(() => self.clients.claim())
   )
-  self.clients.claim()
 })
 
 // Fetch Event
 self.addEventListener("fetch", (event) => {
   // STRICT GUARD 1: Bypass all non-GET requests (POST, PUT, DELETE, PATCH, OPTIONS)
-  // Ensures authentication, grievance mutations, and payments never touch cache
   if (event.request.method !== "GET") {
     return
   }
@@ -64,7 +49,46 @@ self.addEventListener("fetch", (event) => {
     return
   }
 
-  // 2. OpenStreetMap Tiles & Static Assets -> Cache-First with Stale-While-Revalidate
+  // 1. Navigation / HTML Document -> Strict Network-First (Never serve stale index.html with outdated chunk hashes)
+  if (event.request.mode === "navigate" || event.request.destination === "document") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          }
+          return response
+        })
+        .catch(async () => {
+          const cached = await caches.match(event.request)
+          return cached || caches.match("/index.html")
+        })
+    )
+    return
+  }
+
+  // 2. JavaScript / CSS / Asset Bundles -> Network-First (Ensure new hashed chunks load immediately)
+  if (
+    url.pathname.startsWith("/assets/") ||
+    event.request.destination === "script" ||
+    event.request.destination === "style"
+  ) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          }
+          return response
+        })
+        .catch(() => caches.match(event.request))
+    )
+    return
+  }
+
+  // 3. OpenStreetMap Tiles & Static Images -> Cache-First with Stale-While-Revalidate
   if (url.hostname.includes("tile.openstreetmap.org") || event.request.destination === "image") {
     event.respondWith(
       caches.open(CACHE_NAME).then(async (cache) => {
@@ -84,11 +108,9 @@ self.addEventListener("fetch", (event) => {
     return
   }
 
-  // 3. Default fallback
+  // 4. Default fallback: Network with cache fallback
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request)
-    })
+    fetch(event.request).catch(() => caches.match(event.request))
   )
 })
 

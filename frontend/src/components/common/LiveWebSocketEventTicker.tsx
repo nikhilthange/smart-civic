@@ -56,20 +56,23 @@ function LiveWebSocketEventTickerComponent() {
   const current = events[currentIndex] || events[0]
 
   return (
-    <div className="w-full bg-slate-900 text-white px-4 py-2 flex items-center justify-between text-xs border-b border-slate-800 shadow-sm overflow-hidden">
-      <div className="flex items-center gap-2.5 overflow-hidden">
-        <div className="flex items-center gap-1 text-emerald-400 font-mono font-bold shrink-0">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>LIVE EVENT STREAM:</span>
+    <div className="w-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 px-4 py-2 flex items-center justify-between text-xs border-b border-emerald-100 dark:border-emerald-900/50 shadow-sm overflow-hidden transition-colors">
+      <div className="flex items-center gap-2.5 overflow-hidden min-w-0">
+        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 shrink-0">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span>LIVE STREAM</span>
         </div>
 
-        <div className="truncate font-sans text-slate-200 animate-in fade-in transition-all">
+        <div className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate animate-in fade-in transition-all">
           {current?.text}
         </div>
       </div>
 
-      <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-slate-400 shrink-0">
-        <span>WS: CONNECTED</span>
+      <div className="hidden sm:flex items-center gap-2 text-[11px] font-mono text-emerald-700/80 dark:text-emerald-400/80 shrink-0">
+        <span className="font-semibold">WS: CONNECTED</span>
         <span>•</span>
         <span>{current?.timestamp}</span>
       </div>

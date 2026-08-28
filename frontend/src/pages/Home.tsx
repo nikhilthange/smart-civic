@@ -40,9 +40,9 @@ export default function Home() {
     <div className="flex min-h-[100svh] flex-col bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
-        <div className="w-full max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Logo / Brand */}
-          <Link className="flex items-center gap-2 min-w-0" to="/">
+        <div className="w-full max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+          {/* Brand Logo */}
+          <Link className="flex items-center gap-2 min-w-0 shrink" to="/">
             <div className="bg-primary/10 p-1.5 rounded-lg shrink-0">
               <Building2 className="h-5 w-5 text-primary" />
             </div>
@@ -60,13 +60,11 @@ export default function Home() {
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 shrink-0">
-            <Link
-              className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary transition-colors px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60"
-              to="/auth"
-            >
-              Sign In
-            </Link>
-            <Button asChild className="rounded-full text-xs sm:text-sm font-semibold px-3 sm:px-4 py-1.5 h-8 sm:h-9 shadow-md shadow-primary/20 whitespace-nowrap" size="sm">
+            <Button asChild className="h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800" size="sm" variant="ghost">
+              <Link to="/auth">Sign In</Link>
+            </Button>
+
+            <Button asChild className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm font-semibold rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 whitespace-nowrap" size="sm">
               <Link to="/auth">
                 <span>Get Started</span>
                 <ArrowRight className="ml-1 h-3.5 w-3.5 hidden sm:inline" />

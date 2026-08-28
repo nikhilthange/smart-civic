@@ -25,8 +25,11 @@ export interface AuthUser {
   isActive: boolean
   phoneNumber?: string
   ward?: string
+  zone?: string
   department?: string
   karmaPoints?: number
+  badges?: Array<{ name: string; icon?: string; description?: string; awardedAt?: string }>
+  redeemedRewards?: Array<{ rewardId: string; title: string; pointsCost: number; voucherCode: string; redeemedAt?: string }>
   createdAt?: string
   lastLogin?: string
 }
@@ -56,6 +59,8 @@ interface AuthContextType {
   loginWithFirebaseGoogle: () => Promise<void>
   register: (data: RegisterData) => Promise<void>
   logout: () => Promise<void>
+  updateUserKarma: (newPoints: number) => void
+  refreshUserProfile: () => Promise<void>
   error: string | null
   clearError: () => void
 }
@@ -259,6 +264,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
 
+  // ─── Update User Karma Balance in Context & Storage ──────────────────────────
+  const updateUserKarma = useCallback((newPoints: number) => {
+    setUser((prev) => {
+      if (!prev) return null
+      const updated = { ...prev, karmaPoints: newPoints }
+      try {
+        localStorage.setItem("user", JSON.stringify(updated))
+      } catch {
+        // ignore
+      }
+      return updated
+    })
+  }, [])
+
+  // ─── Refresh User Profile from Backend ───────────────────────────────────────
+  const refreshUserProfile = useCallback(async () => {
+    try {
+      const { data } = await api.get("/auth/me")
+      if (data?.user) {
+        setUser(data.user)
+        try {
+          localStorage.setItem("user", JSON.stringify(data.user))
+        } catch {
+          // ignore
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to refresh user profile from /auth/me:", err)
+    }
+  }, [])
+
   const clearError = useCallback(() => setError(null), [])
 
   return (
@@ -273,6 +309,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loginWithFirebaseGoogle,
         register,
         logout,
+        updateUserKarma,
+        refreshUserProfile,
         error,
         clearError,
       }}

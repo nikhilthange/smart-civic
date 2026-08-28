@@ -15,6 +15,16 @@ const sendTokenResponse = (user, statusCode, res) => {
       email: user.email,
       role: user.role,
       isActive: user.isActive,
+      phoneNumber: user.phoneNumber,
+      address: user.address,
+      ward: user.ward || "Ward A",
+      zone: user.zone || "Zone 1",
+      corporationId: user.corporationId || "BMC",
+      karmaPoints: user.karmaPoints || 0,
+      badges: user.badges || [],
+      redeemedRewards: user.redeemedRewards || [],
+      avatar: user.avatar || null,
+      lastLogin: user.lastLogin,
       createdAt: user.createdAt,
     },
   });
@@ -55,6 +65,13 @@ const registerUser = async (req, res) => {
     sendTokenResponse(user, 201, res);
   } catch (error) {
     console.error("Register Error:", error.message);
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({
+        success: false,
+        message: messages.join(", "),
+      });
+    }
     res.status(500).json({
       success: false,
       message: "Server error during registration.",
@@ -68,6 +85,14 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Validate inputs
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide an email and password.",
+      });
+    }
 
     // Explicitly select password (excluded by default in schema)
     const user = await User.findOne({ email }).select("+password");
@@ -83,7 +108,7 @@ const loginUser = async (req, res) => {
     if (!user.isActive) {
       return res.status(401).json({
         success: false,
-        message: "This account has been deactivated. Contact support.",
+        message: "This account has been deactivated. Please contact support.",
       });
     }
 
@@ -115,6 +140,9 @@ const loginUser = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
     res.status(200).json({
       success: true,
       user: {
@@ -125,6 +153,13 @@ const getMe = async (req, res) => {
         isActive: user.isActive,
         phoneNumber: user.phoneNumber,
         address: user.address,
+        ward: user.ward || "Ward A",
+        zone: user.zone || "Zone 1",
+        corporationId: user.corporationId || "BMC",
+        karmaPoints: user.karmaPoints || 0,
+        badges: user.badges || [],
+        redeemedRewards: user.redeemedRewards || [],
+        avatar: user.avatar || null,
         lastLogin: user.lastLogin,
         createdAt: user.createdAt,
       },

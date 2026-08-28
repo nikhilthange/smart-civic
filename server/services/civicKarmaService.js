@@ -53,7 +53,8 @@ class CivicKarmaService {
     }
 
     if (user) {
-      user.civicKarmaPoints = (user.civicKarmaPoints || 0) + points;
+      user.karmaPoints = (user.karmaPoints || 0) + points;
+      user.civicKarmaPoints = user.karmaPoints;
       if (!user.karmaHistory) user.karmaHistory = [];
       user.karmaHistory.push({
         points,
@@ -64,14 +65,14 @@ class CivicKarmaService {
       await user.save();
       return {
         userId,
-        currentBalance: user.civicKarmaPoints,
+        currentBalance: user.karmaPoints,
         pointsAwarded: points,
       };
     }
 
     return {
       userId,
-      currentBalance: 120 + points,
+      currentBalance: points,
       pointsAwarded: points,
     };
   }

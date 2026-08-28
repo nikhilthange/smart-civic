@@ -232,35 +232,49 @@ export default function Dashboard() {
       )}
 
       {/* 2. Sleek Civic Karma Widget */}
-      <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50/40 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/10 border border-emerald-200/80 dark:border-emerald-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shadow-emerald-600/30 shrink-0">
-            <Award className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-emerald-950 dark:text-emerald-200 font-mono text-sm sm:text-base">
-                Civic Karma: {user?.karmaPoints ?? (stats?.total ? stats.total * 10 : 160)} Pts
-              </span>
-              <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
-                Top 5% Contributor
-              </span>
+      {(() => {
+        const karmaPoints = user?.karmaPoints ?? 0
+        const tierBadge =
+          karmaPoints >= 150
+            ? "Top 5% Contributor"
+            : karmaPoints >= 50
+            ? "Ward Guardian"
+            : karmaPoints > 0
+            ? "Active Citizen"
+            : "Citizen Contributor"
+
+        return (
+          <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50/40 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/10 border border-emerald-200/80 dark:border-emerald-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shadow-emerald-600/30 shrink-0">
+                <Award className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-emerald-950 dark:text-emerald-200 font-mono text-sm sm:text-base">
+                    Civic Karma: {karmaPoints} Pts
+                  </span>
+                  <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                    {tierBadge}
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-700/80 dark:text-emerald-400 mt-0.5">
+                  Top contributor in {user?.ward || "Ward H-West"} • Earn municipal tax rebates & transit passes
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-emerald-700/80 dark:text-emerald-400 mt-0.5">
-              Top contributor in Ward H-West • Earn municipal tax rebates & transit passes
-            </p>
+            <Link to="/rewards">
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-4 py-2 shadow-sm shadow-emerald-600/20 gap-1.5 transition-all"
+              >
+                <span>Redeem Rewards</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
           </div>
-        </div>
-        <Link to="/rewards">
-          <Button
-            size="sm"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-4 py-2 shadow-sm shadow-emerald-600/20 gap-1.5 transition-all"
-          >
-            <span>Redeem Rewards</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Button>
-        </Link>
-      </div>
+        )
+      })()}
 
       {/* 3. Main Split Grid: Recent Complaints + Right Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

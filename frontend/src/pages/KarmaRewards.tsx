@@ -66,24 +66,27 @@ const MUNICIPAL_PERKS: PerkItem[] = [
 ]
 
 export default function KarmaRewards() {
-  const { user } = useAuth()
-  const [karmaPoints, setKarmaPoints] = useState<number>(user?.karmaPoints || 65)
-  const [redeemedList, setRedeemedList] = useState<any[]>((user as any)?.redeemedRewards || [])
+  const { user, updateUserKarma, refreshUserProfile } = useAuth()
+  const [karmaPoints, setKarmaPoints] = useState<number>(user?.karmaPoints ?? 0)
+  const [redeemedList, setRedeemedList] = useState<any[]>(user?.redeemedRewards || [])
   const [isRedeeming, setIsRedeeming] = useState<string | null>(null)
   const [activeVoucherModal, setActiveVoucherModal] = useState<any | null>(null)
   const [copied, setCopied] = useState(false)
 
-  // Fetch latest user profile state
+  // Keep local state in sync if user object updates in AuthContext
   useEffect(() => {
-    api.get("/auth/me")
-      .then((res) => {
-        if (res.data.user) {
-          setKarmaPoints(res.data.user.karmaPoints || 0)
-          setRedeemedList(res.data.user.redeemedRewards || [])
-        }
-      })
-      .catch(() => {})
-  }, [])
+    if (user) {
+      setKarmaPoints(user.karmaPoints ?? 0)
+      if (user.redeemedRewards) {
+        setRedeemedList(user.redeemedRewards)
+      }
+    }
+  }, [user])
+
+  // Fetch latest user profile state on mount
+  useEffect(() => {
+    refreshUserProfile()
+  }, [refreshUserProfile])
 
   const handleRedeem = async (perk: PerkItem) => {
     if (karmaPoints < perk.pointsCost) {
@@ -100,9 +103,13 @@ export default function KarmaRewards() {
       })
 
       toast.success(res.data.message || "Perk redeemed successfully!")
-      setKarmaPoints(res.data.remainingPoints)
-      setRedeemedList((prev) => [res.data.voucher, ...prev])
-      setActiveVoucherModal(res.data.voucher)
+      const newPoints = typeof res.data.remainingPoints === "number" ? res.data.remainingPoints : karmaPoints - perk.pointsCost
+      setKarmaPoints(newPoints)
+      updateUserKarma(newPoints)
+      if (res.data.voucher) {
+        setRedeemedList((prev) => [res.data.voucher, ...prev])
+        setActiveVoucherModal(res.data.voucher)
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to redeem reward.")
     } finally {

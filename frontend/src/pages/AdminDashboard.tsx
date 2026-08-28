@@ -25,6 +25,7 @@ import { officerApi, type Officer } from "../services/officerApi"
 import { AddOfficerModal } from "../components/ui/AddOfficerModal"
 import { AssignOfficerModal } from "../components/ui/AssignOfficerModal"
 import { generateExecutiveWardPdf } from "../utils/pdfReportGenerator"
+import { formatCurrencyINR } from "@/utils/formatters"
 import { useSocket } from "@/context/SocketContext"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -735,7 +736,7 @@ export default function AdminDashboard() {
           </div>
           <div className="mt-3">
             <div className="flex items-baseline gap-2">
-              <span className="font-mono tracking-tight font-bold text-3xl text-rose-600 dark:text-rose-400 font-tabular">₹{totalPenaltiesAmount.toLocaleString("en-IN")}</span>
+              <span className="font-mono tracking-tight font-bold text-3xl text-rose-600 dark:text-rose-400 font-tabular">{formatCurrencyINR(totalPenaltiesAmount)}</span>
               <span className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-mono font-medium border border-rose-500/20">
                 {totalSlaBreachesCount} Breaches
               </span>
@@ -1033,7 +1034,7 @@ export default function AdminDashboard() {
                             </span>
                           </td>
                           <td className="px-4 py-3 font-mono font-bold font-tabular text-emerald-600 dark:text-emerald-400">
-                            ₹{c.escrowBalance?.toLocaleString("en-IN") || "500,000"}
+                            {formatCurrencyINR(c.escrowBalance || 500000)}
                           </td>
                         </tr>
                       )

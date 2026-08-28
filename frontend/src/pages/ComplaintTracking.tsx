@@ -20,6 +20,7 @@ import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import ComplaintMap from "@/components/ui/ComplaintMap"
 import FeedbackModal from "@/components/ui/FeedbackModal"
 import { BeforeAfterSlider } from "@/components/common/BeforeAfterSlider"
+import { formatDateTime } from "@/utils/formatters"
 import api from "@/lib/axios"
 import toast from "react-hot-toast"
 
@@ -207,11 +208,8 @@ export const ResolutionTimeline = React.memo(function ResolutionTimeline({
                   )}
                 </div>
                 {historyEntry && (
-                  <time className="text-xs text-slate-400 mt-0.5 block">
-                    {new Date(historyEntry.changedAt).toLocaleString("en-IN", {
-                      day: "2-digit", month: "short", year: "numeric",
-                      hour: "2-digit", minute: "2-digit"
-                    })}
+                  <time className="text-xs text-slate-400 mt-0.5 block font-mono">
+                    {formatDateTime(historyEntry.changedAt)}
                   </time>
                 )}
                 {historyEntry?.note && (
@@ -488,9 +486,9 @@ export const ResolutionProofCard = React.memo(function ResolutionProofCard({
               </Badge>
               <time className="text-xs text-slate-500 font-mono">
                 {resolvedAt
-                  ? new Date(resolvedAt).toLocaleString("en-IN")
+                  ? formatDateTime(resolvedAt)
                   : updatedAt
-                  ? new Date(updatedAt).toLocaleString("en-IN")
+                  ? formatDateTime(updatedAt)
                   : ""}
               </time>
             </div>

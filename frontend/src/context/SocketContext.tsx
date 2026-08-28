@@ -19,13 +19,13 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [lastEvent, setLastEvent] = useState<{ type: string; payload: any } | null>(null)
 
   useEffect(() => {
-    // Connect to backend server URL
+    // Connect to backend server URL (strip /api or /api/ suffix)
     const backendUrl = import.meta.env.VITE_API_URL
-      ? import.meta.env.VITE_API_URL.replace(/\/api$/, "")
+      ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "")
       : "http://localhost:5000"
 
     const socketInstance: Socket = io(backendUrl, {
-      transports: ["polling", "websocket"],
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,

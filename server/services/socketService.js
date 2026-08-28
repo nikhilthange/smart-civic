@@ -7,15 +7,38 @@ let io = null;
  * Supports Redis Pub/Sub Adapter for multi-core clustering when REDIS_URL is provided
  */
 const initSocket = (httpServer, corsOptions) => {
-  const allowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || process.env.CLIENT_ORIGIN || process.env.FRONTEND_URL || "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000")
+  const defaultAllowedOrigins = [
+    "https://smart-civic-pi.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+    "http://localhost",
+  ];
+
+  const rawAllowed = (
+    process.env.ALLOWED_ORIGINS ||
+    process.env.CLIENT_URL ||
+    process.env.CLIENT_ORIGIN ||
+    process.env.FRONTEND_URL ||
+    ""
+  )
     .split(",")
-    .map((o) => o.trim())
+    .map((o) => o.trim().replace(/\/+$/, ""))
     .filter(Boolean);
+
+  const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...rawAllowed]));
 
   io = new Server(httpServer, {
     cors: {
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== "production") {
+        if (!origin) return callback(null, true);
+        const cleanOrigin = origin.replace(/\/+$/, "");
+        if (
+          allowedOrigins.includes(cleanOrigin) ||
+          /\.vercel\.app$/.test(cleanOrigin) ||
+          process.env.NODE_ENV !== "production"
+        ) {
           callback(null, true);
         } else {
           callback(new Error(`CORS: Origin '${origin}' is not allowed.`));

@@ -36,24 +36,54 @@ const helmetMiddleware = helmet({
 });
 
 // ─── 2. CORS — Fine-grained origin policy ────────────────────────────────────
+const defaultAllowedOrigins = [
+  "https://smart-civic-pi.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
+  "http://localhost",
+];
+
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowed = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || "http://localhost:5173")
+    const rawAllowed = (
+      process.env.ALLOWED_ORIGINS ||
+      process.env.CLIENT_ORIGIN ||
+      process.env.CLIENT_URL ||
+      process.env.FRONTEND_URL ||
+      ""
+    )
       .split(",")
-      .map(o => o.trim());
+      .map((o) => o.trim().replace(/\/+$/, ""))
+      .filter(Boolean);
 
-    // Allow requests with no origin (e.g. mobile apps, curl during dev)
-    if (!origin || allowed.includes(origin)) {
+    const allowedList = Array.from(new Set([...defaultAllowedOrigins, ...rawAllowed]));
+
+    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const cleanOrigin = origin.replace(/\/+$/, "");
+
+    // Exact match or Vercel preview branch match (*.vercel.app)
+    const isAllowed =
+      allowedList.includes(cleanOrigin) ||
+      /\.vercel\.app$/.test(cleanOrigin) ||
+      process.env.NODE_ENV !== "production";
+
+    if (isAllowed) {
       callback(null, true);
     } else {
       callback(new Error(`CORS: Origin '${origin}' is not allowed.`));
     }
   },
-  credentials:         true,
-  methods:             ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders:      ["Content-Type", "Authorization", "X-Requested-With"],
-  exposedHeaders:      ["X-Total-Count"],
-  optionsSuccessStatus: 200, // Some legacy browsers (IE11) choke on 204
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "X-Idempotency-Key"],
+  exposedHeaders: ["X-Total-Count", "x-trace-id"],
+  optionsSuccessStatus: 200, // Legacy browser compatibility
 };
 
 // ─── 3. Distributed Redis Rate Limiter Store Helper ──────────────────────────

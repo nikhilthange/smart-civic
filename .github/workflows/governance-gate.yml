@@ -1,0 +1,64 @@
+name: Statutory GovTech & SRE Governance Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  governance-gate:
+    name: 4-Stage Statutory, i18n & SRE Verification Gate
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+      redis:
+        image: redis:7.2-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: |
+            server/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install Server Dependencies
+        run: |
+          cd server
+          npm ci
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Gate 1 & 2 - Static Analysis & Frontend Type Check
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Gate 3 & 4 - Statutory Compliance & Governance Gates
+        run: |
+          cd server
+          node scripts/test_governance_gates.js
+          node scripts/daily_sre_health_check.js
+          node scripts/test_image_ai_triage_flow.js
+        env:
+          PORT: 5000
+          NODE_ENV: test
+          MONGODB_URI: mongodb://localhost:27017/smart-civic-test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-governance-secret-key-32-chars-long
+          ADMIN_JWT_SECRET: test-governance-admin-secret-key-32-chars

@@ -143,7 +143,7 @@ export default function Donation() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto w-full space-y-8">
+    <div className="w-full max-w-7xl mx-auto space-y-8 px-2 sm:px-4">
       {/* Header */}
       <div className="flex flex-col items-center text-center space-y-4 pt-4">
         <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">

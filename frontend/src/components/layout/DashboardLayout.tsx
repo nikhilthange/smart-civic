@@ -352,12 +352,19 @@ export default function DashboardLayout() {
         <header className="shrink-0 z-40 flex h-14 items-center gap-2 sm:gap-4 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-[#090A0F]/70 backdrop-blur-xl px-3 sm:px-6 lg:px-8 shadow-sm w-full max-w-full">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="shrink-0 md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="shrink-0 md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl cursor-pointer pointer-events-auto hover:bg-slate-100 dark:hover:bg-slate-800"
+                aria-label="Toggle navigation menu"
+              >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" hideCloseButton className="flex flex-col p-0 w-[280px] max-w-[85vw] [&>button]:hidden">
+            <SheetContent side="left" hideCloseButton className="flex flex-col p-0 w-[280px] max-w-[85vw] z-[70]">
               <Sidebar isMobile={true} />
             </SheetContent>
           </Sheet>

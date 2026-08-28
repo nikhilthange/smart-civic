@@ -302,7 +302,7 @@ export default function WhatsAppSandbox() {
   const [isListMenuExpanded, setIsListMenuExpanded] = useState<Record<string, boolean>>({})
   const [imageModalPreview, setImageModalPreview] = useState<{ url: string; caption: string } | null>(null)
 
-  const chatBottomRef = useRef<HTMLDivElement | null>(null)
+  const chatContainerRef = useRef<HTMLDivElement | null>(null)
   const recordingTimerRef = useRef<any>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
@@ -325,8 +325,11 @@ export default function WhatsAppSandbox() {
     } catch (_) {}
   }, [messages, sessionKarma, sessionTickets])
 
+  // Scope auto-scrolling strictly to the internal chat message container (prevents window scrolling)
   useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+    }
   }, [messages, isSending, isRecording, isTranscribing])
 
   // Real-time WebSocket Event Deduplication & Notification Sync
@@ -1030,6 +1033,7 @@ export default function WhatsAppSandbox() {
 
           {/* Chat Message Scroll Area */}
           <div
+            ref={chatContainerRef}
             className="relative z-10 flex-1 p-3 sm:p-4 overflow-y-auto space-y-3.5 font-sans"
             aria-live="polite"
           >
@@ -1268,7 +1272,6 @@ export default function WhatsAppSandbox() {
                 </div>
               </div>
             )}
-            <div ref={chatBottomRef} />
           </div>
 
           {/* Attachment Speed-Dial Popover */}

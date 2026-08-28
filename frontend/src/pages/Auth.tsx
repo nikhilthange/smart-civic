@@ -19,6 +19,8 @@ import { GoogleLogin } from "@react-oauth/google"
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<{
@@ -53,6 +55,12 @@ export default function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLocalError(null)
+
+    if (!isLogin && formData.password !== confirmPassword) {
+      setLocalError("Passwords do not match")
+      return
+    }
+
     try {
       if (isLogin) {
         await login({ email: formData.email, password: formData.password })
@@ -75,6 +83,7 @@ export default function Auth() {
   const switchMode = () => {
     setIsLogin(!isLogin)
     setLocalError(null)
+    setConfirmPassword("")
     setFormData({ name: "", email: "", password: "", phoneNumber: "", role: "citizen", ward: "Ward H-West" })
   }
 
@@ -223,6 +232,39 @@ export default function Auth() {
                   </p>
                 )}
               </div>
+
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value)
+                        setLocalError(null)
+                      }}
+                      required
+                      autoComplete="new-password"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                      onClick={() => setShowConfirmPassword((s) => !s)}
+                      tabIndex={-1}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {!isLogin && (
                 <div className="space-y-2">

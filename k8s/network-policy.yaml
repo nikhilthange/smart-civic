@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: smart-civic
+  labels:
+    app.kubernetes.io/name: smart-civic
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+---
+# ─── 1. Default Deny All Ingress Traffic ──────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all-ingress
+  namespace: smart-civic
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+---
+# ─── 2. Allow Ingress Controller to Frontend & Backend ───────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-controller
+  namespace: smart-civic
+spec:
+  podSelector:
+    matchLabels:
+      app: smart-civic
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 5000
+---
+# ─── 3. Allow Frontend to Backend Internal Communication ──────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-backend
+  namespace: smart-civic
+spec:
+  podSelector:
+    matchLabels:
+      app: smart-civic
+      tier: backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: smart-civic
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: 5000
+---
+# ─── 4. Allow Backend & Worker to Redis ───────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-worker-to-redis
+  namespace: smart-civic
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: smart-civic
+              tier: backend
+        - podSelector:
+            matchLabels:
+              app: smart-civic
+              tier: background-worker
+      ports:
+        - protocol: TCP
+          port: 6379
+---
+# ─── 5. Allow Prometheus Scrape Ingress ───────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scraping
+  namespace: smart-civic
+spec:
+  podSelector:
+    matchLabels:
+      app: smart-civic
+      tier: backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 5000

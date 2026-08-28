@@ -34,20 +34,26 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// ─── Response Interceptor: Handle 401 & Network Failures globally ───────────
+// ─── Response Interceptor: Handle 401 & Network Failures gracefully ─────────
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear stale token from storage
-      localStorage.removeItem("token")
-      localStorage.removeItem("user")
-      // Only redirect if not already on auth page
-      if (window.location.pathname !== "/auth") {
-        window.location.href = "/auth"
+      const requestUrl = error.config?.url || ""
+      const isAuthValidationEndpoint = requestUrl.includes("/auth/me")
+
+      // Only invalidate session if the core authentication validator (/auth/me) fails
+      if (isAuthValidationEndpoint) {
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+        if (typeof window !== "undefined" && window.location.pathname !== "/auth" && window.location.pathname !== "/login") {
+          window.location.href = "/auth"
+        }
+      } else {
+        console.warn("⚠️ Unauthorized request (401) on non-critical endpoint:", requestUrl)
       }
     } else if (!error.response && error.message === "Network Error") {
-      console.warn("⚠️ Network connection offline. Request queued or failed gracefully.");
+      console.warn("⚠️ Network connection offline. Request queued or failed gracefully.")
     }
     return Promise.reject(error)
   }

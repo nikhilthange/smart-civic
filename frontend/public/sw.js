@@ -17,8 +17,15 @@ const STATIC_ASSETS = [
 // Install Event
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS)
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Safe asset prefetch that never throws unhandled errors if an icon/manifest is missing
+      for (const asset of STATIC_ASSETS) {
+        try {
+          await cache.add(asset)
+        } catch {
+          // Gracefully skip missing optional assets
+        }
+      }
     })
   )
   self.skipWaiting()

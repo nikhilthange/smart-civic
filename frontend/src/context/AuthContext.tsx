@@ -65,36 +65,70 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("token")
-  )
-  const [isLoading, setIsLoading] = useState<boolean>(true) // Start loading to check stored token
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    try {
+      const storedUser = localStorage.getItem("user")
+      return storedUser ? JSON.parse(storedUser) : null
+    } catch {
+      return null
+    }
+  })
+  const [token, setToken] = useState<string | null>(() => {
+    const storedToken = localStorage.getItem("token")
+    if (storedToken) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
+    }
+    return storedToken
+  })
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
   // ─── On mount: validate stored token and re-hydrate user ────────────────────
   useEffect(() => {
+    let isMounted = true
+
     const initAuth = async () => {
       const storedToken = localStorage.getItem("token")
       if (!storedToken) {
-        setIsLoading(false)
+        if (isMounted) setIsLoading(false)
         return
       }
+
+      api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
+
       try {
         const { data } = await api.get("/auth/me")
-        setUser(data.user)
-        setToken(storedToken)
-      } catch {
-        // Token is invalid or expired — clear it
-        localStorage.removeItem("token")
-        localStorage.removeItem("user")
-        setToken(null)
-        setUser(null)
+        if (isMounted && data?.user) {
+          setUser(data.user)
+          setToken(storedToken)
+          localStorage.setItem("user", JSON.stringify(data.user))
+        }
+      } catch (err: any) {
+        // Only invalidate if the server explicitly rejects the token with 401
+        if (err?.response?.status === 401) {
+          console.warn("⚠️ Stale token detected on /auth/me. Clearing session.")
+          localStorage.removeItem("token")
+          localStorage.removeItem("user")
+          delete api.defaults.headers.common["Authorization"]
+          if (isMounted) {
+            setToken(null)
+            setUser(null)
+          }
+        } else {
+          console.warn("⚠️ Network/Server unreachable during /auth/me check. Retaining offline session.")
+        }
       } finally {
-        setIsLoading(false)
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     }
+
     initAuth()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   // ─── Register ────────────────────────────────────────────────────────────────
@@ -105,6 +139,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await api.post("/auth/register", data)
       const { token: newToken, user: newUser } = response.data
       localStorage.setItem("token", newToken)
+      localStorage.setItem("user", JSON.stringify(newUser))
+      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
       setToken(newToken)
       setUser(newUser)
     } catch (err: unknown) {
@@ -124,6 +160,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await api.post("/auth/login", data)
       const { token: newToken, user: newUser } = response.data
       localStorage.setItem("token", newToken)
+      localStorage.setItem("user", JSON.stringify(newUser))
+      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
       setToken(newToken)
       setUser(newUser)
     } catch (err: unknown) {
@@ -143,6 +181,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await api.post("/auth/google", { token: googleToken })
       const { token: newToken, user: newUser } = response.data
       localStorage.setItem("token", newToken)
+      localStorage.setItem("user", JSON.stringify(newUser))
+      api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
       setToken(newToken)
       setUser(newUser)
     } catch (err: unknown) {
@@ -167,6 +207,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const response = await api.post("/auth/google", { token: idToken })
         const { token: newToken, user: newUser } = response.data
         localStorage.setItem("token", newToken)
+        localStorage.setItem("user", JSON.stringify(newUser))
+        api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
         setToken(newToken)
         setUser(newUser)
       } catch {
@@ -181,6 +223,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         localStorage.setItem("token", idToken)
         localStorage.setItem("user", JSON.stringify(firebaseUser))
+        api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`
         setToken(idToken)
         setUser(firebaseUser)
       }
@@ -209,6 +252,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       localStorage.removeItem("token")
       localStorage.removeItem("user")
+      delete api.defaults.headers.common["Authorization"]
       setToken(null)
       setUser(null)
       setIsLoading(false)

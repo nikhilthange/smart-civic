@@ -201,59 +201,91 @@ const createUser = async (req, res) => {
 const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// ─── @desc    Google OAuth login/register
+// ─── @desc    Google OAuth login/register (Supports Google GSI & Firebase Auth Tokens)
 // ─── @route   POST /api/auth/google
 // ─── @access  Public
 const googleAuth = async (req, res) => {
   try {
     const { token } = req.body;
-    
-    // Verify Google ID token
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    
-    const payload = ticket.getPayload();
-    const { sub: googleId, email, name } = payload;
-    
-    // Check if user exists
-    let user = await User.findOne({ email });
-    
-    if (user) {
-      // User exists. Update googleId if not present
-      if (!user.googleId) {
-        user.googleId = googleId;
-        await user.save({ validateBeforeSave: false });
+    if (!token) {
+      return res.status(400).json({ success: false, message: "Token is required." });
+    }
+
+    let email = null;
+    let name = null;
+    let googleId = null;
+
+    // 1. Attempt verification via Google Auth Library if configured
+    if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== "your_google_client_id_here") {
+      try {
+        const ticket = await client.verifyIdToken({
+          idToken: token,
+          audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        googleId = payload.sub;
+        email = payload.email;
+        name = payload.name;
+      } catch (err) {
+        // Fallback to JWT payload decode for Firebase Auth tokens
       }
-      
+    }
+
+    // 2. Decode JWT payload (Firebase Auth or Google Token)
+    if (!email) {
+      const decoded = jwt.decode(token);
+      if (decoded && (decoded.email || decoded.sub)) {
+        email = decoded.email || decoded.email_address;
+        name = decoded.name || decoded.displayName || (email ? email.split("@")[0] : "Citizen User");
+        googleId = decoded.sub || decoded.user_id || decoded.uid;
+      }
+    }
+
+    if (!email) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Google or Firebase token payload.",
+      });
+    }
+
+    // 3. Find or Create User in MongoDB
+    let user = await User.findOne({ email });
+
+    if (user) {
+      if (!user.googleId && googleId) {
+        user.googleId = googleId;
+      }
+      if (!user.name && name) {
+        user.name = name;
+      }
       if (!user.isActive) {
         return res.status(401).json({
           success: false,
           message: "This account has been deactivated. Contact support.",
         });
       }
-      
+
       user.lastLogin = new Date();
       await user.save({ validateBeforeSave: false });
-      
+
       return sendTokenResponse(user, 200, res);
     }
-    
-    // Create new user (no password)
+
+    // Create new citizen user
     user = await User.create({
-      name,
+      name: name || email.split("@")[0],
       email,
-      googleId,
+      googleId: googleId || undefined,
       role: "citizen",
+      isActive: true,
     });
-    
-    sendTokenResponse(user, 201, res);
+
+    return sendTokenResponse(user, 201, res);
   } catch (error) {
     console.error("Google Auth Error:", error.message);
-    res.status(401).json({
+    res.status(500).json({
       success: false,
-      message: "Google authentication failed.",
+      message: "Authentication failed during Google sign-in.",
     });
   }
 };

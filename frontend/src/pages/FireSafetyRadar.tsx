@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cityOsApi, type HighRiseFireNoc } from "@/services/cityOsApi"
+import { formatCurrencyINR } from "@/utils/formatters"
 import toast from "react-hot-toast"
 
 export default function FireSafetyRadar() {
@@ -231,8 +232,8 @@ export default function FireSafetyRadar() {
                 <p className="text-[11px] text-slate-700 dark:text-slate-300 font-mono bg-white dark:bg-slate-900 p-2 rounded-lg border border-rose-100 dark:border-rose-900">
                   {simResult.mfbDispatchNotice.taxNotice}
                 </p>
-                <div className="text-[10px] text-slate-500 flex justify-between pt-1">
-                  <span>Penalty: ₹{simResult.mfbDispatchNotice.citationPenaltyInr?.toLocaleString()}</span>
+                <div className="text-[10px] text-slate-500 flex justify-between pt-1 font-mono">
+                  <span>Penalty: {formatCurrencyINR(simResult.mfbDispatchNotice.citationPenaltyInr || 0)}</span>
                   <span>MFB Station: Byculla HQ</span>
                 </div>
               </div>

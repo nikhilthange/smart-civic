@@ -8,6 +8,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { formatCurrencyINR } from "@/utils/formatters"
 import toast from "react-hot-toast"
 import api from "@/lib/axios"
 
@@ -167,7 +168,7 @@ export default function AlmSocietyDashboard() {
                   <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                     <span className="text-[10px] font-mono text-slate-400 uppercase block font-bold">Annual Tax Savings</span>
                     <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      ₹{s.annualTaxSavingsInr.toLocaleString()}
+                      {formatCurrencyINR(s.annualTaxSavingsInr)}
                     </span>
                   </div>
                 </div>

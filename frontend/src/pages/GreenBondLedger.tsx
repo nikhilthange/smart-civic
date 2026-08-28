@@ -12,6 +12,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { formatCurrencyINR, formatNumber } from "@/utils/formatters"
 import toast from "react-hot-toast"
 import {
   nextGenApi,
@@ -117,7 +118,7 @@ export default function GreenBondLedger() {
           </span>
           <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-2 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-emerald-500" />
-            <span>{portfolio ? portfolio.totalCarbonCreditsEarnedTonnes.toLocaleString() : "14,280"} tCO₂e</span>
+            <span>{formatNumber(portfolio ? portfolio.totalCarbonCreditsEarnedTonnes : 14280)} tCO₂e</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-0.5">Valuation: ₹2.85 Cr @ ₹2,000/ton</p>
         </div>
@@ -171,11 +172,11 @@ export default function GreenBondLedger() {
               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                 <div>
                   <span className="text-[10px] text-slate-400 block">Carbon Abated:</span>
-                  <strong className="text-emerald-600 dark:text-emerald-400">{cs.carbonOffsetTons.toLocaleString()} tCO₂e</strong>
+                  <strong className="text-emerald-600 dark:text-emerald-400">{formatNumber(cs.carbonOffsetTons)} tCO₂e</strong>
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 block">Annual Value:</span>
-                  <strong className="text-slate-900 dark:text-white">₹{(cs.annualRevenueInr / 100000).toFixed(1)} Lakhs</strong>
+                  <strong className="text-slate-900 dark:text-white">{formatCurrencyINR(cs.annualRevenueInr)}</strong>
                 </div>
               </div>
             </div>

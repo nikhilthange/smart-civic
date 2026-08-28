@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cityOsApi, type TransitLaneObstruction } from "@/services/cityOsApi"
+import { formatCurrencyINR } from "@/utils/formatters"
 import toast from "react-hot-toast"
 
 export default function BestTransitRadar() {
@@ -278,14 +279,14 @@ export default function BestTransitRadar() {
                       Corridor: <strong>{o.routeCorridorName}</strong> • Bus: {o.bestBusVehicleId}
                     </p>
                     <p className="text-[11px] text-slate-400 font-mono">
-                      Delay: {o.transitDelaySeconds}s • Penalty: ₹{o.challanAmountInr.toLocaleString()}
+                      Delay: {o.transitDelaySeconds}s • Penalty: {formatCurrencyINR(o.challanAmountInr)}
                     </p>
                   </div>
 
                   <div className="text-right shrink-0 bg-slate-50 dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
                     <span className="text-[10px] text-slate-400 font-mono block">E-Challan Penalty</span>
                     <span className="text-base font-mono font-bold text-blue-600">
-                      ₹{o.challanAmountInr.toLocaleString()}
+                      {formatCurrencyINR(o.challanAmountInr)}
                     </span>
                     <span className="text-[10px] text-slate-400 block font-mono">Traffic Police E-Pay</span>
                   </div>

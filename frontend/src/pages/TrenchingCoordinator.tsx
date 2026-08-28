@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { advancedMunicipalApi, type TrenchingPermit } from "@/services/advancedMunicipalApi"
+import { formatCurrencyINR } from "@/utils/formatters"
 import toast from "react-hot-toast"
 
 export default function TrenchingCoordinator() {
@@ -285,7 +286,7 @@ export default function TrenchingCoordinator() {
                     </p>
                     {isMerged && (
                       <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-mono font-semibold">
-                        🔄 Joint Trenching with {p.coordinatingAgencies?.join(" & ")} • Savings: ₹{p.sharedCostSavingsInr?.toLocaleString()}
+                        🔄 Joint Trenching with {p.coordinatingAgencies?.join(" & ")} • Savings: {formatCurrencyINR(p.sharedCostSavingsInr || 0)}
                       </p>
                     )}
                   </div>
@@ -293,7 +294,7 @@ export default function TrenchingCoordinator() {
                   <div className="text-right shrink-0">
                     <span className="text-[10px] text-slate-400 font-mono block">Reinstatement Bond</span>
                     <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">
-                      ₹{(p.reinstatementBondAmountInr / 100000).toFixed(1)} Lakhs
+                      {formatCurrencyINR(p.reinstatementBondAmountInr)}
                     </span>
                   </div>
                 </div>

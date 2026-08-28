@@ -88,10 +88,12 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    let isMounted = true
     const load = async () => {
       setIsLoading(true)
       try {
         const data = await complaintApi.getAll({ page: 1, limit: 5 })
+        if (!isMounted) return
         setRecent(data.complaints)
 
         const byStatus: Record<string, number> = {}
@@ -102,10 +104,15 @@ export default function Dashboard() {
       } catch {
         // fail silently on dashboard
       } finally {
-        setIsLoading(false)
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     }
     load()
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const pending = (stats?.byStatus["pending"] || 0) + (stats?.byStatus["ai_verified"] || 0)

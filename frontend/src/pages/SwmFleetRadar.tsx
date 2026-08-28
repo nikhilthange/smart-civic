@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
   Truck,
   Radio,
@@ -16,20 +16,32 @@ export default function SwmFleetRadar() {
   const [selectedWard, setSelectedWard] = useState("Ward G-North")
   const [isLifting, setIsLifting] = useState(false)
 
+  const isMountedRef = useRef(true)
+
   const fetchBins = useCallback(async () => {
     try {
       setLoading(true)
       const res = await municipalApi.getSmartBins(selectedWard)
-      setBins(res.bins || [])
+      if (isMountedRef.current) {
+        setBins(res.bins || [])
+      }
     } catch {
-      toast.error("Failed to load smart bin telemetry")
+      if (isMountedRef.current) {
+        toast.error("Failed to load smart bin telemetry")
+      }
     } finally {
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [selectedWard])
 
   useEffect(() => {
+    isMountedRef.current = true
     fetchBins()
+    return () => {
+      isMountedRef.current = false
+    }
   }, [fetchBins])
 
   const handleSimulateLift = async (rfidTag: string) => {

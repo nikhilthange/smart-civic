@@ -38,28 +38,22 @@ self.addEventListener("activate", (event) => {
 
 // Fetch Event
 self.addEventListener("fetch", (event) => {
+  // STRICT GUARD 1: Bypass all non-GET requests (POST, PUT, DELETE, PATCH, OPTIONS)
+  // Ensures authentication, grievance mutations, and payments never touch cache
+  if (event.request.method !== "GET") {
+    return
+  }
+
   const url = new URL(event.request.url)
 
-  // 1. Dynamic API requests -> Network-First
-  if (url.pathname.startsWith("/api/")) {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) return cachedResponse
-          return new Response(
-            JSON.stringify({
-              success: false,
-              offline: true,
-              message: "Device offline. Action saved in IndexedDB background queue.",
-            }),
-            {
-              headers: { "Content-Type": "application/json" },
-              status: 503,
-            }
-          )
-        })
-      })
-    )
+  // STRICT GUARD 2: Completely bypass API routes, WebSocket gateways, and remote backend hosts
+  if (
+    url.pathname.startsWith("/api") ||
+    url.pathname.startsWith("/socket.io") ||
+    url.hostname.includes("onrender.com") ||
+    url.hostname.includes("localhost:5000") ||
+    url.port === "5000"
+  ) {
     return
   }
 

@@ -1,7 +1,21 @@
 import axios from "axios"
 
+/**
+ * Normalizes the API URL to guarantee that every outbound request has a clean `/api` prefix,
+ * preventing 404s when environment variables omit the trailing `/api` segment.
+ */
+export function getNormalizedApiUrl(): string {
+  const raw = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").trim()
+  const cleaned = raw.replace(/\/+$/, "")
+  return cleaned.endsWith("/api") ? cleaned : `${cleaned}/api`
+}
+
+export function getNormalizedBaseUrl(): string {
+  return getNormalizedApiUrl().replace(/\/api\/?$/, "")
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: getNormalizedApiUrl(),
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",

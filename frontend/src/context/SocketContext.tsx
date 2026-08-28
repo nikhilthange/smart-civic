@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import { io, Socket } from "socket.io-client"
+import { getNormalizedBaseUrl } from "@/lib/axios"
 
 interface SocketContextValue {
   socket: Socket | null
@@ -19,10 +20,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [lastEvent, setLastEvent] = useState<{ type: string; payload: any } | null>(null)
 
   useEffect(() => {
-    // Connect to backend server URL (strip /api or /api/ suffix)
-    const backendUrl = import.meta.env.VITE_API_URL
-      ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "")
-      : "http://localhost:5000"
+    // Connect to backend server URL (guaranteed base origin without /api)
+    const backendUrl = getNormalizedBaseUrl()
 
     const socketInstance: Socket = io(backendUrl, {
       transports: ["websocket", "polling"],

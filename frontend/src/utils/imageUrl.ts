@@ -1,9 +1,10 @@
+import { getNormalizedBaseUrl } from "@/lib/axios"
+
 /**
  * Helper utility to resolve backend image URLs and handle image loading fallbacks.
  * Resolves exact user-uploaded images from backend storage (/uploads).
  */
-
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000").replace(/\/api\/?$/, "")
+const API_BASE_URL = getNormalizedBaseUrl()
 
 // SVG placeholder as inline data URL (used ONLY when an uploaded image fails to load or 404s)
 export const FALLBACK_IMAGE = `data:image/svg+xml;utf8,${encodeURIComponent(`

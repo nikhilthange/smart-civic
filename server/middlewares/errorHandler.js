@@ -90,6 +90,9 @@ const globalErrorHandler = (err, req, res, next) => {
 
 // ─── 404 handler ──────────────────────────────────────────────────────────────
 const notFoundHandler = (req, res, next) => {
+  console.warn(
+    `⚠️  404 Not Found: [${req.method}] ${req.originalUrl} | Origin: ${req.headers.origin || "Direct/No-Origin"} | Host: ${req.headers.host}`
+  );
   next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404));
 };
 

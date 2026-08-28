@@ -15,6 +15,7 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   updateProfile,
+  onAuthStateChanged,
   signOut as firebaseSignOut,
 } from "@/lib/firebase"
 
@@ -141,6 +142,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       isMounted = false
     }
+  }, [])
+
+  // ─── Firebase Auth Observer: Guard against unverified email users ─────────────
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const isPasswordProvider = firebaseUser.providerData.some(
+          (p) => p.providerId === "password"
+        )
+
+        // If email/password user is not verified, do not hydrate authenticated session
+        if (isPasswordProvider && !firebaseUser.emailVerified) {
+          setIsLoading(false)
+          return
+        }
+      }
+    })
+
+    return () => unsubscribe()
   }, [])
 
   // ─── Register ────────────────────────────────────────────────────────────────

@@ -367,47 +367,102 @@ export default function DlpRegistry() {
                 </select>
               </div>
 
-              {/* 3D Visualizer Cavity Card */}
-              <div className="p-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-white space-y-2 relative overflow-hidden">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-zinc-400 font-mono font-semibold flex items-center gap-1.5">
-                    <Layers className="w-3.5 h-3.5 text-emerald-400" />
-                    3D Cavity Geometry Model
+              {/* Engineering CAD Wireframe Geometry Model */}
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3 relative overflow-hidden">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-700 dark:text-slate-300 font-mono font-semibold flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                    CAD CAVITY WIREFRAME
                   </span>
-                  <span className="text-emerald-400 font-mono text-[10px]">
+                  <span className="text-slate-600 dark:text-slate-400 font-mono text-[11px] bg-slate-200/70 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700">
                     {lengthCm}cm × {widthCm}cm × {depthCm}cm
                   </span>
                 </div>
 
-                {/* Simulated 3D Bounding Depth Visualization */}
-                <div className="h-20 w-full bg-zinc-900 rounded-xl border border-zinc-800 relative flex items-center justify-center p-2">
-                  <div
-                    className="border-2 border-dashed border-emerald-400/80 bg-emerald-500/15 rounded-lg flex items-center justify-center transition-all duration-300"
-                    style={{
-                      width: `${Math.min(90, Math.max(30, (lengthCm / 200) * 100))}%`,
-                      height: `${Math.min(85, Math.max(25, (widthCm / 150) * 100))}%`,
-                      boxShadow: `0 0 15px rgba(16, 185, 129, ${Math.min(0.6, depthCm / 15)})`,
-                    }}
-                  >
-                    <span className="text-[10px] font-mono text-emerald-300 font-bold bg-black/60 px-1.5 py-0.5 rounded">
-                      Depth: {depthCm} cm
-                    </span>
+                {/* Technical Blueprint Grid Canvas */}
+                <div
+                  className="h-28 w-full rounded-xl border border-slate-300 dark:border-slate-700/80 relative flex items-center justify-center p-3 overflow-hidden bg-slate-100/70 dark:bg-slate-950/60"
+                  style={{
+                    backgroundImage: `
+                      linear-gradient(to right, rgba(148, 163, 184, 0.2) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(148, 163, 184, 0.2) 1px, transparent 1px)
+                    `,
+                    backgroundSize: "14px 14px",
+                  }}
+                >
+                  {/* Coordinate Axes Indicator */}
+                  <div className="absolute top-2 left-2 text-[9px] font-mono text-slate-400 dark:text-slate-500 uppercase">
+                    Scale: 1:10 CM
+                  </div>
+
+                  {/* Architectural Drafting Bounding Box with Dimension Lines */}
+                  <div className="relative flex items-center justify-center">
+                    {/* Top Dimension Annotation (Length) */}
+                    <div className="absolute -top-5 flex items-center gap-1 w-full justify-center text-[10px] font-mono text-blue-700 dark:text-blue-300 font-bold">
+                      <span className="text-slate-400">|‹</span>
+                      <span>L: {lengthCm} cm</span>
+                      <span className="text-slate-400">›|</span>
+                    </div>
+
+                    {/* CAD Wireframe Box */}
+                    <div
+                      className="border-2 border-blue-600 dark:border-blue-400 bg-blue-500/10 dark:bg-blue-500/20 rounded-md flex items-center justify-center transition-all duration-300 relative shadow-sm"
+                      style={{
+                        width: `${Math.min(180, Math.max(60, (lengthCm / 200) * 160))}px`,
+                        height: `${Math.min(65, Math.max(28, (widthCm / 150) * 55))}px`,
+                      }}
+                    >
+                      {/* Depth Badge */}
+                      <span className="text-[10px] font-mono font-bold text-blue-900 dark:text-blue-100 bg-white/90 dark:bg-slate-900/90 border border-blue-300 dark:border-blue-700 px-1.5 py-0.5 rounded shadow-xs">
+                        D: {depthCm} cm
+                      </span>
+
+                      {/* Right Dimension Annotation (Width) */}
+                      <div className="absolute -right-16 flex items-center gap-0.5 text-[10px] font-mono text-slate-600 dark:text-slate-300">
+                        <span>W: {widthCm}cm</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Dynamic Depth Severity Bar */}
-                <div className="space-y-1 pt-1">
-                  <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-                    <span>Severity: <strong className={depthSeverity.color}>{depthSeverity.level}</strong></span>
-                    <span>{depthSeverity.label}</span>
+                {/* Engineering Segmented Depth Gauge */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between text-[11px] font-mono">
+                    <span className="text-slate-600 dark:text-slate-400">Severity Zone:</span>
+                    <span className={`font-bold ${depthSeverity.color}`}>{depthSeverity.label}</span>
                   </div>
-                  <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-300 ${
-                        depthCm > 8 ? "bg-rose-500" : depthCm > 4 ? "bg-amber-500" : "bg-emerald-500"
-                      }`}
-                      style={{ width: `${depthSeverity.percentage}%` }}
-                    />
+                  {/* 3-Segment Progress Gauge */}
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <div className="space-y-1">
+                      <div
+                        className={`h-2 rounded-full transition-colors ${
+                          depthCm > 0 ? "bg-emerald-500" : "bg-slate-200 dark:bg-slate-800"
+                        }`}
+                      />
+                      <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 block text-center">
+                        &lt; 5cm (Shallow)
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <div
+                        className={`h-2 rounded-full transition-colors ${
+                          depthCm >= 5 ? "bg-amber-500" : "bg-slate-200 dark:bg-slate-800"
+                        }`}
+                      />
+                      <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 block text-center">
+                        5–8cm (Moderate)
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <div
+                        className={`h-2 rounded-full transition-colors ${
+                          depthCm >= 8 ? "bg-rose-500" : "bg-slate-200 dark:bg-slate-800"
+                        }`}
+                      />
+                      <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 block text-center">
+                        &gt; 8cm (Severe)
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

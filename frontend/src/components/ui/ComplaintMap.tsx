@@ -37,14 +37,13 @@ function ComplaintMapComponent({ lat, lng }: ComplaintMapProps) {
     try {
       const isTouch = typeof window !== "undefined" && ("ontouchstart" in window || window.innerWidth < 768)
 
-      const mapOptions: L.MapOptions & { tap?: boolean } = {
+      const mapOptions: L.MapOptions = {
         center: [lat, lng],
         zoom: 15,
         zoomControl: false,
         scrollWheelZoom: false,
         attributionControl: false,
         preferCanvas: false,
-        tap: false,
         touchZoom: true,
         dragging: !isTouch,
       }

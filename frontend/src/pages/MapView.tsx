@@ -195,7 +195,6 @@ export default function MapView() {
         scrollWheelZoom: false,
         touchZoom: true,
         dragging: !isTouch || !L.Browser.mobile,
-        tap: false,
       })
 
       if (isTouch) {

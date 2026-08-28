@@ -73,15 +73,15 @@ export default function KarmaRewards() {
   const [activeVoucherModal, setActiveVoucherModal] = useState<any | null>(null)
   const [copied, setCopied] = useState(false)
 
-  // Keep local state in sync if user object updates in AuthContext
+  // Keep local state in sync if user karma or vouchers update in AuthContext
   useEffect(() => {
-    if (user) {
-      setKarmaPoints(user.karmaPoints ?? 0)
-      if (user.redeemedRewards) {
-        setRedeemedList(user.redeemedRewards)
-      }
+    if (typeof user?.karmaPoints === "number") {
+      setKarmaPoints(user.karmaPoints)
     }
-  }, [user])
+    if (user?.redeemedRewards) {
+      setRedeemedList(user.redeemedRewards)
+    }
+  }, [user?.karmaPoints, user?.redeemedRewards])
 
   // Fetch latest user profile state on mount
   useEffect(() => {

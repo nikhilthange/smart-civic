@@ -184,13 +184,25 @@ export default function MapView() {
     ensureLeafletPlugins().then(() => {
       if (isCancelled || !mapContainerRef.current || mapInstanceRef.current) return
 
+      const isTouch = typeof window !== "undefined" && ("ontouchstart" in window || window.innerWidth < 768)
+
       const map = L.map(mapContainerRef.current, {
         center: MUMBAI_CENTER,
         zoom: 12,
         zoomControl: true,
         minZoom: 10,
         maxZoom: 18,
+        scrollWheelZoom: false,
+        touchZoom: true,
+        dragging: !isTouch || !L.Browser.mobile,
+        tap: false,
       })
+
+      if (isTouch) {
+        map.on("click", () => {
+          map.dragging.enable()
+        })
+      }
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | BMC Municipal GIS Suite',
@@ -933,6 +945,11 @@ export default function MapView() {
               ref={mapContainerRef}
               className="w-full h-[55vh] sm:h-[620px] min-h-[380px] sm:min-h-[520px] bg-slate-100 relative z-1"
             />
+
+            {/* Mobile Touch Gesture Guide */}
+            <div className="sm:hidden absolute top-3 right-3 z-10 bg-slate-900/80 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[10px] font-medium border border-white/10 shadow pointer-events-none">
+              👆 Tap to pan map
+            </div>
             
             {loading && (
               <div className="absolute inset-0 z-20 pointer-events-none">

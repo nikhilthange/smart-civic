@@ -35,6 +35,8 @@ function ComplaintMapComponent({ lat, lng }: ComplaintMapProps) {
     }
 
     try {
+      const isTouch = typeof window !== "undefined" && ("ontouchstart" in window || window.innerWidth < 768)
+
       const mapOptions: L.MapOptions & { tap?: boolean } = {
         center: [lat, lng],
         zoom: 15,
@@ -42,12 +44,18 @@ function ComplaintMapComponent({ lat, lng }: ComplaintMapProps) {
         scrollWheelZoom: false,
         attributionControl: false,
         preferCanvas: false,
-        // Disable Leaflet's legacy tap listener on touch devices to avoid iOS touch event interception conflicts
         tap: false,
         touchZoom: true,
+        dragging: !isTouch,
       }
 
       const map = L.map(mapContainerRef.current, mapOptions)
+
+      if (isTouch) {
+        map.on("click", () => {
+          map.dragging.enable()
+        })
+      }
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,

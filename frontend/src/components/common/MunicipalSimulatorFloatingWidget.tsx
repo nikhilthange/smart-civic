@@ -77,18 +77,21 @@ export default function MunicipalSimulatorFloatingWidget() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    <div
+      className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-40 scale-90 sm:scale-100 origin-bottom-right"
+      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+    >
       {!isOpen ? (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-slate-900 dark:bg-rose-600 hover:bg-slate-800 text-white text-xs font-semibold shadow-xl border border-white/15 transition-all transform hover:scale-105"
+          className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-slate-900 dark:bg-rose-600 hover:bg-slate-800 text-white text-xs font-semibold shadow-xl border border-white/15 transition-all transform hover:scale-105 min-h-[44px]"
         >
           <Activity className="w-4 h-4 text-rose-400 dark:text-white animate-pulse" />
           <span>CityOS Emergency Simulator</span>
         </button>
       ) : (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-3xl p-4 shadow-2xl w-80 space-y-3 animate-in fade-in slide-in-from-bottom-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-3xl p-4 shadow-2xl w-[calc(100vw-24px)] max-w-xs space-y-3 animate-in fade-in slide-in-from-bottom-3">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-rose-600" />

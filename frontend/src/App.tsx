@@ -7,52 +7,76 @@ import DashboardLayout from "./components/layout/DashboardLayout"
 import ErrorBoundary from "./components/common/ErrorBoundary"
 import { GoogleOAuthProvider } from "@react-oauth/google"
 
-// ─── Route-Level Dynamic Lazy Imports (Code-Splitting) ─────────────────────────
-const Home = lazy(() => import("./pages/Home"))
-const Auth = lazy(() => import("./pages/Auth"))
-const Dashboard = lazy(() => import("./pages/Dashboard"))
-const CreateComplaint = lazy(() => import("./pages/CreateComplaint"))
-const ComplaintHistory = lazy(() => import("./pages/ComplaintHistory"))
-const ComplaintTracking = lazy(() => import("./pages/ComplaintTracking"))
-const TrackComplaint = lazy(() => import("./pages/TrackComplaint"))
-const Unauthorized = lazy(() => import("./pages/Unauthorized"))
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"))
-const Donation = lazy(() => import("./pages/Donation"))
-const AnalyticsDashboard = lazy(() => import("./pages/AnalyticsDashboard"))
-const SearchComplaints = lazy(() => import("./pages/SearchComplaints"))
-const OfficerDashboard = lazy(() => import("./pages/OfficerDashboard"))
-const WorkerDashboard = lazy(() => import("./pages/WorkerDashboard"))
-const KarmaRewards = lazy(() => import("./pages/KarmaRewards"))
-const Notifications = lazy(() => import("./pages/Notifications"))
-const MonsoonRadar = lazy(() => import("./pages/MonsoonRadar"))
-const DlpRegistry = lazy(() => import("./pages/DlpRegistry"))
-const SwmFleetRadar = lazy(() => import("./pages/SwmFleetRadar"))
-const ParticipatoryBudget = lazy(() => import("./pages/ParticipatoryBudget"))
-const TrenchingCoordinator = lazy(() => import("./pages/TrenchingCoordinator"))
-const AqiEnforcement = lazy(() => import("./pages/AqiEnforcement"))
-const WaterGovernance = lazy(() => import("./pages/WaterGovernance"))
-const DisasterSubways = lazy(() => import("./pages/DisasterSubways"))
-const StructuralCollapseRadar = lazy(() => import("./pages/StructuralCollapseRadar"))
-const CoastalSentinel = lazy(() => import("./pages/CoastalSentinel"))
-const FireSafetyRadar = lazy(() => import("./pages/FireSafetyRadar"))
-const PropertyTaxAudit = lazy(() => import("./pages/PropertyTaxAudit"))
-const BestTransitRadar = lazy(() => import("./pages/BestTransitRadar"))
-const AnimalWelfareRadar = lazy(() => import("./pages/AnimalWelfareRadar"))
-const WhatsAppSandbox = lazy(() => import("./pages/WhatsAppSandbox"))
-const AuditLedger = lazy(() => import("./pages/AuditLedger"))
-const CctvSurveillanceRadar = lazy(() => import("./pages/CctvSurveillanceRadar"))
-const DigitalTwinSim = lazy(() => import("./pages/DigitalTwinSim"))
-const GreenBondLedger = lazy(() => import("./pages/GreenBondLedger"))
-const SocialMediaRadar = lazy(() => import("./pages/SocialMediaRadar"))
-const ContractorRegistry = lazy(() => import("./pages/ContractorRegistry"))
-const AlmSocietyDashboard = lazy(() => import("./pages/AlmSocietyDashboard"))
-const DailySitrepDashboard = lazy(() => import("./pages/DailySitrepDashboard"))
-const EmergencyBroadcastHub = lazy(() => import("./pages/EmergencyBroadcastHub"))
-const QuickReport = lazy(() => import("./pages/QuickReport"))
-const AdminDataStudio = lazy(() => import("./pages/AdminDataStudio"))
-const MapView = lazy(() => import("./pages/MapView"))
-const Settings = lazy(() => import("./pages/Settings"))
-const Support = lazy(() => import("./pages/Support"))
+// ─── Chunk Mismatch & Dynamic Import Resilience Helper ────────────────────────
+export function lazyRetry<T extends React.ComponentType<any>>(
+  componentImport: () => Promise<{ default: T }>
+) {
+  return lazy(async () => {
+    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
+      window.sessionStorage.getItem("page-refreshed") || "false"
+    )
+
+    try {
+      const component = await componentImport()
+      window.sessionStorage.setItem("page-refreshed", "false")
+      return component
+    } catch (error) {
+      if (!pageHasAlreadyBeenForceRefreshed) {
+        window.sessionStorage.setItem("page-refreshed", "true")
+        window.location.reload()
+        return { default: (() => null) as unknown as T }
+      }
+      throw error
+    }
+  })
+}
+
+// ─── Route-Level Dynamic Lazy Imports (Code-Splitting with Auto-Recovery) ──────
+const Home = lazyRetry(() => import("./pages/Home"))
+const Auth = lazyRetry(() => import("./pages/Auth"))
+const Dashboard = lazyRetry(() => import("./pages/Dashboard"))
+const CreateComplaint = lazyRetry(() => import("./pages/CreateComplaint"))
+const ComplaintHistory = lazyRetry(() => import("./pages/ComplaintHistory"))
+const ComplaintTracking = lazyRetry(() => import("./pages/ComplaintTracking"))
+const TrackComplaint = lazyRetry(() => import("./pages/TrackComplaint"))
+const Unauthorized = lazyRetry(() => import("./pages/Unauthorized"))
+const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard"))
+const Donation = lazyRetry(() => import("./pages/Donation"))
+const AnalyticsDashboard = lazyRetry(() => import("./pages/AnalyticsDashboard"))
+const SearchComplaints = lazyRetry(() => import("./pages/SearchComplaints"))
+const OfficerDashboard = lazyRetry(() => import("./pages/OfficerDashboard"))
+const WorkerDashboard = lazyRetry(() => import("./pages/WorkerDashboard"))
+const KarmaRewards = lazyRetry(() => import("./pages/KarmaRewards"))
+const Notifications = lazyRetry(() => import("./pages/Notifications"))
+const MonsoonRadar = lazyRetry(() => import("./pages/MonsoonRadar"))
+const DlpRegistry = lazyRetry(() => import("./pages/DlpRegistry"))
+const SwmFleetRadar = lazyRetry(() => import("./pages/SwmFleetRadar"))
+const ParticipatoryBudget = lazyRetry(() => import("./pages/ParticipatoryBudget"))
+const TrenchingCoordinator = lazyRetry(() => import("./pages/TrenchingCoordinator"))
+const AqiEnforcement = lazyRetry(() => import("./pages/AqiEnforcement"))
+const WaterGovernance = lazyRetry(() => import("./pages/WaterGovernance"))
+const DisasterSubways = lazyRetry(() => import("./pages/DisasterSubways"))
+const StructuralCollapseRadar = lazyRetry(() => import("./pages/StructuralCollapseRadar"))
+const CoastalSentinel = lazyRetry(() => import("./pages/CoastalSentinel"))
+const FireSafetyRadar = lazyRetry(() => import("./pages/FireSafetyRadar"))
+const PropertyTaxAudit = lazyRetry(() => import("./pages/PropertyTaxAudit"))
+const BestTransitRadar = lazyRetry(() => import("./pages/BestTransitRadar"))
+const AnimalWelfareRadar = lazyRetry(() => import("./pages/AnimalWelfareRadar"))
+const WhatsAppSandbox = lazyRetry(() => import("./pages/WhatsAppSandbox"))
+const AuditLedger = lazyRetry(() => import("./pages/AuditLedger"))
+const CctvSurveillanceRadar = lazyRetry(() => import("./pages/CctvSurveillanceRadar"))
+const DigitalTwinSim = lazyRetry(() => import("./pages/DigitalTwinSim"))
+const GreenBondLedger = lazyRetry(() => import("./pages/GreenBondLedger"))
+const SocialMediaRadar = lazyRetry(() => import("./pages/SocialMediaRadar"))
+const ContractorRegistry = lazyRetry(() => import("./pages/ContractorRegistry"))
+const AlmSocietyDashboard = lazyRetry(() => import("./pages/AlmSocietyDashboard"))
+const DailySitrepDashboard = lazyRetry(() => import("./pages/DailySitrepDashboard"))
+const EmergencyBroadcastHub = lazyRetry(() => import("./pages/EmergencyBroadcastHub"))
+const QuickReport = lazyRetry(() => import("./pages/QuickReport"))
+const AdminDataStudio = lazyRetry(() => import("./pages/AdminDataStudio"))
+const MapView = lazyRetry(() => import("./pages/MapView"))
+const Settings = lazyRetry(() => import("./pages/Settings"))
+const Support = lazyRetry(() => import("./pages/Support"))
 
 // ─── Loading Fallback Component ───────────────────────────────────────────────
 const RouteLoadingFallback = () => (

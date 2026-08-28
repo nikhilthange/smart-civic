@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { cityOsApi, type PropertyTaxDiscrepancy } from "@/services/cityOsApi"
 import toast from "react-hot-toast"
+import { formatCurrencyINR } from "@/utils/formatters"
 
 export default function PropertyTaxAudit() {
   const [properties, setProperties] = useState<PropertyTaxDiscrepancy[]>([])
@@ -256,11 +257,11 @@ export default function PropertyTaxAudit() {
             {calcResult && (
               <div className="mt-4 p-3 rounded-xl bg-violet-50 dark:bg-violet-950/40 border border-violet-200 text-xs space-y-1.5">
                 <div className="flex items-center justify-between font-mono font-bold text-violet-900 dark:text-violet-300">
-                  <span>Demand Notice: ₹{calcResult.totalRecoveryInr?.toLocaleString()}</span>
+                  <span>Demand Notice: {formatCurrencyINR(calcResult.totalRecoveryInr || 0)}</span>
                   <Badge className="bg-violet-600 text-white text-[10px]">+{calcResult.discrepancyPercentage}% AREA</Badge>
                 </div>
                 <p className="text-[11px] text-slate-700 dark:text-slate-300">
-                  Deficit: <strong>₹{calcResult.estimatedTaxDeficitInr?.toLocaleString()}</strong> + 200% Penalty: <strong>₹{calcResult.penaltyAmountInr?.toLocaleString()}</strong>
+                  Deficit: <strong>{formatCurrencyINR(calcResult.estimatedTaxDeficitInr || 0)}</strong> + 200% Penalty: <strong>{formatCurrencyINR(calcResult.penaltyAmountInr || 0)}</strong>
                 </p>
               </div>
             )}

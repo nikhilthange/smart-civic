@@ -308,7 +308,7 @@ export default function SwmFleetRadar() {
             {formatCurrencyINR(contractorEscrow)}
           </div>
           <p className="text-[11px] text-rose-600 font-medium">
-            {penaltiesLogged > 0 ? `₹${(penaltiesLogged * 5000).toLocaleString()} Deducted (MMC Act Sec 354)` : "No active breaches"}
+            {penaltiesLogged > 0 ? `${formatCurrencyINR(penaltiesLogged * 5000)} Deducted (MMC Act Sec 354)` : "No active breaches"}
           </p>
         </div>
       </div>

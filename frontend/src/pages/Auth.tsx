@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate, Link, Navigate } from "react-router-dom"
 import { Building2, Eye, EyeOff, Loader2, Mail, CheckCircle2, ArrowLeft, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,16 @@ export default function Auth() {
   const [verificationEmail, setVerificationEmail] = useState("")
   const [isResending, setIsResending] = useState(false)
   const [resendSuccess, setResendSuccess] = useState<string | null>(null)
+  const [resendCooldown, setResendCooldown] = useState(0)
+
+  // 60-second cooldown timer for resend action
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [resendCooldown])
 
   const [formData, setFormData] = useState<{
     name: string
@@ -84,6 +94,7 @@ export default function Auth() {
           if (err.message === "EMAIL_NOT_VERIFIED") {
             setVerificationEmail(formData.email)
             setNeedsVerification(true)
+            setResendCooldown(60)
             return
           }
           // If Firebase rejects credentials, try backend login fallback
@@ -108,6 +119,7 @@ export default function Auth() {
           if (res.needsVerification) {
             setVerificationEmail(formData.email)
             setNeedsVerification(true)
+            setResendCooldown(60)
             return
           }
         } catch (firebaseErr: any) {
@@ -132,6 +144,7 @@ export default function Auth() {
         if (err.message === "EMAIL_NOT_VERIFIED") {
           setVerificationEmail(formData.email)
           setNeedsVerification(true)
+          setResendCooldown(60)
           return
         }
         setLocalError(err.message)
@@ -218,14 +231,22 @@ export default function Auth() {
                 type="button"
                 variant="outline"
                 className="w-full rounded-xl border-slate-200 dark:border-slate-800 text-xs font-medium"
-                disabled={isResending}
+                disabled={isResending || resendCooldown > 0}
                 onClick={async () => {
+                  if (!formData.password) {
+                    setLocalError("Please enter your password or sign in to request a fresh verification link.")
+                    setNeedsVerification(false)
+                    setIsLogin(true)
+                    return
+                  }
+
                   setIsResending(true)
                   setLocalError(null)
                   setResendSuccess(null)
                   try {
-                    await resendEmailVerification(verificationEmail, formData.password || undefined)
+                    await resendEmailVerification(verificationEmail, formData.password)
                     setResendSuccess("Verification email resent successfully! Check your inbox.")
+                    setResendCooldown(60)
                   } catch (err: any) {
                     setLocalError(err.message || "Could not resend email. Please try again.")
                   } finally {
@@ -237,6 +258,11 @@ export default function Auth() {
                   <>
                     <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
                     Resending...
+                  </>
+                ) : resendCooldown > 0 ? (
+                  <>
+                    <RefreshCw className="mr-2 h-3.5 w-3.5 animate-spin text-slate-400" />
+                    Resend in {resendCooldown}s
                   </>
                 ) : (
                   <>

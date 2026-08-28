@@ -335,21 +335,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // ─── Resend Firebase Email Verification ─────────────────────────────────────
   const resendEmailVerification = useCallback(async (email: string, password?: string) => {
+    setIsLoading(true)
+    setError(null)
     try {
-      if (password) {
-        const cred = await signInWithEmailAndPassword(auth, email, password)
-        await sendEmailVerification(cred.user)
-        await firebaseSignOut(auth)
-        return
+      let currentUser = auth.currentUser
+
+      // If signed out, temporarily authenticate to resend if credentials exist
+      if (!currentUser && email && password) {
+        try {
+          const cred = await signInWithEmailAndPassword(auth, email, password)
+          currentUser = cred.user
+        } catch (authErr: any) {
+          const msg = extractErrorMessage(authErr)
+          throw new Error(msg)
+        }
       }
-      if (auth.currentUser) {
-        await sendEmailVerification(auth.currentUser)
+
+      if (currentUser) {
+        await sendEmailVerification(currentUser)
+        if (!currentUser.emailVerified) {
+          await firebaseSignOut(auth)
+        }
         return
+      } else {
+        throw new Error("Please enter your password or sign in to request a new verification email.")
       }
     } catch (err: any) {
       console.error("Resend verification error:", err)
       const msg = extractErrorMessage(err)
+      setError(msg)
       throw new Error(msg || "Failed to resend verification email.")
+    } finally {
+      setIsLoading(false)
     }
   }, [])
 

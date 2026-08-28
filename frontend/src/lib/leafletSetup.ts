@@ -1,9 +1,10 @@
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 
-// Fix legacy Leaflet plugins expecting global window.L
+// Fix legacy Leaflet plugins expecting global window.L and window.global
 if (typeof window !== "undefined") {
   ;(window as any).L = L
+  ;(window as any).global = window
 }
 
 // Fix default Leaflet marker icons with Vite/Webpack asset bundling
@@ -31,6 +32,24 @@ try {
   })
 } catch {
   // Best-effort icon initialization
+}
+
+/**
+ * Dynamically and safely loads Leaflet plugins after window.L is assigned.
+ */
+let pluginsPromise: Promise<void> | null = null
+export async function ensureLeafletPlugins(): Promise<void> {
+  if (typeof window === "undefined") return
+  ;(window as any).L = L
+  ;(window as any).global = window
+
+  if (!pluginsPromise) {
+    pluginsPromise = Promise.all([
+      import("leaflet.markercluster"),
+      import("leaflet.heat"),
+    ]).then(() => {})
+  }
+  return pluginsPromise
 }
 
 export default L

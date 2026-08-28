@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom"
-import L from "@/lib/leafletSetup"
+import L, { ensureLeafletPlugins } from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
-import "leaflet.markercluster"
 import "leaflet.markercluster/dist/MarkerCluster.css"
 import "leaflet.markercluster/dist/MarkerCluster.Default.css"
-import "leaflet.heat"
 import {
   Filter, MapPin, Layers, RefreshCw, Flame,
   Search, Eye, AlertTriangle, Building2, Radio,
@@ -181,116 +179,124 @@ export default function MapView() {
   // Initialize Leaflet Map and Layer Groups once
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return
+    let isCancelled = false
 
-    const map = L.map(mapContainerRef.current, {
-      center: MUMBAI_CENTER,
-      zoom: 12,
-      zoomControl: true,
-      minZoom: 10,
-      maxZoom: 18,
-    })
+    ensureLeafletPlugins().then(() => {
+      if (isCancelled || !mapContainerRef.current || mapInstanceRef.current) return
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | BMC Municipal GIS Suite',
-      maxZoom: 19,
-    }).addTo(map)
+      const map = L.map(mapContainerRef.current, {
+        center: MUMBAI_CENTER,
+        zoom: 12,
+        zoomControl: true,
+        minZoom: 10,
+        maxZoom: 18,
+      })
 
-    // Dynamic Severity-aware Cluster Group
-    const clusterGroup = (L as any).markerClusterGroup({
-      showCoverageOnHover: false,
-      zoomToBoundsOnClick: true,
-      spiderfyOnMaxZoom: true,
-      maxClusterRadius: 45,
-      iconCreateFunction: function (cluster: any) {
-        const markers = cluster.getAllChildMarkers()
-        const count = markers.length
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | BMC Municipal GIS Suite',
+        maxZoom: 19,
+      }).addTo(map)
 
-        let hasCritical = false
-        let hasHigh = false
-        let hasMedium = false
+      // Dynamic Severity-aware Cluster Group
+      const clusterGroup = (L as any).markerClusterGroup({
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        spiderfyOnMaxZoom: true,
+        maxClusterRadius: 45,
+        iconCreateFunction: function (cluster: any) {
+          const markers = cluster.getAllChildMarkers()
+          const count = markers.length
 
-        markers.forEach((m: any) => {
-          const p = m.options?.priority || "medium"
-          if (p === "critical") hasCritical = true
-          else if (p === "high") hasHigh = true
-          else if (p === "medium") hasMedium = true
-        })
+          let hasCritical = false
+          let hasHigh = false
+          let hasMedium = false
 
-        let clusterColor = "#16a34a" // Low (Green)
-        let clusterBg = "rgba(22, 163, 74, 0.25)"
-        let clusterBorder = "#15803d"
+          markers.forEach((m: any) => {
+            const p = m.options?.priority || "medium"
+            if (p === "critical") hasCritical = true
+            else if (p === "high") hasHigh = true
+            else if (p === "medium") hasMedium = true
+          })
 
-        if (hasCritical) {
-          clusterColor = "#dc2626" // Critical (Red)
-          clusterBg = "rgba(220, 38, 38, 0.35)"
-          clusterBorder = "#b91c1c"
-        } else if (hasHigh || hasMedium) {
-          clusterColor = "#d97706" // High / Medium (Amber/Orange)
-          clusterBg = "rgba(217, 119, 6, 0.30)"
-          clusterBorder = "#b45309"
-        }
+          let clusterColor = "#16a34a" // Low (Green)
+          let clusterBg = "rgba(22, 163, 74, 0.25)"
+          let clusterBorder = "#15803d"
 
-        return L.divIcon({
-          html: `
-            <div style="
-              width: 44px;
-              height: 44px;
-              border-radius: 50%;
-              background: ${clusterBg};
-              border: 1.5px solid ${clusterBorder};
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-            ">
+          if (hasCritical) {
+            clusterColor = "#dc2626" // Critical (Red)
+            clusterBg = "rgba(220, 38, 38, 0.35)"
+            clusterBorder = "#b91c1c"
+          } else if (hasHigh || hasMedium) {
+            clusterColor = "#d97706" // High / Medium (Amber/Orange)
+            clusterBg = "rgba(217, 119, 6, 0.30)"
+            clusterBorder = "#b45309"
+          }
+
+          return L.divIcon({
+            html: `
               <div style="
-                width: 32px;
-                height: 32px;
+                width: 44px;
+                height: 44px;
                 border-radius: 50%;
-                background: ${clusterColor};
-                color: #ffffff;
-                font-weight: 800;
-                font-size: 13px;
-                font-family: system-ui, sans-serif;
+                background: ${clusterBg};
+                border: 1.5px solid ${clusterBorder};
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                border: 2px solid #ffffff;
-                box-shadow: inset 0 1px 2px rgba(255,255,255,0.4);
+                box-shadow: 0 4px 14px rgba(0,0,0,0.25);
               ">
-                ${count}
+                <div style="
+                  width: 32px;
+                  height: 32px;
+                  border-radius: 50%;
+                  background: ${clusterColor};
+                  color: #ffffff;
+                  font-weight: 800;
+                  font-size: 13px;
+                  font-family: system-ui, sans-serif;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  border: 2px solid #ffffff;
+                  box-shadow: inset 0 1px 2px rgba(255,255,255,0.4);
+                ">
+                  ${count}
+                </div>
               </div>
-            </div>
-          `,
-          className: "custom-cluster-marker",
-          iconSize: [44, 44],
-          iconAnchor: [22, 22],
-        })
-      },
+            `,
+            className: "custom-cluster-marker",
+            iconSize: [44, 44],
+            iconAnchor: [22, 22],
+          })
+        },
+      })
+
+      const choroplethGroup = L.layerGroup()
+
+      map.addLayer(clusterGroup)
+      map.addLayer(choroplethGroup)
+
+      clusterGroupRef.current = clusterGroup
+      choroplethGroupRef.current = choroplethGroup
+      mapInstanceRef.current = map
+
+      // Trigger map invalidation to avoid blank tiles
+      setTimeout(() => map.invalidateSize(), 150)
+      setTimeout(() => map.invalidateSize(), 500)
     })
 
-    const choroplethGroup = L.layerGroup()
-
-    map.addLayer(clusterGroup)
-    map.addLayer(choroplethGroup)
-
-    clusterGroupRef.current = clusterGroup
-    choroplethGroupRef.current = choroplethGroup
-    mapInstanceRef.current = map
-
-    // Trigger map invalidation to avoid blank tiles
-    const timer1 = setTimeout(() => map.invalidateSize(), 150)
-    const timer2 = setTimeout(() => map.invalidateSize(), 500)
-
-    const handleResize = () => map.invalidateSize()
+    const handleResize = () => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize()
+    }
     window.addEventListener("resize", handleResize)
 
     return () => {
-      clearTimeout(timer1)
-      clearTimeout(timer2)
+      isCancelled = true
       window.removeEventListener("resize", handleResize)
-      map.remove()
-      mapInstanceRef.current = null
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
       clusterGroupRef.current = null
       choroplethGroupRef.current = null
       heatLayerRef.current = null

@@ -2,12 +2,10 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from "recharts"
-import L from "@/lib/leafletSetup"
+import L, { ensureLeafletPlugins } from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
-import "leaflet.markercluster"
 import "leaflet.markercluster/dist/MarkerCluster.css"
 import "leaflet.markercluster/dist/MarkerCluster.Default.css"
-import "leaflet.heat"
 import {
   RefreshCw, Loader2,
   Shield, Award, MapPin, UserPlus, FileText,
@@ -319,40 +317,44 @@ export default function AdminDashboard() {
   // ── Leaflet GIS Map with preferCanvas & IntersectionObserver ───────────────
   useEffect(() => {
     if (!mapContainerRef.current) return
+    let isCancelled = false
 
-    let map = mapInstanceRef.current
+    ensureLeafletPlugins().then(() => {
+      if (isCancelled || !mapContainerRef.current) return
+      let map = mapInstanceRef.current
 
-    if (!map) {
-      map = L.map(mapContainerRef.current, {
-        center: MUMBAI_CENTER,
-        zoom: 11,
-        zoomControl: true,
-        preferCanvas: true, // Canvas hardware acceleration mode
-      })
+      if (!map) {
+        map = L.map(mapContainerRef.current, {
+          center: MUMBAI_CENTER,
+          zoom: 11,
+          zoomControl: true,
+          preferCanvas: true, // Canvas hardware acceleration mode
+        })
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | Smart Civic GIS',
-        maxZoom: 19,
-      }).addTo(map)
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | Smart Civic GIS',
+          maxZoom: 19,
+        }).addTo(map)
 
-      const clusterGroup = (L as any).markerClusterGroup({
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: true,
-        spiderfyOnMaxZoom: true,
-        maxClusterRadius: 40,
-      })
-      map.addLayer(clusterGroup)
+        const clusterGroup = (L as any).markerClusterGroup({
+          showCoverageOnHover: false,
+          zoomToBoundsOnClick: true,
+          spiderfyOnMaxZoom: true,
+          maxClusterRadius: 40,
+        })
+        map.addLayer(clusterGroup)
 
-      mapInstanceRef.current = map
-      clusterGroupRef.current = clusterGroup
-    }
+        mapInstanceRef.current = map
+        clusterGroupRef.current = clusterGroup
+      }
 
-    const timer = setTimeout(() => {
-      map?.invalidateSize()
-    }, 200)
+      setTimeout(() => {
+        map?.invalidateSize()
+      }, 200)
+    })
 
     return () => {
-      clearTimeout(timer)
+      isCancelled = true
     }
   }, [activeTab, isMapFullscreen])
 

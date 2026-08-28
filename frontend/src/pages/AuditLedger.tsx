@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import toast from "react-hot-toast"
 import api from "@/lib/axios"
+import { formatCurrencyINR, formatDateTime, formatNumber } from "@/utils/formatters"
 
 interface AuditLogEntry {
   _id?: string
@@ -131,7 +132,7 @@ export default function AuditLedger() {
             Executive Actions Logged
           </span>
           <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white mt-2">
-            {logs.length} Transactions
+            {formatNumber(logs.length)} Transactions
           </div>
           <p className="text-[11px] text-slate-400 mt-0.5">Immutable audit retention</p>
         </div>
@@ -141,7 +142,7 @@ export default function AuditLedger() {
             Total Penalty Recoveries
           </span>
           <div className="text-2xl font-bold font-mono text-rose-600 dark:text-rose-400 mt-2">
-            ₹{logs.reduce((acc, curr) => acc + (curr.amountInr || 0), 0).toLocaleString()}
+            {formatCurrencyINR(logs.reduce((acc, curr) => acc + (curr.amountInr || 0), 0))}
           </div>
           <p className="text-[11px] text-slate-400 mt-0.5">Contractor escrows & safety citations</p>
         </div>
@@ -170,13 +171,7 @@ export default function AuditLedger() {
                 </div>
 
                 <div className="text-xs font-mono text-slate-400">
-                  {new Date(l.createdAt).toLocaleString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {formatDateTime(l.createdAt)}
                 </div>
               </div>
 

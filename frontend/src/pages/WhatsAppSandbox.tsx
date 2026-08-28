@@ -34,6 +34,9 @@ import {
   Download,
   Wifi,
   WifiOff,
+  Activity,
+  Server,
+  Lock,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -834,23 +837,23 @@ export default function WhatsAppSandbox() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pt-2 pb-24 px-2 sm:px-4">
+    <div className="w-full max-w-full space-y-4 px-1 sm:px-2 lg:px-4 py-2 flex flex-col flex-1 pb-16">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white/70 dark:bg-zinc-900/60 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800 backdrop-blur-md shadow-sm">
         <div>
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <Building2 className="w-5 h-5" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold font-display tracking-tight text-slate-900 dark:text-white">
               Headless WhatsApp Grievance Sandbox
             </h1>
-            <Badge className="bg-emerald-600 text-white font-mono text-xs px-2.5 py-0.5 rounded-full">
+            <Badge className="bg-emerald-600 text-white font-mono text-xs px-2.5 py-0.5 rounded-full hidden sm:inline-flex">
               WHATSAPP CLOUD API
             </Badge>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans">
-            Interactive multi-turn conversational simulator with real MediaRecorder PTT, Whisper STT transcriptions, and WebSocket live status updates.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-sans">
+            Full-width multi-turn conversational simulator with native MediaRecorder PTT, Whisper STT transcriptions, and WebSocket live status updates.
           </p>
         </div>
 
@@ -900,531 +903,623 @@ export default function WhatsAppSandbox() {
         </div>
       </div>
 
-      {/* WhatsApp Chat Mock Interface */}
-      <div className="rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xl overflow-hidden flex flex-col h-[600px] sm:h-[680px] relative bg-[#EFEAE2] dark:bg-[#0B141A]">
-        {/* Authentic WhatsApp Doodle Background Pattern */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-35 dark:opacity-10"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2364748b' fill-opacity='0.25' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundRepeat: "repeat",
-            backgroundSize: "60px 60px",
-          }}
-        />
+      {/* Main Expansive Layout: Responsive Split View on XL Displays */}
+      <div className="flex flex-col xl:flex-row gap-4 w-full flex-1 min-h-0">
+        {/* WhatsApp Chat Main Canvas (Expands to 100% width on mobile/tablet/desktop, flex-1 on XL) */}
+        <div className="flex-1 min-w-0 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-xl overflow-hidden flex flex-col h-[680px] xl:h-[740px] relative bg-[#EFEAE2] dark:bg-[#0B141A]">
+          {/* Authentic WhatsApp Doodle Background Pattern */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-35 dark:opacity-10"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2364748b' fill-opacity='0.25' fill-rule='evenodd'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundRepeat: "repeat",
+              backgroundSize: "60px 60px",
+            }}
+          />
 
-        {/* WhatsApp Top Header */}
-        <div className="relative z-20 bg-[#075E54] dark:bg-[#202C33] text-white px-4 py-3 flex items-center justify-between shadow-md border-b border-emerald-800/40 dark:border-zinc-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-600/80 flex items-center justify-center font-bold text-base shadow-inner border border-white/20">
-              🏛️
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-bold text-sm leading-tight text-white">BMC Civic Grievance Bot</h3>
-                <span title="Verified Business" className="inline-flex items-center">
-                  <BadgeCheck className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
+          {/* WhatsApp Top Header */}
+          <div className="relative z-20 bg-[#075E54] dark:bg-[#202C33] text-white px-4 py-3 flex items-center justify-between shadow-md border-b border-emerald-800/40 dark:border-zinc-800 shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-600/80 flex items-center justify-center font-bold text-base shadow-inner border border-white/20">
+                🏛️
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-sm leading-tight text-white">BMC Civic Grievance Bot</h3>
+                  <span title="Verified Business" className="inline-flex items-center">
+                    <BadgeCheck className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
+                  </span>
+                </div>
+                <span className="text-[11px] text-emerald-100 dark:text-zinc-400 flex items-center gap-1">
+                  {isSending ? (
+                    <span className="text-emerald-300 font-medium animate-pulse">typing response...</span>
+                  ) : isTranscribing ? (
+                    <span className="text-amber-300 font-medium animate-pulse">transcribing audio (Whisper STT)...</span>
+                  ) : isRecording ? (
+                    <span className="text-red-300 font-medium animate-pulse">recording voice note...</span>
+                  ) : (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      Official Verified Business • +91 98*****1223
+                    </>
+                  )}
                 </span>
               </div>
-              <span className="text-[11px] text-emerald-100 dark:text-zinc-400 flex items-center gap-1">
-                {isSending ? (
-                  <span className="text-emerald-300 font-medium animate-pulse">typing response...</span>
-                ) : isTranscribing ? (
-                  <span className="text-amber-300 font-medium animate-pulse">transcribing audio (Whisper STT)...</span>
-                ) : isRecording ? (
-                  <span className="text-red-300 font-medium animate-pulse">recording voice note...</span>
-                ) : (
-                  <>
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Official Verified Business • +91 98*****1223
-                  </>
-                )}
-              </span>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 text-emerald-100 dark:text-zinc-300">
-            {/* Live Gateway Mode Switch */}
-            <button
-              type="button"
-              onClick={() => setIsLiveGatewayMode(!isLiveGatewayMode)}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-1 transition shadow-sm ${
-                isLiveGatewayMode
-                  ? "bg-amber-500 text-slate-950 font-extrabold"
-                  : "bg-white/15 text-emerald-100 hover:bg-white/25"
-              }`}
-              title="Toggle Live Meta Webhook / Local Sandbox"
-            >
-              {isLiveGatewayMode ? <Zap className="w-3 h-3 fill-slate-950" /> : <Radio className="w-3 h-3" />}
-              <span>{isLiveGatewayMode ? "LIVE GATEWAY" : "LOCAL SANDBOX"}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsMuted(!isMuted)}
-              className="p-1.5 rounded-full hover:bg-white/10 transition"
-              title={isMuted ? "Unmute Audio Chimes" : "Mute Audio Chimes"}
-              aria-label="Toggle Sound"
-            >
-              {isMuted ? <VolumeX className="w-4 h-4 text-amber-300" /> : <Volume2 className="w-4 h-4" />}
-            </button>
-            <Video className="w-4 h-4 cursor-pointer hover:text-white transition hidden sm:block" />
-            <Phone className="w-4 h-4 cursor-pointer hover:text-white transition hidden sm:block" />
-            
-            {/* More Settings Menu */}
-            <div className="relative">
+            <div className="flex items-center gap-2 sm:gap-3 text-emerald-100 dark:text-zinc-300">
+              {/* Live Gateway Mode Switch */}
               <button
-                ref={settingsBtnRef}
                 type="button"
-                onClick={() => setIsSettingsMenuOpen(!isSettingsMenuOpen)}
-                aria-expanded={isSettingsMenuOpen}
-                aria-haspopup="menu"
-                className="p-1 rounded-full hover:bg-white/10 transition"
-                aria-label="Settings Menu"
+                onClick={() => setIsLiveGatewayMode(!isLiveGatewayMode)}
+                className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider flex items-center gap-1 transition shadow-sm ${
+                  isLiveGatewayMode
+                    ? "bg-amber-500 text-slate-950 font-extrabold"
+                    : "bg-white/15 text-emerald-100 hover:bg-white/25"
+                }`}
+                title="Toggle Live Meta Webhook / Local Sandbox"
               >
-                <MoreVertical className="w-4 h-4" />
+                {isLiveGatewayMode ? <Zap className="w-3 h-3 fill-slate-950" /> : <Radio className="w-3 h-3" />}
+                <span>{isLiveGatewayMode ? "LIVE GATEWAY" : "LOCAL SANDBOX"}</span>
               </button>
 
-              {isSettingsMenuOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 top-8 z-30 bg-white dark:bg-zinc-900 rounded-xl p-1.5 shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col gap-1 min-w-[170px] animate-in fade-in duration-150 text-slate-800 dark:text-zinc-200 text-xs"
+              <button
+                type="button"
+                onClick={() => setIsMuted(!isMuted)}
+                className="p-1.5 rounded-full hover:bg-white/10 transition"
+                title={isMuted ? "Unmute Audio Chimes" : "Mute Audio Chimes"}
+                aria-label="Toggle Sound"
+              >
+                {isMuted ? <VolumeX className="w-4 h-4 text-amber-300" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+              <Video className="w-4 h-4 cursor-pointer hover:text-white transition hidden sm:block" />
+              <Phone className="w-4 h-4 cursor-pointer hover:text-white transition hidden sm:block" />
+              
+              {/* More Settings Menu */}
+              <div className="relative">
+                <button
+                  ref={settingsBtnRef}
+                  type="button"
+                  onClick={() => setIsSettingsMenuOpen(!isSettingsMenuOpen)}
+                  aria-expanded={isSettingsMenuOpen}
+                  aria-haspopup="menu"
+                  className="p-1 rounded-full hover:bg-white/10 transition"
+                  aria-label="Settings Menu"
                 >
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => handleExportTranscript("txt")}
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition text-left"
-                  >
-                    <Download className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Export as Text (.txt)</span>
-                  </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => handleExportTranscript("json")}
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition text-left"
-                  >
-                    <Download className="w-3.5 h-3.5 text-sky-600" />
-                    <span>Export JSON Log</span>
-                  </button>
-                  <div className="my-1 border-t border-slate-100 dark:border-zinc-800" />
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={handleClearSession}
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-rose-500/10 text-rose-600 transition text-left"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Clear Chat Session</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+                  <MoreVertical className="w-4 h-4" />
+                </button>
 
-        {/* Chat Message Scroll Area */}
-        <div
-          className="relative z-10 flex-1 p-3 sm:p-4 overflow-y-auto space-y-3.5 font-sans"
-          aria-live="polite"
-        >
-          {/* Quick Action Chips Overlay */}
-          <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
-                Quick Municipal Presets
-              </p>
-              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
-                Mode: {isLiveGatewayMode ? "⚡ LIVE MONGODB" : `🧪 ${dialogueStage}`} {currentGrievanceContext.category ? `• ${currentGrievanceContext.category}` : ""}
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_ACTIONS.map((action, idx) => {
-                const Icon = action.icon
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleSendMessage(action.payload)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700/60 transition active:scale-95 shadow-sm ${action.color}`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    <span>{action.label}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {messages.map((m) => {
-            const isUser = m.sender === "user"
-
-            return (
-              <div key={m.id} className={`flex ${isUser ? "justify-end" : "justify-start"} relative group`}>
-                <div
-                  className={`max-w-[88%] sm:max-w-[78%] px-3.5 py-2.5 shadow-sm text-xs sm:text-[13px] space-y-2 relative ${
-                    isUser
-                      ? "bg-[#D9FDD3] dark:bg-[#005C4B] text-slate-900 dark:text-emerald-50 rounded-2xl rounded-tr-none"
-                      : "bg-white dark:bg-[#202C33] text-slate-900 dark:text-zinc-100 rounded-2xl rounded-tl-none border border-slate-100/80 dark:border-zinc-700/40"
-                  }`}
-                >
-                  {/* Subtle Speech Bubble Tail */}
+                {isSettingsMenuOpen && (
                   <div
-                    className={`absolute top-0 w-2.5 h-2.5 ${
+                    role="menu"
+                    className="absolute right-0 top-8 z-30 bg-white dark:bg-zinc-900 rounded-xl p-1.5 shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col gap-1 min-w-[170px] animate-in fade-in duration-150 text-slate-800 dark:text-zinc-200 text-xs"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => handleExportTranscript("txt")}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition text-left"
+                    >
+                      <Download className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Export as Text (.txt)</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => handleExportTranscript("json")}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition text-left"
+                    >
+                      <Download className="w-3.5 h-3.5 text-sky-600" />
+                      <span>Export JSON Log</span>
+                    </button>
+                    <div className="my-1 border-t border-slate-100 dark:border-zinc-800" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleClearSession}
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-rose-500/10 text-rose-600 transition text-left"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Clear Chat Session</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Chat Message Scroll Area */}
+          <div
+            className="relative z-10 flex-1 p-3 sm:p-4 overflow-y-auto space-y-3.5 font-sans"
+            aria-live="polite"
+          >
+            {/* Quick Action Chips Overlay */}
+            <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+                  Quick Municipal Presets
+                </p>
+                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                  Mode: {isLiveGatewayMode ? "⚡ LIVE MONGODB" : `🧪 ${dialogueStage}`} {currentGrievanceContext.category ? `• ${currentGrievanceContext.category}` : ""}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {QUICK_ACTIONS.map((action, idx) => {
+                  const Icon = action.icon
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleSendMessage(action.payload)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700/60 transition active:scale-95 shadow-sm ${action.color}`}
+                    >
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{action.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {messages.map((m) => {
+              const isUser = m.sender === "user"
+
+              return (
+                <div key={m.id} className={`flex ${isUser ? "justify-end" : "justify-start"} relative group`}>
+                  <div
+                    className={`max-w-[92%] sm:max-w-[85%] lg:max-w-[78%] px-3.5 py-2.5 shadow-sm text-xs sm:text-[13px] space-y-2 relative ${
                       isUser
-                        ? "-right-1.5 border-t-[8px] border-t-[#D9FDD3] dark:border-t-[#005C4B] border-r-[8px] border-r-transparent"
-                        : "-left-1.5 border-t-[8px] border-t-white dark:border-t-[#202C33] border-l-[8px] border-l-transparent"
+                        ? "bg-[#D9FDD3] dark:bg-[#005C4B] text-slate-900 dark:text-emerald-50 rounded-2xl rounded-tr-none"
+                        : "bg-white dark:bg-[#202C33] text-slate-900 dark:text-zinc-100 rounded-2xl rounded-tl-none border border-slate-100/80 dark:border-zinc-700/40"
                     }`}
-                  />
+                  >
+                    {/* Subtle Speech Bubble Tail */}
+                    <div
+                      className={`absolute top-0 w-2.5 h-2.5 ${
+                        isUser
+                          ? "-right-1.5 border-t-[8px] border-t-[#D9FDD3] dark:border-t-[#005C4B] border-r-[8px] border-r-transparent"
+                          : "-left-1.5 border-t-[8px] border-t-white dark:border-t-[#202C33] border-l-[8px] border-l-transparent"
+                      }`}
+                    />
 
-                  {/* Render Image Message */}
-                  {m.type === "image" && m.mediaUrl && (
-                    <div className="space-y-1.5 pb-1">
-                      <div className="rounded-xl overflow-hidden border border-black/10 dark:border-white/10">
-                        <img src={m.mediaUrl} alt="Complaint Attachment" className="w-full h-44 object-cover" />
-                      </div>
-                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium">
-                        <ShieldCheck className="w-3 h-3" />
-                        <span>🛡️ EXIF Stripped: Geolocation Protected</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Render Location Card */}
-                  {m.type === "location" && (
-                    <div className="space-y-2 pb-1">
-                      <div className="rounded-xl overflow-hidden bg-slate-200 dark:bg-zinc-800 p-3 flex items-center gap-3 border border-slate-300 dark:border-zinc-700">
-                        <div className="w-10 h-10 rounded-lg bg-rose-500 text-white flex items-center justify-center font-bold shrink-0 shadow">
-                          <MapPin className="w-5 h-5" />
+                    {/* Render Image Message */}
+                    {m.type === "image" && m.mediaUrl && (
+                      <div className="space-y-1.5 pb-1">
+                        <div className="rounded-xl overflow-hidden border border-black/10 dark:border-white/10">
+                          <img src={m.mediaUrl} alt="Complaint Attachment" className="w-full h-44 object-cover" />
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                            Bandra Reclamation Arterial
-                          </p>
-                          <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
-                            19.0596° N, 72.8347° E
-                          </p>
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium">
+                          <ShieldCheck className="w-3 h-3" />
+                          <span>🛡️ EXIF Stripped: Geolocation Protected</span>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Render Voice Note & STT Card */}
-                  {m.type === "voice" ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3 py-1 min-w-[200px] sm:min-w-[240px]">
-                        <div className="relative">
-                          <div className="w-9 h-9 rounded-full bg-emerald-600/80 text-white flex items-center justify-center font-bold text-xs">
-                            👤
+                    {/* Render Location Card */}
+                    {m.type === "location" && (
+                      <div className="space-y-2 pb-1">
+                        <div className="rounded-xl overflow-hidden bg-slate-200 dark:bg-zinc-800 p-3 flex items-center gap-3 border border-slate-300 dark:border-zinc-700">
+                          <div className="w-10 h-10 rounded-lg bg-rose-500 text-white flex items-center justify-center font-bold shrink-0 shadow">
+                            <MapPin className="w-5 h-5" />
                           </div>
-                          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] shadow-sm">
-                            <Mic className="w-2.5 h-2.5" />
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                              Bandra Reclamation Arterial
+                            </p>
+                            <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
+                              19.0596° N, 72.8347° E
+                            </p>
                           </div>
                         </div>
+                      </div>
+                    )}
 
+                    {/* Render Voice Note & STT Card */}
+                    {m.type === "voice" ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3 py-1 min-w-[200px] sm:min-w-[240px]">
+                          <div className="relative">
+                            <div className="w-9 h-9 rounded-full bg-emerald-600/80 text-white flex items-center justify-center font-bold text-xs">
+                              👤
+                            </div>
+                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] shadow-sm">
+                              <Mic className="w-2.5 h-2.5" />
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleAudioPlay(m.id, m.audioBlobUrl)}
+                            aria-label={activePlayingAudioId === m.id ? "Pause Voice Note" : "Play Voice Note"}
+                            className="w-8 h-8 rounded-full bg-[#00A884] text-white flex items-center justify-center shadow transition active:scale-95 shrink-0"
+                          >
+                            {activePlayingAudioId === m.id ? (
+                              <Pause className="w-4 h-4 fill-white" />
+                            ) : (
+                              <Play className="w-4 h-4 fill-white ml-0.5" />
+                            )}
+                          </button>
+
+                          {/* Animated Audio Soundwave Scrubber */}
+                          <div className="flex-1 space-y-1">
+                            <div className="flex items-center gap-0.5 h-4">
+                              {[40, 70, 30, 90, 50, 80, 60, 100, 45, 75, 55, 85, 35, 65].map((h, i) => (
+                                <span
+                                  key={i}
+                                  style={{ height: `${h}%` }}
+                                  className={`w-1 rounded-full transition-all duration-200 ${
+                                    activePlayingAudioId === m.id
+                                      ? "bg-emerald-500 animate-pulse"
+                                      : "bg-slate-300 dark:bg-zinc-600"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
+                              {m.duration || "0:04"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Expandable Whisper STT Transcription Card */}
+                        {m.transcription && (
+                          <div className="p-2 rounded-xl bg-black/5 dark:bg-black/20 border border-black/10 dark:border-white/10 text-[11px] space-y-1">
+                            <span className="font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                              <Sparkles className="w-3 h-3" />
+                              <span>Whisper STT Transcription (Marathi):</span>
+                            </span>
+                            <p className="italic text-slate-700 dark:text-zinc-300">"{m.transcription}"</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="leading-relaxed whitespace-pre-wrap font-sans">{m.content}</p>
+                    )}
+
+                    {/* WhatsApp Interactive Buttons Template */}
+                    {m.interactiveButtons && m.interactiveButtons.length > 0 && (
+                      <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/60 flex flex-col gap-1.5">
+                        {m.interactiveButtons.map((btn) => (
+                          <button
+                            key={btn.id}
+                            type="button"
+                            onClick={() => handleSendMessage(btn.payload)}
+                            className="w-full py-2 px-3 text-center text-xs font-semibold text-[#00A884] dark:text-[#25D366] bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-700/80 rounded-xl transition border border-slate-200 dark:border-zinc-700/40 active:scale-[0.98] shadow-sm flex items-center justify-center gap-1.5"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>{btn.title}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* WhatsApp Interactive List Menu Template */}
+                    {m.listSections && m.listSections.length > 0 && (
+                      <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/60 space-y-2">
                         <button
                           type="button"
-                          onClick={() => handleToggleAudioPlay(m.id, m.audioBlobUrl)}
-                          aria-label={activePlayingAudioId === m.id ? "Pause Voice Note" : "Play Voice Note"}
-                          className="w-8 h-8 rounded-full bg-[#00A884] text-white flex items-center justify-center shadow transition active:scale-95 shrink-0"
+                          onClick={() =>
+                            setIsListMenuExpanded((prev) => ({
+                              ...prev,
+                              [m.id]: !prev[m.id],
+                            }))
+                          }
+                          className="w-full py-2 px-3 text-xs font-bold text-white bg-[#00A884] hover:bg-[#008f6f] rounded-xl flex items-center justify-between shadow-sm transition"
                         >
-                          {activePlayingAudioId === m.id ? (
-                            <Pause className="w-4 h-4 fill-white" />
+                          <span>📋 View Options (पर्याय निवडा)</span>
+                          {isListMenuExpanded[m.id] ? (
+                            <ChevronUp className="w-4 h-4" />
                           ) : (
-                            <Play className="w-4 h-4 fill-white ml-0.5" />
+                            <ChevronDown className="w-4 h-4" />
                           )}
                         </button>
 
-                        {/* Animated Audio Soundwave Scrubber */}
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-0.5 h-4">
-                            {[40, 70, 30, 90, 50, 80, 60, 100, 45, 75, 55, 85, 35, 65].map((h, i) => (
-                              <span
-                                key={i}
-                                style={{ height: `${h}%` }}
-                                className={`w-1 rounded-full transition-all duration-200 ${
-                                  activePlayingAudioId === m.id
-                                    ? "bg-emerald-500 animate-pulse"
-                                    : "bg-slate-300 dark:bg-zinc-600"
-                                }`}
-                              />
+                        {isListMenuExpanded[m.id] && (
+                          <div className="bg-slate-50 dark:bg-zinc-800/95 rounded-xl p-2.5 space-y-2.5 border border-slate-200 dark:border-zinc-700 animate-in fade-in duration-150">
+                            {m.listSections.map((sec, sIdx) => (
+                              <div key={sIdx} className="space-y-1">
+                                <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider px-1">
+                                  {sec.title}
+                                </p>
+                                <div className="space-y-1">
+                                  {sec.rows.map((row) => (
+                                    <button
+                                      key={row.id}
+                                      type="button"
+                                      onClick={() => handleSendMessage(row.title)}
+                                      className="w-full text-left p-2 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition flex flex-col group/row"
+                                    >
+                                      <span className="font-semibold text-xs text-slate-800 dark:text-zinc-200 group-hover/row:text-emerald-600">
+                                        {row.title}
+                                      </span>
+                                      {row.description && (
+                                        <span className="text-[10px] text-slate-500 dark:text-zinc-400">
+                                          {row.description}
+                                        </span>
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
                             ))}
                           </div>
-                          <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-mono">
-                            {m.duration || "0:04"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Expandable Whisper STT Transcription Card */}
-                      {m.transcription && (
-                        <div className="p-2 rounded-xl bg-black/5 dark:bg-black/20 border border-black/10 dark:border-white/10 text-[11px] space-y-1">
-                          <span className="font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
-                            <Sparkles className="w-3 h-3" />
-                            <span>Whisper STT Transcription (Marathi):</span>
-                          </span>
-                          <p className="italic text-slate-700 dark:text-zinc-300">"{m.transcription}"</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="leading-relaxed whitespace-pre-wrap font-sans">{m.content}</p>
-                  )}
-
-                  {/* WhatsApp Interactive Buttons Template */}
-                  {m.interactiveButtons && m.interactiveButtons.length > 0 && (
-                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/60 flex flex-col gap-1.5">
-                      {m.interactiveButtons.map((btn) => (
-                        <button
-                          key={btn.id}
-                          type="button"
-                          onClick={() => handleSendMessage(btn.payload)}
-                          className="w-full py-2 px-3 text-center text-xs font-semibold text-[#00A884] dark:text-[#25D366] bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-700/80 rounded-xl transition border border-slate-200 dark:border-zinc-700/40 active:scale-[0.98] shadow-sm flex items-center justify-center gap-1.5"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>{btn.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* WhatsApp Interactive List Menu Template */}
-                  {m.listSections && m.listSections.length > 0 && (
-                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/60 space-y-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setIsListMenuExpanded((prev) => ({
-                            ...prev,
-                            [m.id]: !prev[m.id],
-                          }))
-                        }
-                        className="w-full py-2 px-3 text-xs font-bold text-white bg-[#00A884] hover:bg-[#008f6f] rounded-xl flex items-center justify-between shadow-sm transition"
-                      >
-                        <span>📋 View Options (पर्याय निवडा)</span>
-                        {isListMenuExpanded[m.id] ? (
-                          <ChevronUp className="w-4 h-4" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4" />
                         )}
-                      </button>
+                      </div>
+                    )}
 
-                      {isListMenuExpanded[m.id] && (
-                        <div className="bg-slate-50 dark:bg-zinc-800/95 rounded-xl p-2.5 space-y-2.5 border border-slate-200 dark:border-zinc-700 animate-in fade-in duration-150">
-                          {m.listSections.map((sec, sIdx) => (
-                            <div key={sIdx} className="space-y-1">
-                              <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-400 uppercase tracking-wider px-1">
-                                {sec.title}
-                              </p>
-                              <div className="space-y-1">
-                                {sec.rows.map((row) => (
-                                  <button
-                                    key={row.id}
-                                    type="button"
-                                    onClick={() => handleSendMessage(row.title)}
-                                    className="w-full text-left p-2 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition flex flex-col group/row"
-                                  >
-                                    <span className="font-semibold text-xs text-slate-800 dark:text-zinc-200 group-hover/row:text-emerald-600">
-                                      {row.title}
-                                    </span>
-                                    {row.description && (
-                                      <span className="text-[10px] text-slate-500 dark:text-zinc-400">
-                                        {row.description}
-                                      </span>
-                                    )}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    <div className="flex items-center justify-end gap-1 text-[10px] text-slate-400 dark:text-zinc-400 pt-0.5">
+                      <span>{m.timestamp}</span>
+                      {isUser && <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb] dark:text-[#53bdeb]" />}
                     </div>
-                  )}
-
-                  <div className="flex items-center justify-end gap-1 text-[10px] text-slate-400 dark:text-zinc-400 pt-0.5">
-                    <span>{m.timestamp}</span>
-                    {isUser && <CheckCheck className="w-3.5 h-3.5 text-[#53bdeb] dark:text-[#53bdeb]" />}
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
 
-          {isSending && (
-            <div className="flex justify-start">
-              <div className="bg-white dark:bg-[#202C33] px-3.5 py-2.5 rounded-2xl rounded-tl-none text-xs text-slate-500 dark:text-zinc-300 font-sans flex items-center gap-2.5 shadow-sm border border-slate-100 dark:border-zinc-700/40">
-                <div className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: "0ms" }}></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: "150ms" }}></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: "300ms" }}></span>
+            {isSending && (
+              <div className="flex justify-start">
+                <div className="bg-white dark:bg-[#202C33] px-3.5 py-2.5 rounded-2xl rounded-tl-none text-xs text-slate-500 dark:text-zinc-300 font-sans flex items-center gap-2.5 shadow-sm border border-slate-100 dark:border-zinc-700/40">
+                  <div className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 dark:text-zinc-400">BMC Bot is thinking...</span>
                 </div>
-                <span className="text-[11px] text-slate-500 dark:text-zinc-400">BMC Bot is thinking...</span>
               </div>
+            )}
+            <div ref={chatBottomRef} />
+          </div>
+
+          {/* Attachment Speed-Dial Popover */}
+          {isAttachMenuOpen && (
+            <div
+              role="menu"
+              aria-label="Attachment Options"
+              className="absolute bottom-16 left-4 z-30 bg-white dark:bg-zinc-900 rounded-2xl p-2.5 shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150"
+            >
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsAttachMenuOpen(false)
+                  setImageModalPreview({
+                    url: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop",
+                    caption: "Large pothole cluster on S.V. Road Khar West",
+                  })
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition"
+              >
+                <div className="p-1.5 rounded-lg bg-pink-500/10 text-pink-600">
+                  <Camera className="w-4 h-4" />
+                </div>
+                <span>Camera / Photo</span>
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsAttachMenuOpen(false)
+                  handleSendMessage("📍 Live GPS Pin: 19.0596° N, 72.8347° E (Bandra Reclamation)", { type: "location" })
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition"
+              >
+                <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <span>Location (GPS)</span>
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsAttachMenuOpen(false)
+                  handleSendMessage("📄 Document: Ward_H_West_Defect_Notice.pdf (2.4 MB)", { type: "document" })
+                }}
+                className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition"
+              >
+                <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <span>Document / PDF</span>
+              </button>
             </div>
           )}
-          <div ref={chatBottomRef} />
+
+          {/* WhatsApp Fixed Bottom Input Dock / Voice Recorder Mode */}
+          {isRecording ? (
+            <div
+              className="relative z-10 bg-[#F0F2F5] dark:bg-[#202C33] px-3 py-3 sm:px-4 flex items-center justify-between border-t border-slate-200 dark:border-zinc-800 shrink-0"
+              style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))" }}
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+                <span className="text-xs font-mono font-bold text-red-600 dark:text-red-400">
+                  0:{recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}
+                </span>
+                <span className="text-xs text-slate-500 dark:text-zinc-400">Recording voice grievance...</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsRecording(false)}
+                  className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 font-medium"
+                >
+                  Cancel
+                </button>
+                <Button
+                  type="button"
+                  onClick={handleStopRecording}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 px-3 rounded-full flex items-center gap-1.5 shadow-sm"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send Note</span>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleSendMessage()
+              }}
+              className="relative z-10 bg-[#F0F2F5] dark:bg-[#202C33] px-3 py-2.5 sm:px-4 sm:py-3 flex items-center gap-2 border-t border-slate-200 dark:border-zinc-800 shrink-0"
+              style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))" }}
+            >
+              <div className="flex items-center gap-1 sm:gap-1.5 text-slate-500 dark:text-zinc-400">
+                <button
+                  type="button"
+                  className="p-1.5 hover:text-slate-700 dark:hover:text-zinc-200 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-700 transition"
+                  title="Emoji"
+                  aria-label="Emoji"
+                >
+                  <Smile className="w-5 h-5" />
+                </button>
+                <button
+                  ref={attachBtnRef}
+                  type="button"
+                  onClick={() => setIsAttachMenuOpen(!isAttachMenuOpen)}
+                  aria-expanded={isAttachMenuOpen}
+                  aria-haspopup="menu"
+                  className={`p-1.5 rounded-full transition ${
+                    isAttachMenuOpen
+                      ? "bg-emerald-600 text-white"
+                      : "hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-700"
+                  }`}
+                  title="Attach media or document"
+                  aria-label="Attach"
+                >
+                  <Paperclip className="w-5 h-5" />
+                </button>
+              </div>
+
+              <input
+                type="text"
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendMessage()
+                  }
+                }}
+                placeholder="Type Marathi, Hindi or English grievance..."
+                className="flex-1 px-4 py-2.5 rounded-full bg-white dark:bg-[#2A3942] border border-slate-200 dark:border-zinc-700 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00A884]"
+              />
+
+              {inputMessage.trim() ? (
+                <Button
+                  type="submit"
+                  disabled={isSending}
+                  className="bg-[#00A884] hover:bg-[#008f6f] text-white w-10 h-10 p-0 rounded-full flex items-center justify-center shrink-0 shadow-sm transition active:scale-95 disabled:opacity-50"
+                  aria-label="Send Message"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleStartRealRecording}
+                  className="bg-[#00A884] hover:bg-[#008f6f] text-white w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm transition active:scale-95"
+                  title="Push to talk voice note"
+                  aria-label="Record Voice Note"
+                >
+                  <Mic className="w-5 h-5" />
+                </button>
+              )}
+            </form>
+          )}
         </div>
 
-        {/* Attachment Speed-Dial Popover */}
-        {isAttachMenuOpen && (
-          <div
-            role="menu"
-            aria-label="Attachment Options"
-            className="absolute bottom-16 left-4 z-30 bg-white dark:bg-zinc-900 rounded-2xl p-2.5 shadow-2xl border border-slate-200 dark:border-zinc-800 flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-2 duration-150"
-          >
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setIsAttachMenuOpen(false)
-                setImageModalPreview({
-                  url: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&auto=format&fit=crop",
-                  caption: "Large pothole cluster on S.V. Road Khar West",
-                })
-              }}
-              className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition"
-            >
-              <div className="p-1.5 rounded-lg bg-pink-500/10 text-pink-600">
-                <Camera className="w-4 h-4" />
+        {/* Side Telemetry & Municipal Governance Context Panel (Visible on XL displays) */}
+        <div className="hidden xl:flex xl:w-96 flex-col gap-4 shrink-0">
+          {/* Real-Time Municipal Telemetry Stream */}
+          <div className="bg-white dark:bg-zinc-900 p-4 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-lg space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-emerald-500" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                  Live Gateway Telemetry
+                </h3>
               </div>
-              <span>Camera / Photo</span>
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setIsAttachMenuOpen(false)
-                handleSendMessage("📍 Live GPS Pin: 19.0596° N, 72.8347° E (Bandra Reclamation)", { type: "location" })
-              }}
-              className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition"
-            >
-              <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
-                <MapPin className="w-4 h-4" />
-              </div>
-              <span>Location (GPS)</span>
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setIsAttachMenuOpen(false)
-                handleSendMessage("📄 Document: Ward_H_West_Defect_Notice.pdf (2.4 MB)", { type: "document" })
-              }}
-              className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition"
-            >
-              <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-600">
-                <FileText className="w-4 h-4" />
-              </div>
-              <span>Document / PDF</span>
-            </button>
-          </div>
-        )}
-
-        {/* WhatsApp Fixed Bottom Input Dock / Voice Recorder Mode */}
-        {isRecording ? (
-          <div
-            className="relative z-10 bg-[#F0F2F5] dark:bg-[#202C33] px-3 py-3 sm:px-4 flex items-center justify-between border-t border-slate-200 dark:border-zinc-800"
-            style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))" }}
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-              <span className="text-xs font-mono font-bold text-red-600 dark:text-red-400">
-                0:{recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}
+              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                ACTIVE
               </span>
-              <span className="text-xs text-slate-500 dark:text-zinc-400">Recording voice grievance...</span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsRecording(false)}
-                className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-zinc-300 font-medium"
-              >
-                Cancel
-              </button>
-              <Button
-                type="button"
-                onClick={handleStopRecording}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 px-3 rounded-full flex items-center gap-1.5 shadow-sm"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Send Note</span>
-              </Button>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-100 dark:border-zinc-800">
+                <span className="text-slate-500 dark:text-zinc-400">Gateway Node</span>
+                <span className="font-mono font-semibold text-slate-800 dark:text-zinc-200">BMC-WHATSAPP-GW-01</span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-100 dark:border-zinc-800">
+                <span className="text-slate-500 dark:text-zinc-400">Privacy Sanitizer</span>
+                <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" /> ZERO-TRUST ACTIVE
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-100 dark:border-zinc-800">
+                <span className="text-slate-500 dark:text-zinc-400">Active State Machine</span>
+                <Badge variant="outline" className="font-mono text-[10px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800">
+                  {dialogueStage}
+                </Badge>
+              </div>
             </div>
           </div>
-        ) : (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleSendMessage()
-            }}
-            className="relative z-10 bg-[#F0F2F5] dark:bg-[#202C33] px-3 py-2.5 sm:px-4 sm:py-3 flex items-center gap-2 border-t border-slate-200 dark:border-zinc-800"
-            style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))" }}
-          >
-            <div className="flex items-center gap-1 sm:gap-1.5 text-slate-500 dark:text-zinc-400">
-              <button
-                type="button"
-                className="p-1.5 hover:text-slate-700 dark:hover:text-zinc-200 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-700 transition"
-                title="Emoji"
-                aria-label="Emoji"
-              >
-                <Smile className="w-5 h-5" />
-              </button>
-              <button
-                ref={attachBtnRef}
-                type="button"
-                onClick={() => setIsAttachMenuOpen(!isAttachMenuOpen)}
-                aria-expanded={isAttachMenuOpen}
-                aria-haspopup="menu"
-                className={`p-1.5 rounded-full transition ${
-                  isAttachMenuOpen
-                    ? "bg-emerald-600 text-white"
-                    : "hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-700"
-                }`}
-                title="Attach media or document"
-                aria-label="Attach"
-              >
-                <Paperclip className="w-5 h-5" />
-              </button>
+
+          {/* Active Grievances In Current Session */}
+          <div className="bg-white dark:bg-zinc-900 p-4 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-lg space-y-3 flex-1 flex flex-col min-h-0">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2.5 shrink-0">
+              <div className="flex items-center gap-2">
+                <Server className="w-4 h-4 text-sky-500" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                  Active WhatsApp Tickets
+                </h3>
+              </div>
+              <span className="text-[10px] font-mono text-slate-500 dark:text-zinc-400">
+                {sessionTickets.length} Registered
+              </span>
             </div>
 
-            <input
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSendMessage()
-                }
-              }}
-              placeholder="Type Marathi, Hindi or English grievance..."
-              className="flex-1 px-4 py-2.5 rounded-full bg-white dark:bg-[#2A3942] border border-slate-200 dark:border-zinc-700 text-xs sm:text-sm text-slate-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[#00A884]"
-            />
+            <div className="space-y-2 overflow-y-auto flex-1 pr-1">
+              {sessionTickets.map((ticket) => (
+                <div
+                  key={ticket.id}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/90 border border-slate-200/60 dark:border-zinc-700/60 space-y-1.5 transition hover:border-emerald-500/40"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold font-mono text-slate-800 dark:text-zinc-100">
+                      #{ticket.ticketId}
+                    </span>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      {ticket.slaRemaining}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 font-medium">
+                    {ticket.category}
+                  </p>
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-zinc-500">
+                    <span>{ticket.ward}</span>
+                    <span className="capitalize">{ticket.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-            {inputMessage.trim() ? (
-              <Button
-                type="submit"
-                disabled={isSending}
-                className="bg-[#00A884] hover:bg-[#008f6f] text-white w-10 h-10 p-0 rounded-full flex items-center justify-center shrink-0 shadow-sm transition active:scale-95 disabled:opacity-50"
-                aria-label="Send Message"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleStartRealRecording}
-                className="bg-[#00A884] hover:bg-[#008f6f] text-white w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-sm transition active:scale-95"
-                title="Push to talk voice note"
-                aria-label="Record Voice Note"
-              >
-                <Mic className="w-5 h-5" />
-              </button>
-            )}
-          </form>
-        )}
+            {/* Quick Municipal Statutory Notice */}
+            <div className="p-3 rounded-2xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 text-[11px] text-emerald-900 dark:text-emerald-300 space-y-1 shrink-0">
+              <div className="flex items-center gap-1 font-bold">
+                <Lock className="w-3 h-3 text-emerald-600" />
+                <span>MMC Act Section 354 Protection</span>
+              </div>
+              <p className="text-[10px] text-emerald-700 dark:text-emerald-400 leading-tight">
+                All WhatsApp grievances receive automated timestamps and immutable audit records for municipal resolution.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Citizen WhatsApp Profile & Impact Drawer Modal */}

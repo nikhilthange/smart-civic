@@ -6,6 +6,7 @@ import {
   Heart,
   Share2,
   CheckCircle2,
+  Radio,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,67 +28,8 @@ interface SocialPost {
   mediaUrls: string[]
 }
 
-const DEFAULT_POSTS: SocialPost[] = [
-  {
-    postId: "tw-10928374",
-    platform: "X_TWITTER",
-    authorHandle: "@mumbaikar_rahul",
-    authorName: "Rahul Varma",
-    content: "Massive pothole crater right at Hindmata flyover junction towards Dadar TT! Cars swerving dangerously in peak traffic @mybmc @mybmcWardFN please fix immediately! #MumbaiTraffic",
-    sentiment: "URGENT",
-    extractedCategory: "roads_and_infrastructure",
-    extractedWard: "Ward F-South",
-    extractedLandmark: "Hindmata Flyover Junction, Parel",
-    likesCount: 142,
-    retweetsCount: 38,
-    mediaUrls: ["https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=60"],
-  },
-  {
-    postId: "tw-10928375",
-    platform: "X_TWITTER",
-    authorHandle: "@bandra_buzz",
-    authorName: "Bandra Community Network",
-    content: "Overflowing garbage dump outside St. Andrews Road near Linking Road junction Bandra West. Foul smell spreading across the residential colony @mybmcWardHW #CleanMumbai",
-    sentiment: "FRUSTRATED",
-    extractedCategory: "garbage_collection",
-    extractedWard: "Ward H-West",
-    extractedLandmark: "St. Andrews Road, Bandra West",
-    likesCount: 89,
-    retweetsCount: 19,
-    mediaUrls: ["https://images.unsplash.com/photo-1605600659873-d808a13e4d2a?w=600&auto=format&fit=crop&q=60"],
-  },
-  {
-    postId: "rd-4492817",
-    platform: "REDDIT",
-    authorHandle: "u/andheri_commuter",
-    authorName: "Andheri Commuter",
-    content: "Andheri subway approach is waterlogging again after just 30 mins of moderate drizzle. Water height is at least 20cm near the railway pump. Avoid SV Road! r/mumbai",
-    sentiment: "URGENT",
-    extractedCategory: "storm_water_drains",
-    extractedWard: "Ward K-West",
-    extractedLandmark: "Andheri Subway Approach, SV Road",
-    likesCount: 260,
-    retweetsCount: 44,
-    mediaUrls: [],
-  },
-  {
-    postId: "tw-10928376",
-    platform: "X_TWITTER",
-    authorHandle: "@colaba_watch",
-    authorName: "South Mumbai Watch",
-    content: "Multiple non-functional streetlights on Shahid Bhagat Singh Road, Colaba Causeway. Pitch dark stretch near Regal Cinema junction @mybmcWardA",
-    sentiment: "NEUTRAL",
-    extractedCategory: "street_lighting",
-    extractedWard: "Ward A",
-    extractedLandmark: "Colaba Causeway, Regal Cinema",
-    likesCount: 54,
-    retweetsCount: 12,
-    mediaUrls: [],
-  },
-]
-
 export default function SocialMediaRadar() {
-  const [posts, setPosts] = useState<SocialPost[]>(DEFAULT_POSTS)
+  const [posts, setPosts] = useState<SocialPost[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [convertingId, setConvertingId] = useState<string | null>(null)
   const [convertedIds, setConvertedIds] = useState<string[]>([])
@@ -96,9 +38,11 @@ export default function SocialMediaRadar() {
     setIsLoading(true)
     try {
       const res = await api.get("/social/feed")
-      if (res.data.feed && res.data.feed.length > 0) setPosts(res.data.feed)
+      if (res.data.feed) {
+        setPosts(res.data.feed)
+      }
     } catch {
-      // ignore
+      toast.error("Unable to connect to social ingestion feed")
     } finally {
       setIsLoading(false)
     }
@@ -126,13 +70,18 @@ export default function SocialMediaRadar() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            <span>SOCIAL INGESTION RADAR</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span>SOCIAL INGESTION RADAR</span>
+            </div>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+              BMC Municipal Simulation Sandbox
+            </span>
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             Social Media Civic Radar
@@ -160,17 +109,37 @@ export default function SocialMediaRadar() {
         </div>
       </div>
 
-      {/* Uniform Post Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        {posts.map((post) => {
-          const isConverted = convertedIds.includes(post.postId)
-          const isConverting = convertingId === post.postId
+      {/* Loading Skeleton */}
+      {isLoading && posts.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+          <RefreshCw className="h-6 w-6 animate-spin mb-3 text-emerald-600" />
+          <p className="text-sm font-medium">Ingesting live civic social streams...</p>
+        </div>
+      )}
 
-          return (
-            <Card
-              key={post.postId}
-              className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-lg shadow-sm flex flex-col justify-between overflow-hidden"
-            >
+      {/* Empty State */}
+      {!isLoading && posts.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8">
+          <Radio className="h-10 w-10 text-slate-400 mb-3" />
+          <p className="text-base font-semibold text-slate-700 dark:text-slate-300">No Live Social Incidents Detected</p>
+          <p className="text-xs text-slate-500 mt-1 max-w-sm text-center">
+            Zero unresolved citizen posts tagged for BMC wards across active channels. Click 'Poll Feed' to query ingestion webhooks.
+          </p>
+        </div>
+      )}
+
+      {/* Uniform Post Cards Grid */}
+      {posts.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {posts.map((post) => {
+            const isConverted = convertedIds.includes(post.postId)
+            const isConverting = convertingId === post.postId
+
+            return (
+              <Card
+                key={post.postId}
+                className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-lg shadow-sm flex flex-col justify-between overflow-hidden"
+              >
               <CardContent className="p-5 space-y-3.5 flex-1 flex flex-col justify-between">
                 <div className="space-y-3">
                   {/* Platform & Author */}
@@ -261,6 +230,7 @@ export default function SocialMediaRadar() {
           )
         })}
       </div>
+      )}
     </div>
   )
 }

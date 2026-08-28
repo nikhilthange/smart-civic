@@ -65,11 +65,11 @@ export default function BestTransitRadar() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Bus className="w-5 h-5" />
             </div>
@@ -79,6 +79,9 @@ export default function BestTransitRadar() {
             <Badge className="bg-blue-600 text-white font-mono text-xs px-2.5 py-0.5 rounded-full">
               EDGE DASHCAM ANPR
             </Badge>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+              BMC Municipal Simulation Sandbox
+            </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans">
             Real-time bus dashcam computer vision detecting unauthorized vehicles in dedicated bus priority lanes with automated Traffic Police e-challans.

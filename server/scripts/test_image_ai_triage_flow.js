@@ -16,7 +16,7 @@ const assert = require("assert");
 const mongoose = require("mongoose");
 const sharp = require("sharp");
 
-const MONGO_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/smart-civic";
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/smart-civic";
 
 const localVisionService = require("../services/localVisionService");
 const spatialBoundaryService = require("../services/spatialBoundaryService");

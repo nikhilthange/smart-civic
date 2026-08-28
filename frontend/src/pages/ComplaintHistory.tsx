@@ -86,7 +86,7 @@ export default function ComplaintHistory() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

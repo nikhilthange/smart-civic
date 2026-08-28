@@ -13,7 +13,14 @@ const { invalidateCache } = require("../middlewares/cacheMiddleware");
 exports.getFireSafetyBuildings = asyncHandler(async (req, res) => {
   const { ward } = req.query;
   const filter = ward && ward !== "all" ? { ward } : {};
-  const buildings = await HighRiseFireNoc.find(filter).sort({ floorCount: -1 }).lean();
+  let buildings = await HighRiseFireNoc.find(filter).sort({ floorCount: -1 }).lean();
+
+  if (!buildings || buildings.length === 0) {
+    const { DEFAULT_FIRE_BUILDINGS } = require("../services/fireSafetyService");
+    buildings = ward && ward !== "all"
+      ? DEFAULT_FIRE_BUILDINGS.filter((b) => b.ward === ward)
+      : DEFAULT_FIRE_BUILDINGS;
+  }
 
   res.status(200).json({
     success: true,

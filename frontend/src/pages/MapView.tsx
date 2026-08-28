@@ -63,173 +63,6 @@ const SEVERITY_COLORS: Record<string, { bg: string; border: string; text: string
   low: { bg: "#dcfce7", border: "#22c55e", text: "#166534", fill: "#16a34a", dot: "bg-emerald-600" },
 }
 
-// Realistic seed incidents across Mumbai wards
-const MOCK_MUNICIPAL_INCIDENTS: Complaint[] = [
-  {
-    _id: "mc-001",
-    complaintId: "TKT-2026-GN-041",
-    title: "Deep Crater Pothole on Senapati Bapat Marg",
-    description: "Multi-vehicle disruption near Elphinstone flyover descent with exposed rebar and asphalt rutting.",
-    category: "roads_and_infrastructure",
-    priority: "critical",
-    status: "in_progress",
-    ward: "Ward G-North",
-    location: {
-      address: "Senapati Bapat Marg, Dadar West, Mumbai 400028",
-      coordinates: { type: "Point", coordinates: [72.8395, 19.0210] } as any,
-    },
-    citizen: { name: "Rajesh S.", phone: "+91 ******8842" },
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    attachments: ["https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=80"],
-  } as any,
-  {
-    _id: "mc-002",
-    complaintId: "TKT-2026-HW-089",
-    title: "Monsoon Storm Drain Clog & Backflow",
-    description: "Severe waterlogging risk on Hill Road intersection during high tide surge.",
-    category: "drainage",
-    priority: "critical",
-    status: "assigned",
-    ward: "Ward H-West",
-    location: {
-      address: "Hill Road Junction, Bandra West, Mumbai 400050",
-      coordinates: { type: "Point", coordinates: [72.8315, 19.0560] } as any,
-    },
-    citizen: { name: "Fatima K.", phone: "+91 ******3109" },
-    createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-    attachments: ["https://images.unsplash.com/photo-1541888946425-d0fbb18f15f6?w=600&auto=format&fit=crop&q=80"],
-  } as any,
-  {
-    _id: "mc-003",
-    complaintId: "TKT-2026-KE-104",
-    title: "Main Line Drinking Water Contamination",
-    description: "Turbid brownish water outflow detected across 4 housing societies in Chakala.",
-    category: "water_and_sanitation",
-    priority: "critical",
-    status: "in_progress",
-    ward: "Ward K-East",
-    location: {
-      address: "JB Nagar, Chakala, Andheri East, Mumbai 400059",
-      coordinates: { type: "Point", coordinates: [72.8680, 19.1165] } as any,
-    },
-    citizen: { name: "Amitabh D.", phone: "+91 ******7721" },
-    createdAt: new Date(Date.now() - 3600000 * 8).toISOString(),
-    attachments: ["https://images.unsplash.com/photo-1584467735815-f778f274e296?w=600&auto=format&fit=crop&q=80"],
-  } as any,
-  {
-    _id: "mc-004",
-    complaintId: "TKT-2026-A-012",
-    title: "Heritage High-Mast Streetlight Outage",
-    description: "Complete dark corridor along Nariman Point promenade posing citizen safety hazard.",
-    category: "street_lighting",
-    priority: "high",
-    status: "pending",
-    ward: "Ward A",
-    location: {
-      address: "Madame Cama Road, Nariman Point, Mumbai 400021",
-      coordinates: { type: "Point", coordinates: [72.8250, 18.9270] } as any,
-    },
-    citizen: { name: "Zubin M.", phone: "+91 ******4590" },
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-  } as any,
-  {
-    _id: "mc-005",
-    complaintId: "TKT-2026-L-055",
-    title: "Solid Waste Dumper Overflow & Leachate",
-    description: "Commercial vegetable market bin overflowing across pedestrian sidewalk.",
-    category: "garbage_collection",
-    priority: "high",
-    status: "in_progress",
-    ward: "Ward L",
-    location: {
-      address: "LBS Marg, Kurla West, Mumbai 400070",
-      coordinates: { type: "Point", coordinates: [72.8870, 19.0720] } as any,
-    },
-    citizen: { name: "Suresh P.", phone: "+91 ******9931" },
-    createdAt: new Date(Date.now() - 3600000 * 16).toISOString(),
-  } as any,
-  {
-    _id: "mc-006",
-    complaintId: "TKT-2026-KW-077",
-    title: "Submerged Subway Pumping Failure",
-    description: "Milan Subway water level rising rapidly past 1.5 ft sensor trigger threshold.",
-    category: "drainage",
-    priority: "critical",
-    status: "assigned",
-    ward: "Ward K-West",
-    location: {
-      address: "Milan Subway, Santacruz / Vile Parle, Mumbai 400056",
-      coordinates: { type: "Point", coordinates: [72.8420, 19.0980] } as any,
-    },
-    citizen: { name: "Pooja V.", phone: "+91 ******1244" },
-    createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-  } as any,
-  {
-    _id: "mc-007",
-    complaintId: "TKT-2026-FN-033",
-    title: "Fallen Banyan Tree Branch Blocking Tramway",
-    description: "Large bough blocking north-bound traffic lane outside King's Circle station.",
-    category: "roads_and_infrastructure",
-    priority: "medium",
-    status: "in_progress",
-    ward: "Ward F-North",
-    location: {
-      address: "Dr. Babasaheb Ambedkar Road, Matunga, Mumbai 400019",
-      coordinates: { type: "Point", coordinates: [72.8570, 19.0290] } as any,
-    },
-    citizen: { name: "Kavita N.", phone: "+91 ******6702" },
-    createdAt: new Date(Date.now() - 3600000 * 20).toISOString(),
-  } as any,
-  {
-    _id: "mc-008",
-    complaintId: "TKT-2026-GS-062",
-    title: "Seawall Sinking & Paver Block Displacement",
-    description: "Worli Seaface promenade paver collapse near dairy signal.",
-    category: "roads_and_infrastructure",
-    priority: "high",
-    status: "pending",
-    ward: "Ward G-South",
-    location: {
-      address: "Worli Seaface North Promenade, Worli, Mumbai 400030",
-      coordinates: { type: "Point", coordinates: [72.8180, 19.0120] } as any,
-    },
-    citizen: { name: "Deepak S.", phone: "+91 ******5518" },
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-  } as any,
-  {
-    _id: "mc-009",
-    complaintId: "TKT-2026-T-021",
-    title: "Open Trench Hazard Near School Zone",
-    description: "Unfenced utility trench excavated for underground fiber cable reinstatement.",
-    category: "public_safety",
-    priority: "high",
-    status: "in_progress",
-    ward: "Ward T",
-    location: {
-      address: "LBS Marg, Mulund West, Mumbai 400080",
-      coordinates: { type: "Point", coordinates: [72.9480, 19.1760] } as any,
-    },
-    citizen: { name: "Vikram R.", phone: "+91 ******7783" },
-    createdAt: new Date(Date.now() - 3600000 * 14).toISOString(),
-  } as any,
-  {
-    _id: "mc-010",
-    complaintId: "TKT-2026-D-019",
-    title: "Broken Cast Iron Manhole Cover",
-    description: "Damaged lid exposing 12-ft storm drain chamber on Walkeshwar incline.",
-    category: "public_safety",
-    priority: "critical",
-    status: "in_progress",
-    ward: "Ward D",
-    location: {
-      address: "Walkeshwar Road, Malabar Hill, Mumbai 400006",
-      coordinates: { type: "Point", coordinates: [72.7990, 18.9560] } as any,
-    },
-    citizen: { name: "Cyrus G.", phone: "+91 ******3399" },
-    createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-  } as any,
-]
-
 export default function MapView() {
   const { lastEvent } = useSocket()
   const [complaints, setComplaints] = useState<Complaint[]>([])
@@ -264,29 +97,16 @@ export default function MapView() {
   const heatLayerRef = useRef<any>(null)
   const choroplethGroupRef = useRef<L.LayerGroup | null>(null)
 
-  // Fetch Complaints & Merge with Mock Seeds
+  // Fetch Complaints directly from MongoDB via complaintApi
   const fetchComplaints = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
     setError(null)
     try {
       const data = await complaintApi.getAll({ limit: 100 })
-      const backendList = data.complaints || []
-      
-      // Merge backend complaints with mock incident seeds to guarantee full 24-ward GIS richness
-      const combined = [...backendList]
-      const existingIds = new Set(backendList.map(b => b.complaintId || b._id))
-      
-      MOCK_MUNICIPAL_INCIDENTS.forEach(mock => {
-        if (!existingIds.has(mock.complaintId)) {
-          combined.push(mock)
-        }
-      })
-
-      setComplaints(combined)
+      setComplaints(data.complaints || [])
     } catch {
-      // Fallback directly to rich mock incident dataset
-      setComplaints(MOCK_MUNICIPAL_INCIDENTS)
-      if (!silent) toast.error("Operating in Offline GIS Mode with cached BMC municipal telemetry")
+      setError("Failed to load GIS complaints from server.")
+      if (!silent) toast.error("Failed to load live GIS complaints")
     } finally {
       if (!silent) setLoading(false)
     }
@@ -775,7 +595,7 @@ export default function MapView() {
   }, [])
 
   return (
-    <div className="space-y-5 pb-10 max-w-7xl mx-auto w-full">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28">
       {/* Active Monsoon Flood Emergency Radar Banner */}
       {activeHotspotAlert && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white shadow-xl animate-pulse gap-3">
@@ -996,7 +816,7 @@ export default function MapView() {
       />
 
       {/* Filter Bar */}
-      <Card className="shadow-sm border-slate-200 bg-white">
+      <Card className="rounded-2xl shadow-sm border border-slate-200 bg-white">
         <CardContent className="pt-4 pb-4">
           <div className="flex flex-wrap items-center gap-3">
             {/* Search Input */}
@@ -1080,7 +900,7 @@ export default function MapView() {
 
       {/* Main Content Area */}
       {activeTab === "map" ? (
-        <Card className="shadow-md overflow-hidden border-slate-200 bg-white">
+        <Card className="rounded-2xl shadow-md overflow-hidden border border-slate-200 bg-white">
           <CardHeader className="pb-3 bg-slate-50 border-b border-slate-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <CardTitle className="text-sm font-extrabold flex items-center gap-2 text-slate-900">

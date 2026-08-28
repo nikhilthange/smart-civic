@@ -14,7 +14,7 @@ const dotenv = require("dotenv");
 
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
-const MONGO_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/smart-civic";
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/smart-civic";
 
 let passed = 0;
 let failed = 0;

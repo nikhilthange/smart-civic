@@ -14,6 +14,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"))
 const CreateComplaint = lazy(() => import("./pages/CreateComplaint"))
 const ComplaintHistory = lazy(() => import("./pages/ComplaintHistory"))
 const ComplaintTracking = lazy(() => import("./pages/ComplaintTracking"))
+const TrackComplaint = lazy(() => import("./pages/TrackComplaint"))
 const Unauthorized = lazy(() => import("./pages/Unauthorized"))
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"))
 const Donation = lazy(() => import("./pages/Donation"))
@@ -43,7 +44,6 @@ const CctvSurveillanceRadar = lazy(() => import("./pages/CctvSurveillanceRadar")
 const DigitalTwinSim = lazy(() => import("./pages/DigitalTwinSim"))
 const GreenBondLedger = lazy(() => import("./pages/GreenBondLedger"))
 const SocialMediaRadar = lazy(() => import("./pages/SocialMediaRadar"))
-const CivicRewardsLeaderboard = lazy(() => import("./pages/CivicRewardsLeaderboard"))
 const ContractorRegistry = lazy(() => import("./pages/ContractorRegistry"))
 const AlmSocietyDashboard = lazy(() => import("./pages/AlmSocietyDashboard"))
 const DailySitrepDashboard = lazy(() => import("./pages/DailySitrepDashboard"))
@@ -56,9 +56,9 @@ const MapView = lazy(() => import("./pages/MapView"))
 const RouteLoadingFallback = () => (
   <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 space-y-4">
     <div className="relative w-12 h-12">
-      <div className="w-12 h-12 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
+      <div className="w-12 h-12 rounded-full border-4 border-slate-200 border-t-slate-700 animate-spin"></div>
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-4 h-4 bg-indigo-600 rounded-full animate-pulse"></div>
+        <div className="w-4 h-4 bg-slate-700 rounded-full animate-pulse"></div>
       </div>
     </div>
     <p className="text-sm font-medium text-slate-500 animate-pulse tracking-wide">
@@ -103,10 +103,24 @@ function App() {
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/citizen-dashboard" element={<Dashboard />} />
                       <Route path="/complaints" element={<ComplaintHistory />} />
+                      
+                      {/* Tracking Routes (Preserved & Enhanced) */}
+                      <Route path="/track" element={<TrackComplaint />} />
+                      <Route path="/track/:id" element={<ComplaintTracking />} />
+                      <Route path="/track-complaint" element={<TrackComplaint />} />
                       <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
+                      
                       <Route path="/map" element={<MapView />} />
+                      
+                      {/* Donation Routes (Consolidated directly to Donation.tsx) */}
                       <Route path="/donate" element={<Donation />} />
+                      <Route path="/donations" element={<Donation />} />
+                      <Route path="/donation" element={<Donation />} />
+                      
+                      {/* Rewards Routes */}
                       <Route path="/rewards" element={<KarmaRewards />} />
+                      <Route path="/civic-karma" element={<KarmaRewards />} />
+                      
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/monsoon-radar" element={<MonsoonRadar />} />
                       <Route path="/dlp-registry" element={<DlpRegistry />} />
@@ -128,7 +142,6 @@ function App() {
                       <Route path="/digital-twin" element={<DigitalTwinSim />} />
                       <Route path="/green-bonds" element={<GreenBondLedger />} />
                       <Route path="/social-radar" element={<SocialMediaRadar />} />
-                      <Route path="/civic-karma" element={<CivicRewardsLeaderboard />} />
                       <Route path="/contractor-registry" element={<ContractorRegistry />} />
                       <Route path="/alm-societies" element={<AlmSocietyDashboard />} />
                       <Route path="/sitrep" element={<DailySitrepDashboard />} />

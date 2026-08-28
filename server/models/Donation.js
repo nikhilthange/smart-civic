@@ -15,7 +15,14 @@ const donationSchema = new mongoose.Schema(
     purpose: {
       type: String,
       required: true,
-      enum: ["Road Repair", "Garbage Management", "Tree Plantation"],
+      enum: [
+        "Road Repair",
+        "Garbage Management",
+        "Tree Plantation",
+        "Urban Tree Plantation",
+        "Solar Streetlighting",
+        "Drainage Upgrade",
+      ],
     },
     razorpayOrderId: {
       type: String,

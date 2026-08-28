@@ -901,9 +901,16 @@ export default function ComplaintTracking() {
 
             <form onSubmit={handleReopenComplaint} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Reason for Reopening <span className="text-red-500">*</span>
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Reason for Reopening <span className="text-red-500">*</span>
+                  </label>
+                  <span className={`text-[11px] font-medium ${reopenReason.trim().length >= 15 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+                    {reopenReason.trim().length >= 15 
+                      ? `${reopenReason.trim().length} characters`
+                      : `${15 - reopenReason.trim().length} more characters required`}
+                  </span>
+                </div>
                 <textarea
                   value={reopenReason}
                   onChange={(e) => setReopenReason(e.target.value)}
@@ -926,7 +933,7 @@ export default function ComplaintTracking() {
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={isReopening || !reopenReason.trim()}
+                  disabled={isReopening || reopenReason.trim().length < 15}
                   className="bg-red-600 hover:bg-red-700 text-white font-bold gap-1.5"
                 >
                   {isReopening ? (

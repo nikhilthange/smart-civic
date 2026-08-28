@@ -43,6 +43,7 @@ import {
   Eye,
   Settings as SettingsIcon,
   LifeBuoy,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -185,17 +186,38 @@ export default function DashboardLayout() {
   }
 
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className="flex h-full flex-col py-4 bg-white dark:bg-[#090A0F]">
-      <div className="flex h-14 items-center px-5 mb-2">
-        <Link to="/" className="flex items-center gap-2.5 font-semibold transition-opacity hover:opacity-80">
-          <div className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 p-2 rounded-xl shadow-sm">
-            <Building2 className="h-4.5 w-4.5" />
+    <div className="flex h-full flex-col py-2 bg-white dark:bg-[#090A0F]">
+      <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800 mb-2">
+        {/* Brand Identity */}
+        <Link
+          to="/"
+          onClick={() => isMobile && setIsMobileMenuOpen(false)}
+          className="flex items-center gap-2.5 min-w-0 font-semibold transition-opacity hover:opacity-80"
+        >
+          <div className="bg-primary/10 p-2 rounded-xl text-primary shrink-0">
+            <Building2 className="h-5 w-5" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-base font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Smart Civic</span>
-            <span className="text-[10px] font-mono tracking-wider uppercase text-zinc-400 dark:text-zinc-500 font-semibold">Enterprise AI</span>
+          <div className="min-w-0">
+            <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight leading-none truncate">
+              Smart Civic
+            </h1>
+            <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 tracking-wider uppercase">
+              Enterprise AI
+            </span>
           </div>
         </Link>
+
+        {/* Sleek Close Button */}
+        {isMobile && (
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+            aria-label="Close sidebar"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {/* User identity card */}
@@ -333,7 +355,7 @@ export default function DashboardLayout() {
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-0 w-[280px] max-w-[85vw]">
+            <SheetContent side="left" className="flex flex-col p-0 w-[280px] max-w-[85vw] [&>button]:hidden">
               <Sidebar isMobile={true} />
             </SheetContent>
           </Sheet>

@@ -94,9 +94,23 @@ class AsyncJobQueue extends EventEmitter {
     if (!this.redisClient || !this.redisClient.isReady) return;
     try {
       const lockKey = `job:lock:${jobId}`;
-      const currentHolder = await this.redisClient.get(lockKey);
-      if (currentHolder === this.workerId) {
-        await this.redisClient.del(lockKey);
+      const luaScript = `
+        if redis.call("get", KEYS[1]) == ARGV[1] then
+          return redis.call("del", KEYS[1])
+        else
+          return 0
+        end
+      `;
+      if (typeof this.redisClient.eval === "function") {
+        await this.redisClient.eval(luaScript, {
+          keys: [lockKey],
+          arguments: [this.workerId],
+        });
+      } else {
+        const currentHolder = await this.redisClient.get(lockKey);
+        if (currentHolder === this.workerId) {
+          await this.redisClient.del(lockKey);
+        }
       }
     } catch {
       // Non-blocking catch
@@ -212,10 +226,10 @@ class AsyncJobQueue extends EventEmitter {
         }, delayMs);
       } else {
         job.status = "FAILED";
-        job.error = err.message;
+        job.error = typeof err === "object" ? (err.stack || err.message) : String(err);
         job.failedAt = new Date();
         this.dlq.set(jobId, job); // Route to Dead Letter Queue
-        this.emit("job_failed", { jobId, error: err.message, routedToDLQ: true });
+        this.emit("job_failed", { jobId, error: job.error, routedToDLQ: true });
         console.warn(`[DLQ ROUTED] Job ${jobId} exceeded max retries and moved to Dead Letter Queue`);
       }
     } finally {

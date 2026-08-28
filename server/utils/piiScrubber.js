@@ -41,6 +41,7 @@ function sanitizeCitizenProfile(citizen) {
   const obj = isDoc ? citizen.toObject() : { ...citizen };
 
   if (obj.phoneNumber) obj.phoneNumber = maskPhoneNumber(obj.phoneNumber);
+  if (obj.phone) obj.phone = maskPhoneNumber(obj.phone);
   if (obj.email) obj.email = maskEmail(obj.email);
   return obj;
 }
@@ -70,6 +71,12 @@ function stripExifMetadata(imageBuffer) {
 
       if (offset + 4 > imageBuffer.length) break;
       const length = imageBuffer.readUInt16BE(offset + 2);
+
+      // Guard against malformed/corrupted length markers or out-of-bounds offset overflow
+      if (length < 2 || offset + 2 + length > imageBuffer.length) {
+        pieces.push(imageBuffer.subarray(offset));
+        break;
+      }
 
       // APP1 (EXIF: 0xFFE1) and APP2 (0xFFE2)
       if (marker === 0xe1 || marker === 0xe2) {
@@ -109,8 +116,8 @@ function scrubPii(text) {
   // 2. Email addresses -> [Email Redacted]
   result = result.replace(/\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+\b/g, "[Email Redacted]");
 
-  // 3. Phone numbers (10 digits) -> +91 ******1234
-  result = result.replace(/\b(?:\+91[\s-]?)?[6-9]\d{9}\b/g, (match) => {
+  // 3. Phone numbers (10 digits with optional spaces/hyphens) -> +91 ******1234
+  result = result.replace(/\b(?:\+91[\s-]?)?[6-9](?:[\s-]?\d){9}\b/g, (match) => {
     const digitsOnly = match.replace(/\D/g, "");
     const last4 = digitsOnly.slice(-4);
     return `+91 ******${last4}`;

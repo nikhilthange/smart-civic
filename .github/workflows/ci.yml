@@ -78,6 +78,7 @@ jobs:
           REDIS_URL: redis://localhost:6379
         run: |
           node server/scripts/test_surge_benchmark.js
+          node server/scripts/test_continuous_chaos_gate.js
           node server/scripts/test_db_disconnect_chaos_drill.js
           node server/scripts/test_sla_escrow_deficit_smoke.js
           node server/scripts/test_worker_lifecycle_smoke.js

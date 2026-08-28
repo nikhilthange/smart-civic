@@ -67,7 +67,7 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
-      - name: Execute Master Verification Pipeline (19-Stage Suite)
+      - name: Execute Master Verification Pipeline (20-Stage Suite)
         env:
           NODE_ENV: test
           MONGO_URI: mongodb://localhost:27017/smart-civic-sre
@@ -80,6 +80,7 @@ jobs:
           node server/scripts/generate_health_badge.js
           node tests/load/run_artillery_runner.js
           node server/scripts/daily_sre_health_check.js
+          node server/scripts/test_continuous_chaos_gate.js
           node server/scripts/test_k8s_manifest_validation.js
           node server/scripts/test_alert_rules_simulation.js
           node server/scripts/test_surge_benchmark.js

@@ -89,8 +89,8 @@ const checkSlaBreaches = async () => {
         if (socketService.broadcastHotspotAlert) {
           socketService.broadcastHotspotAlert({
             ward: complaint.ward || "Ward A",
-            lat: complaint.location?.coordinates?.[1] || 19.0760,
-            lng: complaint.location?.coordinates?.[0] || 72.8777,
+            lat: complaint.location?.coordinates?.coordinates?.[1] || 19.0760,
+            lng: complaint.location?.coordinates?.coordinates?.[0] || 72.8777,
             count: 1,
             message: `⚠️ Tier 1 SLA Breach: Ticket ${complaint.complaintId || complaint._id} breached resolution deadline in ${complaint.ward || "Ward"}!`,
           });

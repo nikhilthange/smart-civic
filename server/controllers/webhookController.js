@@ -111,13 +111,13 @@ const handleBotReport = async (req, res) => {
       slaStatus: "on_time",
       escalationTier: 1,
       location: {
-        type: "Point",
+        address: `${resolvedWardName}, Mumbai, Maharashtra`,
+        city: "Mumbai",
+        state: "Maharashtra",
         coordinates: {
           type: "Point",
           coordinates: [lng, lat],
         },
-        address: `${resolvedWardName}, Mumbai, Maharashtra`,
-        ward: resolvedWardName,
       },
       attachments: imageUrl
         ? [

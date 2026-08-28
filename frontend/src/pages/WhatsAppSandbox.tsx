@@ -169,7 +169,7 @@ function getAudioContext(): AudioContext | null {
       audioContextInstance = new AudioContextClass()
     }
     if (audioContextInstance.state === "suspended") {
-      audioContextInstance.resume()
+      audioContextInstance.resume().catch(() => {})
     }
     return audioContextInstance
   } catch {
@@ -302,6 +302,7 @@ export default function WhatsAppSandbox() {
   const chatBottomRef = useRef<HTMLDivElement | null>(null)
   const recordingTimerRef = useRef<any>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const mediaStreamRef = useRef<MediaStream | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const createdAudioUrls = useRef<string[]>([])
   const audioElementRef = useRef<HTMLAudioElement | null>(null)
@@ -369,10 +370,27 @@ export default function WhatsAppSandbox() {
     }
   }, [lastEvent, isMuted, sessionTickets])
 
-  // Cleanup Object URLs on unmount
+  // Cleanup Object URLs and active audio/media streams on unmount
   useEffect(() => {
     const urls = createdAudioUrls.current
     return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        try {
+          mediaRecorderRef.current.stop()
+        } catch (_) {}
+      }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => {
+          try {
+            t.stop()
+          } catch (_) {}
+        })
+      }
+      if (audioElementRef.current) {
+        try {
+          audioElementRef.current.pause()
+        } catch (_) {}
+      }
       urls.forEach((url) => {
         try {
           URL.revokeObjectURL(url)
@@ -458,9 +476,12 @@ export default function WhatsAppSandbox() {
 
       if (!isMuted) playWebAudioChime("send")
 
-      // Check Keyword Routing Commands
+      // Check Keyword Routing Commands (Multilingual: Marathi, Hindi, English)
       const lowerText = text.toLowerCase().trim()
-      if (lowerText === "reset" || lowerText === "menu" || lowerText === "help") {
+      const isResetCmd = ["reset", "menu", "help", "रीसेट", "मेन्यू", "मदत", "सहाय्य", "शुरू"].includes(lowerText)
+      const isStatusCmd = ["status", "स्थिती", "स्टेटस", "ट्रॅक", "track", "तक्रार स्थिती"].includes(lowerText)
+
+      if (isResetCmd) {
         setDialogueStage("IDLE")
         setCurrentGrievanceContext({})
         setTimeout(() => {
@@ -486,7 +507,7 @@ export default function WhatsAppSandbox() {
         return
       }
 
-      if (lowerText === "status") {
+      if (isStatusCmd) {
         setTimeout(() => {
           setMessages((prev) => [
             ...prev,
@@ -659,6 +680,7 @@ export default function WhatsAppSandbox() {
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaStreamRef.current = stream
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
@@ -667,6 +689,12 @@ export default function WhatsAppSandbox() {
         if (e.data.size > 0) {
           audioChunksRef.current.push(e.data)
         }
+      }
+
+      mediaRecorder.onerror = () => {
+        stream.getTracks().forEach((track) => track.stop())
+        mediaStreamRef.current = null
+        setIsRecording(false)
       }
 
       mediaRecorder.onstop = () => {
@@ -696,6 +724,7 @@ export default function WhatsAppSandbox() {
 
         // Stop all tracks
         stream.getTracks().forEach((track) => track.stop())
+        mediaStreamRef.current = null
       }
 
       mediaRecorder.start()

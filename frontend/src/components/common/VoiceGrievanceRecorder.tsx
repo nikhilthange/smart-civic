@@ -22,6 +22,7 @@ export default function VoiceGrievanceRecorder({ onTranscriptionComplete }: Voic
   const [transcriptionResult, setTranscriptionResult] = useState<any>(null)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const mediaStreamRef = useRef<MediaStream | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const animationFrameRef = useRef<number | null>(null)
@@ -31,6 +32,18 @@ export default function VoiceGrievanceRecorder({ onTranscriptionComplete }: Voic
   useEffect(() => {
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        try {
+          mediaRecorderRef.current.stop()
+        } catch (_) {}
+      }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => {
+          try {
+            t.stop()
+          } catch (_) {}
+        })
+      }
       if (audioContextRef.current && audioContextRef.current.state !== "closed") {
         audioContextRef.current.close().catch(() => {})
       }
@@ -41,6 +54,7 @@ export default function VoiceGrievanceRecorder({ onTranscriptionComplete }: Voic
     try {
       audioChunksRef.current = []
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaStreamRef.current = stream
 
       // Setup audio visualizer
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
@@ -64,6 +78,7 @@ export default function VoiceGrievanceRecorder({ onTranscriptionComplete }: Voic
 
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop())
+        mediaStreamRef.current = null
         await processAudioGrievance()
       }
 

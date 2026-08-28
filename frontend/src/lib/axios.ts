@@ -1,4 +1,5 @@
 import axios from "axios"
+import { auth } from "./firebase"
 
 /**
  * Normalizes the API URL to guarantee that every outbound request has a clean `/api` prefix,
@@ -22,12 +23,22 @@ const api = axios.create({
   },
 })
 
-// ─── Request Interceptor: Auto-attach Bearer token ───────────────────────────
+// ─── Request Interceptor: Auto-attach Firebase Bearer token ──────────────────
 api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token")
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+  async (config) => {
+    try {
+      const currentUser = auth.currentUser
+      if (currentUser) {
+        const token = await currentUser.getIdToken()
+        config.headers.Authorization = `Bearer ${token}`
+      } else {
+        const storedToken = localStorage.getItem("token")
+        if (storedToken) {
+          config.headers.Authorization = `Bearer ${storedToken}`
+        }
+      }
+    } catch (e) {
+      console.warn("Could not retrieve Firebase token for request", e)
     }
     return config
   },

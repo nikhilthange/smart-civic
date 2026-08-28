@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
   ArrowLeft, Clock, CheckCircle2, UserCheck, Wrench, Star,
   XCircle, Bot, MapPin, Calendar, Tag, Phone,
   AlertCircle, Loader2, Paperclip, ExternalLink, Check, Building,
-  Image as ImageIcon, HardHat, FileCheck
+  Image as ImageIcon, HardHat, FileCheck, Search, ArrowRight,
+  History, Sparkles, Plus
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
   complaintApi, STATUS_CONFIG, CATEGORY_LABELS,
@@ -56,6 +58,20 @@ function getActiveStageIndex(status: ComplaintStatus): number {
     case "reopened":             return 2
     default:                     return 1
   }
+}
+
+function StatusBadge({ status }: { status: ComplaintStatus | string }) {
+  const cfg = STATUS_CONFIG[status as ComplaintStatus] || {
+    label: status,
+    color: "text-gray-700",
+    bg: "bg-gray-100",
+    border: "border-gray-300"
+  }
+  return (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+      {cfg.label}
+    </span>
+  )
 }
 
 function StatusBadgeLg({ status }: { status: ComplaintStatus | string }) {
@@ -581,6 +597,7 @@ export const AttachmentsCard = React.memo(function AttachmentsCard({ attachments
 
 // ─── Main Complaint Tracking View ──────────────────────────────────────────────
 export default function ComplaintTracking() {
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const { user } = useAuth()
   const { socket } = useSocket()
@@ -588,39 +605,67 @@ export default function ComplaintTracking() {
   const targetId = id || complaintId
 
   const [complaint, setComplaint] = useState<Complaint | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState<boolean>(Boolean(targetId))
   const [error, setError] = useState<string | null>(null)
+  const [searchInput, setSearchInput] = useState("")
+  const [isSearching, setIsSearching] = useState(false)
+  const [recentComplaints, setRecentComplaints] = useState<Complaint[]>([])
+  const [isLoadingRecent, setIsLoadingRecent] = useState(false)
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
   const [isReopenModalOpen, setIsReopenModalOpen] = useState(false)
   const [reopenReason, setReopenReason] = useState("")
   const [isReopening, setIsReopening] = useState(false)
 
-  const load = useCallback(async () => {
-    if (!targetId) return
+  const load = useCallback(async (idToFetch?: string) => {
+    const currentId = idToFetch || targetId
+    if (!currentId) {
+      setIsLoading(false)
+      return
+    }
     setIsLoading(true)
     setError(null)
     try {
-      const data = await complaintApi.getOne(targetId)
+      const data = await complaintApi.getOne(currentId)
       setComplaint(data)
     } catch {
-      setError("Complaint not found or access restricted.")
+      setError(`No complaint found matching ID "${currentId}". Please verify the tracking number or select from your recent reports below.`)
+      setComplaint(null)
     } finally {
       setIsLoading(false)
     }
   }, [targetId])
 
   useEffect(() => {
-    if (!targetId) {
-      setError("No complaint ID provided in URL.")
+    if (targetId) {
+      load()
+    } else {
+      setComplaint(null)
+      setError(null)
       setIsLoading(false)
-      return
     }
-    load()
   }, [targetId, load])
+
+  // Fetch recent complaints when on the search page or if current lookup resulted in an error
+  useEffect(() => {
+    if (!targetId || error || !complaint) {
+      setIsLoadingRecent(true)
+      complaintApi
+        .getAll({ limit: 6 })
+        .then((res) => {
+          setRecentComplaints(res.complaints || [])
+        })
+        .catch(() => {
+          setRecentComplaints([])
+        })
+        .finally(() => {
+          setIsLoadingRecent(false)
+        })
+    }
+  }, [targetId, error, complaint])
 
   // Selective Socket.io listeners (decoupled from global broadcasts)
   useEffect(() => {
-    if (!socket) return
+    if (!socket || !targetId) return
 
     const handleUpdate = (payload: any) => {
       const updated = payload?.complaint || payload?.data || payload
@@ -666,7 +711,6 @@ export default function ComplaintTracking() {
             setComplaint(data)
           }
         } catch (reconnectErr) {
-          // Silently preserve current state on transient background reconnection errors
           console.warn("Background socket reconnection re-sync deferred:", reconnectErr)
         }
       }, jitter)
@@ -679,6 +723,15 @@ export default function ComplaintTracking() {
       socket.off("connect", handleReconnect)
     }
   }, [socket, targetId])
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = searchInput.trim()
+    if (!trimmed) return
+    setIsSearching(true)
+    navigate(`/track/${trimmed}`)
+    setIsSearching(false)
+  }
 
   const handleOpenFeedback = useCallback(() => {
     setIsFeedbackOpen(true)
@@ -720,36 +773,170 @@ export default function ComplaintTracking() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-24">
+      <div className="flex flex-col items-center justify-center py-24 space-y-3">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-xs text-slate-500 font-medium">Fetching municipal SLA tracking details...</p>
       </div>
     )
   }
 
-  if (error || !complaint) {
+  // ─── 1. Search Interface & Empty State Fallback ──────────────────────────────
+  if (!targetId || !complaint) {
     return (
-      <div className="max-w-lg mx-auto py-16 text-center space-y-4">
-        <AlertCircle className="h-14 w-14 text-red-500 mx-auto" />
-        <h2 className="text-2xl font-bold text-slate-900">{error || "Complaint not found"}</h2>
-        <p className="text-slate-500 text-sm">The complaint ID may be invalid or restricted for this account role.</p>
-        <div className="flex justify-center gap-3 pt-2">
-          <Link to="/dashboard">
-            <Button className="bg-primary text-white">Return to Dashboard</Button>
-          </Link>
-          <Link to="/complaints">
-            <Button variant="outline">View All Complaints</Button>
-          </Link>
+      <div className="w-full max-w-5xl mx-auto space-y-8 pb-12">
+        {/* Hero Search Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white p-6 sm:p-10 shadow-2xl border border-indigo-700/40 text-center">
+          <div className="relative z-10 max-w-2xl mx-auto space-y-3">
+            <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-400/30 gap-1.5 py-1 px-3">
+              <Sparkles className="w-3.5 h-3.5" />
+              Real-time Municipal SLA Radar
+            </Badge>
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+              Track Grievance Resolution
+            </h1>
+            <p className="text-indigo-200 text-xs sm:text-sm leading-relaxed">
+              Enter your tracking ticket number to inspect live 8-stage progress, supervising officer assignments, and timestamped field proof.
+            </p>
+
+            {/* Search Input Box */}
+            <form onSubmit={handleSearchSubmit} className="pt-3 flex flex-col sm:flex-row items-center gap-2.5 max-w-xl mx-auto">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  type="text"
+                  placeholder="Enter Complaint / Tracking ID (e.g. BMC-2026-XXXX)..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="pl-10 h-12 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 text-sm font-medium border-0 focus-visible:ring-2 focus-visible:ring-indigo-400 shadow-md w-full"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={!searchInput.trim() || isSearching}
+                className="w-full sm:w-auto h-12 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shrink-0 gap-2 text-sm min-h-[48px]"
+              >
+                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                Track Grievance
+              </Button>
+            </form>
+          </div>
+        </div>
+
+        {/* Error notification if ID was not found */}
+        {error && (
+          <div className="flex items-start gap-3 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-900 dark:text-rose-200 text-sm shadow-sm">
+            <AlertCircle className="w-5 h-5 shrink-0 text-rose-600 mt-0.5" />
+            <div className="flex-1 min-w-0 space-y-1">
+              <p className="font-semibold text-rose-800 dark:text-rose-300">{error}</p>
+              <p className="text-xs text-rose-600 dark:text-rose-400">
+                You can try searching again with a different ID or select one of your recently filed complaints below.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Recent Complaints Quick-Access List */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <History className="w-5 h-5 text-indigo-600" />
+                Your Recent Civic Reports
+              </h2>
+              <p className="text-xs text-slate-500">Click any grievance to inspect its live status and SLA timeline</p>
+            </div>
+            {user?.role === "citizen" && (
+              <Link to="/complaint/create">
+                <Button size="sm" variant="outline" className="gap-1 text-xs min-h-[36px] rounded-xl">
+                  <Plus className="w-3.5 h-3.5" />
+                  New Complaint
+                </Button>
+              </Link>
+            )}
+          </div>
+
+          {isLoadingRecent ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="h-28 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 animate-pulse" />
+              ))}
+            </div>
+          ) : recentComplaints.length === 0 ? (
+            <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3">
+              <Clock className="w-10 h-10 text-slate-400 mx-auto" />
+              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">No Recent Complaints Found</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                You haven't filed any municipal complaints yet. File a report to track its resolution timeline.
+              </p>
+              {user?.role === "citizen" && (
+                <Link to="/complaint/create">
+                  <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 mt-1 min-h-[40px] rounded-xl">
+                    <Plus className="w-4 h-4" />
+                    File a New Grievance
+                  </Button>
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {recentComplaints.map((c) => (
+                <Card
+                  key={c._id}
+                  onClick={() => navigate(`/track/${c.complaintId || c._id}`)}
+                  className="cursor-pointer hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700 transition-all border-slate-200 dark:border-slate-800 group"
+                >
+                  <CardContent className="p-4 sm:p-5 flex items-start gap-3.5">
+                    {c.attachments && c.attachments[0] ? (
+                      <div className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 shrink-0">
+                        <img
+                          src={getImageUrl(c.attachments[0])}
+                          onError={handleImageError}
+                          alt="Thumbnail"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 flex items-center justify-center text-indigo-600 shrink-0">
+                        <Clock className="w-7 h-7" />
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-800">
+                          {c.complaintId || c._id.substring(0, 10)}
+                        </span>
+                        <StatusBadge status={c.status} />
+                      </div>
+
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate group-hover:text-indigo-600 transition-colors">
+                        {c.title}
+                      </h4>
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+                        <span>{CATEGORY_LABELS[c.category] || c.category}</span>
+                        <span className="flex items-center gap-1 font-semibold text-indigo-600 dark:text-indigo-400">
+                          Track Live SLA <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     )
   }
 
+  // ─── 2. Active Complaint Detail Tracking View ────────────────────────────────
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
         <div className="flex items-start gap-3 min-w-0">
-          <Link to="/complaints" className="shrink-0">
+          <Link to="/track" className="shrink-0" title="Back to Tracking Search">
             <Button variant="outline" size="icon" className="min-h-[40px] min-w-[40px] rounded-xl">
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -769,15 +956,28 @@ export default function ComplaintTracking() {
           </div>
         </div>
 
-        {/* Feedback Button for Citizens */}
-        {user?.role === "citizen" && 
-         (complaint.status === "resolved" || (complaint.status as string) === "closed") && 
-         !complaint.feedbackSubmitted && (
-          <Button onClick={handleOpenFeedback} className="gap-2 bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto min-h-[44px] rounded-xl shrink-0">
-            <Star className="h-4 w-4" />
-            {t("tracking.rateExperience")}
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/track")}
+            className="gap-1.5 text-xs rounded-xl min-h-[40px] flex-1 sm:flex-initial"
+          >
+            <Search className="h-3.5 w-3.5 text-indigo-600" />
+            Track Another Ticket
           </Button>
-        )}
+
+          {/* Feedback Button for Citizens */}
+          {user?.role === "citizen" && 
+           (complaint.status === "resolved" || (complaint.status as string) === "closed") && 
+           !complaint.feedbackSubmitted && (
+            <Button onClick={handleOpenFeedback} className="gap-2 bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto min-h-[40px] rounded-xl shrink-0">
+              <Star className="h-4 w-4" />
+              {t("tracking.rateExperience")}
+            </Button>
+          )}
+        </div>
       </div>
 
       <FeedbackModal 

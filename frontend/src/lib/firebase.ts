@@ -74,17 +74,32 @@ export type { FirebaseUser }
  * Helper to request notification permission and retrieve the FCM token.
  */
 export async function requestFCMToken(): Promise<string | null> {
-  if (!messaging) return null
+  if (!messaging || typeof window === "undefined" || !("Notification" in window)) {
+    return null
+  }
+
+  const rawVapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
+  const isKeyConfigured =
+    rawVapidKey &&
+    rawVapidKey.trim().length > 30 &&
+    !rawVapidKey.includes("YourFirebaseVapid") &&
+    !rawVapidKey.includes("your_vapid")
+
+  if (!isKeyConfigured) {
+    // Graceful skip — in-app WebSockets handle real-time alerts cleanly
+    return null
+  }
+
   try {
     const permission = await Notification.requestPermission()
     if (permission !== "granted") return null
 
     const token = await getToken(messaging, {
-      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+      vapidKey: rawVapidKey.trim(),
     })
     return token || null
-  } catch (err) {
-    console.warn("FCM token error:", err)
+  } catch (err: any) {
+    console.debug("ℹ️ FCM token registration skipped:", err?.message || err)
     return null
   }
 }

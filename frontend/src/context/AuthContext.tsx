@@ -17,6 +17,9 @@ export interface AuthUser {
   email: string
   role: UserRole
   isActive: boolean
+  phoneNumber?: string
+  ward?: string
+  department?: string
   karmaPoints?: number
   createdAt?: string
   lastLogin?: string

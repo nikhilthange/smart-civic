@@ -51,6 +51,8 @@ const EmergencyBroadcastHub = lazy(() => import("./pages/EmergencyBroadcastHub")
 const QuickReport = lazy(() => import("./pages/QuickReport"))
 const AdminDataStudio = lazy(() => import("./pages/AdminDataStudio"))
 const MapView = lazy(() => import("./pages/MapView"))
+const Settings = lazy(() => import("./pages/Settings"))
+const Support = lazy(() => import("./pages/Support"))
 
 // ─── Loading Fallback Component ───────────────────────────────────────────────
 const RouteLoadingFallback = () => (
@@ -147,6 +149,9 @@ function App() {
                       <Route path="/sitrep" element={<DailySitrepDashboard />} />
                       <Route path="/emergency-broadcast" element={<EmergencyBroadcastHub />} />
                       <Route path="/search" element={<SearchComplaints />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/support" element={<Support />} />
+                      <Route path="/help" element={<Support />} />
                     </Route>
                   </Route>
 

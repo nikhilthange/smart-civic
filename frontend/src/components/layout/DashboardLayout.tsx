@@ -41,6 +41,8 @@ import {
   FileText,
   Megaphone,
   Eye,
+  Settings as SettingsIcon,
+  LifeBuoy,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -55,7 +57,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/context/AuthContext"
-import toast from "react-hot-toast"
 import { NotificationBell } from "@/components/ui/NotificationBell"
 import LanguageSelector from "@/components/common/LanguageSelector"
 import CommandPalette from "@/components/common/CommandPalette"
@@ -425,11 +426,13 @@ export default function DashboardLayout() {
                   <Sparkles className="mr-2 h-4 w-4 text-violet-600" />
                   Municipal AI Copilot
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast("Settings coming soon!", { icon: "⚙️" })}>
-                  Settings
+                <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                  <SettingsIcon className="mr-2 h-4 w-4 text-slate-500" />
+                  Settings & Preferences
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toast("Support portal coming soon!", { icon: "🎧" })}>
-                  Support
+                <DropdownMenuItem onClick={() => navigate("/support")} className="cursor-pointer">
+                  <LifeBuoy className="mr-2 h-4 w-4 text-blue-500" />
+                  Civic Helpdesk & Support
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem

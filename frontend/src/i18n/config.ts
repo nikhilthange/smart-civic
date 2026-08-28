@@ -463,13 +463,29 @@ const resources = {
   },
 }
 
+const initialLang = localStorage.getItem("smart_civic_lang") || "en"
+if (typeof document !== "undefined") {
+  document.documentElement.lang = initialLang
+}
+
 i18n.use(initReactI18next).init({
   resources,
-  lng: localStorage.getItem("smart_civic_lang") || "en",
+  lng: initialLang,
   fallbackLng: "en",
   interpolation: {
     escapeValue: false,
   },
+})
+
+i18n.on("languageChanged", (lng) => {
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = lng
+  }
+  try {
+    localStorage.setItem("smart_civic_lang", lng)
+  } catch {
+    // Ignore storage quota or security errors
+  }
 })
 
 export default i18n

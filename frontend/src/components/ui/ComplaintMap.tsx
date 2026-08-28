@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react"
 import { Building2, ExternalLink, MapPin } from "lucide-react"
 import { departmentApi, type Department } from "@/services/departmentApi"
-import L from "leaflet"
+import L from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
 
 interface ComplaintMapProps {

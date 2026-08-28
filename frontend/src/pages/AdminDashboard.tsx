@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from "recharts"
-import L from "leaflet"
+import L from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
 import "leaflet.markercluster"
 import "leaflet.markercluster/dist/MarkerCluster.css"

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom"
-import L from "leaflet"
+import L from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
 import "leaflet.markercluster"
 import "leaflet.markercluster/dist/MarkerCluster.css"

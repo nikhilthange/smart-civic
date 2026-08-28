@@ -177,9 +177,22 @@ app.use("/api/sitrep",        require("./routes/sitrepRoutes"));
 app.use("/api/broadcast",     require("./routes/broadcastRoutes"));
 app.use("/api/simulator",     require("./routes/simulationRoutes"));
 
-// ─── Health check (no rate limit — used by load balancers) ────────────────────
+// ─── Health check & Root Endpoints (Supports both GET and HEAD for Uptime Probes) ──
 const mongoose = require("mongoose");
-const healthHandler = (req, res) => {
+
+const rootTelemetryHandler = (req, res) => {
+  const isDbConnected = mongoose.connection.readyState === 1;
+  res.status(200).json({
+    status: "ok",
+    service: "Smart Civic AI Platform Backend",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development",
+    database: isDbConnected ? "connected" : "disconnected",
+  });
+};
+
+const fullHealthHandler = (req, res) => {
   const mem = process.memoryUsage();
   const isDbConnected = mongoose.connection.readyState === 1;
   const statusCode = isDbConnected ? 200 : 503;
@@ -203,19 +216,22 @@ const healthHandler = (req, res) => {
     },
   });
 };
-const liveHandler = (req, res) => {
-  res.status(200).json({
-    status: "ALIVE",
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-  });
-};
-app.get("/live", liveHandler);
-app.get("/api/live", liveHandler);
-app.get("/ping", liveHandler);
-app.get("/api/ping", liveHandler);
-app.get("/health", healthHandler);
-app.get("/api/health", healthHandler);
+
+// Root and uptime probe routes (Handles both GET and HEAD cleanly)
+app.all(["/", "/live", "/api/live", "/ping", "/api/ping"], (req, res, next) => {
+  if (req.method === "GET" || req.method === "HEAD") {
+    return rootTelemetryHandler(req, res);
+  }
+  next();
+});
+
+app.all(["/health", "/api/health"], (req, res, next) => {
+  if (req.method === "GET" || req.method === "HEAD") {
+    return fullHealthHandler(req, res);
+  }
+  next();
+});
+
 app.get("/metrics", metricsEndpoint);
 app.get("/api/metrics", metricsEndpoint);
 

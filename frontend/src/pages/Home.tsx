@@ -39,26 +39,32 @@ export default function Home() {
   return (
     <div className="flex min-h-[100svh] flex-col bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Navbar */}
-      <header className="sticky top-0 z-50 w-full border-b bg-white/70 dark:bg-slate-950/70 backdrop-blur-md">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link className="flex items-center gap-3 transition-transform hover:scale-105" to="/">
-            <div className="bg-primary/10 p-2 rounded-xl">
-              <Building2 className="h-6 w-6 text-primary" />
+      <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
+          <Link className="flex items-center gap-2 sm:gap-3 transition-transform hover:scale-105 shrink min-w-0" to="/">
+            <div className="bg-primary/10 p-1.5 sm:p-2 rounded-xl shrink-0">
+              <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic AI</span>
+            <span className="text-base sm:text-lg md:text-xl font-bold tracking-tight text-slate-900 dark:text-white truncate">
+              Smart Civic <span className="text-primary">AI</span>
+            </span>
           </Link>
           <nav className="hidden md:flex gap-6 items-center">
             <a href="#features" className="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">Features</a>
             <a href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">How it Works</a>
             <a href="#ai" className="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">AI Engine</a>
           </nav>
-          <div className="flex gap-4 items-center">
-            <Link to="/auth" className="text-sm font-medium hover:text-primary transition-colors">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            <Link
+              to="/auth"
+              className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary transition-colors px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60"
+            >
               Sign In
             </Link>
             <Link to="/auth">
-              <Button size="sm" className="rounded-full px-6 shadow-md shadow-primary/20">
-                Get Started
+              <Button size="sm" className="rounded-full text-xs sm:text-sm px-3 sm:px-5 py-1.5 h-8 sm:h-9 shadow-md shadow-primary/20 whitespace-nowrap">
+                <span>Get Started</span>
+                <ArrowRight className="ml-1 h-3.5 w-3.5 hidden sm:inline" />
               </Button>
             </Link>
           </div>

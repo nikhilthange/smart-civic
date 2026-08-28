@@ -20,11 +20,17 @@ export function lazyRetry<T extends React.ComponentType<any>>(
       const component = await componentImport()
       window.sessionStorage.setItem("page-refreshed", "false")
       return component
-    } catch (error) {
-      if (!pageHasAlreadyBeenForceRefreshed) {
+    } catch (error: any) {
+      const isChunkError =
+        error?.name === "ChunkLoadError" ||
+        error?.message?.includes("Failed to fetch dynamically imported module") ||
+        error?.message?.includes("error loading dynamically imported module")
+
+      if (isChunkError && !pageHasAlreadyBeenForceRefreshed) {
         window.sessionStorage.setItem("page-refreshed", "true")
         window.location.reload()
-        return { default: (() => null) as unknown as T }
+        // Return a persistent unresolved promise so the fallback loader stays mounted until reload finishes
+        return new Promise<{ default: T }>(() => {})
       }
       throw error
     }

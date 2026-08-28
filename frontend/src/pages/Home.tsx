@@ -61,12 +61,12 @@ export default function Home() {
             >
               Sign In
             </Link>
-            <Link to="/auth">
-              <Button size="sm" className="rounded-full text-xs sm:text-sm font-semibold px-2.5 sm:px-4 py-1.5 sm:py-2 h-8 sm:h-9 shadow-md shadow-primary/20 whitespace-nowrap">
+            <Button asChild size="sm" className="rounded-full text-xs sm:text-sm font-semibold px-2.5 sm:px-4 py-1.5 sm:py-2 h-8 sm:h-9 shadow-md shadow-primary/20 whitespace-nowrap">
+              <Link to="/auth">
                 <span>Get Started</span>
                 <ArrowRight className="ml-1 h-3.5 w-3.5 hidden sm:inline" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -98,17 +98,17 @@ export default function Home() {
                 Report civic issues instantly, track resolution progress in real-time, and let our advanced AI engine route your complaints to the right department automatically.
               </motion.p>
               <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row justify-center gap-4 mt-4 w-full sm:w-auto">
-                <Link to="/auth" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 text-base shadow-lg shadow-primary/30 transition-all hover:scale-105">
-                    Report an Issue
+                <Button asChild size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 text-base shadow-lg shadow-primary/30 transition-all hover:scale-105">
+                  <Link to="/auth">
+                    <span>Report an Issue</span>
                     <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link to="/dashboard" className="w-full sm:w-auto">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 text-base bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all hover:scale-105">
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 text-base bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all hover:scale-105">
+                  <Link to="/dashboard">
                     Access Dashboard
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </motion.div>
             </motion.div>
           </div>

@@ -40,8 +40,8 @@ export default function Home() {
     <div className="flex min-h-[100svh] flex-col bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
-        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2">
-          <Link className="flex items-center gap-2 sm:gap-3 transition-transform hover:scale-105 shrink min-w-0" to="/">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+          <Link className="flex items-center gap-2 min-w-0 transition-transform hover:scale-105 shrink" to="/">
             <div className="bg-primary/10 p-1.5 sm:p-2 rounded-xl shrink-0">
               <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
@@ -54,15 +54,15 @@ export default function Home() {
             <a href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">How it Works</a>
             <a href="#ai" className="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">AI Engine</a>
           </nav>
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <Link
               to="/auth"
-              className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary transition-colors px-2 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60"
+              className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary transition-colors px-2 sm:px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60"
             >
               Sign In
             </Link>
             <Link to="/auth">
-              <Button size="sm" className="rounded-full text-xs sm:text-sm px-3 sm:px-5 py-1.5 h-8 sm:h-9 shadow-md shadow-primary/20 whitespace-nowrap">
+              <Button size="sm" className="rounded-full text-xs sm:text-sm font-semibold px-2.5 sm:px-4 py-1.5 sm:py-2 h-8 sm:h-9 shadow-md shadow-primary/20 whitespace-nowrap">
                 <span>Get Started</span>
                 <ArrowRight className="ml-1 h-3.5 w-3.5 hidden sm:inline" />
               </Button>

@@ -2,7 +2,8 @@ import { useState, useRef, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
-  CheckCircle2, Loader2, Bot, Info, Camera, QrCode, Sparkles, ShieldCheck
+  CheckCircle2, Loader2, Bot, Info, Camera, QrCode, Sparkles, ShieldCheck,
+  Clock, ShieldAlert, Building2
 } from "lucide-react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -261,36 +262,46 @@ export default function CreateComplaint() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto w-full space-y-6">
+    <div className="w-full max-w-7xl mx-auto space-y-6 px-1 sm:px-2 pb-16">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-sm">
-          <FileText className="h-5 w-5" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900/60 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-sm">
+            <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Submit Civic Grievance</h1>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">Report neighborhood defects directly to the BMC ward triage mesh</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Submit Civic Grievance</h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">Report neighborhood defects directly to the BMC ward triage mesh</p>
-        </div>
-      </div>
-
-      {/* AI info banner */}
-      <div className="flex items-start gap-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/50 px-4 py-3">
-        <Bot className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
-        <div>
-          <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Automated AI Triage & Verification</p>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Complaints with 50+ characters and clear photo evidence are classified by our neural model and expedited to ward field workers.</p>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            AUTO-SLA ROUTING ACTIVE
+          </span>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-5">
-          {/* Error */}
-          {error && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              {error}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Main Form Column (8 Cols) */}
+        <div className="lg:col-span-8 space-y-5">
+          {/* AI info banner */}
+          <div className="flex items-start gap-3 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/50 px-4 py-3">
+            <Bot className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Automated AI Triage & Verification</p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Complaints with 50+ characters and clear photo evidence are classified by our neural model and expedited to ward field workers.</p>
             </div>
-          )}
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-5">
+              {/* Error */}
+              {error && (
+                <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {error}
+                </div>
+              )}
 
           {/* Step 1: Category & Details */}
           <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm">
@@ -591,7 +602,7 @@ export default function CreateComplaint() {
           {/* Actions */}
           <div className="flex justify-between pt-2">
             <Button variant="outline" type="button" onClick={() => navigate(-1)}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting} className="min-w-36">
+            <Button type="submit" disabled={isSubmitting} className="min-w-36 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md">
               {isSubmitting ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting...</>
               ) : (
@@ -602,5 +613,60 @@ export default function CreateComplaint() {
         </div>
       </form>
     </div>
-  )
+
+    {/* Right Information & SLA Charter Sidebar (4 Cols) */}
+    <div className="lg:col-span-4 space-y-4">
+      {/* SLA Matrix Card */}
+      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm p-4 space-y-3">
+        <h3 className="text-xs font-bold font-display uppercase tracking-wider text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
+          <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          BMC Citizen Charter SLA Matrix
+        </h3>
+        <div className="space-y-2 text-xs">
+          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800">
+            <span className="font-semibold text-rose-600 dark:text-rose-400">Open Manhole / Cave-in</span>
+            <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 text-[10px] font-mono font-bold">
+              2–4h SLA
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800">
+            <span className="font-semibold text-amber-600 dark:text-amber-400">Major Arterial Pothole</span>
+            <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 text-[10px] font-mono font-bold">
+              12–24h SLA
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800">
+            <span className="font-semibold text-blue-600 dark:text-blue-400">SWM Garbage Overflow</span>
+            <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 text-[10px] font-mono font-bold">
+              24–48h SLA
+            </Badge>
+          </div>
+        </div>
+      </Card>
+
+      {/* DPDP Act 2023 Privacy Card */}
+      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm p-4 space-y-2 text-xs">
+        <h3 className="font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
+          <ShieldAlert className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          DPDP Act 2023 Privacy Shield
+        </h3>
+        <p className="text-slate-500 dark:text-zinc-400 text-[11px] leading-relaxed">
+          Your personal data is protected under statutory privacy safeguards. Contact numbers and personal identifiers are dynamically redacted before reaching public dashboards or contractor field views.
+        </p>
+      </Card>
+
+      {/* Statutory Contractor Notice */}
+      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm p-4 space-y-2 text-xs">
+        <h3 className="font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
+          <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          MMC Act Section 354
+        </h3>
+        <p className="text-slate-500 dark:text-zinc-400 text-[11px] leading-relaxed">
+          Unresolved critical hazards past SLA triggers invoke automated ₹5,000 contractor escrow deductions and statutory debarment proceedings.
+        </p>
+      </Card>
+    </div>
+  </div>
+</div>
+)
 }

@@ -129,7 +129,7 @@ export default function Notifications() {
   })
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

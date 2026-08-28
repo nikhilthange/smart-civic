@@ -42,15 +42,13 @@ api.interceptors.response.use(
       const requestUrl = error.config?.url || ""
       const isAuthValidationEndpoint = requestUrl.includes("/auth/me")
 
-      // Only invalidate session if the core authentication validator (/auth/me) fails
+      // Only invalidate token in storage if core /auth/me endpoint explicitly rejected it
       if (isAuthValidationEndpoint) {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
-        if (typeof window !== "undefined" && window.location.pathname !== "/auth" && window.location.pathname !== "/login") {
-          window.location.href = "/auth"
-        }
+        delete api.defaults.headers.common["Authorization"]
       } else {
-        console.warn("⚠️ Unauthorized request (401) on non-critical endpoint:", requestUrl)
+        console.warn("⚠️ Unauthorized request (401) on endpoint:", requestUrl)
       }
     } else if (!error.response && error.message === "Network Error") {
       console.warn("⚠️ Network connection offline. Request queued or failed gracefully.")

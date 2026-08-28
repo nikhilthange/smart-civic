@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react"
 import api from "@/lib/axios"
@@ -96,6 +97,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
+  const currentUserRef = useRef<AuthUser | null>(user)
+  const currentTokenRef = useRef<string | null>(token)
+  currentUserRef.current = user
+  currentTokenRef.current = token
+
   // ─── Unified Firebase Auth Observer: Single Source of Truth ───────────────────
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -107,20 +113,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           // 1. Block unverified email/password accounts
           if (isPasswordProvider && !firebaseUser.emailVerified) {
-            setUser(null)
-            setToken(null)
-            localStorage.removeItem("token")
-            localStorage.removeItem("user")
-            delete api.defaults.headers.common["Authorization"]
+            if (currentUserRef.current !== null || currentTokenRef.current !== null) {
+              setUser(null)
+              setToken(null)
+              localStorage.removeItem("token")
+              localStorage.removeItem("user")
+              delete api.defaults.headers.common["Authorization"]
+            }
             setIsLoading(false)
             return
           }
 
           // 2. Fetch fresh backend profile & exchange token for verified/OAuth users
           const idToken = await firebaseUser.getIdToken()
-          setToken(idToken)
-          localStorage.setItem("token", idToken)
-          api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`
+          if (currentTokenRef.current !== idToken) {
+            setToken(idToken)
+            localStorage.setItem("token", idToken)
+            api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`
+          }
 
           try {
             const { data } = await api.get("/auth/me", {
@@ -128,8 +138,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             })
 
             if (data?.user) {
-              setUser(data.user)
-              localStorage.setItem("user", JSON.stringify(data.user))
+              if (JSON.stringify(currentUserRef.current) !== JSON.stringify(data.user)) {
+                setUser(data.user)
+                localStorage.setItem("user", JSON.stringify(data.user))
+              }
             }
           } catch {
             // Retain / hydrate minimal verified user profile if backend /auth/me is unreachable
@@ -139,31 +151,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               email: firebaseUser.email || "",
               role: "citizen",
               isActive: true,
-              karmaPoints: 0,
+              karmaPoints: currentUserRef.current?.karmaPoints ?? 0,
               createdAt: new Date().toISOString(),
             }
-            setUser(verifiedUser)
-            localStorage.setItem("user", JSON.stringify(verifiedUser))
+            if (JSON.stringify(currentUserRef.current) !== JSON.stringify(verifiedUser)) {
+              setUser(verifiedUser)
+              localStorage.setItem("user", JSON.stringify(verifiedUser))
+            }
           }
         } else {
           // 3. User is signed out in Firebase
           const storedToken = localStorage.getItem("token")
           const storedUser = localStorage.getItem("user")
           if (!storedToken || !storedUser) {
-            setUser(null)
-            setToken(null)
-            localStorage.removeItem("token")
-            localStorage.removeItem("user")
-            delete api.defaults.headers.common["Authorization"]
+            if (currentUserRef.current !== null || currentTokenRef.current !== null) {
+              setUser(null)
+              setToken(null)
+              localStorage.removeItem("token")
+              localStorage.removeItem("user")
+              delete api.defaults.headers.common["Authorization"]
+            }
           }
         }
       } catch (err) {
         console.error("Auth hydration failed:", err)
-        setUser(null)
-        setToken(null)
-        localStorage.removeItem("token")
-        localStorage.removeItem("user")
-        delete api.defaults.headers.common["Authorization"]
+        if (currentUserRef.current !== null || currentTokenRef.current !== null) {
+          setUser(null)
+          setToken(null)
+          localStorage.removeItem("token")
+          localStorage.removeItem("user")
+          delete api.defaults.headers.common["Authorization"]
+        }
       } finally {
         setIsLoading(false)
       }

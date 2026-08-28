@@ -37,7 +37,7 @@ function StatusBadge({ status }: { status: ComplaintStatus | string }) {
 
 export default function ComplaintHistory() {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, isLoading: isAuthLoading } = useAuth()
   const navigate = useNavigate()
   const [complaints, setComplaints] = useState<Complaint[]>([])
   const [total, setTotal] = useState(0)
@@ -50,6 +50,12 @@ export default function ComplaintHistory() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const load = useCallback(async () => {
+    if (isAuthLoading) return
+    if (!user) {
+      setIsLoading(false)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
     try {
@@ -57,20 +63,22 @@ export default function ComplaintHistory() {
       if (search) params.search = search
       if (statusFilter !== "all") params.status = statusFilter
       const data = await complaintApi.getAll(params)
-      setComplaints(data.complaints)
-      setTotal(data.total)
-      setPages(data.pages)
-    } catch {
-      setError("Failed to load complaints. Please try again.")
+      setComplaints(data.complaints || [])
+      setTotal(data.total || 0)
+      setPages(data.pages || 1)
+    } catch (err) {
+      console.error("ComplaintHistory load error:", err)
+      setError("Failed to load complaints. Please check your connection and try again.")
     } finally {
       setIsLoading(false)
     }
-  }, [page, search, statusFilter])
+  }, [page, search, statusFilter, isAuthLoading, user])
 
   useEffect(() => {
+    if (isAuthLoading) return
     const timer = setTimeout(load, search ? 400 : 0)
     return () => clearTimeout(timer)
-  }, [load, search])
+  }, [load, search, isAuthLoading])
 
   const handleDelete = async (id: string) => {
     try {
@@ -100,24 +108,20 @@ export default function ComplaintHistory() {
             <p className="text-sm text-slate-500">{total} {t("complaints.submissions", "submissions")}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={load} disabled={isLoading}>
-            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
-          </Button>
-          {user?.role === "citizen" && (
-            <Link to="/complaint/create">
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                {t("complaints.newComplaint", "File New Complaint")}
-              </Button>
-            </Link>
-          )}
-        </div>
+        {user?.role === "citizen" && (
+          <Link to="/complaint/create">
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white min-h-[40px] rounded-xl gap-2">
+              <Plus className="h-4 w-4" />
+              {t("complaints.newComplaint", "File New Complaint")}
+            </Button>
+          </Link>
+        )}
       </div>
 
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle>{t("complaints.submissions", "Submissions")}</CardTitle>
+      {/* Main Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("complaints.history", "Grievance Redressal Records")}</CardTitle>
           <CardDescription>{t("complaints.subtitle", "Track the status of all your submitted complaints.")}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -158,29 +162,42 @@ export default function ComplaintHistory() {
             </div>
           </div>
 
-          {/* Error */}
-          {error && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              {error}
-            </div>
-          )}
-
-          {/* Table */}
-          {isLoading ? (
+          {/* Table / Error / Loading / Empty States — Mutually Exclusive */}
+          {isLoading || isAuthLoading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-12 px-4 rounded-xl bg-red-50/70 border border-red-200 dark:bg-red-950/20 dark:border-red-900 text-center space-y-3">
+              <AlertCircle className="h-10 w-10 text-red-500 shrink-0" />
+              <div>
+                <p className="font-semibold text-red-800 dark:text-red-300">{error}</p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">An error occurred while fetching your records from the civic portal.</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={load}
+                className="gap-1.5 border-red-300 text-red-700 hover:bg-red-100 min-h-[38px] rounded-lg mt-2"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
             </div>
           ) : complaints.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <FileX className="h-12 w-12 mb-3 text-slate-400" />
-              <p className="font-medium text-slate-600">{t("complaints.noComplaints", "No complaints found")}</p>
-              <p className="text-sm mt-1">
-                {t("complaints.noComplaintsDesc", "You haven't reported any civic complaints yet.")}
+              <p className="font-medium text-slate-600 dark:text-slate-300">{t("complaints.noComplaints", "No complaints found")}</p>
+              <p className="text-sm mt-1 text-slate-500">
+                {search || statusFilter !== "all"
+                  ? "No complaints match your active filter criteria."
+                  : t("complaints.noComplaintsDesc", "You haven't reported any civic complaints yet.")}
               </p>
               {!search && statusFilter === "all" && user?.role === "citizen" && (
                 <Link to="/complaint/create">
-                  <Button className="mt-4 min-h-[44px]" size="sm">{t("complaints.newComplaint", "File New Complaint")}</Button>
+                  <Button className="mt-4 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl" size="sm">
+                    {t("complaints.newComplaint", "File New Complaint")}
+                  </Button>
                 </Link>
               )}
             </div>

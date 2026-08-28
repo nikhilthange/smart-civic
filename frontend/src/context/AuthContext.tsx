@@ -96,67 +96,76 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // ─── On mount: validate stored token and re-hydrate user ────────────────────
-  useEffect(() => {
-    let isMounted = true
-
-    const initAuth = async () => {
-      const storedToken = localStorage.getItem("token")
-      if (!storedToken) {
-        if (isMounted) setIsLoading(false)
-        return
-      }
-
-      api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
-
-      try {
-        const { data } = await api.get("/auth/me")
-        if (isMounted && data?.user) {
-          setUser(data.user)
-          setToken(storedToken)
-          localStorage.setItem("user", JSON.stringify(data.user))
-        }
-      } catch (err: any) {
-        // Only invalidate if the server explicitly rejects the token with 401
-        if (err?.response?.status === 401) {
-          console.warn("⚠️ Stale token detected on /auth/me. Clearing session.")
-          localStorage.removeItem("token")
-          localStorage.removeItem("user")
-          delete api.defaults.headers.common["Authorization"]
-          if (isMounted) {
-            setToken(null)
-            setUser(null)
-          }
-        } else {
-          console.warn("⚠️ Network/Server unreachable during /auth/me check. Retaining offline session.")
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    initAuth()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  // ─── Firebase Auth Observer: Guard against unverified email users ─────────────
+  // ─── Unified Firebase Auth Observer: Single Source of Truth ───────────────────
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const isPasswordProvider = firebaseUser.providerData.some(
-          (p) => p.providerId === "password"
-        )
+      try {
+        if (firebaseUser) {
+          const isPasswordProvider = firebaseUser.providerData.some(
+            (p) => p.providerId === "password"
+          )
 
-        // If email/password user is not verified, do not hydrate authenticated session
-        if (isPasswordProvider && !firebaseUser.emailVerified) {
-          setIsLoading(false)
-          return
+          // 1. Block unverified email/password accounts
+          if (isPasswordProvider && !firebaseUser.emailVerified) {
+            setUser(null)
+            setToken(null)
+            localStorage.removeItem("token")
+            localStorage.removeItem("user")
+            delete api.defaults.headers.common["Authorization"]
+            setIsLoading(false)
+            return
+          }
+
+          // 2. Fetch fresh backend profile & exchange token for verified/OAuth users
+          const idToken = await firebaseUser.getIdToken()
+          setToken(idToken)
+          localStorage.setItem("token", idToken)
+          api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`
+
+          try {
+            const { data } = await api.get("/auth/me", {
+              headers: { Authorization: `Bearer ${idToken}` },
+            })
+
+            if (data?.user) {
+              setUser(data.user)
+              localStorage.setItem("user", JSON.stringify(data.user))
+            }
+          } catch {
+            // Retain / hydrate minimal verified user profile if backend /auth/me is unreachable
+            const verifiedUser: AuthUser = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "Citizen",
+              email: firebaseUser.email || "",
+              role: "citizen",
+              isActive: true,
+              karmaPoints: 0,
+              createdAt: new Date().toISOString(),
+            }
+            setUser(verifiedUser)
+            localStorage.setItem("user", JSON.stringify(verifiedUser))
+          }
+        } else {
+          // 3. User is signed out in Firebase
+          const storedToken = localStorage.getItem("token")
+          const storedUser = localStorage.getItem("user")
+          if (!storedToken || !storedUser) {
+            setUser(null)
+            setToken(null)
+            localStorage.removeItem("token")
+            localStorage.removeItem("user")
+            delete api.defaults.headers.common["Authorization"]
+          }
         }
+      } catch (err) {
+        console.error("Auth hydration failed:", err)
+        setUser(null)
+        setToken(null)
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+        delete api.defaults.headers.common["Authorization"]
+      } finally {
+        setIsLoading(false)
       }
     })
 

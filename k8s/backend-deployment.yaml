@@ -33,7 +33,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: backend-api
-          image: smart-civic/backend:latest
+          image: smart-civic/backend:v1.0.1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000

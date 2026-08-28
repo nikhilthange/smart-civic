@@ -186,8 +186,8 @@ export default function DashboardLayout() {
   }
 
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className="flex h-full flex-col py-2 bg-white dark:bg-[#090A0F]">
-      <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800 mb-2">
+    <div className="flex h-full flex-col bg-white dark:bg-[#090A0F]">
+      <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#090A0F]/95 backdrop-blur-md flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
         {/* Brand Identity */}
         <Link
           to="/"
@@ -220,101 +220,103 @@ export default function DashboardLayout() {
         )}
       </div>
 
-      {/* User identity card */}
-      {user && (
-        <div className="mx-3.5 mb-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 p-3 border border-zinc-200/70 dark:border-zinc-800/70">
-          <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-            {user.name}
-          </p>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mb-2">{user.email}</p>
-          <Badge
-            variant="outline"
-            className={`text-[10px] capitalize font-mono font-medium px-2 py-0.5 rounded-md border ${roleBadgeColor[user.role] || ""}`}
-          >
-            <Shield className="h-2.5 w-2.5 mr-1" />
-            {user.role}
-          </Badge>
-        </div>
-      )}
+      <div className="flex-1 overflow-y-auto py-3">
+        {/* User identity card */}
+        {user && (
+          <div className="mx-3.5 mb-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 p-3 border border-zinc-200/70 dark:border-zinc-800/70">
+            <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+              {user.name}
+            </p>
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mb-2">{user.email}</p>
+            <Badge
+              variant="outline"
+              className={`text-[10px] capitalize font-mono font-medium px-2 py-0.5 rounded-md border ${roleBadgeColor[user.role] || ""}`}
+            >
+              <Shield className="h-2.5 w-2.5 mr-1" />
+              {user.role}
+            </Badge>
+          </div>
+        )}
 
-      {/* Grouped Navigation */}
-      <div className="flex-1 overflow-y-auto px-2.5 space-y-4">
-        {navGroups.map((group) => {
-          // Filter items based on user role
-          const visibleItems = group.items.filter((item) => {
-            const isCitizen = user?.role === "citizen"
-            const isAdmin = user?.role === "admin"
-            const isOfficerOrAdmin = ["admin", "officer"].includes(user?.role ?? "")
-            const isWorkerOfficerAdmin = ["admin", "officer", "worker"].includes(user?.role ?? "")
+        {/* Grouped Navigation */}
+        <div className="px-2.5 space-y-4">
+          {navGroups.map((group) => {
+            // Filter items based on user role
+            const visibleItems = group.items.filter((item) => {
+              const isCitizen = user?.role === "citizen"
+              const isAdmin = user?.role === "admin"
+              const isOfficerOrAdmin = ["admin", "officer"].includes(user?.role ?? "")
+              const isWorkerOfficerAdmin = ["admin", "officer", "worker"].includes(user?.role ?? "")
 
-            if (item.citizenOnly && !isCitizen) return false
-            if (item.adminOnly && !isAdmin) return false
-            if (item.officerOnly && !isOfficerOrAdmin) return false
-            if (item.workerOnly && !isWorkerOfficerAdmin) return false
-            return true
-          })
+              if (item.citizenOnly && !isCitizen) return false
+              if (item.adminOnly && !isAdmin) return false
+              if (item.officerOnly && !isOfficerOrAdmin) return false
+              if (item.workerOnly && !isWorkerOfficerAdmin) return false
+              return true
+            })
 
-          if (visibleItems.length === 0) return null
+            if (visibleItems.length === 0) return null
 
-          return (
-            <div key={group.label} className="space-y-0.5">
-              <p className="px-3 text-[10px] font-semibold font-mono tracking-wider uppercase text-zinc-400 dark:text-zinc-500">
-                {group.label}
-              </p>
-              <nav className="space-y-0.5">
-                {visibleItems.map((item) => {
-                  const isActive =
-                    location.pathname === item.href ||
-                    (item.href === "/complaint/create" &&
-                      (location.pathname === "/complaint/new" ||
-                        location.pathname === "/create-complaint")) ||
-                    (item.href === "/worker-queue" &&
-                      (location.pathname === "/worker-dashboard" ||
-                        location.pathname === "/worker/dashboard")) ||
-                    (item.href === "/officer-portal" &&
-                      (location.pathname === "/officer" ||
-                        location.pathname === "/officer-dashboard" ||
-                        location.pathname === "/officer/dashboard")) ||
-                    (item.href === "/admin" &&
-                      (location.pathname === "/admin-dashboard" ||
-                        location.pathname === "/admin/dashboard"))
+            return (
+              <div key={group.label} className="space-y-0.5">
+                <p className="px-3 text-[10px] font-semibold font-mono tracking-wider uppercase text-zinc-400 dark:text-zinc-500">
+                  {group.label}
+                </p>
+                <nav className="space-y-0.5">
+                  {visibleItems.map((item) => {
+                    const isActive =
+                      location.pathname === item.href ||
+                      (item.href === "/complaint/create" &&
+                        (location.pathname === "/complaint/new" ||
+                          location.pathname === "/create-complaint")) ||
+                      (item.href === "/worker-queue" &&
+                        (location.pathname === "/worker-dashboard" ||
+                          location.pathname === "/worker/dashboard")) ||
+                      (item.href === "/officer-portal" &&
+                        (location.pathname === "/officer" ||
+                          location.pathname === "/officer-dashboard" ||
+                          location.pathname === "/officer/dashboard")) ||
+                      (item.href === "/admin" &&
+                        (location.pathname === "/admin-dashboard" ||
+                          location.pathname === "/admin/dashboard"))
 
-                  return (
-                    <Link
-                      key={item.key}
-                      to={item.href}
-                      className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-                        isActive
-                          ? "text-zinc-900 dark:text-zinc-100 font-semibold"
-                          : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60"
-                      }`}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {isActive && (
-                        <motion.div
-                          layoutId={isMobile ? "mobile-sidebar-active-pill" : "desktop-sidebar-active-pill"}
-                          className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg -z-10 border border-zinc-200/50 dark:border-zinc-700/50"
-                          transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                        />
-                      )}
-                      <item.icon
-                        className={`h-4 w-4 shrink-0 transition-colors ${
+                    return (
+                      <Link
+                        key={item.key}
+                        to={item.href}
+                        className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                           isActive
-                            ? "text-zinc-900 dark:text-zinc-100"
-                            : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300"
+                            ? "text-zinc-900 dark:text-zinc-100 font-semibold"
+                            : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60"
                         }`}
-                      />
-                      <span className="truncate">{t(item.key, item.defaultName)}</span>
-                    </Link>
-                  )
-                })}
-              </nav>
-            </div>
-          )
-        })}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {isActive && (
+                          <motion.div
+                            layoutId={isMobile ? "mobile-sidebar-active-pill" : "desktop-sidebar-active-pill"}
+                            className="absolute inset-0 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg -z-10 border border-zinc-200/50 dark:border-zinc-700/50"
+                            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                          />
+                        )}
+                        <item.icon
+                          className={`h-4 w-4 shrink-0 transition-colors ${
+                            isActive
+                              ? "text-zinc-900 dark:text-zinc-100"
+                              : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300"
+                          }`}
+                        />
+                        <span className="truncate">{t(item.key, item.defaultName)}</span>
+                      </Link>
+                    )
+                  })}
+                </nav>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
-      <div className="mt-auto px-4 py-3 border-t border-zinc-200/60 dark:border-zinc-800/60">
+      <div className="mt-auto px-4 py-3 border-t border-zinc-200/60 dark:border-zinc-800/60 shrink-0">
         <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200/60 dark:border-zinc-800/60">
           <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 inline-block animate-pulse" />
           <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 truncate">
@@ -355,7 +357,7 @@ export default function DashboardLayout() {
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-0 w-[280px] max-w-[85vw] [&>button]:hidden">
+            <SheetContent side="left" hideCloseButton className="flex flex-col p-0 w-[280px] max-w-[85vw] [&>button]:hidden">
               <Sidebar isMobile={true} />
             </SheetContent>
           </Sheet>

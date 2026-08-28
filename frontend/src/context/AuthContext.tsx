@@ -11,6 +11,10 @@ import {
   auth,
   googleProvider,
   signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
   signOut as firebaseSignOut,
 } from "@/lib/firebase"
 
@@ -58,6 +62,9 @@ interface AuthContextType {
   loginWithGoogle: (token: string) => Promise<void>
   loginWithFirebaseGoogle: () => Promise<void>
   register: (data: RegisterData) => Promise<void>
+  registerWithFirebaseEmail: (data: RegisterData) => Promise<{ needsVerification: boolean; email: string }>
+  loginWithFirebaseEmail: (data: LoginData) => Promise<void>
+  resendEmailVerification: (email: string, password?: string) => Promise<void>
   logout: () => Promise<void>
   updateUserKarma: (newPoints: number) => void
   refreshUserProfile: () => Promise<void>
@@ -241,6 +248,111 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
 
+  // ─── Register with Firebase Email & Send Verification (No Auto-Login) ────────
+  const registerWithFirebaseEmail = useCallback(async (data: RegisterData) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password)
+      if (data.name) {
+        try {
+          await updateProfile(userCredential.user, { displayName: data.name })
+        } catch {
+          // ignore profile update error
+        }
+      }
+      // Send Firebase verification email
+      await sendEmailVerification(userCredential.user)
+      // Per specification: Don't auto-login after Sign Up
+      await firebaseSignOut(auth)
+
+      return { needsVerification: true, email: data.email }
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err)
+      setError(msg)
+      throw new Error(msg)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // ─── Login with Firebase Email (Check emailVerified) ────────────────────────
+  const loginWithFirebaseEmail = useCallback(async (data: LoginData) => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password)
+
+      // Block login if email is not verified yet
+      if (!userCredential.user.emailVerified) {
+        // Sign out immediately so unverified session is blocked
+        await firebaseSignOut(auth)
+        const unverifiedError = new Error("EMAIL_NOT_VERIFIED")
+        ;(unverifiedError as any).email = data.email
+        throw unverifiedError
+      }
+
+      // Verified! Retrieve ID token and establish session
+      const idToken = await userCredential.user.getIdToken()
+
+      try {
+        // Backend sync
+        const response = await api.post("/auth/google", { token: idToken })
+        const { token: newToken, user: newUser } = response.data
+        localStorage.setItem("token", newToken)
+        localStorage.setItem("user", JSON.stringify(newUser))
+        api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+        setToken(newToken)
+        setUser(newUser)
+      } catch {
+        // Fallback verified session
+        const verifiedUser: AuthUser = {
+          id: userCredential.user.uid,
+          name: userCredential.user.displayName || data.email.split("@")[0],
+          email: userCredential.user.email || data.email,
+          role: "citizen",
+          isActive: true,
+          karmaPoints: 0,
+          createdAt: new Date().toISOString(),
+        }
+        localStorage.setItem("token", idToken)
+        localStorage.setItem("user", JSON.stringify(verifiedUser))
+        api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`
+        setToken(idToken)
+        setUser(verifiedUser)
+      }
+    } catch (err: any) {
+      if (err.message === "EMAIL_NOT_VERIFIED") {
+        throw err
+      }
+      const msg = extractErrorMessage(err)
+      setError(msg)
+      throw new Error(msg)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // ─── Resend Firebase Email Verification ─────────────────────────────────────
+  const resendEmailVerification = useCallback(async (email: string, password?: string) => {
+    try {
+      if (password) {
+        const cred = await signInWithEmailAndPassword(auth, email, password)
+        await sendEmailVerification(cred.user)
+        await firebaseSignOut(auth)
+        return
+      }
+      if (auth.currentUser) {
+        await sendEmailVerification(auth.currentUser)
+        return
+      }
+    } catch (err: any) {
+      console.error("Resend verification error:", err)
+      const msg = extractErrorMessage(err)
+      throw new Error(msg || "Failed to resend verification email.")
+    }
+  }, [])
+
   // ─── Logout ──────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     setIsLoading(true)
@@ -308,6 +420,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loginWithGoogle,
         loginWithFirebaseGoogle,
         register,
+        registerWithFirebaseEmail,
+        loginWithFirebaseEmail,
+        resendEmailVerification,
         logout,
         updateUserKarma,
         refreshUserProfile,

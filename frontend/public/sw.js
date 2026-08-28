@@ -1,20 +1,20 @@
 /**
  * ─── BMC Smart Civic Progressive Web App (PWA) Service Worker ─────────────────
  * Implements:
- * 1. Network-First strategy for HTML navigation & script chunks to guarantee fresh builds.
- * 2. Cache-First strategy with stale-while-revalidate for OSM map tiles & images.
- * 3. Immediate cache invalidation on activation for smooth continuous deployments.
- * 4. Native `sync` background queue sync when connection is restored.
+ * 1. Self-destroying stale caches and immediate client take-over (skipWaiting + clients.claim).
+ * 2. Strict cache-bypassing for HTML documents and navigation requests.
+ * 3. Cache-First strategy with stale-while-revalidate for OSM map tiles & images only.
+ * 4. Background queue synchronization when connection is restored.
  */
 
-const CACHE_NAME = "bmc-smart-civic-v2"
+const CACHE_NAME = "smart-civic-v3"
 
-// Install Event - Activate immediately
+// Install Event - Force immediate activation
 self.addEventListener("install", (event) => {
   self.skipWaiting()
 })
 
-// Activate Event - Clear all outdated caches
+// Activate Event - Purge all old caches and take over all clients immediately
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -31,7 +31,7 @@ self.addEventListener("activate", (event) => {
 
 // Fetch Event
 self.addEventListener("fetch", (event) => {
-  // STRICT GUARD 1: Bypass all non-GET requests (POST, PUT, DELETE, PATCH, OPTIONS)
+  // STRICT GUARD 1: Bypass all non-GET requests
   if (event.request.method !== "GET") {
     return
   }
@@ -49,41 +49,22 @@ self.addEventListener("fetch", (event) => {
     return
   }
 
-  // 1. Navigation / HTML Document -> Strict Network-First (Never serve stale index.html with outdated chunk hashes)
+  // 1. Navigation / HTML Document -> ALWAYS Bypass Cache & Fetch Direct from Network
   if (event.request.mode === "navigate" || event.request.destination === "document") {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone()
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
-          }
-          return response
-        })
-        .catch(async () => {
-          const cached = await caches.match(event.request)
-          return cached || caches.match("/index.html")
-        })
+      fetch(event.request).catch(() => caches.match(event.request))
     )
     return
   }
 
-  // 2. JavaScript / CSS / Asset Bundles -> Network-First (Ensure new hashed chunks load immediately)
+  // 2. JavaScript / CSS / Asset Bundles -> Network-First (Never hold stale chunks)
   if (
     url.pathname.startsWith("/assets/") ||
     event.request.destination === "script" ||
     event.request.destination === "style"
   ) {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone()
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
-          }
-          return response
-        })
-        .catch(() => caches.match(event.request))
+      fetch(event.request).catch(() => caches.match(event.request))
     )
     return
   }
@@ -108,7 +89,7 @@ self.addEventListener("fetch", (event) => {
     return
   }
 
-  // 4. Default fallback: Network with cache fallback
+  // 4. Default fallback: Network direct
   event.respondWith(
     fetch(event.request).catch(() => caches.match(event.request))
   )

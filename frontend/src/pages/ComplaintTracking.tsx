@@ -747,23 +747,25 @@ export default function ComplaintTracking() {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-8">
       {/* Header */}
-      <div className="flex items-start gap-4">
-        <Link to="/complaints">
-          <Button variant="outline" size="icon" className="mt-1">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate">{complaint.title}</h1>
-            <StatusBadgeLg status={complaint.status} />
-          </div>
-          <div className="flex items-center gap-4 mt-1.5 flex-wrap">
-            <span className="font-mono text-sm font-semibold text-slate-500">{complaint.complaintId}</span>
-            <span className="text-slate-300">•</span>
-            <span className="text-sm text-slate-500">
-              Submitted {new Date(complaint.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })}
-            </span>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
+        <div className="flex items-start gap-3 min-w-0">
+          <Link to="/complaints" className="shrink-0">
+            <Button variant="outline" size="icon" className="min-h-[40px] min-w-[40px] rounded-xl">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate max-w-[280px] sm:max-w-md">{complaint.title}</h1>
+              <StatusBadgeLg status={complaint.status} />
+            </div>
+            <div className="flex items-center gap-2 sm:gap-4 mt-1 flex-wrap text-xs text-slate-500">
+              <span className="font-mono font-semibold">{complaint.complaintId}</span>
+              <span>•</span>
+              <span>
+                Submitted {new Date(complaint.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -771,7 +773,7 @@ export default function ComplaintTracking() {
         {user?.role === "citizen" && 
          (complaint.status === "resolved" || (complaint.status as string) === "closed") && 
          !complaint.feedbackSubmitted && (
-          <Button onClick={handleOpenFeedback} className="gap-2 bg-indigo-600 hover:bg-indigo-700 shrink-0">
+          <Button onClick={handleOpenFeedback} className="gap-2 bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto min-h-[44px] rounded-xl shrink-0">
             <Star className="h-4 w-4" />
             {t("tracking.rateExperience")}
           </Button>

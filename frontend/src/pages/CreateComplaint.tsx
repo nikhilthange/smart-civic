@@ -436,18 +436,18 @@ export default function CreateComplaint() {
                   </Button>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">City</Label>
-                  <Input name="locationCity" placeholder="City" value={form.locationCity} onChange={handleChange} className="h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
+                  <Input name="locationCity" placeholder="City" value={form.locationCity} onChange={handleChange} className="h-10 sm:h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">State</Label>
-                  <Input name="locationState" placeholder="State" value={form.locationState} onChange={handleChange} className="h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
+                  <Input name="locationState" placeholder="State" value={form.locationState} onChange={handleChange} className="h-10 sm:h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Pincode</Label>
-                  <Input name="locationPincode" placeholder="6-digit" value={form.locationPincode} onChange={handleChange} maxLength={6} className="h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 font-mono" />
+                  <Input name="locationPincode" placeholder="6-digit" value={form.locationPincode} onChange={handleChange} maxLength={6} className="h-10 sm:h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 font-mono" />
                 </div>
               </div>
             </CardContent>
@@ -498,21 +498,21 @@ export default function CreateComplaint() {
                   <button
                     type="button"
                     onClick={() => setIsCameraOpen(true)}
-                    className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-dashed border-emerald-300 bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-800 rounded-xl transition-colors"
+                    className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 border-2 border-dashed border-emerald-300 bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-800 rounded-xl transition-colors min-h-[44px]"
                   >
-                    <Camera className="h-6 w-6 mb-1 text-emerald-600" />
+                    <Camera className="h-5 sm:h-6 w-5 sm:w-6 mb-1 text-emerald-600" />
                     <span className="text-xs font-bold">Live Camera</span>
-                    <span className="text-[10px] text-emerald-700">Snap photo</span>
+                    <span className="text-[10px] text-emerald-700 hidden sm:inline">Snap photo</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setIsQrScannerOpen(true)}
-                    className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-dashed border-indigo-300 bg-indigo-50/60 hover:bg-indigo-100/70 text-indigo-800 rounded-xl transition-colors"
+                    className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 border-2 border-dashed border-indigo-300 bg-indigo-50/60 hover:bg-indigo-100/70 text-indigo-800 rounded-xl transition-colors min-h-[44px]"
                   >
-                    <QrCode className="h-6 w-6 mb-1 text-indigo-600" />
+                    <QrCode className="h-5 sm:h-6 w-5 sm:w-6 mb-1 text-indigo-600" />
                     <span className="text-xs font-bold">Scan Asset QR</span>
-                    <span className="text-[10px] text-indigo-700">Auto-fill defect</span>
+                    <span className="text-[10px] text-indigo-700 hidden sm:inline">Auto-fill defect</span>
                   </button>
                 </div>
               </div>
@@ -600,9 +600,9 @@ export default function CreateComplaint() {
           </div>
 
           {/* Actions */}
-          <div className="flex justify-between pt-2">
-            <Button variant="outline" type="button" onClick={() => navigate(-1)}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting} className="min-w-36 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 pt-2">
+            <Button variant="outline" type="button" onClick={() => navigate(-1)} className="min-h-[44px]">Cancel</Button>
+            <Button type="submit" disabled={isSubmitting} className="min-w-36 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md">
               {isSubmitting ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting...</>
               ) : (

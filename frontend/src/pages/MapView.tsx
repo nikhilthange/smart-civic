@@ -931,13 +931,12 @@ export default function MapView() {
             
             <div
               ref={mapContainerRef}
-              className="w-full h-[620px] bg-slate-100 z-1"
-              style={{ height: "620px", width: "100%", zIndex: 1, minHeight: "520px" }}
+              className="w-full h-[55vh] sm:h-[620px] min-h-[380px] sm:min-h-[520px] bg-slate-100 relative z-1"
             />
             
             {loading && (
               <div className="absolute inset-0 z-20 pointer-events-none">
-                <SkeletonMap height="620px" />
+                <SkeletonMap height="100%" />
               </div>
             )}
 

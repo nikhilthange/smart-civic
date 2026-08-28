@@ -84,27 +84,27 @@ export function IotTelemetrySimulatorModal({ isOpen, onClose, onTelemetrySent }:
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white rounded-2xl max-w-[95vw] sm:max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200 shadow-2xl flex flex-col">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-950 text-white">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 bg-slate-950 text-white shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-600/30 text-blue-400 border border-blue-500/30 rounded-xl">
+            <div className="p-2 sm:p-2.5 bg-blue-600/30 text-blue-400 border border-blue-500/30 rounded-xl">
               <Radio className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <h2 className="text-base font-bold flex items-center gap-2">
+              <h2 className="text-sm sm:text-base font-bold flex items-center gap-2">
                 IoT Smart Telemetry Simulator
                 <span className="bg-blue-500/20 text-blue-300 text-[10px] font-mono px-2 py-0.5 rounded-full border border-blue-500/30">
                   Live Gateway
                 </span>
               </h2>
-              <p className="text-xs text-slate-400">Simulate municipal sensor payloads to test automatic ticket generation</p>
+              <p className="text-[11px] sm:text-xs text-slate-400">Simulate municipal sensor payloads</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>

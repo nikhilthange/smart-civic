@@ -284,7 +284,7 @@ export default function DashboardLayout() {
                       <Link
                         key={item.key}
                         to={item.href}
-                        className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                        className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 sm:py-2 text-sm sm:text-xs font-medium transition-colors min-h-[44px] sm:min-h-[36px] ${
                           isActive
                             ? "text-zinc-900 dark:text-zinc-100 font-semibold"
                             : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60"
@@ -328,7 +328,7 @@ export default function DashboardLayout() {
   )
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#FAFAFA] dark:bg-[#090A0F]">
+    <div className="flex h-[100dvh] w-full max-w-full overflow-hidden bg-[#FAFAFA] dark:bg-[#090A0F]">
       {/* Global Command Palette Modal */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
@@ -341,7 +341,7 @@ export default function DashboardLayout() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-col flex-1 h-full overflow-hidden min-w-0">
+      <div className="flex flex-col flex-1 h-full overflow-hidden min-w-0 w-full max-w-full">
         {/* Real-Time WebSocket Event Stream Ticker */}
         <LiveWebSocketEventTicker />
 
@@ -349,7 +349,7 @@ export default function DashboardLayout() {
         <OfflineSyncBanner />
 
         {/* Permanent Fixed Top Header */}
-        <header className="shrink-0 z-40 flex h-14 items-center gap-4 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-[#090A0F]/70 backdrop-blur-xl px-4 lg:px-8 shadow-sm">
+        <header className="shrink-0 z-40 flex h-14 items-center gap-2 sm:gap-4 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-[#090A0F]/70 backdrop-blur-xl px-3 sm:px-6 lg:px-8 shadow-sm w-full max-w-full">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon" className="shrink-0 md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center">

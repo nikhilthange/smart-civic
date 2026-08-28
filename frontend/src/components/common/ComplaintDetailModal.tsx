@@ -115,28 +115,28 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
     <>
       {/* ─── Backdrop ───────────────────────────────────────────────────────── */}
       <div
-        className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200 flex items-center justify-center p-4 md:p-6 overflow-y-auto"
+        className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200 flex items-center justify-center p-3 sm:p-4 md:p-6 overflow-y-auto"
         onClick={onClose}
       >
         {/* ─── Modal Dialog Container ─────────────────────────────────────── */}
         <div
-          className="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 my-auto overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col"
+          className="relative w-full max-w-[95vw] sm:max-w-4xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 my-auto overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* ─── Header bar ──────────────────────────────────────────────── */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className={`text-xs px-3 py-1 rounded-full font-bold uppercase border ${priorityStyle.bg} ${priorityStyle.text} ${priorityStyle.border}`}>
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <span className={`text-[11px] sm:text-xs px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full font-bold uppercase border ${priorityStyle.bg} ${priorityStyle.text} ${priorityStyle.border}`}>
                 {priorityStyle.label} PRIORITY
               </span>
-              <span className={`text-xs px-3 py-1 rounded-full font-semibold border ${statusCfg.bg} ${statusCfg.color} ${statusCfg.border}`}>
+              <span className={`text-[11px] sm:text-xs px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full font-semibold border ${statusCfg.bg} ${statusCfg.color} ${statusCfg.border}`}>
                 {statusCfg.label}
               </span>
-              <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
+              <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 sm:py-1 rounded-lg">
                 <span>{complaint.complaintId || complaint._id}</span>
                 <button
                   onClick={handleCopyId}
-                  className="hover:text-primary transition-colors p-0.5"
+                  className="hover:text-primary transition-colors p-1 min-h-[32px] min-w-[32px] flex items-center justify-center"
                   title="Copy Complaint ID"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}

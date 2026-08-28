@@ -121,18 +121,18 @@ export default function ComplaintHistory() {
           <CardDescription>{t("complaints.subtitle", "Track the status of all your submitted complaints.")}</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Filters */}
+          {/* Search & Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder={t("complaints.searchPlaceholder", "Search by ID or title...")}
+                placeholder={t("complaints.searchPlaceholder", "Search by ID, title, or category...")}
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                className="pl-9"
+                className="pl-9 h-10 sm:h-9"
               />
             </div>
-            <div className="flex items-center gap-1 overflow-x-auto pb-1">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
               <Filter className="h-4 w-4 text-slate-400 shrink-0 ml-1" />
               {[
                 { label: t("complaints.all", "All"), value: "all" },
@@ -146,7 +146,7 @@ export default function ComplaintHistory() {
                 <button
                   key={f.value}
                   onClick={() => { setStatusFilter(f.value as ComplaintStatus | "all"); setPage(1) }}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all min-h-[36px] ${
                     statusFilter === f.value
                       ? "bg-emerald-600 text-white border-emerald-600 font-semibold"
                       : "border-slate-200 text-slate-600 hover:border-slate-300"
@@ -180,14 +180,14 @@ export default function ComplaintHistory() {
               </p>
               {!search && statusFilter === "all" && user?.role === "citizen" && (
                 <Link to="/complaint/create">
-                  <Button className="mt-4" size="sm">{t("complaints.newComplaint", "File New Complaint")}</Button>
+                  <Button className="mt-4 min-h-[44px]" size="sm">{t("complaints.newComplaint", "File New Complaint")}</Button>
                 </Link>
               )}
             </div>
           ) : (
             <>
-              <div className="rounded-lg border overflow-hidden">
-                <Table>
+              <div className="w-full overflow-x-auto rounded-lg border">
+                <Table className="w-full min-w-[600px]">
                   <TableHeader>
                     <TableRow className="bg-slate-50">
                       <TableHead className="font-semibold">{t("table.evidence", "Evidence")}</TableHead>

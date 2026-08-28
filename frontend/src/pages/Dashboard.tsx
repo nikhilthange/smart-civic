@@ -156,9 +156,9 @@ export default function Dashboard() {
       {isLoading ? (
         <SkeletonKpiCard count={4} />
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
           {/* Total Submissions */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
                 {t("dashPage.totalSubmissions", "Total Reports")}
@@ -176,7 +176,7 @@ export default function Dashboard() {
           </div>
 
           {/* Pending / In-Triage */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
                 {t("dashPage.pending", "Pending Triage")}
@@ -194,7 +194,7 @@ export default function Dashboard() {
           </div>
 
           {/* In Progress */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
                 {t("dashPage.inProgress", "Field In-Progress")}
@@ -212,7 +212,7 @@ export default function Dashboard() {
           </div>
 
           {/* Resolved */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
                 {t("dashPage.resolved", "Resolved")}
@@ -244,29 +244,29 @@ export default function Dashboard() {
             : "Citizen Contributor"
 
         return (
-          <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50/40 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/10 border border-emerald-200/80 dark:border-emerald-500/20 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-            <div className="flex items-center gap-3.5">
+          <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50/40 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/10 border border-emerald-200/80 dark:border-emerald-500/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3.5 min-w-0">
               <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shadow-emerald-600/30 shrink-0">
                 <Award className="w-5 h-5" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-bold text-emerald-950 dark:text-emerald-200 font-mono text-sm sm:text-base">
                     Civic Karma: {karmaPoints} Pts
                   </span>
-                  <span className="hidden sm:inline-flex px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                  <span className="inline-flex px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
                     {tierBadge}
                   </span>
                 </div>
-                <p className="text-xs text-emerald-700/80 dark:text-emerald-400 mt-0.5">
+                <p className="text-xs text-emerald-700/80 dark:text-emerald-400 mt-0.5 truncate">
                   Top contributor in {user?.ward || "Ward H-West"} • Earn municipal tax rebates & transit passes
                 </p>
               </div>
             </div>
-            <Link to="/rewards">
+            <Link to="/rewards" className="shrink-0 w-full sm:w-auto">
               <Button
                 size="sm"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-4 py-2 shadow-sm shadow-emerald-600/20 gap-1.5 transition-all"
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-4 py-2 shadow-sm shadow-emerald-600/20 gap-1.5 transition-all min-h-[40px]"
               >
                 <span>Redeem Rewards</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -281,7 +281,7 @@ export default function Dashboard() {
         {/* Left 8 Cols: Polished Recent Complaints Table */}
         <div className="lg:col-span-8 space-y-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
               <div>
                 <h2 className="text-base font-bold font-display text-slate-900 dark:text-white">
                   {t("dashPage.recentComplaints", "Recent Grievances")}
@@ -302,7 +302,7 @@ export default function Dashboard() {
               </Link>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="w-full overflow-x-auto">
               {isLoading ? (
                 <div className="p-4">
                   <SkeletonTable rows={4} cols={5} />
@@ -318,7 +318,7 @@ export default function Dashboard() {
                   />
                 </div>
               ) : (
-                <Table>
+                <Table className="w-full min-w-[500px]">
                   <TableHeader>
                     <TableRow className="bg-slate-50/60 dark:bg-slate-800/40 text-[11px] font-mono text-slate-500 uppercase">
                       <TableHead className="w-14 font-semibold">Photo</TableHead>
@@ -388,7 +388,13 @@ export default function Dashboard() {
                                   try {
                                     await complaintApi.reopen(c._id, reason)
                                     toast.success("Ticket reopened & escalated to CRITICAL priority!")
-                                    window.location.reload()
+                                    setRecent((prev) =>
+                                      prev.map((item) =>
+                                        item._id === c._id
+                                          ? { ...item, status: "pending", priority: "critical" }
+                                          : item
+                                      )
+                                    )
                                   } catch {
                                     toast.error("Could not reopen ticket.")
                                   }

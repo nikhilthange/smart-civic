@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Award, Gift, Sparkles, Check, Copy, Loader2, ShieldCheck, Ticket } from "lucide-react"
+import { Award, Gift, Sparkles, Check, Copy, Loader2, CheckCircle2, Lock, Ticket } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -152,25 +152,25 @@ export default function KarmaRewards() {
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12 w-full">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-8 sm:p-10 shadow-2xl border border-indigo-700/40">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-5 sm:p-10 shadow-2xl border border-indigo-700/40">
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
             <Badge className="bg-amber-400/20 text-amber-300 border-amber-400/30 gap-1.5 py-1 px-3">
               <Sparkles className="w-3.5 h-3.5" />
               Municipal Citizen Rewards
             </Badge>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
               Civic Hero Badges & Karma Perks
             </h1>
-            <p className="text-indigo-200 text-sm max-w-xl">
+            <p className="text-indigo-200 text-xs sm:text-sm max-w-xl leading-relaxed">
               Earn Civic Karma by reporting valid neighborhood issues and verifying ground resolutions. Redeem your points for exclusive Mumbai municipal perks.
             </p>
           </div>
 
           {/* Karma Points Display Card */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center min-w-[200px] shadow-inner">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/20 text-center w-full sm:w-auto sm:min-w-[200px] shadow-inner">
             <span className="text-xs uppercase tracking-wider text-indigo-200 font-bold">Your Available Karma</span>
-            <div className="text-4xl sm:text-5xl font-black text-amber-300 mt-1 font-mono">
+            <div className="text-3xl sm:text-5xl font-black text-amber-300 mt-1 font-mono">
               {karmaPoints} <span className="text-lg font-bold text-white">PTS</span>
             </div>
             <p className="text-[11px] text-indigo-200 mt-1.5">
@@ -184,7 +184,7 @@ export default function KarmaRewards() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Award className="w-5 h-5 text-amber-500" />
               Your Unlocked Civic Badges
             </h2>
@@ -192,37 +192,35 @@ export default function KarmaRewards() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {allBadges.map((badge, idx) => (
             <Card
               key={idx}
               className={`transition-all duration-300 ${
                 badge.unlocked
-                  ? "border-amber-300 dark:border-amber-700 bg-gradient-to-b from-amber-50/60 to-white dark:from-amber-950/20 dark:to-slate-900 shadow-md scale-[1.01]"
-                  : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 opacity-60"
+                  ? "bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-600/50 shadow-md"
+                  : "bg-slate-50/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 opacity-60"
               }`}
             >
-              <CardContent className="p-6 text-center space-y-3">
-                <div className="text-5xl mx-auto drop-shadow-sm">{badge.icon}</div>
-                <div>
-                  <Badge variant="outline" className={badge.unlocked ? "border-amber-400 text-amber-700 dark:text-amber-300 font-bold" : ""}>
-                    {badge.level}
-                  </Badge>
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-1.5">
-                    {badge.name}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                    {badge.description}
-                  </p>
+              <CardContent className="p-4 sm:p-5 flex items-start gap-4">
+                <div className="text-3xl sm:text-4xl p-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/50 dark:border-amber-700/40 shrink-0">
+                  {badge.icon}
                 </div>
-                <div className="pt-2 text-xs font-bold">
-                  {badge.unlocked ? (
-                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
-                      <ShieldCheck className="w-4 h-4" /> Unlocked & Active
-                    </span>
-                  ) : (
-                    <span className="text-slate-400">Locked (Reach tier threshold)</span>
-                  )}
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">{badge.name}</h3>
+                    {badge.unlocked ? (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                        <CheckCircle2 className="w-3 h-3" /> Unlocked
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                        <Lock className="w-3 h-3" /> Locked
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] font-mono font-semibold text-amber-600 dark:text-amber-400">{badge.level}</p>
+                  <p className="text-xs text-slate-500 leading-tight">{badge.description}</p>
                 </div>
               </CardContent>
             </Card>
@@ -230,17 +228,17 @@ export default function KarmaRewards() {
         </div>
       </div>
 
-      {/* ── Rewards Shop ── */}
+      {/* ── Municipal Perks Catalogue ── */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Gift className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            Municipal Partner Perks Store
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Gift className="w-5 h-5 text-indigo-600" />
+            Redeem Municipal Perks & Vouchers
           </h2>
           <p className="text-xs text-slate-500">Redeem your hard-earned Karma for real-world benefits across Mumbai</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {MUNICIPAL_PERKS.map((perk) => {
             const canAfford = karmaPoints >= perk.pointsCost
             return (
@@ -273,7 +271,7 @@ export default function KarmaRewards() {
                   <Button
                     onClick={() => handleRedeem(perk)}
                     disabled={!canAfford || isRedeeming === perk.id}
-                    className={`w-full font-bold text-xs gap-1.5 ${
+                    className={`w-full font-bold text-xs gap-1.5 min-h-[44px] rounded-xl ${
                       canAfford
                         ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
@@ -308,11 +306,11 @@ export default function KarmaRewards() {
             Your Redeemed Perk Vouchers ({redeemedList.length})
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {redeemedList.map((voucher, i) => (
               <div
                 key={i}
-                className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20 flex items-center justify-between gap-4"
+                className="p-4 rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
               >
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -330,10 +328,10 @@ export default function KarmaRewards() {
                   size="sm"
                   variant="outline"
                   onClick={() => handleCopyCode(voucher.voucherCode)}
-                  className="shrink-0 text-xs gap-1 border-emerald-300 text-emerald-800 dark:text-emerald-300"
+                  className="w-full sm:w-auto shrink-0 text-xs gap-1 border-emerald-300 text-emerald-800 dark:text-emerald-300 min-h-[38px]"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  Copy
+                  Copy Code
                 </Button>
               </div>
             ))}
@@ -344,7 +342,7 @@ export default function KarmaRewards() {
       {/* Voucher Modal */}
       {activeVoucherModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 text-center">
+          <div className="bg-white dark:bg-slate-900 w-[92%] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-5 text-center">
             <div className="text-5xl mx-auto">🎉</div>
             <div>
               <Badge className="bg-emerald-600 text-white text-xs">Voucher Generated Successfully</Badge>

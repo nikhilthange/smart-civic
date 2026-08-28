@@ -56,7 +56,7 @@ function LiveWebSocketEventTickerComponent() {
   const current = events[currentIndex] || events[0]
 
   return (
-    <div className="w-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 px-4 py-2 flex items-center justify-between text-xs border-b border-emerald-100 dark:border-emerald-900/50 shadow-sm overflow-hidden transition-colors">
+    <div className="w-full h-9 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 px-3 sm:px-4 flex items-center justify-between text-xs border-b border-emerald-100 dark:border-emerald-900/50 shadow-sm overflow-hidden shrink-0">
       <div className="flex items-center gap-2.5 overflow-hidden min-w-0">
         <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 shrink-0">
           <span className="relative flex h-2 w-2">

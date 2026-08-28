@@ -1,31 +1,5 @@
 {
   "buildCommand": "npm --prefix frontend run build",
   "outputDirectory": "frontend/dist",
-  "cleanUrls": true,
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin-allow-popups"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/((?!assets/|favicon.ico|manifest.json|.*\\..*).*)",
-      "destination": "/index.html"
-    }
-  ]
+  "framework": "vite"
 }

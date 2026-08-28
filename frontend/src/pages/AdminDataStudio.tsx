@@ -1117,12 +1117,12 @@ export default function AdminDataStudio() {
                     </tbody>
                   </table>
                   {expandedJobId && (
-                    <div className="p-4 bg-zinc-950 border-t border-zinc-800 text-emerald-400 font-mono text-[11px]">
-                      <div className="text-xs text-zinc-400 mb-1.5 flex items-center gap-1.5">
-                        <Terminal className="w-3.5 h-3.5 text-zinc-400" />
-                        <span>Payload Inspector for Job: <span className="text-zinc-200">{expandedJobId}</span></span>
+                    <div className="p-4 bg-slate-900 border-t border-slate-800 text-emerald-400 font-mono text-[11px]">
+                      <div className="text-xs text-slate-400 mb-1.5 flex items-center gap-1.5">
+                        <Terminal className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Payload Inspector for Job: <span className="text-slate-200">{expandedJobId}</span></span>
                       </div>
-                      <pre className="overflow-x-auto p-2.5 rounded bg-zinc-900/90 text-zinc-300 border border-zinc-800">
+                      <pre className="overflow-x-auto p-2.5 rounded bg-slate-950/80 text-slate-300 border border-slate-800">
                         {JSON.stringify(failedJobs.find((j) => j.id === expandedJobId)?.payload || {}, null, 2)}
                       </pre>
                     </div>

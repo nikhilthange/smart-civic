@@ -146,10 +146,10 @@ export default function QuickReport() {
         <CardContent className="p-6 text-center space-y-5">
           {photoPreview ? (
             <div className="space-y-4">
-              <div className="relative rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 max-h-72 bg-zinc-950">
+              <div className="relative rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 max-h-72 bg-slate-900">
                 <img src={photoPreview} alt="Captured issue" className="w-full h-full object-cover" />
                 {isAnalyzing && (
-                  <div className="absolute inset-0 bg-zinc-950/70 backdrop-blur-sm flex flex-col items-center justify-center text-white gap-2">
+                  <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white gap-2">
                     <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
                     <span className="text-xs font-mono">Extracting GPS & Classifying...</span>
                   </div>

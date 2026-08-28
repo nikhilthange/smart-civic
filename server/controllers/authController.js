@@ -236,15 +236,17 @@ const createUser = async (req, res) => {
 const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// ─── @desc    Google OAuth login/register (Supports Google GSI & Firebase Auth Tokens)
-// ─── @route   POST /api/auth/google
+// ─── @desc    Google / Firebase OAuth login/register
+// ─── @route   POST /api/auth/google, POST /api/auth/firebase-login
 // ─── @access  Public
 const googleAuth = async (req, res) => {
   try {
-    const { token } = req.body;
-    if (!token) {
-      return res.status(400).json({ success: false, message: "Token is required." });
+    const rawToken = req.body.token || req.body.idToken;
+    if (!rawToken) {
+      return res.status(400).json({ success: false, message: "Token or idToken is required." });
     }
+
+    const token = rawToken;
 
     let email = null;
     let name = null;

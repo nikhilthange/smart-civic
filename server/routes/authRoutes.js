@@ -67,7 +67,14 @@ router.post("/login", loginValidation, validate, loginUser);
 
 // @route  POST /api/auth/google
 router.post("/google", [
-  body("token").notEmpty().withMessage("Google token is required")
+  body("token").optional(),
+  body("idToken").optional(),
+], validate, googleAuth);
+
+// @route  POST /api/auth/firebase-login
+router.post("/firebase-login", [
+  body("token").optional(),
+  body("idToken").optional(),
 ], validate, googleAuth);
 
 // @route  GET  /api/auth/me

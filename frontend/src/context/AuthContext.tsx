@@ -124,28 +124,47 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return
           }
 
-          // 2. Fetch fresh backend profile & exchange token for verified/OAuth users
+          // 2. Exchange Firebase ID token for Backend-issued JWT
           const idToken = await firebaseUser.getIdToken()
-          if (currentTokenRef.current !== idToken) {
-            setToken(idToken)
-            localStorage.setItem("token", idToken)
-            api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`
+          let backendToken = localStorage.getItem("token")
+          let resolvedUser: AuthUser | null = null
+
+          // Test existing backend token first if available
+          if (backendToken) {
+            try {
+              const { data } = await api.get("/auth/me", {
+                headers: { Authorization: `Bearer ${backendToken}` },
+              })
+              if (data?.user) {
+                resolvedUser = data.user
+              }
+            } catch {
+              backendToken = null
+            }
           }
 
-          try {
-            const { data } = await api.get("/auth/me", {
-              headers: { Authorization: `Bearer ${idToken}` },
-            })
-
-            if (data?.user) {
-              if (JSON.stringify(currentUserRef.current) !== JSON.stringify(data.user)) {
-                setUser(data.user)
-                localStorage.setItem("user", JSON.stringify(data.user))
+          // If no valid backend token, exchange Firebase ID token with backend
+          if (!backendToken || !resolvedUser) {
+            try {
+              const res = await api.post("/auth/firebase-login", { idToken })
+              if (res.data?.token) {
+                backendToken = res.data.token
+                resolvedUser = res.data.user
               }
+            } catch (exchangeErr) {
+              console.warn("Backend Firebase token exchange failed:", exchangeErr)
             }
-          } catch {
-            // Retain / hydrate minimal verified user profile if backend /auth/me is unreachable
-            const verifiedUser: AuthUser = {
+          }
+
+          if (backendToken && resolvedUser) {
+            localStorage.setItem("token", backendToken)
+            localStorage.setItem("user", JSON.stringify(resolvedUser))
+            api.defaults.headers.common["Authorization"] = `Bearer ${backendToken}`
+            setToken(backendToken)
+            setUser(resolvedUser)
+          } else {
+            // Fallback for offline/preview mode
+            const fallbackUser: AuthUser = {
               id: firebaseUser.uid,
               name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "Citizen",
               email: firebaseUser.email || "",
@@ -154,34 +173,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               karmaPoints: currentUserRef.current?.karmaPoints ?? 0,
               createdAt: new Date().toISOString(),
             }
-            if (JSON.stringify(currentUserRef.current) !== JSON.stringify(verifiedUser)) {
-              setUser(verifiedUser)
-              localStorage.setItem("user", JSON.stringify(verifiedUser))
-            }
+            setUser(fallbackUser)
           }
         } else {
           // 3. User is signed out in Firebase
           const storedToken = localStorage.getItem("token")
-          const storedUser = localStorage.getItem("user")
-          if (!storedToken || !storedUser) {
-            if (currentUserRef.current !== null || currentTokenRef.current !== null) {
-              setUser(null)
-              setToken(null)
-              localStorage.removeItem("token")
-              localStorage.removeItem("user")
-              delete api.defaults.headers.common["Authorization"]
+          if (storedToken) {
+            // Verify if non-Firebase backend session exists (e.g. staff/admin password login)
+            try {
+              const { data } = await api.get("/auth/me", {
+                headers: { Authorization: `Bearer ${storedToken}` },
+              })
+              if (data?.user) {
+                setUser(data.user)
+                setToken(storedToken)
+                api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
+                setIsLoading(false)
+                return
+              }
+            } catch {
+              // Stored token is invalid or expired
             }
           }
-        }
-      } catch (err) {
-        console.error("Auth hydration failed:", err)
-        if (currentUserRef.current !== null || currentTokenRef.current !== null) {
+
           setUser(null)
           setToken(null)
           localStorage.removeItem("token")
           localStorage.removeItem("user")
           delete api.defaults.headers.common["Authorization"]
         }
+      } catch (err) {
+        console.error("Auth observer hydration failed:", err)
+        setUser(null)
+        setToken(null)
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+        delete api.defaults.headers.common["Authorization"]
       } finally {
         setIsLoading(false)
       }

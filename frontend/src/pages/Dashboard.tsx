@@ -82,25 +82,26 @@ interface Stats {
 export default function Dashboard() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, isLoading: isAuthLoading } = useAuth()
   const [recent, setRecent] = useState<Complaint[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    if (isAuthLoading || !user) return
     let isMounted = true
     const load = async () => {
       setIsLoading(true)
       try {
         const data = await complaintApi.getAll({ page: 1, limit: 5 })
         if (!isMounted) return
-        setRecent(data.complaints)
+        setRecent(data.complaints || [])
 
         const byStatus: Record<string, number> = {}
-        data.complaints.forEach((c) => {
+        ;(data.complaints || []).forEach((c) => {
           byStatus[c.status] = (byStatus[c.status] || 0) + 1
         })
-        setStats({ total: data.total, byStatus })
+        setStats({ total: data.total || 0, byStatus })
       } catch {
         // fail silently on dashboard
       } finally {
@@ -113,7 +114,7 @@ export default function Dashboard() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [isAuthLoading, user])
 
   const pending = (stats?.byStatus["pending"] || 0) + (stats?.byStatus["ai_verified"] || 0)
   const inProgress =

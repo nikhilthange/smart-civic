@@ -37,7 +37,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-[100svh] flex-col bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className="min-h-[100dvh] h-full w-full overflow-y-auto overscroll-y-contain flex flex-col bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
         <div className="w-full max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">

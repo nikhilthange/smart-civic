@@ -7,7 +7,7 @@ export default function Unauthorized() {
   const { user } = useAuth()
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 text-center">
+    <div className="min-h-[100dvh] h-full w-full overflow-y-auto overscroll-y-contain flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 text-center">
       <div className="mb-6 p-6 bg-red-50 dark:bg-red-950/30 rounded-full">
         <ShieldX className="h-16 w-16 text-red-500" />
       </div>

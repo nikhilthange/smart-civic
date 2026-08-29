@@ -186,7 +186,8 @@ export default function DashboardLayout() {
   }
 
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className="flex h-full flex-col bg-white dark:bg-[#090A0F]">
+    <div className="flex h-full flex-col bg-white dark:bg-[#090A
+    0F]">
       <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#090A0F]/95 backdrop-blur-md flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
         {/* Brand Identity */}
         <Link
@@ -511,7 +512,7 @@ export default function DashboardLayout() {
           }
 
           return (
-            <main className="w-full max-w-full overflow-x-hidden flex-1 overflow-y-auto overscroll-y-contain px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-[calc(env(safe-area-inset-bottom,0px)+6.5rem)] sm:pb-12">
+            <main className="w-full max-w-full overflow-x-hidden flex-1 overflow-y-auto overscroll-y-contain px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-[calc(env(safe-area-inset-bottom,0px)+6.5rem)] lg:pb-12">
               <motion.div
                 key={location.pathname}
                 initial={{ opacity: 0, y: 6 }}

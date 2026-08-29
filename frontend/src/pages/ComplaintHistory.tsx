@@ -203,8 +203,8 @@ export default function ComplaintHistory() {
             </div>
           ) : (
             <>
-              {/* Desktop Table View (>= 640px) */}
-              <div className="hidden sm:block w-full overflow-x-auto rounded-xl border border-border/60 bg-card shadow-sm">
+              {/* Desktop Table View (>= md) */}
+              <div className="hidden md:block w-full overflow-x-auto rounded-xl border border-border/60 bg-card shadow-sm">
                 <Table className="w-full min-w-[600px]">
                   <TableHeader>
                     <TableRow className="bg-slate-50 dark:bg-slate-900/50">
@@ -219,7 +219,7 @@ export default function ComplaintHistory() {
                   </TableHeader>
                   <TableBody>
                     {complaints.map((c) => (
-                      <TableRow key={c._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                      <TableRow key={c._id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                         <TableCell>
                           <div className="h-10 w-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shrink-0">
                             <img
@@ -230,9 +230,11 @@ export default function ComplaintHistory() {
                             />
                           </div>
                         </TableCell>
-                        <TableCell className="font-mono text-xs text-slate-600 dark:text-slate-400">{c.complaintId}</TableCell>
+                        <TableCell className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">
+                          {c.complaintId}
+                        </TableCell>
                         <TableCell>
-                          <p className="font-medium text-slate-800 dark:text-slate-200 line-clamp-1 max-w-[200px]">{c.title}</p>
+                          <p className="font-medium text-xs text-slate-900 dark:text-slate-100 max-w-xs truncate">{c.title}</p>
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-sm text-slate-600 dark:text-slate-400">
                           {CATEGORY_LABELS[c.category]}
@@ -292,8 +294,8 @@ export default function ComplaintHistory() {
                 </Table>
               </div>
 
-              {/* Mobile Adaptive Card Stack (< 640px) */}
-              <div className="block sm:hidden space-y-3">
+              {/* Mobile Adaptive Card Stack (< md) */}
+              <div className="block md:hidden space-y-3">
                 {complaints.map((c) => (
                   <div
                     key={c._id}

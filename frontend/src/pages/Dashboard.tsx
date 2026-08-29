@@ -321,7 +321,7 @@ export default function Dashboard() {
               ) : (
                 <>
                   {/* Desktop Table View */}
-                  <div className="hidden sm:block w-full overflow-x-auto">
+                  <div className="hidden md:block w-full overflow-x-auto">
                     <Table className="w-full min-w-[500px]">
                       <TableHeader>
                         <TableRow className="bg-slate-50/60 dark:bg-slate-800/40 text-[11px] font-mono text-slate-500 uppercase">
@@ -417,7 +417,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* Mobile Card Stack */}
-                  <div className="block sm:hidden p-3 space-y-2.5">
+                  <div className="block md:hidden p-3 space-y-2.5">
                     {recent.map((c) => (
                       <div
                         key={c._id}

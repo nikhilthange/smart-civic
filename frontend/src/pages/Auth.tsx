@@ -162,14 +162,14 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-[100dvh] h-full w-full overflow-y-auto overscroll-y-contain flex flex-col justify-center items-center bg-slate-50 dark:bg-slate-950 py-8 sm:py-12 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+3rem)] relative">
+    <div className="min-h-[100dvh] w-full overflow-y-auto overscroll-y-contain flex flex-col items-center justify-start bg-slate-50 dark:bg-slate-950 py-8 sm:py-12 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+3rem)] relative">
       {/* Background gradients */}
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-70 pointer-events-none"></div>
       <div className="fixed left-1/2 top-0 -z-10 -translate-x-1/2 h-[400px] w-[800px] rounded-full bg-primary/10 opacity-40 blur-[120px] pointer-events-none"></div>
 
-      <div className="w-full max-w-md my-auto relative z-10">
+      <div className="w-full max-w-md relative z-10 space-y-6 sm:space-y-8">
         {/* Logo */}
-        <div className="flex justify-center mb-6 sm:mb-8">
+        <div className="flex justify-center">
           <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105">
             <div className="bg-primary/10 p-2.5 rounded-2xl">
               <Building2 className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />

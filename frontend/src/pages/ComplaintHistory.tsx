@@ -96,21 +96,21 @@ export default function ComplaintHistory() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
             <History className="h-5 w-5 text-emerald-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               {t("complaints.title", "My Complaints")}
             </h1>
-            <p className="text-sm text-slate-500">{total} {t("complaints.submissions", "submissions")}</p>
+            <p className="text-xs sm:text-sm text-slate-500">{total} {t("complaints.submissions", "submissions")}</p>
           </div>
         </div>
         {user?.role === "citizen" && (
-          <Link to="/complaint/create">
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white min-h-[40px] rounded-xl gap-2">
+          <Link to="/complaint/create" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white min-h-[44px] sm:min-h-[40px] rounded-xl gap-2 shadow-sm touch-manipulation">
               <Plus className="h-4 w-4" />
               {t("complaints.newComplaint", "File New Complaint")}
             </Button>
@@ -119,24 +119,24 @@ export default function ComplaintHistory() {
       </div>
 
       {/* Main Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("complaints.history", "Grievance Redressal Records")}</CardTitle>
-          <CardDescription>{t("complaints.subtitle", "Track the status of all your submitted complaints.")}</CardDescription>
+      <Card className="border-border/60 shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
+          <CardTitle className="text-base sm:text-lg">{t("complaints.history", "Grievance Redressal Records")}</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">{t("complaints.subtitle", "Track the status of all your submitted complaints.")}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6 pt-0">
           {/* Search & Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-5">
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 placeholder={t("complaints.searchPlaceholder", "Search by ID, title, or category...")}
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                className="pl-9 h-10 sm:h-9"
+                className="pl-9 h-11 sm:h-9 text-xs sm:text-sm w-full"
               />
             </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none touch-pan-x -mx-1 px-1">
               <Filter className="h-4 w-4 text-slate-400 shrink-0 ml-1" />
               {[
                 { label: t("complaints.all", "All"), value: "all" },
@@ -150,10 +150,10 @@ export default function ComplaintHistory() {
                 <button
                   key={f.value}
                   onClick={() => { setStatusFilter(f.value as ComplaintStatus | "all"); setPage(1) }}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all min-h-[36px] ${
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all min-h-[36px] touch-manipulation ${
                     statusFilter === f.value
-                      ? "bg-emerald-600 text-white border-emerald-600 font-semibold"
-                      : "border-slate-200 text-slate-600 hover:border-slate-300"
+                      ? "bg-emerald-600 text-white border-emerald-600 font-semibold shadow-sm"
+                      : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
                   }`}
                 >
                   {f.label}
@@ -171,31 +171,31 @@ export default function ComplaintHistory() {
             <div className="flex flex-col items-center justify-center py-12 px-4 rounded-xl bg-red-50/70 border border-red-200 dark:bg-red-950/20 dark:border-red-900 text-center space-y-3">
               <AlertCircle className="h-10 w-10 text-red-500 shrink-0" />
               <div>
-                <p className="font-semibold text-red-800 dark:text-red-300">{error}</p>
+                <p className="font-semibold text-red-800 dark:text-red-300 text-sm sm:text-base">{error}</p>
                 <p className="text-xs text-red-600 dark:text-red-400 mt-1">An error occurred while fetching your records from the civic portal.</p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={load}
-                className="gap-1.5 border-red-300 text-red-700 hover:bg-red-100 min-h-[38px] rounded-lg mt-2"
+                className="gap-1.5 border-red-300 text-red-700 hover:bg-red-100 min-h-[40px] rounded-xl mt-2 touch-manipulation"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Retry
               </Button>
             </div>
           ) : complaints.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+            <div className="flex flex-col items-center justify-center py-16 text-slate-400 text-center px-4">
               <FileX className="h-12 w-12 mb-3 text-slate-400" />
               <p className="font-medium text-slate-600 dark:text-slate-300">{t("complaints.noComplaints", "No complaints found")}</p>
-              <p className="text-sm mt-1 text-slate-500">
+              <p className="text-xs sm:text-sm mt-1 text-slate-500 max-w-sm">
                 {search || statusFilter !== "all"
                   ? "No complaints match your active filter criteria."
                   : t("complaints.noComplaintsDesc", "You haven't reported any civic complaints yet.")}
               </p>
               {!search && statusFilter === "all" && user?.role === "citizen" && (
-                <Link to="/complaint/create">
-                  <Button className="mt-4 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl" size="sm">
+                <Link to="/complaint/create" className="w-full sm:w-auto">
+                  <Button className="mt-4 min-h-[44px] w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl touch-manipulation" size="sm">
                     {t("complaints.newComplaint", "File New Complaint")}
                   </Button>
                 </Link>
@@ -203,10 +203,11 @@ export default function ComplaintHistory() {
             </div>
           ) : (
             <>
-              <div className="w-full overflow-x-auto rounded-lg border">
+              {/* Desktop Table View (>= 640px) */}
+              <div className="hidden sm:block w-full overflow-x-auto rounded-xl border border-border/60 bg-card shadow-sm">
                 <Table className="w-full min-w-[600px]">
                   <TableHeader>
-                    <TableRow className="bg-slate-50">
+                    <TableRow className="bg-slate-50 dark:bg-slate-900/50">
                       <TableHead className="font-semibold">{t("table.evidence", "Evidence")}</TableHead>
                       <TableHead className="font-semibold">{t("table.id", "Ticket ID")}</TableHead>
                       <TableHead className="font-semibold">{t("table.title", "Title")}</TableHead>
@@ -218,9 +219,9 @@ export default function ComplaintHistory() {
                   </TableHeader>
                   <TableBody>
                     {complaints.map((c) => (
-                      <TableRow key={c._id} className="hover:bg-slate-50/80">
+                      <TableRow key={c._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                         <TableCell>
-                          <div className="h-10 w-10 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+                          <div className="h-10 w-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shrink-0">
                             <img
                               src={getImageUrl(c.attachments && c.attachments[0])}
                               onError={handleImageError}
@@ -229,11 +230,11 @@ export default function ComplaintHistory() {
                             />
                           </div>
                         </TableCell>
-                        <TableCell className="font-mono text-xs text-slate-600">{c.complaintId}</TableCell>
+                        <TableCell className="font-mono text-xs text-slate-600 dark:text-slate-400">{c.complaintId}</TableCell>
                         <TableCell>
-                          <p className="font-medium text-slate-800 line-clamp-1 max-w-[200px]">{c.title}</p>
+                          <p className="font-medium text-slate-800 dark:text-slate-200 line-clamp-1 max-w-[200px]">{c.title}</p>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell text-sm text-slate-600">
+                        <TableCell className="hidden md:table-cell text-sm text-slate-600 dark:text-slate-400">
                           {CATEGORY_LABELS[c.category]}
                         </TableCell>
                         <TableCell className="hidden sm:table-cell text-sm text-slate-500">
@@ -248,6 +249,7 @@ export default function ComplaintHistory() {
                               variant="ghost"
                               size="sm"
                               onClick={() => navigate(`/complaint/${c._id || (c as any).id || c.complaintId}/track`)}
+                              className="min-h-[36px] touch-manipulation"
                             >
                               Track
                             </Button>
@@ -258,6 +260,7 @@ export default function ComplaintHistory() {
                                     variant="destructive"
                                     size="sm"
                                     onClick={() => handleDelete(c._id)}
+                                    className="min-h-[36px]"
                                   >
                                     Confirm
                                   </Button>
@@ -265,6 +268,7 @@ export default function ComplaintHistory() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setDeleteId(null)}
+                                    className="min-h-[36px]"
                                   >
                                     Cancel
                                   </Button>
@@ -273,7 +277,7 @@ export default function ComplaintHistory() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="text-red-400 hover:text-red-600 hover:bg-red-50"
+                                  className="text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 min-h-[36px] min-w-[36px]"
                                   onClick={() => setDeleteId(c._id)}
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -286,6 +290,87 @@ export default function ComplaintHistory() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+
+              {/* Mobile Adaptive Card Stack (< 640px) */}
+              <div className="block sm:hidden space-y-3">
+                {complaints.map((c) => (
+                  <div
+                    key={c._id}
+                    className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 shadow-sm space-y-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="h-12 w-12 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shrink-0">
+                          <img
+                            src={getImageUrl(c.attachments && c.attachments[0])}
+                            onError={handleImageError}
+                            alt="Evidence"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-mono text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                            {c.complaintId}
+                          </p>
+                          <h3 className="font-semibold text-xs text-slate-900 dark:text-slate-100 truncate mt-0.5">
+                            {c.title}
+                          </h3>
+                          <p className="text-[11px] text-slate-500 truncate">
+                            {CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward H-West"}
+                          </p>
+                        </div>
+                      </div>
+                      <StatusBadge status={c.status} />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {["pending", "ai_verified"].includes(c.status) && (
+                          deleteId === c._id ? (
+                            <div className="flex gap-1">
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDelete(c._id)}
+                                className="h-8 px-2 text-xs"
+                              >
+                                Confirm
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteId(null)}
+                                className="h-8 px-2 text-xs"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 h-8 px-2 text-xs"
+                              onClick={() => setDeleteId(c._id)}
+                            >
+                              Delete
+                            </Button>
+                          )
+                        )}
+                        <Button
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 px-3 text-xs rounded-lg min-h-[36px] touch-manipulation"
+                          onClick={() => navigate(`/complaint/${c._id || (c as any).id || c.complaintId}/track`)}
+                        >
+                          Track Status &rarr;
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Pagination */}

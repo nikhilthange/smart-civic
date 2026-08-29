@@ -150,7 +150,8 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
               />
               <button
                 onClick={onClose}
-                className="rounded-full p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                className="rounded-full p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer touch-manipulation"
+                aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>

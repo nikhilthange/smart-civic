@@ -121,7 +121,7 @@ export const SlaStepper = React.memo(function SlaStepper({ status }: SlaStepperP
           </span>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 relative">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-2 relative">
           {stepperStages.map((stage) => {
             const isPassed = stage.id < activeStage
             const isCurrent = stage.id === activeStage

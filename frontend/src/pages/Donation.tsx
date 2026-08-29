@@ -739,7 +739,7 @@ export default function Donation() {
       </div>
 
       {/* ─── TAB NAVIGATION ────────────────────────────────────────────────── */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-2 overflow-x-auto">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-2 overflow-x-auto scrollbar-none touch-pan-x -mx-1 px-1">
         <button
           onClick={() => setActiveTab("causes")}
           className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${

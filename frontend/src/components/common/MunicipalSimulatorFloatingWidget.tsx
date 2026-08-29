@@ -78,14 +78,14 @@ export default function MunicipalSimulatorFloatingWidget() {
 
   return (
     <div
-      className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-40 scale-90 sm:scale-100 origin-bottom-right"
+      className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-30 scale-85 sm:scale-100 origin-bottom-right"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       {!isOpen ? (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-slate-900 dark:bg-rose-600 hover:bg-slate-800 text-white text-xs font-semibold shadow-xl border border-white/15 transition-all transform hover:scale-105 min-h-[44px]"
+          className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-slate-900 dark:bg-rose-600 hover:bg-slate-800 text-white text-xs font-semibold shadow-xl border border-white/15 transition-all transform hover:scale-105 min-h-[44px] touch-manipulation"
         >
           <Activity className="w-4 h-4 text-rose-400 dark:text-white animate-pulse" />
           <span>CityOS Emergency Simulator</span>

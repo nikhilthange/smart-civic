@@ -328,7 +328,7 @@ export default function DashboardLayout() {
   )
 
   return (
-    <div className="flex h-[100dvh] w-full max-w-full overflow-hidden bg-[#FAFAFA] dark:bg-[#090A0F]">
+    <div className="flex h-[100dvh] min-h-[100dvh] w-full max-w-full overflow-hidden bg-[#FAFAFA] dark:bg-[#090A0F]">
       {/* Global Command Palette Modal */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
@@ -357,7 +357,7 @@ export default function DashboardLayout() {
                 variant="outline"
                 size="icon"
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="shrink-0 md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl cursor-pointer pointer-events-auto hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="shrink-0 md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl cursor-pointer pointer-events-auto hover:bg-slate-100 dark:hover:bg-slate-800 touch-manipulation"
                 aria-label="Toggle navigation menu"
               >
                 <Menu className="h-5 w-5" />
@@ -391,20 +391,20 @@ export default function DashboardLayout() {
             variant="ghost"
             size="icon"
             onClick={() => setIsCommandPaletteOpen(true)}
-            className="md:hidden text-zinc-500 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="md:hidden text-zinc-500 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer pointer-events-auto touch-manipulation"
             title="Search (⌘K)"
           >
             <Search className="w-4 h-4" />
           </Button>
 
-          <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+          <div className="flex items-center gap-1.5 sm:gap-3 ml-auto">
             {/* Accessibility: Easy View Toggle */}
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={toggleEasyView}
-              className={`hidden sm:inline-flex items-center gap-1.5 rounded-full text-xs font-semibold shadow-sm transition-all ${
+              className={`hidden sm:inline-flex items-center gap-1.5 rounded-full text-xs font-semibold shadow-sm transition-all min-h-[36px] ${
                 isEasyView
                   ? "bg-amber-500 text-slate-950 font-bold border-amber-600 shadow-md shadow-amber-500/20"
                   : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100"
@@ -419,7 +419,7 @@ export default function DashboardLayout() {
               variant="outline"
               size="sm"
               onClick={() => setIsCopilotOpen(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full text-xs font-semibold border-violet-200 dark:border-violet-800/60 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 shadow-sm"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full text-xs font-semibold border-violet-200 dark:border-violet-800/60 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 shadow-sm min-h-[36px]"
             >
               <Sparkles className="w-3.5 h-3.5 text-violet-600" />
               <span>AI Copilot</span>
@@ -430,7 +430,7 @@ export default function DashboardLayout() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="icon" className="rounded-full min-h-[40px] min-w-[40px]">
+                <Button variant="secondary" size="icon" className="rounded-full min-h-[44px] min-w-[44px] touch-manipulation">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold font-mono">
                       {initials}
@@ -439,7 +439,7 @@ export default function DashboardLayout() {
                   <span className="sr-only">Toggle user menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56 z-[70]">
                 <DropdownMenuLabel>
                   <div>
                     <p className="font-medium">{user?.name}</p>
@@ -513,14 +513,14 @@ export default function DashboardLayout() {
           return (
             <main
               className="flex-1 overflow-y-auto overscroll-y-contain bg-transparent"
-              style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+              style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)" }}
             >
               <motion.div
                 key={location.pathname}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
-                className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-24 sm:pb-8 space-y-4 sm:space-y-6"
+                className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-28 sm:pb-12 space-y-4 sm:space-y-6"
               >
                 <Outlet />
               </motion.div>

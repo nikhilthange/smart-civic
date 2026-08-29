@@ -31,6 +31,7 @@ const {
   escalateSla,
   updateAiTriage,
   rateResolution,
+  analyzeComplaintImage,
 } = require("../controllers/complaintController");
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
@@ -57,6 +58,15 @@ const statusValidation = [
 ];
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
+
+// POST /api/complaints/analyze-image — Instant AI vision triage & EXIF GPS extractor
+router.post(
+  "/analyze-image",
+  upload.single("image"),
+  handleUploadError,
+  processExifMetadata,
+  analyzeComplaintImage
+);
 
 // GET /api/complaints/stats  — must come before /:id
 router.get("/stats", protect, authorize("admin", "officer"), getStats);

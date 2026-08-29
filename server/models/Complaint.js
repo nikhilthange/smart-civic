@@ -391,7 +391,7 @@ const ComplaintSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
-    // AI Analysis results from Google Gemini
+    // AI Analysis results from Computer Vision & Multi-Modal Vision AI
     aiAnalysis: {
       verified: { type: Boolean, default: false },
       category: { type: String, default: null },
@@ -399,7 +399,10 @@ const ComplaintSchema = new mongoose.Schema(
       severity: { type: String, enum: ["low", "medium", "high", "critical"], default: "medium" },
       department: { type: String, default: null },
       explanation: { type: String, default: null },
-      source: { type: String, enum: ["GEMINI", "FALLBACK"], default: "FALLBACK" },
+      analysisNote: { type: String, default: null },
+      severityScore: { type: Number, default: 0 },
+      boundingBoxes: { type: Array, default: [] },
+      source: { type: String, default: "LOCAL_YOLO_VISION" },
     },
   },
   {

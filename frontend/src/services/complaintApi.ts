@@ -85,11 +85,15 @@ export interface Complaint {
   upvotes?: number
   aiAnalysis?: {
     verified: boolean
-    category: ComplaintCategory
+    category?: ComplaintCategory | string
     confidence: number
-    severity: "low" | "medium" | "high" | "critical"
-    recommendedDepartmentCode: string
-    analysisNote: string
+    severity?: "low" | "medium" | "high" | "critical"
+    department?: string
+    recommendedDepartmentCode?: string
+    analysisNote?: string
+    explanation?: string
+    source?: string
+    boundingBoxes?: Array<{ label: string; confidence: number; box: number[] }>
   }
   wardId?: string
   wardName?: string

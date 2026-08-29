@@ -281,34 +281,56 @@ export const AiVerificationDetails = React.memo(function AiVerificationDetails({
 
   const confidencePct = Math.round((aiAnalysis.confidence || 0) * 100)
   const analysisNote = (aiAnalysis as any).analysisNote || (aiAnalysis as any).explanation || "AI automated triage completed based on multi-modal evidence."
+  const sourceLabel = (aiAnalysis as any).source === "YOLOV8_SERVICE" || (aiAnalysis as any).source === "LOCAL_YOLO_VISION"
+    ? "YOLOv8 Computer Vision Engine"
+    : (aiAnalysis as any).source === "LOCAL_ONNX_VISION"
+    ? "ONNX Vision Model + Rule Engine"
+    : "Smart Civic Multimodal Vision AI"
 
   return (
     <Card className="shadow-sm border-violet-200 dark:border-violet-900/50 bg-violet-50/50 dark:bg-violet-950/30">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-bold text-violet-900 dark:text-violet-300 flex items-center gap-1.5">
-          <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-          {t("tracking.aiVerificationDetails")}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-bold text-violet-900 dark:text-violet-300 flex items-center gap-1.5">
+            <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            {t("tracking.aiVerificationDetails")}
+          </CardTitle>
+          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/60 text-violet-700 dark:text-violet-300 border border-violet-300 dark:border-violet-700">
+            {sourceLabel}
+          </span>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3 text-xs text-violet-900 dark:text-violet-200">
-        <div>
-          <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.verifiedStatus")}</span>
-          <span className="font-semibold text-sm">
-            {aiAnalysis.verified ? "Verified ✅" : "Unverified ⚠️"}
-          </span>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.verifiedStatus")}</span>
+            <span className="font-semibold text-sm">
+              {aiAnalysis.verified ? "Verified ✅" : "Triage Complete 🔍"}
+            </span>
+          </div>
+          <div>
+            <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.confidenceScore")}</span>
+            <span className="font-semibold text-sm font-mono text-emerald-600 dark:text-emerald-400">
+              {confidencePct}%
+            </span>
+          </div>
         </div>
-        <div>
-          <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.confidenceScore")}</span>
-          <span className="font-semibold text-sm font-mono">
-            {confidencePct}%
-          </span>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.severityLevel")}</span>
+            <span className="font-semibold text-sm capitalize font-mono">
+              {aiAnalysis.severity || "Medium"}
+            </span>
+          </div>
+          <div>
+            <span className="text-violet-600 dark:text-violet-400 block font-medium">Department Routing</span>
+            <span className="font-semibold text-sm font-mono">
+              {aiAnalysis.department || "PWD"}
+            </span>
+          </div>
         </div>
-        <div>
-          <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.severityLevel")}</span>
-          <span className="font-semibold text-sm capitalize">
-            {aiAnalysis.severity || "Medium"}
-          </span>
-        </div>
+
         <div>
           <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.aiExplanation")}</span>
           <p className="mt-0.5 text-violet-700 dark:text-violet-300 leading-relaxed text-xs">

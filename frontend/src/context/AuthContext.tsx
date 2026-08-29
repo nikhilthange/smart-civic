@@ -175,10 +175,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
             setUser(fallbackUser)
           }
-        } else {
           // 3. User is signed out in Firebase
           const storedToken = localStorage.getItem("token")
+          const storedUserStr = localStorage.getItem("user")
           if (storedToken) {
+            // Handle Demo / Local session
+            if (storedToken.startsWith("demo-") && storedUserStr) {
+              try {
+                const parsed = JSON.parse(storedUserStr)
+                setUser(parsed)
+                setToken(storedToken)
+                api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
+                setIsLoading(false)
+                return
+              } catch {}
+            }
+
             // Verify if non-Firebase backend session exists (e.g. staff/admin password login)
             try {
               const { data } = await api.get("/auth/me", {
@@ -192,7 +204,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 return
               }
             } catch {
-              // Stored token is invalid or expired
+              // If offline or network error, retain stored local user
+              if (storedUserStr) {
+                try {
+                  const parsed = JSON.parse(storedUserStr)
+                  setUser(parsed)
+                  setToken(storedToken)
+                  api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
+                  setIsLoading(false)
+                  return
+                } catch {}
+              }
             }
           }
 

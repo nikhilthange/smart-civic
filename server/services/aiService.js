@@ -2,6 +2,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
+const nvidiaService = require("./nvidiaService");
 const geminiService = require("./geminiService");
 const localVisionService = require("./localVisionService");
 
@@ -11,7 +12,9 @@ const PYTHON_AI_URL = process.env.PYTHON_AI_URL || "http://localhost:8000/analyz
  * Primary AI Analysis entry point:
  * 1. In-Process Node.js ONNX Vision Engine (`localVisionService.js`)
  * 2. Python FastAPI YOLOv8 + OpenCV microservice (`localhost:8000/analyze`)
- * 3. Multi-modal Gemini LLM / Rule Heuristic fallback
+ * 3. NVIDIA NIM Enterprise API (`meta/llama-3.1-70b-instruct`)
+ * 4. Multi-modal Gemini LLM (`gemini-2.5-flash`)
+ * 5. Local BMC Taxonomy Rule Heuristic fallback
  */
 const analyzeComplaintAI = async (description, attachments = []) => {
   let localVisionResult = null;
@@ -71,7 +74,7 @@ const analyzeComplaintAI = async (description, attachments = []) => {
         }
       }
     } catch (error) {
-      console.warn(`⚠️ Microservice/Vision analysis skipped (${error.message}). Falling back to Gemini/Heuristics.`);
+      console.warn(`⚠️ Microservice/Vision analysis skipped (${error.message}).`);
     }
   }
 
@@ -91,6 +94,14 @@ const analyzeComplaintAI = async (description, attachments = []) => {
     };
   }
 
+  // Step 3: NVIDIA NIM API Inference
+  if (nvidiaService.isConfigured) {
+    const nvidiaResult = await nvidiaService.analyzeComplaintNvidia(description, attachments);
+    if (nvidiaResult) {
+      return nvidiaResult;
+    }
+  }
+
   // If local vision had a moderate match
   if (localVisionResult && localVisionResult.confidence >= 0.60) {
     return {
@@ -106,7 +117,7 @@ const analyzeComplaintAI = async (description, attachments = []) => {
     };
   }
 
-  // Step 3: Fallback to Gemini AI Analysis or local rule heuristic
+  // Step 4: Fallback to Gemini AI Analysis or local rule heuristic
   return await geminiService.analyzeComplaint(description, attachments);
 };
 

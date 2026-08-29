@@ -281,7 +281,9 @@ export const AiVerificationDetails = React.memo(function AiVerificationDetails({
 
   const confidencePct = Math.round((aiAnalysis.confidence || 0) * 100)
   const analysisNote = (aiAnalysis as any).analysisNote || (aiAnalysis as any).explanation || "AI automated triage completed based on multi-modal evidence."
-  const sourceLabel = (aiAnalysis as any).source === "YOLOV8_SERVICE" || (aiAnalysis as any).source === "LOCAL_YOLO_VISION"
+  const sourceLabel = (aiAnalysis as any).source === "NVIDIA_NIM"
+    ? "NVIDIA NIM AI Vision (Llama-3.2)"
+    : (aiAnalysis as any).source === "YOLOV8_SERVICE" || (aiAnalysis as any).source === "LOCAL_YOLO_VISION"
     ? "YOLOv8 Computer Vision Engine"
     : (aiAnalysis as any).source === "LOCAL_ONNX_VISION"
     ? "ONNX Vision Model + Rule Engine"

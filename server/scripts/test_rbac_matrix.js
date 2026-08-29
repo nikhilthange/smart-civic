@@ -110,16 +110,53 @@ async function runRbacSuite() {
     passed: resNoToken.status === 401,
   });
 
+  // Test 2: Tampered / Malformed Token String
   const resInvalidToken = await testClient.get(`${baseUrl}/api/complaints`, {
     headers: { Authorization: "Bearer invalid_tampered_token_xyz" },
   });
   testResults.push({
     category: "Zero Trust",
-    role: "Invalid Token",
-    action: "GET /api/complaints with tampered token",
+    role: "Tampered Token",
+    action: "GET /api/complaints with tampered token string",
     expected: "401 Unauthorized",
     actual: `${resInvalidToken.status} ${resInvalidToken.data?.message || ""}`,
     passed: resInvalidToken.status === 401,
+  });
+
+  // Test 3: Forged Role Signature Attack (Attacker signs role: 'admin' with rogue secret)
+  const forgedAdminToken = jwt.sign(
+    { id: userRecords.citizen._id, role: "admin" },
+    "attacker_compromised_secret_key_999",
+    { expiresIn: "1h" }
+  );
+  const resForgedRole = await testClient.get(`${baseUrl}/api/admin/ward-performance`, {
+    headers: { Authorization: `Bearer ${forgedAdminToken}` },
+  });
+  testResults.push({
+    category: "Zero Trust",
+    role: "Forged Token",
+    action: "GET /api/admin/ward-performance with forged admin role",
+    expected: "401 Unauthorized",
+    actual: `${resForgedRole.status} (${resForgedRole.data?.message})`,
+    passed: resForgedRole.status === 401,
+  });
+
+  // Test 4: Expired Token Replay Attack
+  const expiredToken = jwt.sign(
+    { id: userRecords.citizen._id, role: "citizen" },
+    process.env.JWT_SECRET,
+    { expiresIn: "-10s" }
+  );
+  const resExpiredToken = await testClient.get(`${baseUrl}/api/auth/me`, {
+    headers: { Authorization: `Bearer ${expiredToken}` },
+  });
+  testResults.push({
+    category: "Zero Trust",
+    role: "Expired Token",
+    action: "GET /api/auth/me with expired token timestamp",
+    expected: "401 Unauthorized (TokenExpiredError)",
+    actual: `${resExpiredToken.status} (${resExpiredToken.data?.message})`,
+    passed: resExpiredToken.status === 401,
   });
 
   console.log("\n--- Phase 3: Testing Citizen Access Permissions & Restrictions ---");

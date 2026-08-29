@@ -160,7 +160,7 @@ function buildVerificationEmailHtml({ name, verificationUrl, supportEmail }) {
 
               <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
                 <p style="margin: 0; color: #94a3b8; font-size: 12px;">
-                  ⚠️ This verification link will expire in <strong>24 hours</strong>. If you did not create an account on Smart Civic AI, you can safely ignore this email.
+                  ⚠️ This verification link will expire in <strong>7 days</strong>. If you did not create an account on Smart Civic AI, you can safely ignore this email.
                 </p>
               </div>
             </td>

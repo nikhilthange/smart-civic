@@ -28,7 +28,12 @@ export default function VerifyEmail() {
 
     const performVerification = async () => {
       try {
-        const response = await api.get(`/auth/verify-email?token=${encodeURIComponent(token)}`)
+        const query = new URLSearchParams()
+        query.set("token", token)
+        if (initialEmail) {
+          query.set("email", initialEmail)
+        }
+        const response = await api.get(`/auth/verify-email?${query.toString()}`)
         setStatus("success")
         setMessage(response.data.message || "Your email has been verified successfully! Your account is now fully active.")
 
@@ -47,7 +52,7 @@ export default function VerifyEmail() {
     }
 
     performVerification()
-  }, [token])
+  }, [token, initialEmail])
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault()

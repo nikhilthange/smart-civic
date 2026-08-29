@@ -164,8 +164,8 @@ UserSchema.methods.generateEmailVerificationToken = function () {
     .update(rawToken)
     .digest("hex");
 
-  // Verification token valid for 24 hours
-  this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  // Verification token valid for 7 days (168 hours)
+  this.emailVerificationExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   return rawToken;
 };

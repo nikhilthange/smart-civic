@@ -991,11 +991,10 @@ const assignOfficer = async (req, res) => {
     await complaint.save();
 
     // Update officer stats atomically
-    const Officer = require("../models/Officer");
     await Officer.findByIdAndUpdate(officer._id, { $inc: { activeComplaintsCount: 1 } });
 
     // Notify citizen via in-app + email + FCM
-    const officerUser = await require("../models/User").findById(officer.user).select("name").lean();
+    const officerUser = await User.findById(officer.user).select("name").lean();
     await notificationService.officerAssignedToCitizen(complaint.citizen, complaint, officerUser?.name || "an officer");
 
     // Broadcast Real-time WebSocket event
@@ -1458,8 +1457,8 @@ const workerSubmitProof = async (req, res) => {
     }
 
     // ─── Geo-Fenced Resolution Proof (Anti-Fraud Check) ──────────────────────────
-    const rawWorkerLat = req.body.workerLat !== undefined ? req.body.workerLat : (req.body.latitude !== undefined ? req.body.latitude : req.headers["x-worker-lat"]);
-    const rawWorkerLng = req.body.workerLng !== undefined ? req.body.workerLng : (req.body.longitude !== undefined ? req.body.longitude : req.headers["x-worker-lng"]);
+    const rawWorkerLat = req.body.workerLat !== undefined ? req.body.workerLat : (req.body.latitude !== undefined ? req.body.latitude : req.headers?.["x-worker-lat"]);
+    const rawWorkerLng = req.body.workerLng !== undefined ? req.body.workerLng : (req.body.longitude !== undefined ? req.body.longitude : req.headers?.["x-worker-lng"]);
     let geofenceNote = "";
 
     const targetCoords = complaint.location?.coordinates?.coordinates;

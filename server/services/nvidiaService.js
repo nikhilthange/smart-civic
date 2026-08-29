@@ -109,7 +109,7 @@ Return ONLY a valid JSON object without markdown fences or additional commentary
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
         },
-        timeout: 8000,
+        timeout: 15000,
       }
     );
 

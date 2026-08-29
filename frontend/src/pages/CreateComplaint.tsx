@@ -82,14 +82,14 @@ export default function CreateComplaint() {
     setError(null)
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const lat = Number(position.coords.latitude.toFixed(6))
-        const lng = Number(position.coords.longitude.toFixed(6))
+        const lat = position.coords.latitude
+        const lng = position.coords.longitude
         const wardObj = detectWardByCoordinates(lat, lng)
 
         let formattedAddress = ""
         let city = "Mumbai"
         let state = "Maharashtra"
-        let pincode = "400028"
+        let pincode = form.locationPincode || "400028"
 
         try {
           const res = await fetch(
@@ -102,10 +102,11 @@ export default function CreateComplaint() {
             state = addr.state || "Maharashtra"
             pincode = addr.postcode || pincode
 
-            const road = addr.road || addr.pedestrian || addr.suburb || addr.neighbourhood || ""
-            const suburb = addr.suburb || addr.city_district || ""
-            if (road && suburb) {
-              formattedAddress = `${road}, ${suburb}, ${city}`
+            const road = addr.road || addr.pedestrian || addr.street || ""
+            const neighbourhood = addr.neighbourhood || addr.suburb || addr.residential || addr.amenity || ""
+            const parts = [road, neighbourhood, city].filter(Boolean)
+            if (parts.length > 0) {
+              formattedAddress = parts.join(", ")
             } else if (data.display_name) {
               formattedAddress = data.display_name.split(",").slice(0, 3).join(",").trim()
             }
@@ -140,7 +141,7 @@ export default function CreateComplaint() {
       },
       {
         enableHighAccuracy: true,
-        timeout: 15000,
+        timeout: 10000,
         maximumAge: 0,
       }
     )

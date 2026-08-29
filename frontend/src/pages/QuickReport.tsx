@@ -152,11 +152,12 @@ export default function QuickReport() {
       if (res.ok) {
         const data = await res.json()
         const addr = data.address || {}
-        const road = addr.road || addr.pedestrian || addr.suburb || addr.neighbourhood || ""
-        const suburb = addr.suburb || addr.city_district || ""
-        const city = addr.city || addr.town || addr.county || "Mumbai"
-        if (road && suburb) {
-          address = `${road}, ${suburb}, ${city}`
+        const road = addr.road || addr.pedestrian || addr.street || ""
+        const neighbourhood = addr.neighbourhood || addr.suburb || addr.residential || addr.amenity || ""
+        const city = addr.city || addr.town || addr.city_district || addr.county || "Mumbai"
+        const parts = [road, neighbourhood, city].filter(Boolean)
+        if (parts.length > 0) {
+          address = parts.join(", ")
         } else if (data.display_name) {
           address = data.display_name.split(",").slice(0, 3).join(",").trim()
         }
@@ -186,8 +187,8 @@ export default function QuickReport() {
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const lat = Number(pos.coords.latitude.toFixed(6))
-          const lng = Number(pos.coords.longitude.toFixed(6))
+          const lat = pos.coords.latitude
+          const lng = pos.coords.longitude
           setCoordinates([lng, lat])
           setGpsSource("browser")
           setPermissionAlert(null)
@@ -202,7 +203,7 @@ export default function QuickReport() {
           })
           resolve(null)
         },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       )
     })
   }, [resolveWardAndAddressFromCoordinates])

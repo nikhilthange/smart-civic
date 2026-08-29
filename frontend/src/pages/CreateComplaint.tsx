@@ -9,7 +9,7 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { complaintApi, CATEGORY_LABELS, type ComplaintCategory } from "@/services/complaintApi"
 import { CameraCaptureModal } from "@/components/common/CameraCaptureModal"
@@ -262,7 +262,7 @@ export default function CreateComplaint() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 px-1 sm:px-2 pb-16">
+    <div className="w-full space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900/60 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm">
         <div className="flex items-center gap-3">
@@ -304,22 +304,20 @@ export default function CreateComplaint() {
               )}
 
           {/* Step 1: Category & Details */}
-          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm">
-            <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
-              <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-mono font-bold items-center justify-center">1</span>
-                <CardTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Issue Category & Details</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-4">
+          <Card className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
+              <span className="flex h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold items-center justify-center shrink-0">1</span>
+              <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">Issue Category & Details</h2>
+            </div>
+            <div className="space-y-4 pt-4">
               <div className="space-y-1.5">
-                <Label htmlFor="category" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Category <span className="text-rose-500">*</span></Label>
+                <Label htmlFor="category" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">Category <span className="text-rose-500">*</span></Label>
                 <select
                   id="category"
                   name="category"
                   value={form.category}
                   onChange={handleChange}
-                  className="flex h-9 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                  className="flex h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-2 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   required
                 >
                   <option value="">Select an infrastructure category...</option>
@@ -330,7 +328,7 @@ export default function CreateComplaint() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="title" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Issue Title <span className="text-rose-500">*</span></Label>
+                <Label htmlFor="title" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">Issue Title <span className="text-rose-500">*</span></Label>
                 <Input
                   id="title"
                   name="title"
@@ -340,15 +338,17 @@ export default function CreateComplaint() {
                   required
                   minLength={10}
                   maxLength={150}
-                  className="h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800"
+                  className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800"
                 />
                 <p className="text-[10px] font-mono text-zinc-400">{form.title.length}/150</p>
               </div>
 
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="description" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Detailed Description <span className="text-rose-500">*</span></Label>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1.5">
+                  <Label htmlFor="description" className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Detailed Description <span className="text-rose-500">*</span>
+                  </Label>
+                  <div className="flex items-center gap-2 self-start sm:self-auto w-full sm:w-auto overflow-x-auto touch-pan-x min-w-0">
                     <VoiceInput
                       onTranscript={(text) =>
                         setForm((prev) => ({
@@ -357,29 +357,29 @@ export default function CreateComplaint() {
                         }))
                       }
                     />
+                    {form.description.length > 0 && (
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] font-mono px-2 py-0.5 rounded shrink-0 ${aiWillVerify
+                          ? "border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                          : "border-amber-500/20 text-amber-600 dark:text-amber-400 bg-amber-500/10"
+                        }`}
+                      >
+                        {aiWillVerify ? (
+                          <><Bot className="h-3 w-3 mr-1" />AI Verified</>
+                        ) : (
+                          <><Info className="h-3 w-3 mr-1" />{50 - form.description.length} more chars</>
+                        )}
+                      </Badge>
+                    )}
                   </div>
-                  {form.description.length > 0 && (
-                    <Badge
-                      variant="outline"
-                      className={`text-[10px] font-mono px-2 py-0.5 rounded ${aiWillVerify
-                        ? "border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
-                        : "border-amber-500/20 text-amber-600 dark:text-amber-400 bg-amber-500/10"
-                      }`}
-                    >
-                      {aiWillVerify ? (
-                        <><Bot className="h-3 w-3 mr-1" />AI Verified</>
-                      ) : (
-                        <><Info className="h-3 w-3 mr-1" />{50 - form.description.length} more chars for AI verification</>
-                      )}
-                    </Badge>
-                  )}
                 </div>
                 <textarea
                   id="description"
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  className="flex min-h-[110px] w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                  className="flex min-h-[110px] w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-2 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="Describe the defect, hazards, traffic impact, and location markers..."
                   required
                   minLength={20}
@@ -389,16 +389,16 @@ export default function CreateComplaint() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Priority Level</Label>
-                <div className="flex gap-2 flex-wrap">
+                <Label className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">Priority Level</Label>
+                <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full">
                   {PRIORITY_OPTIONS.map(opt => (
                     <button
                       key={opt.value}
                       type="button"
                       onClick={() => setForm(prev => ({ ...prev, priority: opt.value }))}
-                      className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all ${
+                      className={`h-10 text-xs sm:text-sm font-medium rounded-xl border transition-all flex items-center justify-center min-h-[44px] touch-manipulation cursor-pointer ${
                         form.priority === opt.value
-                          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-transparent shadow-sm"
+                          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-transparent shadow-sm font-bold"
                           : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
                       }`}
                     >
@@ -407,68 +407,66 @@ export default function CreateComplaint() {
                   ))}
                 </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
 
           {/* Step 2: Location */}
-          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm">
-            <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
-              <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-mono font-bold items-center justify-center">2</span>
-                <CardTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Municipal Location</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-4">
+          <Card className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 p-4 sm:p-6 shadow-sm">
+            <div className="flex items-center gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
+              <span className="flex h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold items-center justify-center shrink-0">2</span>
+              <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">Municipal Location</h2>
+            </div>
+            <div className="space-y-4 pt-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Street Address / Landmark <span className="text-rose-500">*</span></Label>
-                <div className="flex gap-2">
+                <Label className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">Street Address / Landmark <span className="text-rose-500">*</span></Label>
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     name="locationAddress"
                     placeholder="Enter street address or landmark"
                     value={form.locationAddress}
                     onChange={handleChange}
                     required
-                    className="flex-1 h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800"
+                    className="flex-1 h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800"
                   />
-                  <Button type="button" variant="outline" size="sm" className="shrink-0 text-xs h-9" onClick={handleGetLocation} disabled={geoLoading}>
+                  <Button type="button" variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm h-10 min-h-[44px] rounded-xl touch-manipulation" onClick={handleGetLocation} disabled={geoLoading}>
                     {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}
-                    <span className="ml-1.5 hidden sm:inline">Detect GPS</span>
+                    <span className="ml-1.5">Detect GPS</span>
                   </Button>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">City</Label>
-                  <Input name="locationCity" placeholder="City" value={form.locationCity} onChange={handleChange} className="h-10 sm:h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
+                  <Input name="locationCity" placeholder="City" value={form.locationCity} onChange={handleChange} className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">State</Label>
-                  <Input name="locationState" placeholder="State" value={form.locationState} onChange={handleChange} className="h-10 sm:h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
+                  <Input name="locationState" placeholder="State" value={form.locationState} onChange={handleChange} className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Pincode</Label>
-                  <Input name="locationPincode" placeholder="6-digit" value={form.locationPincode} onChange={handleChange} maxLength={6} className="h-10 sm:h-9 text-xs bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 font-mono" />
+                  <Input name="locationPincode" placeholder="6-digit" value={form.locationPincode} onChange={handleChange} maxLength={6} className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 font-mono" />
                 </div>
               </div>
-            </CardContent>
+            </div>
           </Card>
 
           {/* Step 3: Evidence & EXIF Sanitization */}
-          <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm">
-            <CardHeader className="pb-3 border-b border-zinc-100 dark:border-zinc-800/60 flex flex-row items-center justify-between">
+          <Card className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 p-4 sm:p-6 shadow-sm">
+            <div className="pb-3 border-b border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-mono font-bold items-center justify-center">3</span>
+                <span className="flex h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold items-center justify-center shrink-0">3</span>
                 <div>
-                  <CardTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Photo / Video Evidence</CardTitle>
-                  <CardDescription className="text-[11px] text-zinc-400 mt-0.5">Upload images or videos (max 10MB each)</CardDescription>
+                  <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">Photo / Video Evidence</h2>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">Upload images or videos (max 10MB each)</p>
                 </div>
               </div>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 <ShieldCheck className="w-3 h-3" />
                 <span>EXIF Sanitized</span>
               </span>
-            </CardHeader>
-            <CardContent className="space-y-4 pt-4">
+            </div>
+            <div className="space-y-4 pt-4">
               {/* Drop zone & Camera Snap Action */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <div
@@ -581,7 +579,7 @@ export default function CreateComplaint() {
                   ))}
                 </div>
               )}
-            </CardContent>
+            </div>
           </Card>
 
           {/* Options */}

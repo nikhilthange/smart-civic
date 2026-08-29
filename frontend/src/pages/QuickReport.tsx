@@ -806,13 +806,13 @@ export default function QuickReport() {
                   </div>
 
                   {/* Regional Language Selectors */}
-                  <div className="inline-flex rounded-lg p-0.5 bg-zinc-200/80 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-xs overflow-x-auto touch-pan-x no-scrollbar self-start sm:self-auto">
+                  <div className="inline-flex rounded-xl p-1 bg-zinc-200/80 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-xs overflow-x-auto touch-pan-x no-scrollbar self-start sm:self-auto min-w-0">
                     <button
                       type="button"
                       onClick={() => setSpeechLang("en-IN")}
-                      className={`px-3 py-1 rounded-md font-medium transition min-h-[32px] touch-manipulation ${
+                      className={`px-3.5 py-2 rounded-lg font-medium transition min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer ${
                         speechLang === "en-IN"
-                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-semibold"
                           : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
                       }`}
                     >
@@ -821,9 +821,9 @@ export default function QuickReport() {
                     <button
                       type="button"
                       onClick={() => setSpeechLang("mr-IN")}
-                      className={`px-3 py-1 rounded-md font-medium transition min-h-[32px] touch-manipulation ${
+                      className={`px-3.5 py-2 rounded-lg font-medium transition min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer ${
                         speechLang === "mr-IN"
-                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-semibold"
                           : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
                       }`}
                     >
@@ -832,9 +832,9 @@ export default function QuickReport() {
                     <button
                       type="button"
                       onClick={() => setSpeechLang("hi-IN")}
-                      className={`px-3 py-1 rounded-md font-medium transition min-h-[32px] touch-manipulation ${
+                      className={`px-3.5 py-2 rounded-lg font-medium transition min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer ${
                         speechLang === "hi-IN"
-                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-semibold"
                           : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
                       }`}
                     >

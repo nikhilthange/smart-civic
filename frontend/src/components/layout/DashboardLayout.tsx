@@ -511,10 +511,7 @@ export default function DashboardLayout() {
           }
 
           return (
-            <main
-              className="w-full max-w-full overflow-x-hidden min-h-[100dvh] flex-1 overflow-y-auto overscroll-y-contain bg-transparent px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-36 sm:pb-12"
-              style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 5.5rem)" }}
-            >
+            <main className="w-full max-w-full overflow-x-hidden flex-1 overflow-y-auto overscroll-y-contain bg-transparent px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-[calc(env(safe-area-inset-bottom,0px)+6rem)] sm:pb-12">
               <motion.div
                 key={location.pathname}
                 initial={{ opacity: 0, y: 6 }}

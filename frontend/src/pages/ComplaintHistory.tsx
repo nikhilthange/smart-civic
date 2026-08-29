@@ -136,7 +136,7 @@ export default function ComplaintHistory() {
                 className="pl-9 h-11 sm:h-9 text-xs sm:text-sm w-full"
               />
             </div>
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 w-full touch-pan-x">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 w-full min-w-0 touch-pan-x">
               <Filter className="h-4 w-4 text-slate-400 shrink-0 ml-1" />
               {[
                 { label: t("complaints.all", "All"), value: "all" },
@@ -150,7 +150,7 @@ export default function ComplaintHistory() {
                 <button
                   key={f.value}
                   onClick={() => { setStatusFilter(f.value as ComplaintStatus | "all"); setPage(1) }}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all min-h-[36px] touch-manipulation ${
+                  className={`shrink-0 px-3.5 py-2 rounded-full text-xs font-medium border transition-all min-h-[44px] touch-manipulation cursor-pointer flex items-center justify-center ${
                     statusFilter === f.value
                       ? "bg-emerald-600 text-white border-emerald-600 font-semibold shadow-sm"
                       : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"

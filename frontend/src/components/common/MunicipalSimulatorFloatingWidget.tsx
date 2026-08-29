@@ -78,7 +78,7 @@ export default function MunicipalSimulatorFloatingWidget() {
 
   return (
     <div
-      className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-30 scale-85 sm:scale-100 origin-bottom-right"
+      className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-30 scale-75 sm:scale-100 origin-bottom-right opacity-85 hover:opacity-100 transition-opacity"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       {!isOpen ? (

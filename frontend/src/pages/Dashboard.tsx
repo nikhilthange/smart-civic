@@ -319,98 +319,153 @@ export default function Dashboard() {
                   />
                 </div>
               ) : (
-                <Table className="w-full min-w-[500px]">
-                  <TableHeader>
-                    <TableRow className="bg-slate-50/60 dark:bg-slate-800/40 text-[11px] font-mono text-slate-500 uppercase">
-                      <TableHead className="w-14 font-semibold">Photo</TableHead>
-                      <TableHead className="font-semibold">ID</TableHead>
-                      <TableHead className="font-semibold">Issue Details</TableHead>
-                      <TableHead className="font-semibold hidden md:table-cell">Date</TableHead>
-                      <TableHead className="font-semibold text-right">Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <>
+                  {/* Desktop Table View */}
+                  <div className="hidden sm:block w-full overflow-x-auto">
+                    <Table className="w-full min-w-[500px]">
+                      <TableHeader>
+                        <TableRow className="bg-slate-50/60 dark:bg-slate-800/40 text-[11px] font-mono text-slate-500 uppercase">
+                          <TableHead className="w-14 font-semibold">Photo</TableHead>
+                          <TableHead className="font-semibold">ID</TableHead>
+                          <TableHead className="font-semibold">Issue Details</TableHead>
+                          <TableHead className="font-semibold hidden md:table-cell">Date</TableHead>
+                          <TableHead className="font-semibold text-right">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {recent.map((c) => (
+                          <TableRow
+                            key={c._id}
+                            className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/60"
+                          >
+                            <TableCell>
+                              <div className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
+                                {c.attachments && c.attachments[0] ? (
+                                  <img
+                                    src={getImageUrl(c.attachments[0])}
+                                    onError={handleImageError}
+                                    alt="Evidence"
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <Building2 className="w-4 h-4 text-slate-400" />
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-mono text-xs font-semibold">
+                              <Link
+                                to={`/complaint/${c._id || c.id || c.complaintId}/track`}
+                                className="text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                              >
+                                <span>{c.complaintId || c._id?.slice(-6).toUpperCase()}</span>
+                                <ExternalLink className="w-3 h-3 opacity-60" />
+                              </Link>
+                            </TableCell>
+                            <TableCell>
+                              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1 max-w-[220px]">
+                                {c.title}
+                              </p>
+                              <p className="text-[11px] text-slate-400 line-clamp-1">
+                                {CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}
+                              </p>
+                            </TableCell>
+                            <TableCell className="text-xs text-slate-500 font-mono hidden md:table-cell">
+                              {new Date(c.createdAt).toLocaleDateString("en-IN", {
+                                day: "2-digit",
+                                month: "short",
+                              })}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <StatusBadge status={c.status} />
+                                {c.status === "resolved" && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-[11px] text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30 hover:bg-amber-50 dark:hover:bg-amber-950/30 h-7 px-2 rounded-lg"
+                                    onClick={async () => {
+                                      const reason = prompt(
+                                        "State reason for reopening issue:",
+                                        "Resolution unsatisfactory"
+                                      )
+                                      if (!reason) return
+                                      try {
+                                        await complaintApi.reopen(c._id, reason)
+                                        toast.success("Ticket reopened & escalated to CRITICAL priority!")
+                                        setRecent((prev) =>
+                                          prev.map((item) =>
+                                            item._id === c._id
+                                              ? { ...item, status: "pending", priority: "critical" }
+                                              : item
+                                          )
+                                        )
+                                      } catch {
+                                        toast.error("Could not reopen ticket.")
+                                      }
+                                    }}
+                                  >
+                                    <RotateCcw className="w-3 h-3 mr-1" />
+                                    {t("dashPage.reopen", "Reopen")}
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Mobile Card Stack */}
+                  <div className="block sm:hidden p-3 space-y-2.5">
                     {recent.map((c) => (
-                      <TableRow
+                      <div
                         key={c._id}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/60"
+                        className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2.5"
                       >
-                        <TableCell>
-                          <div className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
-                            {c.attachments && c.attachments[0] ? (
-                              <img
-                                src={getImageUrl(c.attachments[0])}
-                                onError={handleImageError}
-                                alt="Evidence"
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <Building2 className="w-4 h-4 text-slate-400" />
-                            )}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="h-10 w-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
+                              {c.attachments && c.attachments[0] ? (
+                                <img
+                                  src={getImageUrl(c.attachments[0])}
+                                  onError={handleImageError}
+                                  alt="Evidence"
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <Building2 className="w-4 h-4 text-slate-400" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <Link
+                                to={`/complaint/${c._id || c.id || c.complaintId}/track`}
+                                className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                              >
+                                {c.complaintId || c._id?.slice(-6).toUpperCase()}
+                              </Link>
+                              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                                {c.title}
+                              </p>
+                            </div>
                           </div>
-                        </TableCell>
-                        <TableCell className="font-mono text-xs font-semibold">
+                          <StatusBadge status={c.status} />
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                          <span>{CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}</span>
                           <Link
                             to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                            className="text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                            className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1"
                           >
-                            <span>{c.complaintId || c._id?.slice(-6).toUpperCase()}</span>
-                            <ExternalLink className="w-3 h-3 opacity-60" />
+                            <span>Track</span>
+                            <ArrowRight className="w-3 h-3" />
                           </Link>
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1 max-w-[220px]">
-                            {c.title}
-                          </p>
-                          <p className="text-[11px] text-slate-400 line-clamp-1">
-                            {CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}
-                          </p>
-                        </TableCell>
-                        <TableCell className="text-xs text-slate-500 font-mono hidden md:table-cell">
-                          {new Date(c.createdAt).toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "short",
-                          })}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <StatusBadge status={c.status} />
-                            {c.status === "resolved" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-[11px] text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30 hover:bg-amber-50 dark:hover:bg-amber-950/30 h-7 px-2 rounded-lg"
-                                onClick={async () => {
-                                  const reason = prompt(
-                                    "State reason for reopening issue:",
-                                    "Resolution unsatisfactory"
-                                  )
-                                  if (!reason) return
-                                  try {
-                                    await complaintApi.reopen(c._id, reason)
-                                    toast.success("Ticket reopened & escalated to CRITICAL priority!")
-                                    setRecent((prev) =>
-                                      prev.map((item) =>
-                                        item._id === c._id
-                                          ? { ...item, status: "pending", priority: "critical" }
-                                          : item
-                                      )
-                                    )
-                                  } catch {
-                                    toast.error("Could not reopen ticket.")
-                                  }
-                                }}
-                              >
-                                <RotateCcw className="w-3 h-3 mr-1" />
-                                {t("dashPage.reopen", "Reopen")}
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                        </div>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                </>
               )}
             </div>
           </div>

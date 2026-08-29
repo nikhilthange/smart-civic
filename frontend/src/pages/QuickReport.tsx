@@ -10,7 +10,7 @@ import {
   Sparkles,
   AlertTriangle,
   Volume2,
-  RefreshCw,
+  Trash2,
   ChevronDown,
   ChevronUp,
   SlidersHorizontal,
@@ -497,7 +497,6 @@ export default function QuickReport() {
           ? `${finalDescription} - Verified civic ticket submitted via BMC Snap & Send.`
           : finalDescription
       )
-      formData.append("category", detectedCategory)
       formData.append("ward", detectedWard.split(" (")[0])
       formData.append("priority", severity)
       formData.append("locationAddress", detectedAddress)
@@ -547,7 +546,7 @@ export default function QuickReport() {
   const activeCategoryObj = CIVIC_CATEGORIES.find((c) => c.id === detectedCategory)
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-4 space-y-6">
+    <div className="w-full max-w-xl mx-auto px-1 sm:px-0 space-y-4">
       {/* Header Banner */}
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm">
@@ -598,7 +597,7 @@ export default function QuickReport() {
 
       {/* Main Intake Card */}
       <Card className="bg-white dark:bg-zinc-900/90 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-lg overflow-hidden backdrop-blur-md">
-        <CardContent className="p-5 sm:p-7 space-y-6">
+        <CardContent className="p-4 sm:p-7 space-y-6">
           {photoPreview ? (
             /* ─── State 1: Photo Preview & AI Triage Display ──────────────── */
             <div className="space-y-5 animate-in fade-in zoom-in-95 duration-200">
@@ -649,68 +648,109 @@ export default function QuickReport() {
                 )}
               </div>
 
-              {/* AI Auto-Triage Summary Card */}
-              {!isAnalyzing && detectedIssue && (
-                <div className="p-4 sm:p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
-                        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-                        {confidenceScore}% AI MATCH
-                      </span>
-                      <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
-                        {activeCategoryObj?.icon} {activeCategoryObj?.dept} Queue
-                      </span>
-                    </div>
-                    <span className="text-xs font-mono font-medium text-zinc-500 dark:text-zinc-400">
-                      {detectedWard}
-                    </span>
-                  </div>
-
-                  <div className="space-y-1">
-                    <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
-                      {detectedIssue}
-                    </h3>
-                    <div className="flex items-start gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                      <span>{detectedAddress}</span>
-                    </div>
-                  </div>
-
-                  {analysisNote && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 italic bg-zinc-100/60 dark:bg-zinc-800/80 p-2 rounded-lg">
-                      💡 {analysisNote}
-                    </p>
-                  )}
+              {/* AI Vision Insights Strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 text-center">
+                  <span className="text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
+                    Category
+                  </span>
+                  <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate mt-0.5">
+                    {activeCategoryObj?.label || detectedCategory}
+                  </p>
                 </div>
-              )}
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 text-center">
+                  <span className="text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
+                    Ward
+                  </span>
+                  <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate mt-0.5">
+                    {detectedWard}
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 text-center">
+                  <span className="text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
+                    Confidence
+                  </span>
+                  <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">
+                    {confidenceScore}%
+                  </p>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 text-center">
+                  <span className="text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">
+                    Severity
+                  </span>
+                  <p
+                    className={`text-xs font-bold uppercase mt-0.5 ${
+                      severity === "critical"
+                        ? "text-red-600"
+                        : severity === "high"
+                        ? "text-orange-600"
+                        : severity === "medium"
+                        ? "text-amber-600"
+                        : "text-emerald-600"
+                    }`}
+                  >
+                    {severity}
+                  </p>
+                </div>
+              </div>
 
-              {/* Retake / Change Action */}
-              <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 px-1">
-                <button
+              {/* Detected Title & Description */}
+              <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/50 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>AI Synthesized Grievance:</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                    {detectedCategory}
+                  </span>
+                </div>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  {detectedIssue || customTitle || "Civic Defect Identified"}
+                </h3>
+                {analysisNote && (
+                  <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                    {analysisNote}
+                  </p>
+                )}
+                <div className="text-[11px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 pt-1">
+                  <MapPin className="w-3 h-3 text-zinc-400" />
+                  <span className="truncate">{detectedAddress}</span>
+                </div>
+              </div>
+
+              {/* Retake Photo or Cancel Action */}
+              <div className="flex items-center justify-between pt-1">
+                <Button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="hover:text-zinc-900 dark:hover:text-zinc-200 underline flex items-center gap-1"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Choose / Retake Photo</span>
-                </button>
-                <button
-                  type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setPhotoFile(null)
                     setPhotoPreview(null)
                   }}
-                  className="text-red-500 hover:text-red-600 underline"
+                  className="text-xs text-zinc-500 hover:text-red-600 gap-1.5 min-h-[44px] touch-manipulation"
                 >
-                  Clear Photo
-                </button>
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Retake / Clear Photo</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowOverrides(!showOverrides)}
+                  className="text-xs gap-1.5 rounded-xl border-zinc-200 dark:border-zinc-700 min-h-[44px] touch-manipulation"
+                >
+                  {showOverrides ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  <span>{showOverrides ? "Hide Corrections" : "Edit / Override Details"}</span>
+                </Button>
               </div>
             </div>
           ) : (
-            /* ─── State 2: Direct Intake Box (Camera / Drag & Drop / Voice) ──── */
-            <div className="space-y-6">
-              {/* Drag & Drop / Upload Zone */}
+            /* ─── State 2: Intake Selection (Camera Upload / Voice / DragDrop) ─── */
+            <div className="space-y-4 animate-in fade-in duration-200">
+              {/* Photo Upload / Camera Trigger Area */}
               <div
                 onDragOver={(e) => {
                   e.preventDefault()
@@ -719,7 +759,7 @@ export default function QuickReport() {
                 onDragLeave={() => setIsDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`py-8 px-6 rounded-2xl border-2 border-dashed transition-all cursor-pointer text-center space-y-4 ${
+                className={`py-8 px-4 sm:px-6 rounded-2xl border-2 border-dashed transition-all cursor-pointer text-center space-y-4 ${
                   isDragOver
                     ? "border-emerald-500 bg-emerald-500/5"
                     : "border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/30 hover:border-zinc-400 dark:hover:border-zinc-600"
@@ -729,7 +769,7 @@ export default function QuickReport() {
                   <Camera className="w-8 h-8" />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-center justify-center gap-2">
                     <Button
                       type="button"
@@ -738,9 +778,9 @@ export default function QuickReport() {
                         e.stopPropagation()
                         fileInputRef.current?.click()
                       }}
-                      className="rounded-xl h-9 px-4 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-semibold text-xs hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md gap-2"
+                      className="w-full sm:w-auto rounded-xl min-h-[48px] px-5 bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900 font-semibold text-xs sm:text-sm hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-md gap-2 touch-manipulation"
                     >
-                      <Upload className="w-3.5 h-3.5" />
+                      <Upload className="w-4 h-4" />
                       <span>Take or Upload Photo</span>
                     </Button>
                   </div>
@@ -752,7 +792,7 @@ export default function QuickReport() {
 
               {/* Voice Note Intake Section */}
               <div className="p-4 sm:p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700/60 space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                   <div className="flex items-center gap-2">
                     <Volume2 className="w-4 h-4 text-emerald-500" />
                     <span className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
@@ -766,11 +806,11 @@ export default function QuickReport() {
                   </div>
 
                   {/* Regional Language Selectors */}
-                  <div className="inline-flex rounded-lg p-0.5 bg-zinc-200/80 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-xs">
+                  <div className="inline-flex rounded-lg p-0.5 bg-zinc-200/80 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-xs overflow-x-auto touch-pan-x no-scrollbar self-start sm:self-auto">
                     <button
                       type="button"
                       onClick={() => setSpeechLang("en-IN")}
-                      className={`px-2 py-0.5 rounded-md font-medium transition ${
+                      className={`px-3 py-1 rounded-md font-medium transition min-h-[32px] touch-manipulation ${
                         speechLang === "en-IN"
                           ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
                           : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
@@ -781,7 +821,7 @@ export default function QuickReport() {
                     <button
                       type="button"
                       onClick={() => setSpeechLang("mr-IN")}
-                      className={`px-2 py-0.5 rounded-md font-medium transition ${
+                      className={`px-3 py-1 rounded-md font-medium transition min-h-[32px] touch-manipulation ${
                         speechLang === "mr-IN"
                           ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
                           : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
@@ -792,7 +832,7 @@ export default function QuickReport() {
                     <button
                       type="button"
                       onClick={() => setSpeechLang("hi-IN")}
-                      className={`px-2 py-0.5 rounded-md font-medium transition ${
+                      className={`px-3 py-1 rounded-md font-medium transition min-h-[32px] touch-manipulation ${
                         speechLang === "hi-IN"
                           ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm"
                           : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
@@ -804,11 +844,11 @@ export default function QuickReport() {
                 </div>
 
                 {/* Microphone Button & Waveform Display */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
                   <Button
                     type="button"
                     onClick={handleVoiceToggle}
-                    className={`h-11 px-5 rounded-xl font-semibold text-xs gap-2.5 transition-all shadow-md ${
+                    className={`w-full sm:w-auto min-h-[48px] px-5 rounded-xl font-semibold text-xs sm:text-sm gap-2.5 transition-all shadow-md touch-manipulation ${
                       isRecording
                         ? "bg-red-600 hover:bg-red-700 text-white animate-pulse"
                         : "bg-emerald-600 hover:bg-emerald-700 text-white"

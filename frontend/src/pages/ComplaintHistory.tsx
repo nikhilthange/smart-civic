@@ -96,7 +96,7 @@ export default function ComplaintHistory() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
             <History className="h-5 w-5 text-emerald-600" />
@@ -136,7 +136,7 @@ export default function ComplaintHistory() {
                 className="pl-9 h-11 sm:h-9 text-xs sm:text-sm w-full"
               />
             </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none touch-pan-x -mx-1 px-1">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 w-full touch-pan-x">
               <Filter className="h-4 w-4 text-slate-400 shrink-0 ml-1" />
               {[
                 { label: t("complaints.all", "All"), value: "all" },

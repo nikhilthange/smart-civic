@@ -120,7 +120,7 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
       >
         {/* ─── Modal Dialog Container ─────────────────────────────────────── */}
         <div
-          className="relative w-full max-w-[95vw] sm:max-w-4xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 my-auto overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col"
+          className="relative w-full max-w-[94vw] sm:max-w-4xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 my-auto overflow-hidden animate-in zoom-in-95 duration-200 max-h-[88vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* ─── Header bar ──────────────────────────────────────────────── */}
@@ -136,8 +136,9 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
                 <span>{complaint.complaintId || complaint._id}</span>
                 <button
                   onClick={handleCopyId}
-                  className="hover:text-primary transition-colors p-1 min-h-[32px] min-w-[32px] flex items-center justify-center"
+                  className="hover:text-primary transition-colors p-1 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer"
                   title="Copy Complaint ID"
+                  aria-label="Copy Complaint ID"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>

@@ -85,7 +85,7 @@ export function IotTelemetrySimulatorModal({ isOpen, onClose, onTelemetrySent }:
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-2xl max-w-[95vw] sm:max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200 shadow-2xl flex flex-col">
+      <div className="bg-white rounded-2xl max-w-[94vw] sm:max-w-lg w-full max-h-[88vh] overflow-y-auto border border-slate-200 shadow-2xl flex flex-col">
         {/* Modal Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 bg-slate-950 text-white shrink-0">
           <div className="flex items-center gap-3">

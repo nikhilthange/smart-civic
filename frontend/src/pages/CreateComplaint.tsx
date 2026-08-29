@@ -19,6 +19,7 @@ import { QrScannerModal, type ScannedAssetData } from "@/components/common/QrSca
 import { parseImageExif, type ExifLocationResult } from "@/utils/exifParser"
 import { LiveTriageScanningOverlay } from "@/components/complaints/LiveTriageScanningOverlay"
 import { saveOfflineResolution } from "@/utils/offlineQueue"
+import { detectWardByCoordinates } from "@/utils/mumbaiWardBoundaries"
 import toast from "react-hot-toast"
 
 const CATEGORIES = Object.entries(CATEGORY_LABELS) as [ComplaintCategory, string][]
@@ -44,6 +45,7 @@ export default function CreateComplaint() {
       title: `[Asset #${asset.assetId}] - Civic Issue Report`,
       category: (asset.category as ComplaintCategory) || prev.category || "street_lighting",
       locationAddress: asset.address || prev.locationAddress || `Asset Location (${asset.ward || "Mumbai"})`,
+      ward: asset.ward || prev.ward || "Ward A",
       lat: asset.lat ?? prev.lat,
       lng: asset.lng ?? prev.lng,
     }))
@@ -57,6 +59,7 @@ export default function CreateComplaint() {
     locationCity: "Mumbai",
     locationState: "Maharashtra",
     locationPincode: "400028",
+    ward: "Ward A",
     lat: undefined as number | undefined,
     lng: undefined as number | undefined,
     priority: "medium",
@@ -76,26 +79,69 @@ export default function CreateComplaint() {
       return
     }
     setGeoLoading(true)
+    setError(null)
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const lat = position.coords.latitude
-        const lng = position.coords.longitude
-        setForm(prev => ({ ...prev, lat, lng }))
-        
+        const lat = Number(position.coords.latitude.toFixed(6))
+        const lng = Number(position.coords.longitude.toFixed(6))
+        const wardObj = detectWardByCoordinates(lat, lng)
+
+        let formattedAddress = ""
+        let city = "Mumbai"
+        let state = "Maharashtra"
+        let pincode = "400028"
+
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
+          )
           if (res.ok) {
             const data = await res.json()
-            setForm(prev => ({ ...prev, locationAddress: data.display_name || "" }))
+            const addr = data.address || {}
+            city = addr.city || addr.town || addr.city_district || addr.county || "Mumbai"
+            state = addr.state || "Maharashtra"
+            pincode = addr.postcode || pincode
+
+            const road = addr.road || addr.pedestrian || addr.suburb || addr.neighbourhood || ""
+            const suburb = addr.suburb || addr.city_district || ""
+            if (road && suburb) {
+              formattedAddress = `${road}, ${suburb}, ${city}`
+            } else if (data.display_name) {
+              formattedAddress = data.display_name.split(",").slice(0, 3).join(",").trim()
+            }
           }
         } catch {
-          // ignore
+          // ignore network failure on reverse geocode and use ward fallback
         }
+
+        if (!formattedAddress) {
+          formattedAddress = `${wardObj.name}, ${wardObj.wardCode}, Mumbai`
+        }
+
+        setForm((prev) => ({
+          ...prev,
+          lat,
+          lng,
+          locationAddress: formattedAddress,
+          locationCity: city,
+          locationState: state,
+          locationPincode: pincode,
+          ward: wardObj.wardCode,
+        }))
+        toast.success(`📍 High-accuracy GPS detected: ${wardObj.wardCode} (${lat.toFixed(4)}, ${lng.toFixed(4)})`, {
+          icon: "🛰️",
+        })
         setGeoLoading(false)
       },
-      () => {
+      (err) => {
         setGeoLoading(false)
-        setError("Unable to retrieve your location.")
+        console.warn("GPS detection error:", err)
+        setError(err?.message || "Unable to retrieve your high-accuracy location.")
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0,
       }
     )
   }
@@ -118,15 +164,20 @@ export default function CreateComplaint() {
         const extracted = await parseImageExif(firstImage)
         setExifData(extracted)
 
+        const wardObj = extracted.lat && extracted.lng
+          ? detectWardByCoordinates(extracted.lat, extracted.lng)
+          : null
+
         setForm((prev) => ({
           ...prev,
           lat: extracted.lat ?? prev.lat,
           lng: extracted.lng ?? prev.lng,
+          ward: wardObj ? wardObj.wardCode : (extracted.suggestedWard || prev.ward),
           locationAddress: extracted.suggestedAddress || prev.locationAddress || `${extracted.suggestedLandmark}, ${extracted.suggestedWard}`,
           category: prev.category || "roads_and_infrastructure",
           title: prev.title || `Civic defect reported near ${extracted.suggestedLandmark || "Mumbai"}`,
         }))
-        toast.success(`📍 EXIF GPS extracted: ${extracted.suggestedLandmark} (${extracted.suggestedWard})`, { icon: "🛰️" })
+        toast.success(`📍 EXIF GPS extracted: ${extracted.suggestedLandmark} (${wardObj?.wardCode || extracted.suggestedWard})`, { icon: "🛰️" })
       }
     }
 
@@ -412,9 +463,17 @@ export default function CreateComplaint() {
 
           {/* Step 2: Location */}
           <Card className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 p-4 sm:p-6 shadow-sm">
-            <div className="flex items-center gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
-              <span className="flex h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold items-center justify-center shrink-0">2</span>
-              <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">Municipal Location</h2>
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
+              <div className="flex items-center gap-2">
+                <span className="flex h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold items-center justify-center shrink-0">2</span>
+                <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">Municipal Location</h2>
+              </div>
+              {form.lat && form.lng && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20">
+                  <MapPin className="w-3 h-3 text-emerald-600" />
+                  <span>GPS: {form.lat.toFixed(4)}, {form.lng.toFixed(4)}</span>
+                </span>
+              )}
             </div>
             <div className="space-y-4 pt-4">
               <div className="space-y-1.5">
@@ -428,13 +487,17 @@ export default function CreateComplaint() {
                     required
                     className="flex-1 h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800"
                   />
-                  <Button type="button" variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm h-10 min-h-[44px] rounded-xl touch-manipulation" onClick={handleGetLocation} disabled={geoLoading}>
-                    {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5" />}
-                    <span className="ml-1.5">Detect GPS</span>
+                  <Button type="button" variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm h-10 min-h-[44px] rounded-xl touch-manipulation gap-1.5" onClick={handleGetLocation} disabled={geoLoading}>
+                    {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5 text-emerald-600" />}
+                    <span>{geoLoading ? "Detecting GPS..." : "Detect GPS"}</span>
                   </Button>
                 </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Administrative Ward</Label>
+                  <Input name="ward" placeholder="e.g. Ward A" value={form.ward || ""} onChange={handleChange} className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 font-mono" />
+                </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">City</Label>
                   <Input name="locationCity" placeholder="City" value={form.locationCity} onChange={handleChange} className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />

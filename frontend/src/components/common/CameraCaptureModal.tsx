@@ -14,23 +14,31 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
 
-  const [stream, setStream] = useState<MediaStream | null>(null)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [capturedFile, setCapturedFile] = useState<File | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const stopCamera = useCallback(() => {
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop())
-      setStream(null)
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
     }
-  }, [stream])
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+    }
+  }, [])
 
   const startCamera = useCallback(async () => {
     setErrorMsg(null)
     setCapturedImage(null)
     setCapturedFile(null)
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
 
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -38,7 +46,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
         audio: false,
       })
 
-      setStream(mediaStream)
+      streamRef.current = mediaStream
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream
       }
@@ -49,12 +57,11 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
   }, [])
 
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen) {
+      startCamera()
+    } else {
       stopCamera()
-      return
     }
-
-    startCamera()
 
     return () => {
       stopCamera()
@@ -81,6 +88,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
         const dataUrl = canvas.toDataURL("image/jpeg")
         setCapturedImage(dataUrl)
         setCapturedFile(file)
+        stopCamera()
       }
     }, "image/jpeg", 0.9)
   }
@@ -96,6 +104,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
   const handleRetake = () => {
     setCapturedImage(null)
     setCapturedFile(null)
+    startCamera()
   }
 
   if (!isOpen) return null

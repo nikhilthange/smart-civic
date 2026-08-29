@@ -25,6 +25,7 @@ import { useNavigate } from "react-router-dom"
 import api from "@/lib/axios"
 import { compressFieldImage } from "@/utils/imageCompressor"
 import { extractExifCoordinates } from "@/utils/exifExtractor"
+import { detectWardByCoordinates } from "@/utils/mumbaiWardBoundaries"
 
 // ─── Supported BMC Categories ──────────────────────────────────────────────────
 const CIVIC_CATEGORIES = [
@@ -141,27 +142,34 @@ export default function QuickReport() {
 
   // ─── Reverse Geocoding & Ward Resolver ────────────────────────────────────
   const resolveWardAndAddressFromCoordinates = useCallback(async (lat: number, lng: number) => {
-    let ward = "Ward H-West"
-    let address = "Bandra West, Mumbai"
+    const wardObj = detectWardByCoordinates(lat, lng)
+    let address = ""
 
-    if (lat > 19.12) {
-      ward = "Ward K-East"
-      address = `Andheri East, Mumbai (${lat.toFixed(4)}, ${lng.toFixed(4)})`
-    } else if (lat > 19.05) {
-      ward = "Ward H-West"
-      address = `Linking Road, Bandra West, Mumbai (${lat.toFixed(4)}, ${lng.toFixed(4)})`
-    } else if (lat > 18.98) {
-      ward = "Ward G-South"
-      address = `Worli Sea Face, Mumbai (${lat.toFixed(4)}, ${lng.toFixed(4)})`
-    } else if (lat > 18.90) {
-      ward = "Ward A"
-      address = `Colaba / Fort, Mumbai (${lat.toFixed(4)}, ${lng.toFixed(4)})`
-    } else {
-      ward = "Ward H-West"
-      address = `Mumbai Urban Region (${lat.toFixed(4)}, ${lng.toFixed(4)})`
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
+      )
+      if (res.ok) {
+        const data = await res.json()
+        const addr = data.address || {}
+        const road = addr.road || addr.pedestrian || addr.suburb || addr.neighbourhood || ""
+        const suburb = addr.suburb || addr.city_district || ""
+        const city = addr.city || addr.town || addr.county || "Mumbai"
+        if (road && suburb) {
+          address = `${road}, ${suburb}, ${city}`
+        } else if (data.display_name) {
+          address = data.display_name.split(",").slice(0, 3).join(",").trim()
+        }
+      }
+    } catch {
+      // fallback
     }
 
-    setDetectedWard(ward)
+    if (!address) {
+      address = `${wardObj.name}, ${wardObj.wardCode}, Mumbai`
+    }
+
+    setDetectedWard(wardObj.wardCode)
     setDetectedAddress(address)
   }, [])
 
@@ -178,8 +186,8 @@ export default function QuickReport() {
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const lat = pos.coords.latitude
-          const lng = pos.coords.longitude
+          const lat = Number(pos.coords.latitude.toFixed(6))
+          const lng = Number(pos.coords.longitude.toFixed(6))
           setCoordinates([lng, lat])
           setGpsSource("browser")
           setPermissionAlert(null)
@@ -194,7 +202,7 @@ export default function QuickReport() {
           })
           resolve(null)
         },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 10000 }
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
       )
     })
   }, [resolveWardAndAddressFromCoordinates])

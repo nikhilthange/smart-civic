@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import { useAuth } from "@/context/AuthContext"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
+import { EmptyState } from "@/components/common/EmptyState"
 
 import {
   complaintApi, STATUS_CONFIG, CATEGORY_LABELS,
@@ -126,39 +127,54 @@ export default function ComplaintHistory() {
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
           {/* Search & Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-5">
-            <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <div className="flex flex-col gap-3.5 mb-5">
+            {/* Search Input Bar */}
+            <div className="relative w-full">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 placeholder={t("complaints.searchPlaceholder", "Search by ID, title, or category...")}
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                className="pl-9 h-11 sm:h-9 text-xs sm:text-sm w-full"
+                className="pl-10 h-11 text-xs sm:text-sm w-full rounded-xl"
               />
-            </div>
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 w-full min-w-0 touch-pan-x">
-              <Filter className="h-4 w-4 text-slate-400 shrink-0 ml-1" />
-              {[
-                { label: t("complaints.all", "All"), value: "all" },
-                { label: t("complaints.pending", "Pending"), value: "pending" },
-                { label: t("complaints.aiVerified", "AI Verified"), value: "ai_verified" },
-                { label: t("complaints.assigned", "Assigned"), value: "assigned" },
-                { label: t("complaints.inProgress", "In Progress"), value: "in_progress" },
-                { label: t("complaints.resolved", "Resolved"), value: "resolved" },
-                { label: t("complaints.rejected", "Rejected"), value: "rejected" },
-              ].map(f => (
+              {search && (
                 <button
-                  key={f.value}
-                  onClick={() => { setStatusFilter(f.value as ComplaintStatus | "all"); setPage(1) }}
-                  className={`shrink-0 px-3.5 py-2 rounded-full text-xs font-medium border transition-all min-h-[44px] touch-manipulation cursor-pointer flex items-center justify-center ${
-                    statusFilter === f.value
-                      ? "bg-emerald-600 text-white border-emerald-600 font-semibold shadow-sm"
-                      : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600"
-                  }`}
+                  onClick={() => { setSearch(""); setPage(1) }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-medium px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800"
                 >
-                  {f.label}
+                  Clear
                 </button>
-              ))}
+              )}
+            </div>
+
+            {/* Filter Bar with dedicated icon container and no collision */}
+            <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none no-scrollbar py-1 w-full min-w-0 touch-pan-x">
+              <div className="p-2 text-slate-500 bg-slate-100 dark:bg-slate-800 rounded-lg shrink-0 flex items-center justify-center border border-slate-200/60 dark:border-slate-700/60">
+                <Filter className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              </div>
+              <div className="flex items-center gap-2 flex-nowrap shrink-0">
+                {[
+                  { label: t("complaints.all", "All Complaints"), value: "all" },
+                  { label: t("complaints.pending", "Pending"), value: "pending" },
+                  { label: t("complaints.aiVerified", "AI Verified"), value: "ai_verified" },
+                  { label: t("complaints.assigned", "Assigned"), value: "assigned" },
+                  { label: t("complaints.inProgress", "In Progress"), value: "in_progress" },
+                  { label: t("complaints.resolved", "Resolved"), value: "resolved" },
+                  { label: t("complaints.rejected", "Rejected"), value: "rejected" },
+                ].map(f => (
+                  <button
+                    key={f.value}
+                    onClick={() => { setStatusFilter(f.value as ComplaintStatus | "all"); setPage(1) }}
+                    className={`shrink-0 px-3.5 py-2 rounded-full text-xs font-medium border transition-all min-h-[40px] touch-manipulation cursor-pointer flex items-center justify-center whitespace-nowrap ${
+                      statusFilter === f.value
+                        ? "bg-emerald-600 text-white border-emerald-600 font-semibold shadow-sm"
+                        : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 bg-white dark:bg-slate-900/60"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -185,21 +201,40 @@ export default function ComplaintHistory() {
               </Button>
             </div>
           ) : complaints.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-slate-400 text-center px-4">
-              <FileX className="h-12 w-12 mb-3 text-slate-400" />
-              <p className="font-medium text-slate-600 dark:text-slate-300">{t("complaints.noComplaints", "No complaints found")}</p>
-              <p className="text-xs sm:text-sm mt-1 text-slate-500 max-w-sm">
-                {search || statusFilter !== "all"
-                  ? "No complaints match your active filter criteria."
-                  : t("complaints.noComplaintsDesc", "You haven't reported any civic complaints yet.")}
-              </p>
-              {!search && statusFilter === "all" && user?.role === "citizen" && (
-                <Link to="/complaint/create" className="w-full sm:w-auto">
-                  <Button className="mt-4 min-h-[44px] w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl touch-manipulation" size="sm">
-                    {t("complaints.newComplaint", "File New Complaint")}
-                  </Button>
-                </Link>
-              )}
+            <div className="py-6">
+              <EmptyState
+                icon={FileX}
+                title={
+                  search || statusFilter !== "all"
+                    ? "No complaints match your filters"
+                    : t("complaints.noComplaints", "No complaints found")
+                }
+                description={
+                  search || statusFilter !== "all"
+                    ? `No submissions found for ${statusFilter !== "all" ? `status "${statusFilter.replace('_', ' ')}"` : ""} ${search ? `query "${search}"` : ""}. Try adjusting your filter parameters or resetting.`
+                    : t("complaints.noComplaintsDesc", "You haven't reported any civic complaints yet. File a complaint to get potholes, garbage, or water supply issues resolved in your ward.")
+                }
+                actionLabel={
+                  !search && statusFilter === "all" && user?.role === "citizen"
+                    ? t("complaints.newComplaint", "File Your First Grievance")
+                    : undefined
+                }
+                onAction={
+                  !search && statusFilter === "all" && user?.role === "citizen"
+                    ? () => navigate("/complaint/create")
+                    : undefined
+                }
+                secondaryActionLabel={
+                  search || statusFilter !== "all"
+                    ? "Reset Filters"
+                    : undefined
+                }
+                onSecondaryAction={
+                  search || statusFilter !== "all"
+                    ? () => { setSearch(""); setStatusFilter("all"); setPage(1); }
+                    : undefined
+                }
+              />
             </div>
           ) : (
             <>

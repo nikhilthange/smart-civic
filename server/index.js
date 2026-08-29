@@ -255,6 +255,10 @@ const server = app.listen(PORT, () => {
   const slaService = require("./services/slaService");
   setTimeout(() => slaService.checkSlaBreaches(), 5000);
   setInterval(() => slaService.checkSlaBreaches(), 10 * 60 * 1000);
+
+  // ─── Verify Email & SMTP Delivery Pipeline ──────────────────────────────────
+  const emailService = require("./services/emailService");
+  setTimeout(() => emailService.verifyConnection(), 2000);
 });
 
 // ─── Graceful shutdown — close DB + pending connections ───────────────────────

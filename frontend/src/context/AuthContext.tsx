@@ -357,8 +357,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // ignore profile update error
         }
       }
-      // Send Firebase verification email
-      await sendEmailVerification(userCredential.user)
+
+      // 1. Send Firebase verification email
+      try {
+        await sendEmailVerification(userCredential.user)
+      } catch (fbEmailErr) {
+        console.warn("Firebase sendEmailVerification notice:", fbEmailErr)
+      }
+
+      // 2. Dispatch backend verification email via unified EmailService
+      try {
+        await api.post("/auth/register", data)
+      } catch (backendRegErr) {
+        console.warn("Backend registration sync notice:", backendRegErr)
+      }
+
       // Per specification: Don't auto-login after Sign Up
       await firebaseSignOut(auth)
 
@@ -429,38 +442,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
 
-  // ─── Resend Firebase Email Verification ─────────────────────────────────────
+  // ─── Resend Email Verification (Backend SMTP + Firebase Auth) ──────────────
   const resendEmailVerification = useCallback(async (email: string, password?: string) => {
     setIsLoading(true)
     setError(null)
     try {
-      let currentUser = auth.currentUser
+      // 1. Primary: Call backend email delivery pipeline
+      let backendSuccess = false
+      try {
+        const response = await api.post("/auth/resend-verification", { email })
+        if (response.data?.success) {
+          backendSuccess = true
+        }
+      } catch (backendErr: any) {
+        console.warn("Backend resend verification notice:", backendErr.response?.data?.message || backendErr.message)
+      }
 
-      // If signed out, temporarily authenticate to resend if credentials exist
+      // 2. Secondary: If Firebase session / credentials available, trigger Firebase sendEmailVerification as well
+      let currentUser = auth.currentUser
       if (!currentUser && email && password) {
         try {
           const cred = await signInWithEmailAndPassword(auth, email, password)
           currentUser = cred.user
-        } catch (authErr: any) {
-          const msg = extractErrorMessage(authErr)
-          throw new Error(msg)
+        } catch {
+          // Ignore if Firebase credentials don't match
         }
       }
 
       if (currentUser) {
-        await sendEmailVerification(currentUser)
-        if (!currentUser.emailVerified) {
-          await firebaseSignOut(auth)
+        try {
+          await sendEmailVerification(currentUser)
+          if (!currentUser.emailVerified) {
+            await firebaseSignOut(auth)
+          }
+        } catch (fbErr) {
+          console.warn("Firebase email verification dispatch notice:", fbErr)
         }
-        return
-      } else {
-        throw new Error("Please enter your password or sign in to request a new verification email.")
+      }
+
+      if (!backendSuccess && !currentUser) {
+        // If backend failed and no firebase session, re-verify with backend directly to throw informative error
+        const res = await api.post("/auth/resend-verification", { email })
+        if (!res.data?.success) {
+          throw new Error(res.data?.message || "Failed to resend verification email.")
+        }
       }
     } catch (err: any) {
       console.error("Resend verification error:", err)
       const msg = extractErrorMessage(err)
       setError(msg)
-      throw new Error(msg || "Failed to resend verification email.")
+      throw new Error(msg || "Failed to resend verification email. Please check your credentials.")
     } finally {
       setIsLoading(false)
     }

@@ -40,6 +40,7 @@ export function lazyRetry<T extends React.ComponentType<any>>(
 // ─── Route-Level Dynamic Lazy Imports (Code-Splitting with Auto-Recovery) ──────
 const Home = lazyRetry(() => import("./pages/Home"))
 const Auth = lazyRetry(() => import("./pages/Auth"))
+const VerifyEmail = lazyRetry(() => import("./pages/VerifyEmail"))
 const Dashboard = lazyRetry(() => import("./pages/Dashboard"))
 const CreateComplaint = lazyRetry(() => import("./pages/CreateComplaint"))
 const ComplaintHistory = lazyRetry(() => import("./pages/ComplaintHistory"))
@@ -115,6 +116,7 @@ function App() {
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/login" element={<Auth />} />
                   <Route path="/register" element={<Auth />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
                   <Route path="/unauthorized" element={<Unauthorized />} />
                   <Route path="/public-map" element={<MapView />} />
 

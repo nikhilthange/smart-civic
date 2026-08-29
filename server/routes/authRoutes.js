@@ -12,6 +12,9 @@ const {
   getUsers,
   createStaff,
   redeemKarmaReward,
+  verifyEmail,
+  resendVerification,
+  getSmtpStatus,
 } = require("../controllers/authController");
 
 const { protect, authorize } = require("../middlewares/auth");
@@ -48,6 +51,14 @@ const loginValidation = [
     .notEmpty().withMessage("Password is required"),
 ];
 
+const resendVerificationValidation = [
+  body("email")
+    .trim()
+    .notEmpty().withMessage("Email address is required")
+    .isEmail().withMessage("Please enter a valid email address")
+    .normalizeEmail(),
+];
+
 const createUserValidation = [
   body("name").trim().notEmpty().withMessage("Name is required"),
   body("email")
@@ -64,6 +75,21 @@ router.post("/register", registerValidation, validate, registerUser);
 
 // @route  POST /api/auth/login
 router.post("/login", loginValidation, validate, loginUser);
+
+// @route  POST /api/auth/resend-verification
+router.post(
+  "/resend-verification",
+  resendVerificationValidation,
+  validate,
+  resendVerification
+);
+
+// @route  GET /api/auth/verify-email, POST /api/auth/verify-email
+router.get("/verify-email", verifyEmail);
+router.post("/verify-email", verifyEmail);
+
+// @route  GET /api/auth/smtp-status (Diagnostics)
+router.get("/smtp-status", getSmtpStatus);
 
 // @route  POST /api/auth/google
 router.post("/google", [

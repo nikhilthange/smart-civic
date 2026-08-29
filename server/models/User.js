@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -42,6 +43,18 @@ const UserSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      select: false,
     },
     phoneNumber: {
       type: String,
@@ -140,6 +153,21 @@ UserSchema.pre("save", async function () {
 // ─── Instance: Compare password ───────────────────────────────────────────────
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return bcrypt.compare(enteredPassword, this.password);
+};
+
+// ─── Instance: Generate email verification token ───────────────────────────────
+UserSchema.methods.generateEmailVerificationToken = function () {
+  const rawToken = crypto.randomBytes(32).toString("hex");
+
+  this.emailVerificationToken = crypto
+    .createHash("sha256")
+    .update(rawToken)
+    .digest("hex");
+
+  // Verification token valid for 24 hours
+  this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  return rawToken;
 };
 
 // ─── Instance: Generate signed JWT ───────────────────────────────────────────

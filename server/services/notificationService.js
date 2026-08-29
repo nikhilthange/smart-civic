@@ -8,29 +8,13 @@
 
 const Notification = require("../models/Notification");
 const User = require("../models/User");
+const emailService = require("./emailService");
 
 // ─── Lazy-load heavy deps so they don't break the server when unconfigured ────
-let transporter = null;
 let fcmAdmin = null;
 
 function getMailer() {
-  if (transporter) return transporter;
-  try {
-    const nodemailer = require("nodemailer");
-    if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
-      console.warn("⚠️  Email not configured – set SMTP_HOST, SMTP_USER, SMTP_PASS in .env");
-      return null;
-    }
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === "true",
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    });
-    return transporter;
-  } catch {
-    return null;
-  }
+  return emailService.getTransporter();
 }
 
 function getFCM() {

@@ -1,9 +1,11 @@
 const User = require("../models/User");
 const TokenBlacklist = require("../models/TokenBlacklist");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const emailService = require("../services/emailService");
 
 // ─── Helper: Send token response ──────────────────────────────────────────────
-const sendTokenResponse = (user, statusCode, res) => {
+const sendTokenResponse = (user, statusCode, res, extraData = {}) => {
   const token = user.generateToken();
 
   return res.status(statusCode).json({
@@ -15,6 +17,7 @@ const sendTokenResponse = (user, statusCode, res) => {
       email: user.email,
       role: user.role,
       isActive: user.isActive,
+      isEmailVerified: user.isEmailVerified ?? false,
       phoneNumber: user.phoneNumber,
       address: user.address,
       ward: user.ward || "Ward A",
@@ -27,10 +30,11 @@ const sendTokenResponse = (user, statusCode, res) => {
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,
     },
+    ...extraData,
   });
 };
 
-// ─── @desc    Register a new user
+// ─── @desc    Register a new user (with email verification dispatch)
 // ─── @route   POST /api/auth/register
 // ─── @access  Public
 const registerUser = async (req, res) => {
@@ -47,11 +51,10 @@ const registerUser = async (req, res) => {
     }
 
     // Only allow 'citizen' role self-registration for security
-    // Admins/officers must be created by an existing admin
     const safeRole = ["citizen", "officer", "worker", "admin"].includes(role) ? role : "citizen";
     const ward = req.body.ward || req.body.assignedWard || "Ward H-West";
 
-    const user = await User.create({
+    const user = new User({
       name,
       email,
       password, // Will be hashed by pre-save hook
@@ -60,9 +63,37 @@ const registerUser = async (req, res) => {
       corporationId: "BMC",
       phoneNumber,
       address,
+      isEmailVerified: false,
     });
 
-    sendTokenResponse(user, 201, res);
+    // Generate secure email verification token
+    const verificationToken = user.generateEmailVerificationToken();
+    await user.save();
+
+    // Dispatch verification email via unified EmailService
+    const clientUrl = req.headers.origin || process.env.CLIENT_URL;
+    const dispatchResult = await emailService.sendVerificationEmail({
+      email: user.email,
+      name: user.name,
+      verificationToken,
+      clientUrl,
+    });
+
+    return res.status(201).json({
+      success: true,
+      needsVerification: true,
+      message: "Registration successful! A verification link has been sent to your email address.",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        ward: user.ward,
+        isEmailVerified: false,
+      },
+      verificationUrl: dispatchResult.verificationUrl,
+      warning: dispatchResult.warning,
+    });
   } catch (error) {
     console.error("Register Error:", error.message);
     if (error.name === "ValidationError") {
@@ -455,6 +486,135 @@ const redeemKarmaReward = async (req, res) => {
   }
 };
 
+// ─── @desc    Verify user email address using token
+// ─── @route   GET /api/auth/verify-email, POST /api/auth/verify-email
+// ─── @access  Public
+const verifyEmail = async (req, res) => {
+  try {
+    const rawToken = req.query.token || req.body.token;
+
+    if (!rawToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Email verification token is required.",
+      });
+    }
+
+    // Hash the raw token to match database record
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
+
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired verification token. Please request a new verification link.",
+      });
+    }
+
+    // Mark user as verified
+    user.isEmailVerified = true;
+    user.isActive = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return sendTokenResponse(user, 200, res, {
+      message: "Email verified successfully! Your account is now active.",
+    });
+  } catch (error) {
+    console.error("VerifyEmail Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error during email verification.",
+    });
+  }
+};
+
+// ─── @desc    Resend email verification link
+// ─── @route   POST /api/auth/resend-verification
+// ─── @access  Public
+const resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide an email address.",
+      });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email address.",
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(200).json({
+        success: true,
+        alreadyVerified: true,
+        message: "This email address is already verified. You can log in directly.",
+      });
+    }
+
+    // Generate fresh verification token
+    const verificationToken = user.generateEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Dispatch verification email
+    const clientUrl = req.headers.origin || process.env.CLIENT_URL;
+    const dispatchResult = await emailService.sendVerificationEmail({
+      email: user.email,
+      name: user.name,
+      verificationToken,
+      clientUrl,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Verification email resent successfully! Please check your inbox.",
+      verificationUrl: dispatchResult.verificationUrl,
+      warning: dispatchResult.warning,
+      sent: dispatchResult.sent,
+    });
+  } catch (error) {
+    console.error("ResendVerification Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to resend verification email. Please try again.",
+    });
+  }
+};
+
+// ─── @desc    Diagnostic SMTP check (Admin/Dev)
+// ─── @route   GET /api/auth/smtp-status
+// ─── @access  Public / Diagnostics
+const getSmtpStatus = async (req, res) => {
+  try {
+    const status = await emailService.verifyConnection();
+    res.status(200).json({
+      success: true,
+      smtp: status,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -465,4 +625,7 @@ module.exports = {
   getUsers,
   createStaff,
   redeemKarmaReward,
+  verifyEmail,
+  resendVerification,
+  getSmtpStatus,
 };

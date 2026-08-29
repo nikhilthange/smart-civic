@@ -123,9 +123,6 @@ function App() {
                     <Route element={<DashboardLayout />}>
                       <Route path="/complaint/create" element={<CreateComplaint />} />
                       <Route path="/complaint/new" element={<CreateComplaint />} />
-                      <Route path="/quick-report" element={<QuickReport />} />
-                      <Route path="/snap-send" element={<QuickReport />} />
-                      <Route path="/snap" element={<QuickReport />} />
                       <Route path="/complaints/new" element={<CreateComplaint />} />
                       <Route path="/create-complaint" element={<CreateComplaint />} />
                     </Route>
@@ -136,6 +133,9 @@ function App() {
                     <Route element={<DashboardLayout />}>
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/citizen-dashboard" element={<Dashboard />} />
+                      <Route path="/quick-report" element={<QuickReport />} />
+                      <Route path="/snap-send" element={<QuickReport />} />
+                      <Route path="/snap" element={<QuickReport />} />
                       <Route path="/complaints" element={<ComplaintHistory />} />
                       
                       {/* Tracking Routes (Preserved & Enhanced) */}

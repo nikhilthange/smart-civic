@@ -493,52 +493,18 @@ export default function DashboardLayout() {
           </div>
         </header>
 
-        {/* Main Content Container: Full-Bleed for GIS / Radars, Standard Max-W-7xl for Dashboards */}
-        {(() => {
-          const FULL_BLEED_PREFIXES = [
-            "/map",
-            "/digital-twin",
-            "/cctv",
-            "/monsoon-radar",
-            "/worker-queue",
-            "/worker-dashboard",
-            "/worker/dashboard",
-            "/best-transit",
-          ]
-          const isFullBleed = FULL_BLEED_PREFIXES.some((prefix) =>
-            location.pathname.startsWith(prefix)
-          )
-
-          if (isFullBleed) {
-            return (
-              <main className="flex-1 w-full h-[calc(100dvh-3.5rem)] p-0 m-0 overflow-hidden relative overscroll-none bg-transparent">
-                <motion.div
-                  key={location.pathname}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="w-full h-full"
-                >
-                  <Outlet />
-                </motion.div>
-              </main>
-            )
-          }
-
-          return (
-            <main className="w-full max-w-full overflow-x-hidden flex-1 overflow-y-auto overscroll-y-contain px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-[calc(env(safe-area-inset-bottom,0px)+6.5rem)] lg:pb-12">
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
-                className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6"
-              >
-                <Outlet />
-              </motion.div>
-            </main>
-          )
-        })()}
+        {/* Main Content Container: Smooth Natural Vertical Scroll for All Views */}
+        <main className="w-full max-w-full overflow-x-hidden flex-1 overflow-y-auto overscroll-y-contain px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-[calc(env(safe-area-inset-bottom,0px)+6.5rem)] lg:pb-12">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6"
+          >
+            <Outlet />
+          </motion.div>
+        </main>
 
         {/* Floating Global Simulator Widget, Copilot Modal, Onboarding Tour & Keyboard Shortcuts */}
         <MunicipalSimulatorFloatingWidget />

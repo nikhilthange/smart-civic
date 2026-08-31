@@ -1,14 +1,15 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any
 import uvicorn
 from model_runner import runner
+from yolo_guard import guard_instance
 
 app = FastAPI(
     title="Smart Civic Computer Vision AI Microservice",
-    description="YOLOv8 & OpenCV powered civic defect identification and severity scoring service",
-    version="1.0.0"
+    description="YOLOv8 & NVIDIA TensorRT powered civic defect identification, severity scoring, and guard verification service",
+    version="1.1.0"
 )
 
 # Enable CORS for local Express and dev apps
@@ -36,12 +37,24 @@ class AnalysisResponse(BaseModel):
     recommendedDepartment: str
     boundingBoxes: List[BoundingBox]
 
+class VerificationResponse(BaseModel):
+    verified: bool
+    selectedCategory: str
+    detectedClasses: List[str]
+    matchedClasses: List[str]
+    confidence: float
+    latencyMs: float
+    device: str
+    message: str
+
 @app.get("/health")
 def health_check():
     return {
         "status": "healthy",
         "service": "smart-civic-ai-vision",
-        "yolo_model_loaded": not runner.use_fallback
+        "yolo_model_loaded": not runner.use_fallback,
+        "tensorrt_mode": guard_instance.engine_mode,
+        "confidence_threshold": guard_instance.conf_threshold
     }
 
 @app.post("/analyze", response_model=AnalysisResponse)
@@ -54,6 +67,21 @@ async def analyze_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Empty file uploaded.")
 
     result = runner.analyze_image(contents)
+    return result
+
+@app.post("/verify-category", response_model=VerificationResponse)
+async def verify_category(
+    file: UploadFile = File(...),
+    category: str = Form(...)
+):
+    if not file.content_type.startswith(("image/", "video/")):
+        raise HTTPException(status_code=400, detail="Invalid file type. Please upload an image or video.")
+
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=400, detail="Empty file uploaded.")
+
+    result = guard_instance.verify_image(contents, category)
     return result
 
 if __name__ == "__main__":

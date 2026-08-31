@@ -542,6 +542,13 @@ export default function QuickReport() {
       }, 1500)
     } catch (err: any) {
       console.error("Submission error:", err)
+      if (err.response?.data?.error === "AI_VERIFICATION_FAILED") {
+        const categoryLabel = activeCategoryObj?.label || detectedCategory || "the selected category"
+        const msg = `AI Validation Failed: Your photo does not appear to show ${categoryLabel}. Please upload a clear photo of the issue.`
+        toast.error(msg, { duration: 6000, icon: "🚫" })
+        return
+      }
+
       const errorMsg =
         err.response?.data?.message ||
         "Grievance recorded offline and queued for auto-dispatch."

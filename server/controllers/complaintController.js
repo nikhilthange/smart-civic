@@ -12,6 +12,7 @@ const path = require("path");
 const Department = require("../models/Department");
 const geminiService = require("../services/geminiService");
 const aiService = require("../services/aiService");
+const aiVerificationService = require("../services/aiVerificationService");
 const slaService = require("../services/slaService");
 const socketService = require("../services/socketService");
 const resolutionInspectorService = require("../services/resolutionInspectorService");
@@ -170,6 +171,22 @@ const createComplaint = async (req, res) => {
     const sanitizedDescription = scrubPii(String(description).trim());
 
     const attachments = normaliseAttachments(req.files);
+
+    // ─── AI Image Verification Guard (YOLOv8 + TensorRT Acceleration) ────────────
+    if (attachments && attachments.length > 0) {
+      const verification = await aiVerificationService.verifyComplaintImage(attachments, category);
+      if (!verification.verified) {
+        console.warn(`🚫 [AI Verification Blocked] Photo mismatch for category '${category}': ${verification.message}`);
+        return res.status(422).json({
+          success: false,
+          error: "AI_VERIFICATION_FAILED",
+          message: "Image does not match the selected category.",
+          selectedCategory: category,
+          detectedCategory: verification.detectedCategory || null,
+          detectedClasses: verification.detectedClasses || [],
+        });
+      }
+    }
 
     // Call Integrated Computer Vision & AI Analysis Service
     const aiAnalysis = await aiService.analyzeComplaintAI(sanitizedDescription, attachments);

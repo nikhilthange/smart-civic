@@ -264,9 +264,19 @@ export default function CreateComplaint() {
         aiVerified: c.status === "ai_verified",
       })
     } catch (err: unknown) {
-      const msg = err && typeof err === "object" && "response" in err
-        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-        : "Failed to submit complaint."
+      const responseData = err && typeof err === "object" && "response" in err
+        ? (err as { response?: { data?: { error?: string; message?: string; selectedCategory?: string }; status?: number } }).response?.data
+        : null
+
+      if (responseData?.error === "AI_VERIFICATION_FAILED") {
+        const categoryLabel = (CATEGORY_LABELS as any)[form.category] || form.category
+        const msg = `AI Validation Failed: Your photo does not appear to show ${categoryLabel}. Please upload a clear photo of the issue.`
+        setError(msg)
+        toast.error(msg, { duration: 6000, icon: "🚫" })
+        return
+      }
+
+      const msg = responseData?.message || "Failed to submit complaint."
       setError(msg || "Failed to submit complaint.")
     } finally {
       setIsSubmitting(false)

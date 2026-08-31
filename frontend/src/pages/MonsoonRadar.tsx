@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
+import { motion } from "framer-motion"
 import {
   Waves,
   CloudRain,
@@ -19,6 +20,24 @@ import { municipalApi, type FloodRadarResponse } from "@/services/municipalApi"
 import { complaintApi, type Complaint } from "@/services/complaintApi"
 import { Link } from "react-router-dom"
 import toast from "react-hot-toast"
+import type { Variants } from "framer-motion"
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+}
+
+const staggerItem: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+}
 
 interface LiveWeatherTelemetry {
   temperature: number
@@ -242,7 +261,12 @@ export default function MonsoonRadar() {
   const criticalHotspotsCount = augmentedHotspots.filter((h) => h.alertLevel === "RED_EMERGENCY").length
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      className="max-w-7xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4"
+    >
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
@@ -250,8 +274,11 @@ export default function MonsoonRadar() {
             <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               Monsoon Flood Radar & Telemetry
             </h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs">
+              <span className="relative flex h-2 w-2 mr-1">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
               LIVE TELEMETRY
             </span>
           </div>
@@ -262,7 +289,7 @@ export default function MonsoonRadar() {
 
         <div className="flex items-center gap-2">
           {/* Mode Switcher */}
-          <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg border border-zinc-200 dark:border-zinc-700 text-xs">
+          <div className="flex items-center bg-zinc-100 dark:bg-zinc-800/80 backdrop-blur-md p-1 rounded-lg border border-zinc-200 dark:border-zinc-700 text-xs">
             <button
               type="button"
               onClick={() => setTelemetryMode("live")}
@@ -296,7 +323,7 @@ export default function MonsoonRadar() {
             }}
             variant="outline"
             size="sm"
-            className="border-zinc-200 dark:border-zinc-800 text-xs font-semibold gap-1.5 rounded-lg h-9"
+            className="border-zinc-200 dark:border-zinc-800 text-xs font-semibold gap-1.5 rounded-lg h-9 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading || weatherLoading ? "animate-spin" : ""}`} />
             <span>Sync</span>
@@ -305,11 +332,19 @@ export default function MonsoonRadar() {
       </div>
 
       {/* Top 4 Telemetry Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
         {/* Rainfall Intensity (Open-Meteo live or simulated) */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm space-y-1">
+        <motion.div
+          variants={staggerItem}
+          className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 shadow-sm hover:border-sky-500/30 dark:hover:border-sky-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all space-y-1"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-mono">
               {telemetryMode === "live" ? "Open-Meteo Live Rain" : "Simulated Intensity"}
             </span>
             <CloudRain className="w-4 h-4 text-sky-500" />
@@ -322,12 +357,15 @@ export default function MonsoonRadar() {
             <span className="text-zinc-300 dark:text-zinc-700">•</span>
             <span>{liveWeather?.temperature ?? 29.5}°C</span>
           </p>
-        </div>
+        </motion.div>
 
         {/* Arabian Sea Tide Telemetry */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm space-y-1">
+        <motion.div
+          variants={staggerItem}
+          className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 shadow-sm hover:border-indigo-500/30 dark:hover:border-indigo-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all space-y-1"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-mono">
               Arabian Sea Tide Level
             </span>
             <Waves className="w-4 h-4 text-indigo-500" />
@@ -338,12 +376,15 @@ export default function MonsoonRadar() {
           <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono tabular-nums">
             Next Peak: {data?.telemetry.tide.nextHighTide || "14:45 IST (4.62m)"}
           </p>
-        </div>
+        </motion.div>
 
         {/* Active Flood Inundations & Citizen Grievance Load */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm space-y-1">
+        <motion.div
+          variants={staggerItem}
+          className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 shadow-sm hover:border-rose-500/30 dark:hover:border-rose-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all space-y-1"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-mono">
               Critical Inundations
             </span>
             <AlertTriangle className="w-4 h-4 text-rose-500" />
@@ -354,12 +395,15 @@ export default function MonsoonRadar() {
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             {complaints.length} active waterlogging reports in MongoDB
           </p>
-        </div>
+        </motion.div>
 
         {/* Total SWD Pumping Discharge */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm space-y-1">
+        <motion.div
+          variants={staggerItem}
+          className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-4 shadow-sm hover:border-emerald-500/30 dark:hover:border-emerald-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all space-y-1"
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 font-mono">
               SWD Active Discharge
             </span>
             <Droplets className="w-4 h-4 text-emerald-500" />
@@ -368,8 +412,8 @@ export default function MonsoonRadar() {
             {data?.telemetry.totalActivePumpingCapacityCubicMPerSec ?? 248} <span className="text-sm font-normal text-zinc-500">m³/s</span>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">7 Coastal pumping stations operational</p>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Cloudburst Simulator Banner (Visible when simulator mode is engaged) */}
       {telemetryMode === "simulated" && (
@@ -605,6 +649,6 @@ export default function MonsoonRadar() {
           </Card>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

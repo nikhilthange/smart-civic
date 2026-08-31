@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
+import { motion } from "framer-motion"
 import toast from "react-hot-toast"
 import {
   Activity,
@@ -32,12 +33,33 @@ import {
   type Complaint,
   type ComplaintStatus,
 } from "@/services/complaintApi"
+import type { Variants } from "framer-motion"
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+}
+
+const staggerItem: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+}
 
 function StatusBadge({ status }: { status: ComplaintStatus }) {
   if (status === "pending" || status === "submitted" || status === "ai_verified") {
     return (
-      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/20">
-        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 inline-block" />
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/20 shadow-2xs">
+        <span className="relative flex h-2 w-2 mr-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+        </span>
         {status === "ai_verified" ? "AI Verified" : "Pending"}
       </span>
     )
@@ -51,8 +73,11 @@ function StatusBadge({ status }: { status: ComplaintStatus }) {
     status === "resolution_submitted"
   ) {
     return (
-      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-500/20">
-        <span className="w-1.5 h-1.5 rounded-full bg-sky-500 mr-1.5 inline-block animate-pulse" />
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-500/20 shadow-2xs">
+        <span className="relative flex h-2 w-2 mr-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+        </span>
         {status === "in_progress" ? "In Progress" : "Dispatched"}
       </span>
     )
@@ -60,7 +85,7 @@ function StatusBadge({ status }: { status: ComplaintStatus }) {
 
   if (status === "resolved" || status === "closed") {
     return (
-      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20">
+      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 shadow-2xs">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 inline-block" />
         Resolved
       </span>
@@ -132,7 +157,12 @@ export default function Dashboard() {
       : t("dashPage.goodEvening", "Good evening")
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      className="max-w-7xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4"
+    >
       {/* Header with Title & Primary Action */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -145,7 +175,7 @@ export default function Dashboard() {
         </div>
         {user?.role === "citizen" && (
           <Link to="/complaint/create">
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm shadow-emerald-600/20 text-xs font-semibold px-4 py-2 gap-2 active:scale-[0.98] transition-all">
+            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm shadow-emerald-600/20 text-xs font-semibold px-4 py-2 gap-2 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all">
               <Plus className="h-4 w-4" />
               <span>{t("dashPage.newComplaint", "Report New Issue")}</span>
             </Button>
@@ -157,9 +187,17 @@ export default function Dashboard() {
       {isLoading ? (
         <SkeletonKpiCard count={4} />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5"
+        >
           {/* Total Submissions */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <motion.div
+            variants={staggerItem}
+            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-emerald-500/30 dark:hover:border-emerald-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col justify-between"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
                 {t("dashPage.totalSubmissions", "Total Reports")}
@@ -174,10 +212,13 @@ export default function Dashboard() {
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">All-time municipal filings</p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Pending / In-Triage */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <motion.div
+            variants={staggerItem}
+            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-amber-500/30 dark:hover:border-amber-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col justify-between"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
                 {t("dashPage.pending", "Pending Triage")}
@@ -192,10 +233,13 @@ export default function Dashboard() {
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">Awaiting ward assignment</p>
             </div>
-          </div>
+          </motion.div>
 
           {/* In Progress */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <motion.div
+            variants={staggerItem}
+            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-sky-500/30 dark:hover:border-sky-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col justify-between"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
                 {t("dashPage.inProgress", "Field In-Progress")}
@@ -210,10 +254,13 @@ export default function Dashboard() {
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">Dispatched to field teams</p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Resolved */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <motion.div
+            variants={staggerItem}
+            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-emerald-500/30 dark:hover:border-emerald-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col justify-between"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
                 {t("dashPage.resolved", "Resolved")}
@@ -228,8 +275,8 @@ export default function Dashboard() {
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">Verified & closed tickets</p>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* 2. Sleek Civic Karma Widget (Citizen Only) */}
@@ -580,6 +627,6 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

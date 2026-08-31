@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 import {
   Wrench, MapPin, CheckCircle2, Camera, X, Loader2, Navigation, WifiOff, CloudUpload, Route, Sparkles
 } from "lucide-react"
@@ -255,7 +256,12 @@ export default function WorkerDashboard() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      className="p-6 max-w-7xl mx-auto space-y-6"
+    >
       {/* Offline Status Banner */}
       {!isOnline && (
         <div className="flex items-center justify-between p-4 bg-amber-500 text-white rounded-xl shadow-md animate-pulse">
@@ -671,6 +677,6 @@ export default function WorkerDashboard() {
           }}
         />
       )}
-    </div>
+    </motion.div>
   )
 }

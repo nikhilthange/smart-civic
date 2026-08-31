@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Building2, Filter, Loader2, AlertCircle, MapPin, Users, CheckCircle2, FileCheck, X, Camera, LayoutGrid, Kanban } from "lucide-react";
 import { complaintApi, type Complaint, type ComplaintStatus } from "../services/complaintApi";
 import { getImageUrl, handleImageError } from "@/utils/imageUrl";
@@ -273,7 +274,12 @@ export default function OfficerDashboard() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      className="p-6 max-w-7xl mx-auto space-y-6"
+    >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
         <div>
           <div className="flex items-center gap-2.5">
@@ -784,6 +790,6 @@ export default function OfficerDashboard() {
         onClearSelection={() => setSelectedComplaintIds([])}
         onActionComplete={() => loadComplaints(true)}
       />
-    </div>
+    </motion.div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom"
+import { motion } from "framer-motion"
 import L, { ensureLeafletPlugins } from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
 import "leaflet.markercluster/dist/MarkerCluster.css"
@@ -612,7 +613,12 @@ export default function MapView() {
   }, [])
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28"
+    >
       {/* Active Monsoon Flood Emergency Radar Banner */}
       {activeHotspotAlert && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white shadow-xl animate-pulse gap-3">
@@ -1199,6 +1205,6 @@ export default function MapView() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

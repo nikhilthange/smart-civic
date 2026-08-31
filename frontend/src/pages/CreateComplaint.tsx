@@ -324,7 +324,12 @@ export default function CreateComplaint() {
   }
 
   return (
-    <div className="w-full space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full space-y-6"
+    >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900/60 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm">
         <div className="flex items-center gap-3">
@@ -739,6 +744,6 @@ export default function CreateComplaint() {
       </Card>
     </div>
   </div>
-</div>
+</motion.div>
 )
 }

@@ -59,11 +59,16 @@ export default function MonsoonRadar() {
 
   // 1. Fetch Real Live Weather Telemetry from Open-Meteo (Mumbai Coordinates: 19.0760, 72.8777)
   const fetchLiveWeather = useCallback(async () => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 3500)
+
     try {
       setWeatherLoading(true)
       const res = await fetch(
-        "https://api.open-meteo.com/v1/forecast?latitude=19.0760&longitude=72.8777&current_weather=true&hourly=precipitation&timezone=Asia%2FKolkata"
+        "https://api.open-meteo.com/v1/forecast?latitude=19.0760&longitude=72.8777&current_weather=true&hourly=precipitation&timezone=Asia%2FKolkata",
+        { signal: controller.signal }
       )
+      clearTimeout(timeoutId)
       if (!res.ok) throw new Error("Weather service unreachable")
       const json = await res.json()
 
@@ -84,17 +89,18 @@ export default function MonsoonRadar() {
         lastUpdated: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
       })
     } catch {
-      // Fallback sensible coastal Mumbai defaults if external API is rate-limited
+      // Fallback sensible coastal Mumbai defaults if external API is rate-limited or offline
       setLiveWeather({
         temperature: 30.2,
         precipitationMm: 12.5,
         windSpeed: 18.0,
         weatherCode: 61,
-        conditionText: "Monsoon Showers",
+        conditionText: "Monsoon Showers (Estimated)",
         isDay: true,
         lastUpdated: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
       })
     } finally {
+      clearTimeout(timeoutId)
       setWeatherLoading(false)
     }
   }, [])
@@ -479,16 +485,19 @@ export default function MonsoonRadar() {
                     <span className="text-[10px] font-mono text-zinc-400 uppercase font-semibold">
                       Recent Citizen Grievances:
                     </span>
-                    {spot.recentComplaints.map((c) => (
-                      <Link
-                        key={c._id || c.complaintId}
-                        to={`/complaints`}
-                        className="flex items-center justify-between text-[11px] text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 py-0.5 truncate group"
-                      >
-                        <span className="truncate flex-1">• {c.title}</span>
-                        <ExternalLink className="w-3 h-3 ml-1 opacity-60 group-hover:opacity-100 shrink-0" />
-                      </Link>
-                    ))}
+                    {spot.recentComplaints.map((c) => {
+                      const ticketId = c.complaintId || c._id
+                      return (
+                        <Link
+                          key={ticketId}
+                          to={`/track?id=${ticketId}`}
+                          className="flex items-center justify-between text-[11px] text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 py-0.5 truncate group"
+                        >
+                          <span className="truncate flex-1">• {c.title} <span className="font-mono text-[10px] text-zinc-400">({ticketId})</span></span>
+                          <ExternalLink className="w-3 h-3 ml-1 opacity-60 group-hover:opacity-100 shrink-0" />
+                        </Link>
+                      )
+                    })}
                   </div>
                 )}
               </div>

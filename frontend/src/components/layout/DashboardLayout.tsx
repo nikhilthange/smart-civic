@@ -12,7 +12,6 @@ import {
   Search,
   Shield,
   BarChart3,
-  HeartHandshake,
   LineChart,
   Wrench,
   MapPin,
@@ -96,8 +95,7 @@ const navGroups: NavGroup[] = [
       { key: "nav.trackComplaint", defaultName: "Track Grievance", href: "/track", icon: Search },
       { key: "nav.complaintHistory", defaultName: "Grievance Ledger", href: "/complaints", icon: History },
       { key: "nav.mapView", defaultName: "GIS Map Explorer", href: "/map", icon: MapPin },
-      { key: "nav.donations", defaultName: "Community Fund & 80G", href: "/donate", icon: HeartHandshake },
-      { key: "nav.rewards", defaultName: "Civic Rewards & Karma", href: "/rewards", icon: Trophy },
+      { key: "nav.rewards", defaultName: "Civic Rewards & Karma", href: "/rewards", icon: Trophy, citizenOnly: true },
       { key: "nav.whatsappSandbox", defaultName: "WhatsApp Bot Sandbox", href: "/whatsapp-sandbox", icon: MessageSquare },
       { key: "nav.search", defaultName: "Global Search", href: "/search", icon: Search },
     ],
@@ -229,13 +227,21 @@ export default function DashboardLayout() {
               {user.name}
             </p>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mb-2">{user.email}</p>
-            <Badge
-              variant="outline"
-              className={`text-[10px] capitalize font-mono font-medium px-2 py-0.5 rounded-md border ${roleBadgeColor[user.role] || ""}`}
-            >
-              <Shield className="h-2.5 w-2.5 mr-1" />
-              {user.role}
-            </Badge>
+            <div className="flex items-center justify-between gap-1">
+              <Badge
+                variant="outline"
+                className={`text-[10px] capitalize font-mono font-medium px-2 py-0.5 rounded-md border ${roleBadgeColor[user.role] || ""}`}
+              >
+                <Shield className="h-2.5 w-2.5 mr-1" />
+                {user.role}
+              </Badge>
+              {user?.role === "citizen" && (
+                <div className="flex items-center gap-1 text-[11px] font-mono font-semibold text-amber-600 dark:text-amber-400">
+                  <Trophy className="w-3 h-3 text-amber-500" />
+                  <span>{user?.karmaPoints || 0} pts</span>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -425,6 +431,14 @@ export default function DashboardLayout() {
               <Sparkles className="w-3.5 h-3.5 text-violet-600" />
               <span>AI Copilot</span>
             </Button>
+
+            {/* Karma Points Badge strictly for Citizen Role */}
+            {user?.role === "citizen" && (
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-full border border-amber-200/60 dark:border-amber-800/60 font-medium text-xs">
+                <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                <span>{user?.karmaPoints || 0} Karma</span>
+              </div>
+            )}
 
             <LanguageSelector />
             <NotificationBell />

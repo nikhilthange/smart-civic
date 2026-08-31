@@ -8,7 +8,6 @@ import {
   BarChart3,
   FileEdit,
   Award,
-  HeartHandshake,
   Layers,
   Wrench,
   X,
@@ -22,6 +21,7 @@ import {
   Bus,
   Dog,
 } from "lucide-react"
+import { useAuth } from "@/context/AuthContext"
 
 interface CommandItem {
   id: string
@@ -41,6 +41,7 @@ export function CommandPalette({
   onClose: () => void
 }) {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [query, setQuery] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -81,15 +82,19 @@ export function CommandPalette({
       icon: Layers,
       action: () => { navigate("/complaints"); onClose() },
     },
-    {
-      id: "nav-rewards",
-      title: "Civic Hero Karma & Rewards",
-      subtitle: "Redeem municipal discount vouchers and tax rebates",
-      category: "Navigation",
-      icon: Award,
-      badge: "₹ Karma",
-      action: () => { navigate("/rewards"); onClose() },
-    },
+    ...(user?.role === "citizen"
+      ? [
+          {
+            id: "nav-rewards",
+            title: "Civic Hero Karma & Rewards",
+            subtitle: "Redeem municipal discount vouchers and tax rebates",
+            category: "Navigation" as const,
+            icon: Award,
+            badge: "₹ Karma",
+            action: () => { navigate("/rewards"); onClose() },
+          },
+        ]
+      : []),
     {
       id: "nav-monsoon",
       title: "Monsoon & SWD Flood Radar",
@@ -239,14 +244,6 @@ export function CommandPalette({
       category: "Navigation",
       icon: BarChart3,
       action: () => { navigate("/admin/analytics"); onClose() },
-    },
-    {
-      id: "nav-donate",
-      title: "Civic Community Fund",
-      subtitle: "Support neighborhood beautification & road repairs",
-      category: "Navigation",
-      icon: HeartHandshake,
-      action: () => { navigate("/donate"); onClose() },
     },
     {
       id: "nav-worker",

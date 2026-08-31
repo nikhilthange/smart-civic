@@ -48,7 +48,6 @@ const ComplaintTracking = lazyRetry(() => import("./pages/ComplaintTracking"))
 const TrackComplaint = lazyRetry(() => import("./pages/TrackComplaint"))
 const Unauthorized = lazyRetry(() => import("./pages/Unauthorized"))
 const AdminDashboard = lazyRetry(() => import("./pages/AdminDashboard"))
-const Donation = lazyRetry(() => import("./pages/Donation"))
 const AnalyticsDashboard = lazyRetry(() => import("./pages/AnalyticsDashboard"))
 const SearchComplaints = lazyRetry(() => import("./pages/SearchComplaints"))
 const OfficerDashboard = lazyRetry(() => import("./pages/OfficerDashboard"))
@@ -120,13 +119,17 @@ function App() {
                   <Route path="/unauthorized" element={<Unauthorized />} />
                   <Route path="/public-map" element={<MapView />} />
 
-                  {/* Citizen-only Routes — Create Complaint */}
+                  {/* Citizen-only Routes — Create Complaint & Rewards */}
                   <Route element={<ProtectedRoute allowedRoles={["citizen"]} />}>
                     <Route element={<DashboardLayout />}>
                       <Route path="/complaint/create" element={<CreateComplaint />} />
                       <Route path="/complaint/new" element={<CreateComplaint />} />
                       <Route path="/complaints/new" element={<CreateComplaint />} />
                       <Route path="/create-complaint" element={<CreateComplaint />} />
+                      
+                      {/* Rewards Routes */}
+                      <Route path="/rewards" element={<KarmaRewards />} />
+                      <Route path="/civic-karma" element={<KarmaRewards />} />
                     </Route>
                   </Route>
 
@@ -147,15 +150,6 @@ function App() {
                       <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
                       
                       <Route path="/map" element={<MapView />} />
-                      
-                      {/* Donation Routes (Consolidated directly to Donation.tsx) */}
-                      <Route path="/donate" element={<Donation />} />
-                      <Route path="/donations" element={<Donation />} />
-                      <Route path="/donation" element={<Donation />} />
-                      
-                      {/* Rewards Routes */}
-                      <Route path="/rewards" element={<KarmaRewards />} />
-                      <Route path="/civic-karma" element={<KarmaRewards />} />
                       
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/monsoon-radar" element={<MonsoonRadar />} />

@@ -187,13 +187,17 @@ const normaliseAttachments = (files = []) =>
   files.map((f) => {
     // Cloudinary sets f.path to the secure URL; disk sets f.path to local path
     const isCloudinary = Boolean(f.filename && f.path && f.path.startsWith("http"));
+    const generatedName = f.filename || f.originalname || `upload_${Date.now()}.jpg`;
+    const defaultUrl = isCloudinary ? f.path : (f.path ? `/uploads/${path.basename(f.path)}` : `/uploads/${generatedName}`);
     return {
-      url:        isCloudinary ? f.path : `/uploads/${f.filename}`,
-      publicId:   f.filename || null,         // Cloudinary public_id (for deletion)
-      filename:   f.originalname,
-      mimetype:   f.mimetype,
-      size:       f.size,
-      resourceType: ALLOWED_MIME_TYPES[f.mimetype] || "raw",
+      url:        defaultUrl,
+      path:       f.path || null,
+      buffer:     f.buffer || null,
+      publicId:   f.filename || generatedName,
+      filename:   f.originalname || f.filename || generatedName,
+      mimetype:   f.mimetype || "image/jpeg",
+      size:       f.size || (f.buffer ? f.buffer.length : 0),
+      resourceType: ALLOWED_MIME_TYPES[f.mimetype] || "image",
     };
   });
 

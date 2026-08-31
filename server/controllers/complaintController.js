@@ -400,9 +400,8 @@ const createComplaint = async (req, res) => {
       assignedOfficerId = assignedOfficerDoc._id;
       finalStatus = "officer_assigned";
       assignedAtDate = new Date();
-      // Increment officer active workload
-      assignedOfficerDoc.activeComplaintsCount = (assignedOfficerDoc.activeComplaintsCount || 0) + 1;
-      await assignedOfficerDoc.save();
+      // Increment officer active workload atomically
+      await Officer.findByIdAndUpdate(assignedOfficerDoc._id, { $inc: { activeComplaintsCount: 1 } });
     }
 
     const effectivePriority = aiAnalysis.severity || priority || "medium";

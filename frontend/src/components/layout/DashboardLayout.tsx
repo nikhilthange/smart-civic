@@ -17,28 +17,10 @@ import {
   MapPin,
   Command,
   Waves,
-  ShieldAlert,
-  Truck,
-  Coins,
-  Pickaxe,
-  Wind,
-  Droplets,
-  Flame,
-  Trees,
-  Bus,
-  Dog,
   MessageSquare,
   Lock,
   Sparkles,
-  Cctv,
-  Layers,
-  Leaf,
   Trophy,
-  Radio,
-  Gavel,
-  Building,
-  FileText,
-  Megaphone,
   Eye,
   Settings as SettingsIcon,
   LifeBuoy,
@@ -59,14 +41,14 @@ import {
 import { useAuth } from "@/context/AuthContext"
 import { NotificationBell } from "@/components/ui/NotificationBell"
 import LanguageSelector from "@/components/common/LanguageSelector"
-import CommandPalette from "@/components/common/CommandPalette"
-import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
+import { useViewMode } from "@/context/ViewModeContext"
+import { CommandPalette } from "@/components/common/CommandPalette"
 import MunicipalSimulatorFloatingWidget from "@/components/common/MunicipalSimulatorFloatingWidget"
 import MunicipalCopilotModal from "@/components/admin/MunicipalCopilotModal"
-import { LiveWebSocketEventTicker } from "@/components/common/LiveWebSocketEventTicker"
 import KeyboardShortcutsModal from "@/components/common/KeyboardShortcutsModal"
 import { OnboardingTourModal } from "@/components/common/OnboardingTourModal"
-import { useViewMode } from "@/context/ViewModeContext"
+import { LiveWebSocketEventTicker } from "@/components/common/LiveWebSocketEventTicker"
+import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
 import { useTranslation } from "react-i18next"
 
 interface NavItem {
@@ -74,6 +56,7 @@ interface NavItem {
   defaultName: string
   href: string
   icon: any
+  badge?: string
   citizenOnly?: boolean
   workerOnly?: boolean
   officerOnly?: boolean
@@ -87,54 +70,28 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "CORE CIVIC WORKFLOWS",
+    label: "CORE NAVIGATION",
     items: [
       { key: "nav.dashboard", defaultName: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { key: "nav.quickReport", defaultName: "Snap & Send (1-Click)", href: "/quick-report", icon: Sparkles, citizenOnly: true },
-      { key: "nav.createComplaint", defaultName: "Create Grievance", href: "/complaint/create", icon: FileEdit, citizenOnly: true },
+      { key: "nav.mapView", defaultName: "GIS Map Explorer", href: "/map", icon: MapPin, badge: "GIS" },
+      { key: "nav.quickReport", defaultName: "Snap & Send (1-Click)", href: "/quick-report", icon: Sparkles, citizenOnly: true, badge: "AI" },
+      { key: "nav.createComplaint", defaultName: "File Grievance", href: "/complaint/create", icon: FileEdit, citizenOnly: true },
       { key: "nav.trackComplaint", defaultName: "Track Grievance", href: "/track", icon: Search },
       { key: "nav.complaintHistory", defaultName: "Grievance Ledger", href: "/complaints", icon: History },
-      { key: "nav.mapView", defaultName: "GIS Map Explorer", href: "/map", icon: MapPin },
       { key: "nav.rewards", defaultName: "Civic Rewards & Karma", href: "/rewards", icon: Trophy, citizenOnly: true },
-      { key: "nav.whatsappSandbox", defaultName: "WhatsApp Bot Sandbox", href: "/whatsapp-sandbox", icon: MessageSquare },
+      { key: "nav.whatsappSandbox", defaultName: "WhatsApp Bot Sandbox", href: "/whatsapp-sandbox", icon: MessageSquare, citizenOnly: true },
       { key: "nav.search", defaultName: "Global Search", href: "/search", icon: Search },
     ],
   },
   {
-    label: "MUNICIPAL RADAR & SURVEILLANCE",
+    label: "ROLE MANAGEMENT",
     items: [
-      { key: "nav.monsoon", defaultName: "Monsoon Flood Radar", href: "/monsoon-radar", icon: Waves },
-      { key: "nav.subways", defaultName: "Flooded Subway Detours", href: "/disaster-subways", icon: Waves },
-      { key: "nav.fire", defaultName: "High-Rise Fire Wet-Riser", href: "/fire-safety", icon: Flame },
-      { key: "nav.collapse", defaultName: "C1 Building Collapse Radar", href: "/structural-collapse", icon: ShieldAlert },
-      { key: "nav.emergencyBroadcast", defaultName: "Emergency Geo-Broadcast", href: "/emergency-broadcast", icon: Megaphone },
-      { key: "nav.dlp", defaultName: "DLP Road Warranty 3D", href: "/dlp-registry", icon: ShieldAlert },
-      { key: "nav.swmFleet", defaultName: "SWM Fleet & RFID Bins", href: "/swm-fleet", icon: Truck },
-      { key: "nav.trenching", defaultName: "Dig Once Trenching", href: "/trenching-coordinator", icon: Pickaxe },
-      { key: "nav.water", defaultName: "NRW Water & Tanker QR", href: "/water-governance", icon: Droplets },
-      { key: "nav.aqi", defaultName: "AQI & Dust Barricade", href: "/aqi-enforcement", icon: Wind },
-      { key: "nav.mangroves", defaultName: "Mangrove CRZ-I Sentinel", href: "/coastal-sentinel", icon: Trees },
-      { key: "nav.animals", defaultName: "Animal ABC & Rabies Radar", href: "/animal-welfare", icon: Dog },
-      { key: "nav.transit", defaultName: "BEST Bus Lane ANPR", href: "/best-transit", icon: Bus },
-      { key: "nav.cctv", defaultName: "CCTV Video Analytics", href: "/cctv-surveillance", icon: Cctv },
-      { key: "nav.socialRadar", defaultName: "Social Media & X Radar", href: "/social-radar", icon: Radio },
-      { key: "nav.digitalTwin", defaultName: "3D Digital Twin Runoff", href: "/digital-twin", icon: Layers },
-      { key: "nav.wardBudget", defaultName: "Participatory Budget", href: "/ward-budget", icon: Coins },
-      { key: "nav.taxAudit", defaultName: "3D Property Tax AI", href: "/property-tax-audit", icon: Coins },
-      { key: "nav.greenBonds", defaultName: "Green Bonds & CapEx", href: "/green-bonds", icon: Leaf },
-      { key: "nav.contractors", defaultName: "Contractor 3-Strike Ledger", href: "/contractor-registry", icon: Gavel },
-      { key: "nav.almSocieties", defaultName: "ALM Society Governance", href: "/alm-societies", icon: Building },
-      { key: "nav.sitrep", defaultName: "Daily Executive SITREP", href: "/sitrep", icon: FileText },
-    ],
-  },
-  {
-    label: "PORTALS & GOVERNANCE",
-    items: [
-      { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true },
-      { key: "nav.officerPortal", defaultName: "Officer Portal", href: "/officer-portal", icon: Shield, officerOnly: true },
+      { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true, badge: "Field" },
+      { key: "nav.officerPortal", defaultName: "Officer Control Room", href: "/officer-portal", icon: Shield, officerOnly: true, badge: "SLA" },
       { key: "nav.adminDashboard", defaultName: "Admin Command", href: "/admin", icon: BarChart3, adminOnly: true },
       { key: "nav.dataStudio", defaultName: "Admin Data Studio", href: "/admin/data-studio", icon: Database, adminOnly: true },
       { key: "nav.analytics", defaultName: "Analytics Telemetry", href: "/admin/analytics", icon: LineChart, adminOnly: true },
+      { key: "nav.monsoon", defaultName: "Monsoon Flood Radar", href: "/monsoon-radar", icon: Waves, badge: "Live" },
       { key: "nav.auditLedger", defaultName: "Tamper-Evident Audit", href: "/audit-ledger", icon: Lock, adminOnly: true },
     ],
   },
@@ -184,8 +141,7 @@ export default function DashboardLayout() {
   }
 
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className="flex h-full flex-col bg-white dark:bg-[#090A
-    0F]">
+    <div className="flex h-full flex-col bg-white dark:bg-[#090A0F]">
       <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#090A0F]/95 backdrop-blur-md flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
         {/* Brand Identity */}
         <Link
@@ -312,7 +268,18 @@ export default function DashboardLayout() {
                               : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300"
                           }`}
                         />
-                        <span className="truncate">{t(item.key, item.defaultName)}</span>
+                        <span className="truncate flex-1">{t(item.key, item.defaultName)}</span>
+                        {item.badge && (
+                          <span
+                            className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded border transition-colors ${
+                              isActive
+                                ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-600"
+                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-700/80"
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
                       </Link>
                     )
                   })}

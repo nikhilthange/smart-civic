@@ -205,9 +205,14 @@ export function isPointInWardPolygon(point: [number, number], polygon: [number, 
   return inside
 }
 
-export function detectWardByCoordinates(lat: number, lng: number): WardBoundary {
+export function detectWardByCoordinates(lat?: number | null, lng?: number | null): WardBoundary {
+  if (lat === undefined || lat === null || lng === undefined || lng === null || isNaN(Number(lat)) || isNaN(Number(lng))) {
+    return MUMBAI_24_WARDS[8] // Default Ward G-North (Dadar)
+  }
+  const latNum = Number(lat)
+  const lngNum = Number(lng)
   for (const ward of MUMBAI_24_WARDS) {
-    if (isPointInWardPolygon([lat, lng], ward.polygon)) {
+    if (isPointInWardPolygon([latNum, lngNum], ward.polygon)) {
       return ward
     }
   }

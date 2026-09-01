@@ -40,7 +40,6 @@ import {
 import { useAuth } from "@/context/AuthContext"
 import { NotificationBell } from "@/components/ui/NotificationBell"
 import { CommandPalette } from "@/components/common/CommandPalette"
-import MunicipalSimulatorFloatingWidget from "@/components/common/MunicipalSimulatorFloatingWidget"
 import MunicipalCopilotModal from "@/components/admin/MunicipalCopilotModal"
 import KeyboardShortcutsModal from "@/components/common/KeyboardShortcutsModal"
 import { OnboardingTourModal } from "@/components/common/OnboardingTourModal"
@@ -411,17 +410,6 @@ export default function DashboardLayout() {
           </Button>
 
           <div className="flex items-center gap-1.5 sm:gap-3 ml-auto">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCopilotOpen(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full text-xs font-semibold border-violet-200 dark:border-violet-800/60 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 shadow-sm min-h-[36px]"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-violet-600" />
-              <span>AI Copilot</span>
-            </Button>
-
             <NotificationBell />
 
             <DropdownMenu>
@@ -546,8 +534,7 @@ export default function DashboardLayout() {
           </div>
         </nav>
 
-        {/* Floating Global Simulator Widget (Admin Only), Copilot Modal, Onboarding Tour & Keyboard Shortcuts */}
-        {user?.role === "admin" && <MunicipalSimulatorFloatingWidget />}
+        {/* Copilot Modal, Onboarding Tour & Keyboard Shortcuts */}
         <MunicipalCopilotModal isOpen={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />
         <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
         <OnboardingTourModal />

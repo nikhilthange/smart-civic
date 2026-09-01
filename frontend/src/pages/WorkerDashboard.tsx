@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import {
-  Wrench, MapPin, CheckCircle2, Camera, X, Loader2, Navigation, WifiOff, CloudUpload, Route, Sparkles,
+  Wrench, MapPin, CheckCircle2, Camera, X, Loader2, Navigation, WifiOff, CloudUpload, Route,
   Radio
 } from "lucide-react"
-import { complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
+import { complaintApi, type Complaint, CATEGORY_LABELS } from "@/services/complaintApi"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import { triggerHapticFeedback } from "@/utils/haptics"
 import api from "@/lib/axios"
@@ -326,39 +326,39 @@ export default function WorkerDashboard() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between bg-white dark:bg-zinc-900/80 p-5 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between bg-white dark:bg-zinc-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded-2xl">
-            <Wrench className="w-6 h-6" />
+          <div className="p-3 bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 rounded-xl border border-slate-200/80 dark:border-zinc-700/80 shrink-0">
+            <Wrench className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold font-display text-slate-900 dark:text-white">Municipal Field Worker Portal</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Field Dispatch & Repair Queue</h1>
               {workerProfile?.wardName && (
-                <span className="text-xs font-bold font-mono px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                  📍 {workerProfile.wardName}
+                <span className="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700">
+                  {workerProfile.wardName}
                 </span>
               )}
             </div>
             <p className="text-slate-500 dark:text-zinc-400 text-xs sm:text-sm mt-0.5">
-              Ward Broadcast Pool & Field Repair Execution System
+              Active repair assignments, open ward pool dispatch, and geofenced resolution verification.
             </p>
           </div>
         </div>
         <div className="flex items-center flex-wrap gap-2.5">
-          {/* TSP Route Optimizer Action */}
+          {/* Route Optimizer Action */}
           <button
             type="button"
             onClick={handleOptimizeRoute}
             disabled={isOptimizing || displayedList.length === 0}
-            className="flex items-center gap-2 text-xs font-bold px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl shadow-md shadow-indigo-600/20 transition-all active:scale-95 disabled:opacity-50 touch-manipulation"
+            className="flex items-center gap-2 text-xs font-semibold px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
           >
             {isOptimizing ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Sparkles className="w-4 h-4 text-amber-300" />
+              <Route className="w-4 h-4" />
             )}
-            {isOptimizing ? "Optimizing Route..." : "⚡ Optimize Route (TSP)"}
+            {isOptimizing ? "Optimizing Route..." : "Optimize Driving Route (TSP)"}
           </button>
 
           {offlineCount > 0 && (
@@ -367,7 +367,7 @@ export default function WorkerDashboard() {
                 setOfflineCount(getOfflineQueue().length)
                 fetchWorkerTasks(true)
               })}
-              className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors touch-manipulation"
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors cursor-pointer"
             >
               <CloudUpload className="w-4 h-4" />
               Sync {offlineCount}
@@ -377,7 +377,7 @@ export default function WorkerDashboard() {
       </div>
 
       {/* Ward Broadcast & Pool Selection Switcher */}
-      <div className="flex items-center justify-between flex-wrap gap-3 bg-slate-100 dark:bg-zinc-900/60 p-1.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800">
+      <div className="flex items-center justify-between flex-wrap gap-3 bg-slate-100/80 dark:bg-zinc-900/60 p-1.5 rounded-xl border border-slate-200/80 dark:border-zinc-800">
         <div className="flex items-center gap-1.5 w-full sm:w-auto">
           <button
             type="button"
@@ -385,16 +385,16 @@ export default function WorkerDashboard() {
               triggerHapticFeedback("light")
               setActiveTab("claimed")
             }}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all touch-manipulation ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "claimed"
-                ? "bg-white dark:bg-zinc-800 text-emerald-800 dark:text-emerald-300 shadow-sm border border-slate-200 dark:border-zinc-700"
+                ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700"
                 : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
-            <Wrench className="w-4 h-4 text-emerald-600" />
-            <span>My Active Repairs</span>
-            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-black ${
-              activeTab === "claimed" ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300" : "bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
+            <Wrench className="w-3.5 h-3.5 text-emerald-600" />
+            <span>My Assigned Tasks</span>
+            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+              activeTab === "claimed" ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300" : "bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
             }`}>
               {claimedTasks.length}
             </span>
@@ -406,16 +406,16 @@ export default function WorkerDashboard() {
               triggerHapticFeedback("light")
               setActiveTab("pool")
             }}
-            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all touch-manipulation ${
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
               activeTab === "pool"
-                ? "bg-white dark:bg-zinc-800 text-indigo-800 dark:text-indigo-300 shadow-sm border border-slate-200 dark:border-zinc-700"
+                ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700"
                 : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
-            <Radio className="w-4 h-4 text-indigo-600 animate-pulse" />
+            <Radio className="w-3.5 h-3.5 text-blue-600" />
             <span>Ward Open Pool</span>
-            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-black ${
-              activeTab === "pool" ? "bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300" : "bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
+            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
+              activeTab === "pool" ? "bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300" : "bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
             }`}>
               {openPoolTasks.length}
             </span>
@@ -423,17 +423,17 @@ export default function WorkerDashboard() {
         </div>
 
         <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium px-2 hidden sm:flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Broadcast Active: Any worker in this ward can claim open complaints</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span>Real-time dispatch stream active</span>
         </div>
       </div>
 
       {/* Optimized Daily Route Statistics Banner & Interactive TSP Map */}
       {routeOptResult && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 text-white shadow-lg border border-emerald-700/50 gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-slate-900 text-white shadow-md border border-slate-800 gap-3">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-white/10 rounded-xl text-amber-300">
+              <div className="p-2.5 bg-white/10 rounded-xl text-emerald-400">
                 <Route className="w-5 h-5" />
               </div>
               <div>
@@ -443,7 +443,7 @@ export default function WorkerDashboard() {
                     Shortest Path
                   </span>
                 </h3>
-                <p className="text-xs text-emerald-100/90 mt-0.5">
+                <p className="text-xs text-slate-300 mt-0.5">
                   Tasks arranged in optimal driving sequence to minimize travel time across Mumbai wards.
                 </p>
               </div>
@@ -451,17 +451,17 @@ export default function WorkerDashboard() {
 
             <div className="flex items-center gap-4 text-xs font-mono font-bold bg-white/10 px-4 py-2 rounded-xl border border-white/10">
               <div>
-                <span className="text-[10px] text-emerald-200 uppercase block font-sans">Stops</span>
+                <span className="text-[10px] text-slate-400 uppercase block font-sans">Stops</span>
                 {routeOptResult.orderedTasks.length} Sites
               </div>
               <div className="h-6 w-px bg-white/20" />
               <div>
-                <span className="text-[10px] text-emerald-200 uppercase block font-sans">Distance</span>
+                <span className="text-[10px] text-slate-400 uppercase block font-sans">Distance</span>
                 {routeOptResult.totalDistanceKm} km
               </div>
               <div className="h-6 w-px bg-white/20" />
               <div>
-                <span className="text-[10px] text-emerald-200 uppercase block font-sans">Est. Shift</span>
+                <span className="text-[10px] text-slate-400 uppercase block font-sans">Est. Shift</span>
                 {Math.floor(routeOptResult.totalDurationMins / 60) > 0
                   ? `${Math.floor(routeOptResult.totalDurationMins / 60)}h ${routeOptResult.totalDurationMins % 60}m`
                   : `${routeOptResult.totalDurationMins}m`}
@@ -479,101 +479,110 @@ export default function WorkerDashboard() {
           <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
         </div>
       ) : displayedList.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-200/80 dark:border-zinc-800 p-8 space-y-3">
-          <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
-          <h3 className="text-lg font-bold text-slate-800 dark:text-zinc-100">
-            {activeTab === "claimed" ? "No Active Repairs Claimed" : "Ward Open Pool is Clean!"}
+        <div className="text-center py-16 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/80 dark:border-zinc-800 p-8 space-y-3">
+          <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
+          <h3 className="text-base font-bold text-slate-800 dark:text-zinc-100">
+            {activeTab === "claimed" ? "No Active Tasks Assigned" : "Ward Open Pool is Clear"}
           </h3>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 max-w-md mx-auto">
             {activeTab === "claimed"
-              ? "You haven't claimed any tasks yet. Switch to the 'Ward Open Pool' tab to claim available complaints."
-              : "There are currently no open unassigned complaints broadcast in your ward pool."}
+              ? "You currently have no tasks assigned to you. Switch to the 'Ward Open Pool' tab to claim available incidents."
+              : "There are currently no open unassigned complaints in your municipal ward pool."}
           </p>
           {activeTab === "claimed" && openPoolTasks.length > 0 && (
             <button
               type="button"
               onClick={() => setActiveTab("pool")}
-              className="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition touch-manipulation"
+              className="mt-2 px-4 py-2 bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-semibold rounded-xl shadow-sm transition cursor-pointer"
             >
               Browse Ward Open Pool ({openPoolTasks.length} Available)
             </button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {displayedList.map((task, idx) => {
-            const statusCfg = STATUS_CONFIG[task.status] || STATUS_CONFIG.assigned
             const isResolved = task.status === "resolved" || task.status === "closed"
+            const priorityStr = (task.priority || "medium").toLowerCase()
+            const isCritical = priorityStr === "critical" || priorityStr === "high"
 
             return (
               <div
                 key={task._id}
-                className="bg-white dark:bg-zinc-900/90 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm hover:shadow-lg transition-all p-5 flex flex-col justify-between"
+                className="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200/90 dark:border-zinc-800 shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-zinc-700 transition-all p-4 sm:p-5 flex flex-col justify-between"
               >
                 <div
-                  className="cursor-pointer group"
+                  className="cursor-pointer group space-y-3"
                   onClick={() => setDetailModalTask(task)}
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
+                  {/* Top Badges */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {routeOptResult && (
-                        <span className="text-xs font-black font-mono px-2.5 py-0.5 rounded-full bg-indigo-600 text-white shadow-sm">
+                        <span className="text-[11px] font-bold font-mono px-2 py-0.5 rounded bg-slate-900 text-white">
                           Stop #{idx + 1}
                         </span>
                       )}
-                      <span className="text-xs font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900/50">
-                        {task.priority || "medium"} Priority
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${
+                        isCritical
+                          ? "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-900"
+                          : "bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? "bg-rose-500" : "bg-slate-400"}`} />
+                        {isCritical ? "P1 • Critical" : "P2 • Medium"}
                       </span>
                     </div>
-                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold border ${statusCfg.color} ${statusCfg.bg} ${statusCfg.border}`}>
-                      {statusCfg.label}
+
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700">
+                      {task.status === "worker_assigned" ? "Assigned" : task.status === "in_progress" ? "In Progress" : "Open Pool"}
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg line-clamp-1 group-hover:text-emerald-600 transition-colors">
-                    {task.title}
-                  </h3>
-                  <div className="flex items-center justify-between gap-2 mt-0.5">
-                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-                      {CATEGORY_LABELS[task.category] || task.category}
+                  {/* Title & Department */}
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base line-clamp-1 group-hover:text-emerald-600 transition-colors">
+                      {task.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
+                      {CATEGORY_LABELS[task.category] || task.category} • Ward {task.ward || (task.location as any)?.city || "H-West"}
                     </p>
-                    <span className="text-[11px] font-mono text-slate-400">
-                      {task.ward || "Ward Pool"}
-                    </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-300 mt-2 line-clamp-2 leading-relaxed">
+
+                  {/* Description */}
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 line-clamp-2 leading-relaxed">
                     {task.description}
                   </p>
 
+                  {/* Evidence Photo */}
                   {task.attachments && task.attachments[0] && (
-                    <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-zinc-800 h-32 bg-slate-100 dark:bg-zinc-800">
+                    <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-zinc-800 h-28 bg-slate-100 dark:bg-zinc-800">
                       <img
                         src={getImageUrl(task.attachments[0])}
                         onError={handleImageError}
                         alt="Issue Evidence"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover"
                       />
                     </div>
                   )}
 
-                  {/* Location & Directions */}
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800 space-y-2">
-                    <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-zinc-400">
-                      <MapPin className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="line-clamp-2">{task.location?.address || "Mumbai Location"}</span>
+                  {/* Address & Navigation */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 space-y-2">
+                    <div className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-zinc-400">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                      <span className="line-clamp-2 text-[11px]">{task.location?.address || "Mumbai Municipal Area"}</span>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-1">
+                    <div className="flex items-center gap-2 pt-0.5">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
                           setNavigatingTask(task)
                         }}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors touch-manipulation"
+                        className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-md border border-slate-200 dark:border-zinc-700 transition-colors cursor-pointer"
                       >
-                        <Navigation className="w-3.5 h-3.5 text-indigo-600" />
-                        Live GPS Navigation
+                        <Navigation className="w-3 h-3 text-slate-600 dark:text-zinc-300" />
+                        <span>Navigate</span>
                       </button>
 
                       <a
@@ -583,19 +592,19 @@ export default function WorkerDashboard() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200 hover:underline"
+                        className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200"
                       >
-                        External Maps ↗
+                        Google Maps ↗
                       </a>
                     </div>
                   </div>
                 </div>
 
                 {/* Primary Action Button (Claim vs. Submit Resolution) */}
-                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-zinc-800">
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800">
                   {isResolved ? (
-                    <div className="flex items-center gap-2 text-xs font-bold text-green-700 bg-green-50 dark:bg-green-950/40 p-2.5 rounded-xl border border-green-200 dark:border-green-900">
-                      <CheckCircle2 className="w-4 h-4" />
+                    <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-900">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
                       Resolution Proof Submitted
                     </div>
                   ) : activeTab === "pool" ? (
@@ -603,22 +612,22 @@ export default function WorkerDashboard() {
                       type="button"
                       disabled={isClaimingId === task._id}
                       onClick={(e) => handleClaimTask(task._id, e)}
-                      className="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-600/20 active:scale-98 touch-manipulation disabled:opacity-50"
+                      className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-98 cursor-pointer disabled:opacity-50"
                     >
                       {isClaimingId === task._id ? (
-                        <><Loader2 className="w-4 h-4 animate-spin" /> Claiming Task...</>
+                        <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Claiming Task...</>
                       ) : (
-                        <><Sparkles className="w-4 h-4 text-amber-300" /> Accept Task & Start Repair</>
+                        <>Claim & Begin Repair &rarr;</>
                       )}
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={() => setSelectedTask(task)}
-                      className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-600/20 active:scale-98 touch-manipulation"
+                      className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-98 cursor-pointer"
                     >
-                      <Camera className="w-4 h-4" />
-                      Submit Resolution Proof (AI Verified)
+                      <Camera className="w-3.5 h-3.5" />
+                      Submit Resolution Proof
                     </button>
                   )}
                 </div>

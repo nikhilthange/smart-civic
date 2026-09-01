@@ -2,14 +2,17 @@ import { useState, useEffect } from "react"
 import {
   X, MapPin, Navigation, Clock, CheckCircle2,
   Building2, ExternalLink, ZoomIn, Copy, Check, Calendar,
-  ArrowRight, Users, Activity
+  ArrowRight, Users, Activity, Sparkles, Loader2
 } from "lucide-react"
-import { type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
+import { complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import { getTravelDetails, getGoogleMapsDirUrl, type TravelDetails } from "@/utils/geoUtils"
 import { BeforeAfterSlider } from "./BeforeAfterSlider"
 import { LiveNavigationModal } from "@/components/navigation/LiveNavigationModal"
 import { TextToSpeechButton } from "./TextToSpeechButton"
+import { useAuth } from "@/context/AuthContext"
+import { triggerHapticFeedback } from "@/utils/haptics"
+import toast from "react-hot-toast"
 
 interface ComplaintDetailModalProps {
   complaint: Complaint | null
@@ -24,11 +27,30 @@ const PRIORITY_BADGES: Record<string, { label: string; bg: string; text: string;
 }
 
 export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModalProps) {
+  const { user } = useAuth()
   const [travel, setTravel] = useState<TravelDetails | null>(null)
   const [loadingGeo, setLoadingGeo] = useState(false)
   const [copied, setCopied] = useState(false)
   const [zoomImage, setZoomImage] = useState<string | null>(null)
   const [isLiveNavOpen, setIsLiveNavOpen] = useState(false)
+  const [isClaiming, setIsClaiming] = useState(false)
+
+  const handleClaimComplaint = async () => {
+    if (!complaint) return
+    try {
+      setIsClaiming(true)
+      triggerHapticFeedback("medium")
+      await complaintApi.acceptTask(complaint._id || complaint.id || "")
+      triggerHapticFeedback("success")
+      toast.success("⚡ Task Claimed! Added to your active repair queue.", { icon: "🛠️" })
+      onClose()
+    } catch (err: any) {
+      triggerHapticFeedback("error")
+      toast.error(err.response?.data?.message || "Failed to claim task.")
+    } finally {
+      setIsClaiming(false)
+    }
+  }
 
   useEffect(() => {
     if (!complaint) {
@@ -265,6 +287,22 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
                   )}
                 </div>
               </div>
+
+              {/* Worker Claim Button */}
+              {user?.role === "worker" && complaint.status !== "resolved" && complaint.status !== "closed" && (
+                <button
+                  type="button"
+                  disabled={isClaiming}
+                  onClick={handleClaimComplaint}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 active:scale-98 touch-manipulation disabled:opacity-50"
+                >
+                  {isClaiming ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Claiming Task...</>
+                  ) : (
+                    <><Sparkles className="w-4 h-4 text-amber-300" /> Accept Task & Start Repair</>
+                  )}
+                </button>
+              )}
 
               {/* Navigation Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center gap-3">

@@ -19,6 +19,8 @@ import { Badge } from "./badge"
 import { useNavigate } from "react-router-dom"
 import { notificationApi, type AppNotification } from "../../services/notificationApi"
 import { requestFCMToken, messaging, onMessage } from "../../lib/firebase"
+import { useSocket } from "@/context/SocketContext"
+import { triggerHapticFeedback } from "@/utils/haptics"
 import toast from "react-hot-toast"
 
 function timeAgo(dateStr: string) {
@@ -93,6 +95,72 @@ export function NotificationBell() {
     }
     initFCM()
   }, [])
+
+  const { socket } = useSocket()
+
+  // Listen for real-time WebSocket notifications from server
+  useEffect(() => {
+    if (!socket) return
+
+    const handleSocketNotif = (payload: any) => {
+      const notif = payload?.notification || payload
+      const title = notif?.title || payload?.title || "New Municipal Notification"
+      const message = notif?.message || payload?.message || "You have a new civic update."
+      const actionUrl = notif?.actionUrl || payload?.actionUrl
+
+      triggerHapticFeedback("medium")
+
+      toast.custom(
+        (t) => (
+          <div
+            onClick={() => {
+              toast.dismiss(t.id)
+              if (actionUrl) navigate(actionUrl)
+            }}
+            className={`${
+              t.visible ? "animate-enter" : "animate-leave"
+            } max-w-sm w-full bg-white dark:bg-slate-900 shadow-2xl rounded-2xl pointer-events-auto border border-emerald-500/30 dark:border-emerald-500/30 flex p-3.5 gap-3 items-start cursor-pointer hover:border-emerald-500 transition-all`}
+          >
+            <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5 animate-pulse">
+              <Bell className="h-4 w-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1">
+                <p className="font-bold text-slate-900 dark:text-white text-xs">{title}</p>
+                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">LIVE</span>
+              </div>
+              <p className="text-slate-600 dark:text-slate-300 text-xs mt-0.5 leading-relaxed line-clamp-2">{message}</p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                toast.dismiss(t.id)
+              }}
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-md shrink-0"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ),
+        { duration: 6000 }
+      )
+
+      setUnreadCount((prev) => prev + 1)
+      if (notif?._id) {
+        setNotifications((prev) => [notif, ...prev])
+      } else {
+        fetchNotifications()
+      }
+    }
+
+    socket.on("notification", handleSocketNotif)
+    socket.on("notification:new", handleSocketNotif)
+
+    return () => {
+      socket.off("notification", handleSocketNotif)
+      socket.off("notification:new", handleSocketNotif)
+    }
+  }, [socket, navigate, fetchNotifications])
 
   // Listen for foreground FCM messages
   useEffect(() => {

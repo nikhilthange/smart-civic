@@ -19,6 +19,8 @@ import { Badge } from "@/components/ui/badge"
 import { notificationApi, type AppNotification } from "@/services/notificationApi"
 import { EmptyState } from "@/components/common/EmptyState"
 import { SkeletonActivityFeed } from "@/components/common/SkeletonLoader"
+import { useSocket } from "@/context/SocketContext"
+import { triggerHapticFeedback } from "@/utils/haptics"
 import toast from "react-hot-toast"
 
 type FilterTab = "all" | "unread" | "sla" | "rewards"
@@ -73,9 +75,38 @@ export default function Notifications() {
     }
   }, [])
 
+  const { socket } = useSocket()
+
   useEffect(() => {
     fetchNotifications()
   }, [fetchNotifications])
+
+  // Live WebSocket notification receiver
+  useEffect(() => {
+    if (!socket) return
+
+    const handleSocketNotif = (payload: any) => {
+      const notif = payload?.notification || payload
+      triggerHapticFeedback("medium")
+      if (notif?.title) {
+        toast.success(`Live Alert: ${notif.title}`, { icon: "🔔" })
+      }
+      setUnreadCount((prev) => prev + 1)
+      if (notif?._id) {
+        setNotifications((prev) => [notif, ...prev])
+      } else {
+        fetchNotifications()
+      }
+    }
+
+    socket.on("notification", handleSocketNotif)
+    socket.on("notification:new", handleSocketNotif)
+
+    return () => {
+      socket.off("notification", handleSocketNotif)
+      socket.off("notification:new", handleSocketNotif)
+    }
+  }, [socket, fetchNotifications])
 
   const handleMarkAllRead = async () => {
     try {

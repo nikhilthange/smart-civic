@@ -107,7 +107,7 @@ function buildEmailHtml({ title, message, actionUrl }) {
 async function sendNotification({ recipientId, complaintId, type, title, message, actionUrl }) {
   try {
     // 1. Always save in-app notification
-    await Notification.send({
+    const savedNotif = await Notification.send({
       recipient: recipientId,
       complaint: complaintId || null,
       type,
@@ -116,7 +116,26 @@ async function sendNotification({ recipientId, complaintId, type, title, message
       actionUrl,
     });
 
-    // 2. Fetch user for email + FCM token
+    // 2. Real-time WebSocket Notification Dispatch
+    try {
+      const socketService = require("./socketService");
+      socketService.notifyUser(recipientId, {
+        notification: savedNotif,
+        _id: savedNotif._id,
+        id: savedNotif._id,
+        type,
+        title,
+        message,
+        actionUrl,
+        complaintId,
+        isRead: false,
+        createdAt: savedNotif.createdAt || new Date().toISOString(),
+      });
+    } catch (wsErr) {
+      console.warn("Real-time notification socket push warning:", wsErr.message);
+    }
+
+    // 3. Fetch user for email + FCM token
     const user = await User.findById(recipientId).select("email name fcmToken").lean();
     if (!user) return;
 

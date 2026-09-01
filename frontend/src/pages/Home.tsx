@@ -167,22 +167,12 @@ export default function Home() {
               </motion.div>
             </motion.div>
 
-            {/* ═══ INTERACTIVE AI VISION CLASSIFIER SIMULATOR (CENTERPIECE) ═══ */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.7 }}
-              className="w-full pt-2"
-            >
-              <AiPipelineHeroVisual />
-            </motion.div>
-
             {/* ═══ 3-CARD GOVERNANCE & AEO DEFINITION TRUST GRID ═══ */}
             <motion.div
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left pt-2"
+              transition={{ delay: 0.35, duration: 0.6 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left pt-6"
             >
               <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
                 <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base">

@@ -193,10 +193,10 @@ export default function DashboardLayout() {
           </div>
           <div className="min-w-0">
             <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight leading-none truncate">
-              Smart Civic
+              Smart Civic AI
             </h1>
-            <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 tracking-wider uppercase">
-              Enterprise AI
+            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase">
+              BMC Municipal CityOS
             </span>
           </div>
         </Link>
@@ -546,8 +546,8 @@ export default function DashboardLayout() {
           </div>
         </nav>
 
-        {/* Floating Global Simulator Widget, Copilot Modal, Onboarding Tour & Keyboard Shortcuts */}
-        <MunicipalSimulatorFloatingWidget />
+        {/* Floating Global Simulator Widget (Admin Only), Copilot Modal, Onboarding Tour & Keyboard Shortcuts */}
+        {user?.role === "admin" && <MunicipalSimulatorFloatingWidget />}
         <MunicipalCopilotModal isOpen={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />
         <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
         <OnboardingTourModal />

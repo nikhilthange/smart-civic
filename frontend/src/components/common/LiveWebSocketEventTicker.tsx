@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { useSocket } from "@/context/SocketContext"
+import { Activity } from "lucide-react"
 
 interface TickerEvent {
   id: string
@@ -39,7 +40,7 @@ function LiveWebSocketEventTickerComponent() {
       const newEv: TickerEvent = {
         id: `ev-${Date.now()}`,
         type: "ticket_created",
-        text: `Live WebSocket Alert: ${lastEvent.type || "System Update"} — ${msg}`,
+        text: `${lastEvent.type ? String(lastEvent.type).replace(/_/g, " ").toUpperCase() : "LIVE ALERT"}: ${msg}`,
         timestamp: "Just now",
       }
       setEvents((prev) => [newEv, ...prev.slice(0, 5)])
@@ -49,30 +50,28 @@ function LiveWebSocketEventTickerComponent() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % events.length)
-    }, 4000)
+    }, 5000)
     return () => clearInterval(timer)
   }, [events.length])
 
   const current = events[currentIndex] || events[0]
 
   return (
-    <div className="w-full h-9 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 px-3 sm:px-4 flex items-center justify-between text-xs border-b border-emerald-100 dark:border-emerald-900/50 shadow-sm overflow-hidden shrink-0">
+    <div className="w-full h-8 bg-slate-900 text-slate-300 dark:bg-zinc-950 dark:text-zinc-400 px-3 sm:px-6 flex items-center justify-between text-xs border-b border-slate-800/80 shrink-0 font-sans select-none">
       <div className="flex items-center gap-2.5 overflow-hidden min-w-0">
-        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 shrink-0">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span>LIVE STREAM</span>
-        </div>
-
-        <div className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate animate-in fade-in transition-all">
+        <span className="flex items-center gap-1.5 text-[11px] font-mono font-medium text-emerald-400 shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span>LIVE TELEMETRY</span>
+        </span>
+        <span className="text-slate-600 dark:text-zinc-600 text-[11px]">•</span>
+        <div className="text-[11px] text-slate-300 dark:text-zinc-300 truncate font-medium">
           {current?.text}
         </div>
       </div>
 
-      <div className="hidden sm:flex items-center gap-2 text-[11px] font-mono text-emerald-700/80 dark:text-emerald-400/80 shrink-0">
-        <span className="font-semibold">WS: CONNECTED</span>
+      <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-slate-400 dark:text-zinc-500 shrink-0">
+        <Activity className="w-3 h-3 text-emerald-500" />
+        <span>BMC WARD FEED</span>
         <span>•</span>
         <span>{current?.timestamp}</span>
       </div>

@@ -8,7 +8,7 @@ const { classifyImageBuffer } = require("./localVisionService");
  * Compares the initial defect image against the worker's resolution proof image:
  * 1. Pixel Variance & Blank Surface Check
  * 2. Perceptual Diffing & Same-Image Replay Detection
- * 3. Defect Mitigation Re-Classification
+ * 3. Defect Mitigation Re-Classification & Unresolved Problem Detection
  */
 
 /**
@@ -81,6 +81,8 @@ const checkSameImageReplay = async (beforeBuffer, afterBuffer) => {
 
     for (let i = 0; i < len; i++) {
       sumA += beforeData[i];
+    }
+    for (let i = 0; i < len; i++) {
       sumB += afterData[i];
     }
     const meanA = sumA / len;
@@ -128,7 +130,7 @@ const inspectResolutionProof = async (beforeSource, afterSource, category = "roa
     return {
       isAcceptable: false,
       confidenceScore: 0,
-      analysis: "Unable to read resolution proof image buffer.",
+      analysis: "Unable to read resolution proof image buffer. Please upload a valid image file.",
       flags: ["MISSING_IMAGE_BUFFER"],
     };
   }
@@ -147,21 +149,33 @@ const inspectResolutionProof = async (beforeSource, afterSource, category = "roa
     }
   }
 
-  // 3. Re-classification check
+  // 3. AI Computer Vision Re-classification check
   let defectAnalysis = "";
+  let afterClassification = null;
   try {
-    const afterClass = await classifyImageBuffer(afterBuffer);
-    defectAnalysis = afterClass.label || "Surface Repair Verified";
+    afterClassification = await classifyImageBuffer(afterBuffer);
+    defectAnalysis = afterClassification.label || "Surface Repair Verified";
+
+    // If the resolution photo still clearly shows the same active defect with high confidence (e.g. unpaved pothole, overflowing garbage dump)
+    if (
+      afterClassification &&
+      afterClassification.confidence >= 0.85 &&
+      afterClassification.category === category &&
+      !flags.includes("SAME_IMAGE_DETECTED")
+    ) {
+      // Check if after image contains persistent defect signals
+      flags.push("DEFECT_STILL_PRESENT");
+    }
   } catch {
     defectAnalysis = "Resolution proof visually verified";
   }
 
-  // Quality verdict
+  // Quality verdicts and rejection gates
   if (flags.includes("SAME_IMAGE_DETECTED")) {
     return {
       isAcceptable: false,
       confidenceScore: 0.10,
-      analysis: "Resolution photo rejected: Exact duplicate of initial complaint photo detected.",
+      analysis: "Resolution photo rejected: Exact duplicate of the initial complaint defect photo detected. The issue has not been resolved.",
       flags,
     };
   }
@@ -170,7 +184,16 @@ const inspectResolutionProof = async (beforeSource, afterSource, category = "roa
     return {
       isAcceptable: false,
       confidenceScore: 0.05,
-      analysis: "Resolution photo rejected: Photo appears blank, pitch black, or uninformative.",
+      analysis: "Resolution photo rejected: Uploaded photo appears blank, pitch black, or uninformative. A clear on-site photo of the completed resolution is required.",
+      flags,
+    };
+  }
+
+  if (flags.includes("DEFECT_STILL_PRESENT")) {
+    return {
+      isAcceptable: false,
+      confidenceScore: 0.20,
+      analysis: `Resolution photo rejected: AI vision inspection detected that the issue (${defectAnalysis}) is still present and unresolved. Please complete the repair on-site and resubmit a photo of the resolved location.`,
       flags,
     };
   }

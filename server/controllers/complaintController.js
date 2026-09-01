@@ -1528,7 +1528,15 @@ const workerSubmitProof = async (req, res) => {
         complaint.category
       );
 
-      if (inspectionResult.flags.includes("SAME_IMAGE_DETECTED") || inspectionResult.flags.includes("BLANK_SURFACE_DETECTED")) {
+      if (!inspectionResult.isAcceptable || inspectionResult.flags.length > 0) {
+        // Record inspection rejection note while keeping complaint in_progress
+        complaint.statusHistory.push({
+          status: "in_progress",
+          changedBy: req.user.id,
+          note: `Resolution proof rejected by AI Inspector: ${inspectionResult.analysis}`,
+        });
+        await complaint.save();
+
         return res.status(422).json({
           success: false,
           message: `Resolution proof rejected by AI Quality Inspector: ${inspectionResult.analysis}`,

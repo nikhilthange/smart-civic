@@ -247,6 +247,10 @@ export default function WorkerDashboard() {
         setSelectedTask(null)
         handleRemoveFile()
         setNotes("")
+      } else if (err.response?.status === 422) {
+        const errorMsg = err.response?.data?.message || "AI Quality Inspector rejected the proof: The issue does not appear resolved. Please upload an authentic photo of the completed repair."
+        toast.error(errorMsg, { duration: 6000, icon: "🚫" })
+        handleRemoveFile()
       } else {
         toast.error(err.response?.data?.message || "Failed to submit resolution proof.")
       }

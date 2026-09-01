@@ -1,5 +1,6 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   ArrowRight,
   Building2,
@@ -14,7 +15,8 @@ import {
   Sparkles,
   Camera,
   Award,
-  Star
+  Star,
+  ChevronDown
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -45,6 +47,12 @@ const HOME_FAQS = [
 ];
 
 export default function Home() {
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
+
+  const toggleFaq = (index: number) => {
+    setOpenFaqIndex((prev) => (prev === index ? null : index))
+  }
+
   const fadeUpVariant = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
@@ -623,41 +631,62 @@ export default function Home() {
         </section>
 
         {/* ═══ COMPREHENSIVE AEO KNOWLEDGE BASE & FREQUENTLY ASKED QUESTIONS ═══ */}
-        <section id="faq" className="w-full py-20 bg-slate-50 dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800">
-          <div className="container px-4 md:px-6 mx-auto max-w-4xl space-y-10">
-            <div className="text-center space-y-3">
-              <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 uppercase tracking-wider">
-                Municipal Knowledge Base
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
-                Frequently Asked Municipal Questions
+        <section id="faq" className="w-full py-20 bg-slate-50/60 dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800">
+          <div className="container px-4 md:px-6 mx-auto max-w-3xl space-y-8">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Frequently Asked Questions
               </h2>
-              <p className="text-slate-600 dark:text-slate-400 text-base max-w-xl mx-auto">
-                Direct answers to common questions regarding grievance reporting, 48-hour SLAs, and BMC ward jurisdictions.
+              <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base">
+                Common questions about our service and how it works
               </p>
             </div>
 
-            <div className="space-y-6">
-              {HOME_FAQS.map((faq, idx) => (
-                <div
-                  key={idx}
-                  className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors"
-                >
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-start gap-2.5">
-                    <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">Q:</span>
-                    <span>{faq.question}</span>
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed pl-6">
-                    {faq.answer}
-                  </p>
-                </div>
-              ))}
+            {/* Clean Chitralai-style Accordion Container */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm divide-y divide-slate-100 dark:divide-slate-800/80 overflow-hidden transition-all">
+              {HOME_FAQS.map((faq, idx) => {
+                const isOpen = openFaqIndex === idx
+                return (
+                  <div key={idx} className="group">
+                    <button
+                      type="button"
+                      onClick={() => toggleFaq(idx)}
+                      className="w-full py-5 px-6 sm:px-8 text-left flex items-center justify-between gap-4 font-semibold text-slate-900 dark:text-slate-100 text-sm sm:text-base hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors focus:outline-none"
+                      aria-expanded={isOpen}
+                    >
+                      <span className="leading-snug">{faq.question}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 shrink-0 text-slate-400 group-hover:text-emerald-600 transition-transform duration-200 ease-out ${
+                          isOpen ? "rotate-180 text-emerald-600 dark:text-emerald-400" : ""
+                        }`}
+                      />
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          key="content"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-6 sm:px-8 pb-5 pt-0 text-slate-600 dark:text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            {faq.answer}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )
+              })}
             </div>
 
             {/* Credible External Sources & Citations */}
-            <div className="pt-6 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400 space-y-2">
+            <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1.5">
               <p className="font-semibold text-slate-700 dark:text-slate-300">Official Municipal Government Sources & References:</p>
-              <div className="flex flex-wrap items-center justify-center gap-4 text-emerald-600 dark:text-emerald-400">
+              <div className="flex flex-wrap items-center justify-center gap-3 text-emerald-600 dark:text-emerald-400">
                 <a href="https://www.mcgm.gov.in" target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
                   Brihanmumbai Municipal Corporation (BMC Portal) ↗
                 </a>

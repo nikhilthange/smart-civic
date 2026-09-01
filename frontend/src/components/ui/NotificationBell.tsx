@@ -136,6 +136,7 @@ export function NotificationBell() {
                 e.stopPropagation()
                 toast.dismiss(t.id)
               }}
+              aria-label="Dismiss notification"
               className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-md shrink-0"
             >
               <X className="h-3.5 w-3.5" />
@@ -183,6 +184,7 @@ export function NotificationBell() {
             </div>
             <button
               onClick={() => toast.dismiss(t.id)}
+              aria-label="Dismiss notification"
               className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-md shrink-0"
             >
               <X className="h-3.5 w-3.5" />

@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/context/AuthContext"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import { EmptyState } from "@/components/common/EmptyState"
+import toast from "react-hot-toast"
 
 import {
   complaintApi, STATUS_CONFIG, CATEGORY_LABELS,
@@ -85,12 +86,13 @@ export default function ComplaintHistory() {
     try {
       await complaintApi.delete(id)
       setDeleteId(null)
+      toast.success("Complaint deleted successfully")
       load()
     } catch (err: unknown) {
       const msg = err && typeof err === "object" && "response" in err
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-        : "Failed to delete."
-      alert(msg)
+        : "Failed to delete complaint."
+      toast.error(msg || "Failed to delete complaint.")
     }
   }
 

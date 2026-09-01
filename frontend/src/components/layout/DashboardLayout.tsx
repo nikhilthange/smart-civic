@@ -46,6 +46,7 @@ import KeyboardShortcutsModal from "@/components/common/KeyboardShortcutsModal"
 import { OnboardingTourModal } from "@/components/common/OnboardingTourModal"
 import { LiveWebSocketEventTicker } from "@/components/common/LiveWebSocketEventTicker"
 import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
+import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { useTranslation } from "react-i18next"
 import { triggerHapticFeedback } from "@/utils/haptics"
 
@@ -482,7 +483,9 @@ export default function DashboardLayout() {
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6"
           >
-            <Outlet />
+            <ErrorBoundary inline={true}>
+              <Outlet />
+            </ErrorBoundary>
           </motion.div>
         </main>
 

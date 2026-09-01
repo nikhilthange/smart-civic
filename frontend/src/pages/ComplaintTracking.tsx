@@ -26,6 +26,7 @@ import ComplaintMap from "@/components/ui/ComplaintMap"
 import FeedbackModal from "@/components/ui/FeedbackModal"
 import { BeforeAfterSlider } from "@/components/common/BeforeAfterSlider"
 import { formatDateTime } from "@/utils/formatters"
+import { triggerHapticFeedback } from "@/utils/haptics"
 import api from "@/lib/axios"
 import toast from "react-hot-toast"
 
@@ -901,7 +902,7 @@ export default function ComplaintTracking() {
   useEffect(() => {
     if (!socket || !targetId) return
 
-    const handleUpdate = (payload: any) => {
+    const handleUpdate = async (payload: any) => {
       const updated = payload?.complaint || payload?.data || payload
       const updatedId = (updated?._id || updated?.id || updated?.complaintId || "").toString()
       const currentMongoId = (complaint?._id || "").toString()
@@ -912,7 +913,20 @@ export default function ComplaintTracking() {
         updatedId &&
         (updatedId === currentMongoId || updatedId === currentHumanId || updatedId === currentTarget)
       ) {
+        triggerHapticFeedback("success")
+        if (updated.status) {
+          const label = STATUS_CONFIG[updated.status as ComplaintStatus]?.label || updated.status
+          toast.success(`Live Telemetry: Status is now ${label}`, { icon: "📡", id: `status-${updatedId}` })
+        }
+
         setComplaint((prev) => (prev ? { ...prev, ...updated } : updated))
+
+        try {
+          const freshData = await complaintApi.getOne(currentTarget)
+          if (freshData) setComplaint(freshData)
+        } catch {
+          // Keep current payload
+        }
       }
     }
 

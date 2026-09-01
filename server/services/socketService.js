@@ -194,15 +194,21 @@ const broadcastComplaintCreated = (complaint) => {
  */
 const broadcastComplaintAssigned = (complaint, targetRole = "worker") => {
   if (!io) return;
-  io.emit("complaint:assigned", {
+  const payload = {
     type: "COMPLAINT_ASSIGNED",
     complaintId: complaint._id,
     id: complaint.complaintId,
     status: complaint.status,
+    statusHistory: complaint.statusHistory,
     assignedWorker: complaint.assignedWorker,
     assignedOfficer: complaint.assignedOfficer,
+    complaint,
     targetRole,
-  });
+  };
+  io.emit("complaint:assigned", payload);
+  io.emit("complaint:status_updated", payload);
+  if (complaint.complaintId) io.to(`complaint:${complaint.complaintId}`).emit("complaint:updated", complaint);
+  if (complaint._id) io.to(`complaint:${complaint._id}`).emit("complaint:updated", complaint);
 
   if (complaint.citizen) {
     const citizenId = complaint.citizen._id || complaint.citizen;
@@ -215,7 +221,7 @@ const broadcastComplaintAssigned = (complaint, targetRole = "worker") => {
  */
 const broadcastComplaintResolved = (complaint) => {
   if (!io) return;
-  io.emit("complaint:resolved", {
+  const payload = {
     type: "COMPLAINT_RESOLVED",
     complaintId: complaint._id,
     id: complaint.complaintId,
@@ -223,7 +229,13 @@ const broadcastComplaintResolved = (complaint) => {
     resolvedAt: complaint.resolvedAt,
     resolutionNotes: complaint.resolutionNotes,
     resolutionImage: complaint.resolutionImage,
-  });
+    statusHistory: complaint.statusHistory,
+    complaint,
+  };
+  io.emit("complaint:resolved", payload);
+  io.emit("complaint:status_updated", payload);
+  if (complaint.complaintId) io.to(`complaint:${complaint.complaintId}`).emit("complaint:updated", complaint);
+  if (complaint._id) io.to(`complaint:${complaint._id}`).emit("complaint:updated", complaint);
 
   if (complaint.citizen) {
     const citizenId = complaint.citizen._id || complaint.citizen;
@@ -236,13 +248,23 @@ const broadcastComplaintResolved = (complaint) => {
  */
 const broadcastStatusUpdated = (complaint) => {
   if (!io) return;
-  io.emit("complaint:status_updated", {
+  const payload = {
     complaintId: complaint._id,
     id: complaint.complaintId,
     status: complaint.status,
     priority: complaint.priority,
+    statusHistory: complaint.statusHistory,
+    assignedWorker: complaint.assignedWorker,
+    assignedOfficer: complaint.assignedOfficer,
+    resolutionImage: complaint.resolutionImage,
+    resolutionNotes: complaint.resolutionNotes,
+    complaint,
     updatedAt: complaint.updatedAt,
-  });
+  };
+  io.emit("complaint:status_updated", payload);
+  io.emit("complaint:updated", payload);
+  if (complaint.complaintId) io.to(`complaint:${complaint.complaintId}`).emit("complaint:updated", complaint);
+  if (complaint._id) io.to(`complaint:${complaint._id}`).emit("complaint:updated", complaint);
 };
 
 /**

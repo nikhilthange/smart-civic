@@ -39,7 +39,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/context/AuthContext"
 import { NotificationBell } from "@/components/ui/NotificationBell"
-import LanguageSelector from "@/components/common/LanguageSelector"
 import { CommandPalette } from "@/components/common/CommandPalette"
 import MunicipalSimulatorFloatingWidget from "@/components/common/MunicipalSimulatorFloatingWidget"
 import MunicipalCopilotModal from "@/components/admin/MunicipalCopilotModal"
@@ -79,6 +78,7 @@ const navGroups: NavGroup[] = [
       { key: "nav.rewards", defaultName: "Civic Rewards & Karma", href: "/rewards", icon: Trophy, citizenOnly: true },
       { key: "nav.whatsappSandbox", defaultName: "WhatsApp Bot Sandbox", href: "/whatsapp-sandbox", icon: MessageSquare, citizenOnly: true },
       { key: "nav.search", defaultName: "Global Search", href: "/search", icon: Search },
+      { key: "nav.settings", defaultName: "Settings & Language", href: "/settings", icon: SettingsIcon },
     ],
   },
   {
@@ -388,7 +388,6 @@ export default function DashboardLayout() {
               </div>
             )}
 
-            <LanguageSelector />
             <NotificationBell />
 
             <DropdownMenu>

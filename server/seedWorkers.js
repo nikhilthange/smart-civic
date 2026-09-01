@@ -19,7 +19,7 @@ const seedWorkers = async () => {
       console.log("No wards found. Please run seedWards.js first.");
       process.exit(1);
     }
-    
+
     let pwdDept = await Department.findOne({ code: "PWD" });
     if (!pwdDept) {
       pwdDept = await Department.create({ code: "PWD", name: "PWD / Roads", contactEmail: "contact.pwd@smartcity.gov.in" });

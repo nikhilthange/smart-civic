@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom"
 import { Building2, Search, Command } from "lucide-react"
-import LanguageSelector from "@/components/common/LanguageSelector"
 import { NotificationBell } from "@/components/ui/NotificationBell"
 
 export default function Header() {
@@ -28,7 +27,6 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-2.5 ml-auto">
-        <LanguageSelector />
         <NotificationBell />
       </div>
     </header>

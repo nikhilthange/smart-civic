@@ -60,11 +60,8 @@ const staggerItem: Variants = {
 function StatusBadge({ status }: { status: ComplaintStatus }) {
   if (status === "pending" || status === "submitted" || status === "ai_verified") {
     return (
-      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/20 shadow-2xs">
-        <span className="relative flex h-2 w-2 mr-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-        </span>
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 shadow-2xs">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
         {status === "ai_verified" ? "AI Verified" : "Pending"}
       </span>
     )
@@ -78,11 +75,8 @@ function StatusBadge({ status }: { status: ComplaintStatus }) {
     status === "resolution_submitted"
   ) {
     return (
-      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-500/20 shadow-2xs">
-        <span className="relative flex h-2 w-2 mr-1.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
-        </span>
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20 shadow-2xs">
+        <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping" />
         {status === "in_progress" ? "In Progress" : "Dispatched"}
       </span>
     )
@@ -90,15 +84,16 @@ function StatusBadge({ status }: { status: ComplaintStatus }) {
 
   if (status === "resolved" || status === "closed") {
     return (
-      <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20 shadow-2xs">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 inline-block" />
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
         Resolved
       </span>
     )
   }
 
   return (
-    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20">
+      <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
       {status}
     </span>
   )
@@ -196,15 +191,15 @@ export default function Dashboard() {
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4.5"
         >
           {/* Total Submissions */}
           <motion.div
             variants={staggerItem}
-            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-emerald-500/30 dark:hover:border-emerald-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col justify-between"
+            className="bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-mono">
                 {t("dashPage.totalSubmissions", "Total Reports")}
               </span>
               <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
@@ -212,20 +207,20 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono font-tabular tracking-tight text-slate-900 dark:text-white">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums tracking-tight text-slate-900 dark:text-white">
                 {stats?.total ?? 0}
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">All-time municipal filings</p>
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">All-time municipal filings</p>
             </div>
           </motion.div>
 
           {/* Pending / In-Triage */}
           <motion.div
             variants={staggerItem}
-            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-amber-500/30 dark:hover:border-amber-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col justify-between"
+            className="bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-amber-500/40 dark:hover:border-amber-500/30 transition-all duration-200 flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-mono">
                 {t("dashPage.pending", "Pending Triage")}
               </span>
               <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
@@ -233,20 +228,20 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono font-tabular tracking-tight text-amber-600 dark:text-amber-400">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums tracking-tight text-amber-600 dark:text-amber-400">
                 {pending}
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">Awaiting ward assignment</p>
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">Awaiting ward assignment</p>
             </div>
           </motion.div>
 
           {/* In Progress */}
           <motion.div
             variants={staggerItem}
-            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-sky-500/30 dark:hover:border-sky-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col justify-between"
+            className="bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-sky-500/40 dark:hover:border-sky-500/30 transition-all duration-200 flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-mono">
                 {t("dashPage.inProgress", "Field In-Progress")}
               </span>
               <div className="p-2 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400">
@@ -254,31 +249,31 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono font-tabular tracking-tight text-sky-600 dark:text-sky-400">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums tracking-tight text-sky-600 dark:text-sky-400">
                 {inProgress}
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">Dispatched to field teams</p>
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">Dispatched to field teams</p>
             </div>
           </motion.div>
 
           {/* Resolved */}
           <motion.div
             variants={staggerItem}
-            className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-emerald-500/30 dark:hover:border-emerald-500/30 hover:-translate-y-0.5 hover:shadow-md transition-all flex flex-col justify-between"
+            className="bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-emerald-500/40 dark:hover:border-emerald-500/30 transition-all duration-200 flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">
+              <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-mono">
                 {t("dashPage.resolved", "Resolved")}
               </span>
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="h-4 w-4" />
               </div>
             </div>
             <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono font-tabular tracking-tight text-emerald-600 dark:text-emerald-400">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums tracking-tight text-emerald-600 dark:text-emerald-400">
                 {resolved}
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">Verified & closed tickets</p>
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">Verified & closed tickets</p>
             </div>
           </motion.div>
         </motion.div>
@@ -374,25 +369,25 @@ export default function Dashboard() {
               ) : (
                 <>
                   {/* Desktop Table View */}
-                  <div className="hidden md:block w-full overflow-x-auto">
+                  <div className="hidden md:block w-full overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-md">
                     <Table className="w-full min-w-[500px]">
                       <TableHeader>
-                        <TableRow className="bg-slate-50/60 dark:bg-slate-800/40 text-[11px] font-mono text-slate-500 uppercase">
-                          <TableHead className="w-14 font-semibold">Photo</TableHead>
-                          <TableHead className="font-semibold">ID</TableHead>
-                          <TableHead className="font-semibold">Issue Details</TableHead>
-                          <TableHead className="font-semibold hidden md:table-cell">Date</TableHead>
-                          <TableHead className="font-semibold text-right">Status</TableHead>
+                        <TableRow className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200/60 dark:border-zinc-800/60">
+                          <TableHead className="w-14 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-mono">Photo</TableHead>
+                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-mono">ID</TableHead>
+                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Issue Details</TableHead>
+                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 hidden md:table-cell font-mono">Date</TableHead>
+                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 text-right">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {recent.map((c) => (
                           <TableRow
                             key={c._id}
-                            className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/60"
+                            className="hover:bg-slate-50/80 dark:hover:bg-zinc-800/50 even:bg-slate-50/30 dark:even:bg-zinc-900/30 transition-colors border-b border-slate-100 dark:border-zinc-800/40"
                           >
                             <TableCell>
-                              <div className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
+                              <div className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200/80 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
                                 {c.attachments && c.attachments[0] ? (
                                   <img
                                     src={getImageUrl(c.attachments[0])}
@@ -405,7 +400,7 @@ export default function Dashboard() {
                                 )}
                               </div>
                             </TableCell>
-                            <TableCell className="font-mono text-xs font-semibold">
+                            <TableCell className="font-mono text-xs font-semibold tabular-nums">
                               <Link
                                 to={`/complaint/${c._id || c.id || c.complaintId}/track`}
                                 className="text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
@@ -418,11 +413,11 @@ export default function Dashboard() {
                               <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1 max-w-[220px]">
                                 {c.title}
                               </p>
-                              <p className="text-[11px] text-slate-400 line-clamp-1">
+                              <p className="text-[11px] text-slate-400 dark:text-zinc-500 line-clamp-1">
                                 {CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}
                               </p>
                             </TableCell>
-                            <TableCell className="text-xs text-slate-500 font-mono hidden md:table-cell">
+                            <TableCell className="text-xs text-slate-500 font-mono tabular-nums hidden md:table-cell">
                               {new Date(c.createdAt).toLocaleDateString("en-IN", {
                                 day: "2-digit",
                                 month: "short",

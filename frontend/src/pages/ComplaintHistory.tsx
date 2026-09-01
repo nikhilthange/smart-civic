@@ -24,14 +24,47 @@ import {
 } from "@/services/complaintApi"
 
 function StatusBadge({ status }: { status: ComplaintStatus | string }) {
+  const statusStr = String(status).toLowerCase()
+  const isPending = ["pending", "submitted", "ai_verified"].includes(statusStr)
+  const isInProgress = ["ward_assigned", "officer_assigned", "worker_assigned", "in_progress", "resolution_submitted"].includes(statusStr)
+  const isResolved = ["resolved", "closed"].includes(statusStr)
+
+  if (isPending) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+        {statusStr === "ai_verified" ? "AI Verified" : "Pending"}
+      </span>
+    )
+  }
+
+  if (isInProgress) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping" />
+        In Progress
+      </span>
+    )
+  }
+
+  if (isResolved) {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        Resolved
+      </span>
+    )
+  }
+
   const cfg = STATUS_CONFIG[status as ComplaintStatus] || {
     label: status,
-    color: "text-gray-700",
-    bg: "bg-gray-100",
-    border: "border-gray-300"
+    color: "text-slate-700 dark:text-slate-300",
+    bg: "bg-slate-500/10",
+    border: "border-slate-500/20"
   }
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold ${cfg.bg} ${cfg.color} border ${cfg.border}`}>
+      <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
       {cfg.label}
     </span>
   )
@@ -241,24 +274,24 @@ export default function ComplaintHistory() {
           ) : (
             <>
               {/* Desktop Table View (>= md) */}
-              <div className="hidden md:block w-full overflow-x-auto rounded-xl border border-border/60 bg-card shadow-sm">
+              <div className="hidden md:block w-full overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-md">
                 <Table className="w-full min-w-[600px]">
                   <TableHeader>
-                    <TableRow className="bg-slate-50 dark:bg-slate-900/50">
-                      <TableHead className="font-semibold">{t("table.evidence", "Evidence")}</TableHead>
-                      <TableHead className="font-semibold">{t("table.id", "Ticket ID")}</TableHead>
-                      <TableHead className="font-semibold">{t("table.title", "Title")}</TableHead>
-                      <TableHead className="font-semibold hidden md:table-cell">{t("table.category", "Category")}</TableHead>
-                      <TableHead className="font-semibold hidden sm:table-cell">{t("table.date", "Date")}</TableHead>
-                      <TableHead className="font-semibold">{t("table.status", "Status")}</TableHead>
-                      <TableHead className="text-right font-semibold">{t("table.actions", "Actions")}</TableHead>
+                    <TableRow className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200/60 dark:border-zinc-800/60">
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">{t("table.evidence", "Evidence")}</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-mono">{t("table.id", "Ticket ID")}</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">{t("table.title", "Title")}</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 hidden md:table-cell">{t("table.category", "Category")}</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 hidden sm:table-cell font-mono">{t("table.date", "Date")}</TableHead>
+                      <TableHead className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">{t("table.status", "Status")}</TableHead>
+                      <TableHead className="text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">{t("table.actions", "Actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {complaints.map((c) => (
-                      <TableRow key={c._id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                      <TableRow key={c._id} className="hover:bg-slate-50/80 dark:hover:bg-zinc-800/50 even:bg-slate-50/30 dark:even:bg-zinc-900/30 transition-colors border-b border-slate-100 dark:border-zinc-800/40">
                         <TableCell>
-                          <div className="h-10 w-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 shrink-0">
+                          <div className="h-10 w-10 rounded-xl overflow-hidden border border-slate-200/80 dark:border-zinc-800 bg-slate-100 dark:bg-zinc-800 shrink-0">
                             <img
                               src={getImageUrl(c.attachments && c.attachments[0])}
                               onError={handleImageError}
@@ -267,16 +300,16 @@ export default function ComplaintHistory() {
                             />
                           </div>
                         </TableCell>
-                        <TableCell className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100">
+                        <TableCell className="font-mono text-xs font-semibold tabular-nums text-slate-900 dark:text-slate-100">
                           {c.complaintId}
                         </TableCell>
                         <TableCell>
                           <p className="font-medium text-xs text-slate-900 dark:text-slate-100 max-w-xs truncate">{c.title}</p>
                         </TableCell>
-                        <TableCell className="hidden md:table-cell text-sm text-slate-600 dark:text-slate-400">
-                          {CATEGORY_LABELS[c.category]}
+                        <TableCell className="hidden md:table-cell text-xs text-slate-600 dark:text-slate-400">
+                          {CATEGORY_LABELS[c.category] || c.category}
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell text-sm text-slate-500">
+                        <TableCell className="hidden sm:table-cell text-xs text-slate-500 font-mono tabular-nums">
                           {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                         </TableCell>
                         <TableCell>

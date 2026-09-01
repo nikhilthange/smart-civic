@@ -14,6 +14,7 @@ import {
 interface SampleFeed {
   id: string
   label: string
+  icon: string
   confidence: string
   deptCode: string
   deptName: string
@@ -28,6 +29,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
   {
     id: "#PWD-HAZARD-9841",
     label: "Pothole Road Defect",
+    icon: "🚗",
     confidence: "99.4%",
     deptCode: "PWD",
     deptName: "Roads & Infrastructure",
@@ -40,6 +42,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
   {
     id: "#SWD-FLOOD-8120",
     label: "Storm Drain Blockage",
+    icon: "🌊",
     confidence: "98.7%",
     deptCode: "SWD",
     deptName: "Storm Water Drains",
@@ -51,7 +54,8 @@ const SAMPLE_FEEDS: SampleFeed[] = [
   },
   {
     id: "#SWM-WASTE-4592",
-    label: "Commercial Waste Overflow",
+    label: "Garbage Overflow",
+    icon: "🗑️",
     confidence: "96.9%",
     deptCode: "SWM",
     deptName: "Solid Waste Mgmt",
@@ -60,6 +64,19 @@ const SAMPLE_FEEDS: SampleFeed[] = [
     slaHours: "48h Standard SLA",
     coords: "19.1136° N, 72.8697° E",
     imageUrl: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: "#ELD-LIGHT-3019",
+    label: "Streetlight Hazard",
+    icon: "💡",
+    confidence: "98.1%",
+    deptCode: "ELD",
+    deptName: "Electric & Streetlights",
+    ward: "Ward D (Malabar Hill)",
+    severity: "P2 - Elevated",
+    slaHours: "24h Priority SLA",
+    coords: "18.9682° N, 72.8085° E",
+    imageUrl: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80"
   }
 ]
 
@@ -77,15 +94,15 @@ export default function AiPipelineHeroVisual() {
   const current = SAMPLE_FEEDS[activeIdx]
 
   return (
-    <div className="relative group w-full max-w-3xl mx-auto my-6 select-none text-left">
+    <div className="relative group w-full max-w-4xl mx-auto my-4 select-none text-left">
       {/* ── Soft Emerald Radial Glow Behind Card ── */}
-      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400/15 via-teal-300/10 to-transparent rounded-3xl blur-2xl opacity-80 group-hover:opacity-100 transition-all duration-700 -z-10" />
+      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400/20 via-teal-300/15 to-transparent rounded-3xl blur-2xl opacity-80 group-hover:opacity-100 transition-all duration-700 -z-10" />
 
       {/* ── Main Luminous Glass Card ── */}
-      <div className="relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-emerald-100/90 dark:border-emerald-950/60 shadow-[0_20px_50px_rgba(16,185,129,0.08)] rounded-3xl p-5 sm:p-6 text-slate-800 dark:text-slate-100 overflow-hidden font-sans">
+      <div className="relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-emerald-100/90 dark:border-emerald-950/60 shadow-[0_20px_50px_rgba(16,185,129,0.12)] rounded-3xl p-5 sm:p-6 text-slate-800 dark:text-slate-100 overflow-hidden font-sans">
         
         {/* ── Card Header ── */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 mb-3 gap-2.5">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 inline-block" />
@@ -96,17 +113,42 @@ export default function AiPipelineHeroVisual() {
             <div className="flex items-center gap-2">
               <Cpu className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span className="font-mono text-xs text-slate-600 dark:text-slate-300 font-bold tracking-wider uppercase">
-                NEURAL INGESTION & VISION PIPELINE
+                AI Vision Ingestion & Triage Simulator
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-mono text-xs px-2.5 py-1 rounded-full font-semibold">
+            <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-mono text-[11px] px-2.5 py-0.5 rounded-full font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-              420ms LATENCY
+              420ms INGESTION LATENCY
             </span>
           </div>
+        </div>
+
+        {/* ── Interactive Scenario Filter Tabs ── */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-2 scrollbar-none">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
+            Test Scenarios:
+          </span>
+          {SAMPLE_FEEDS.map((feed, idx) => {
+            const isSelected = activeIdx === idx
+            return (
+              <button
+                key={feed.id}
+                type="button"
+                onClick={() => setActiveIdx(idx)}
+                className={`text-xs px-3 py-1.5 rounded-xl font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+                  isSelected
+                    ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 scale-102"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                }`}
+              >
+                <span>{feed.icon}</span>
+                <span>{feed.label}</span>
+              </button>
+            )
+          })}
         </div>
 
         {/* ── Main Split Viewport: Defect Scanner + Model Ledger ── */}

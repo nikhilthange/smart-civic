@@ -7,7 +7,6 @@ import {
   ShieldCheck,
   MapPin,
   BarChart3,
-  Zap,
   Clock,
   CheckCircle2,
   Users,
@@ -115,68 +114,105 @@ export default function Home() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full py-20 md:py-28 lg:py-36 overflow-hidden bg-white dark:bg-slate-950">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-70"></div>
+        <section className="relative w-full pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden bg-gradient-to-b from-white via-slate-50/50 to-slate-100/60 dark:from-slate-950 dark:via-slate-900/60 dark:to-slate-950">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent opacity-70"></div>
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-          <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 h-[400px] w-[800px] rounded-full bg-primary/20 opacity-30 blur-[120px]"></div>
+          <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 h-[450px] w-[900px] rounded-full bg-emerald-500/15 opacity-40 blur-[130px]"></div>
 
-          <div className="container relative px-4 md:px-6 mx-auto text-center max-w-5xl">
+          <div className="container relative px-4 md:px-6 mx-auto text-center max-w-6xl space-y-10">
             <motion.div
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
-              className="flex flex-col items-center gap-6"
+              className="flex flex-col items-center gap-5"
             >
-              <motion.div variants={fadeUpVariant} className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium transition-colors hover:bg-primary/10 text-primary">
-                <Zap className="h-4 w-4 mr-2 text-amber-500" /> BMC Mumbai Smart Governance • 24 Municipal Wards
+              {/* Live Status Pill */}
+              <motion.div variants={fadeUpVariant} className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50/90 dark:bg-emerald-950/60 px-4 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-sm backdrop-blur-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>BMC Mumbai Smart Governance • 24 Municipal Wards • Live AI Triage</span>
               </motion.div>
-              <motion.h1 variants={fadeUpVariant} className="text-3xl font-extrabold tracking-tight sm:text-5xl md:text-6xl max-w-4xl text-slate-900 dark:text-white leading-[1.15]">
+
+              {/* Main Headline */}
+              <motion.h1 variants={fadeUpVariant} className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl text-slate-900 dark:text-white leading-[1.12]">
                 Report Mumbai Civic Grievances with <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600">
                   AI-Powered 48h SLA Resolution
                 </span>
               </motion.h1>
-              <motion.p variants={fadeUpVariant} className="mx-auto max-w-[750px] text-slate-600 md:text-lg dark:text-slate-300">
+
+              {/* Subtitle */}
+              <motion.p variants={fadeUpVariant} className="mx-auto max-w-2xl text-slate-600 dark:text-slate-300 text-sm sm:text-base md:text-lg leading-relaxed">
                 Official BMC digital municipal platform. Report potholes, garbage, and drainage defects with 96.4% AI vision verification, live GIS map tracking, and geofenced field proof.
               </motion.p>
-              <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row justify-center gap-4 mt-2 w-full sm:w-auto">
-                <Button asChild size="lg" className="w-full sm:w-auto rounded-full h-13 px-8 text-base shadow-lg shadow-emerald-600/30 transition-all hover:scale-105 bg-emerald-600 hover:bg-emerald-700">
+
+              {/* CTA Action Buttons */}
+              <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full sm:w-auto">
+                <Button asChild size="lg" className="w-full sm:w-auto rounded-full h-12 sm:h-13 px-7 text-sm sm:text-base font-bold shadow-lg shadow-emerald-600/25 transition-all hover:scale-105 bg-emerald-600 hover:bg-emerald-700 text-white">
                   <Link to="/auth">
                     <span>Report an Issue Now</span>
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-full h-13 px-8 text-base bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:scale-105">
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-full h-12 sm:h-13 px-7 text-sm sm:text-base font-semibold bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:scale-105 text-slate-800 dark:text-slate-100">
                   <Link to="/track">
                     Track Existing Grievance
                   </Link>
                 </Button>
+                <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto rounded-full h-12 sm:h-13 px-5 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300">
+                  <Link to="/map">
+                    <MapPin className="mr-1.5 h-4 w-4 text-emerald-600" />
+                    Live Ward Map
+                  </Link>
+                </Button>
               </motion.div>
+            </motion.div>
 
-              {/* ─── AEO Top Summary & Definition Callout Box ─────────────────── */}
-              <motion.div
-                variants={fadeUpVariant}
-                className="w-full max-w-4xl mx-auto mt-6 p-5 rounded-2xl bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-left shadow-sm"
-              >
-                <div className="flex items-start gap-3.5">
-                  <div className="bg-emerald-600 text-white p-2 rounded-xl shrink-0 mt-0.5">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                  <div className="space-y-1.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200">
-                    <p className="font-bold text-emerald-950 dark:text-emerald-300">
-                      Key Takeaway & Definition (Municipal CityOS Overview)
-                    </p>
-                    <p className="leading-relaxed text-slate-700 dark:text-slate-300">
-                      <strong>Smart Civic AI</strong> is Greater Mumbai&apos;s official digital municipal operating system. It enables 12.5M+ citizens across all 24 BMC administrative wards (A to T) to report road potholes, overflowing dumpsters, and waterlogging with automatic AI computer-vision triage (96.4% confidence), 50-meter deduplication, and guaranteed 48-hour SLA contractor execution backed by GPS geofenced before-and-after photo audits.
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
-                      <span className="bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-md">Audience: Mumbai Residents & ALMs</span>
-                      <span className="bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-md">Coverage: 24 Municipal Wards</span>
-                      <span className="bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-md">Resolution: 48h SLA Guarantee</span>
-                    </div>
-                  </div>
+            {/* ═══ INTERACTIVE AI VISION CLASSIFIER SIMULATOR (CENTERPIECE) ═══ */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.7 }}
+              className="w-full pt-2"
+            >
+              <AiPipelineHeroVisual />
+            </motion.div>
+
+            {/* ═══ 3-CARD GOVERNANCE & AEO DEFINITION TRUST GRID ═══ */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left pt-2"
+            >
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base">
+                  ⚡
                 </div>
-              </motion.div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Instant AI Vision Triage</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  96.4% computer-vision classification automatically routes road, waste, and flood hazards to designated BMC departments in 420ms.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-base">
+                  ⏱️
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Guaranteed 48-Hour SLA</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Enforces 3-tier municipal escalation with automated contractor escrow penalties up to ₹12,500 for unfulfilled deadlines.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
+                <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-base">
+                  🛡️
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">100m GPS Geofenced Proof</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Field crews must be physically on-site within a 100m radius to submit timestamped before-and-after photo verification.
+                </p>
+              </div>
             </motion.div>
           </div>
         </section>

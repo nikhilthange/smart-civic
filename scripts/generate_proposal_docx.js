@@ -5,7 +5,6 @@ const {
   Packer,
   Paragraph,
   TextRun,
-  HeadingLevel,
   Table,
   TableRow,
   TableCell,
@@ -15,18 +14,10 @@ const {
   ShadingType,
   Header,
   Footer,
-  PageNumber
 } = require('docx');
 
 async function generateProposalDocx() {
   const outputPath = path.resolve(__dirname, '..', 'docs', 'BMC_Smart_Civic_AI_Proposal_2026.docx');
-
-  const borderNone = {
-    top: { style: BorderStyle.NONE, size: 0, color: 'auto' },
-    bottom: { style: BorderStyle.NONE, size: 0, color: 'auto' },
-    left: { style: BorderStyle.NONE, size: 0, color: 'auto' },
-    right: { style: BorderStyle.NONE, size: 0, color: 'auto' },
-  };
 
   const borderThin = {
     top: { style: BorderStyle.SINGLE, size: 1, color: 'CBD5E1' },
@@ -41,7 +32,7 @@ async function generateProposalDocx() {
         properties: {
           page: {
             margin: {
-              top: 1440, // 1 inch
+              top: 1440,
               bottom: 1440,
               left: 1440,
               right: 1440,
@@ -83,7 +74,7 @@ async function generateProposalDocx() {
           }),
         },
         children: [
-          // Header / Title
+          // Title
           new Paragraph({
             spacing: { before: 0, after: 100 },
             children: [
@@ -95,9 +86,9 @@ async function generateProposalDocx() {
                 font: 'Calibri',
               }),
               new TextRun({
-                text: 'DEPLOYMENT OF SMART CIVIC AI PLATFORM (CITYOS)\nAcross 24 Administrative Wards (A to T)',
+                text: 'DEPLOYMENT OF SMART CIVIC AI PLATFORM (CITYOS)\nReal-Time Grievance Resolution & Ward Telemetry Across 24 Mumbai Wards (A to T)',
                 bold: true,
-                size: 34,
+                size: 32,
                 color: '0F172A',
                 font: 'Calibri',
               }),
@@ -122,7 +113,7 @@ async function generateProposalDocx() {
                     shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
                     borders: borderThin,
                     margins: { top: 100, bottom: 100, left: 150, right: 150 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Brihanmumbai Municipal Corporation (BMC), Fort HQ, Mumbai - 400001', size: 19, color: '334155', font: 'Calibri' })] })],
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Brihanmumbai Municipal Corporation (BMC), Mahapalika Marg, Mumbai - 400001', size: 19, color: '334155', font: 'Calibri' })] })],
                   }),
                 ],
               }),
@@ -133,14 +124,14 @@ async function generateProposalDocx() {
                     shading: { fill: 'F1F5F9', type: ShadingType.CLEAR },
                     borders: borderThin,
                     margins: { top: 100, bottom: 100, left: 150, right: 150 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Subject Matter:', bold: true, size: 19, color: '1E293B', font: 'Calibri' })] })],
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Core Architecture Scope:', bold: true, size: 19, color: '1E293B', font: 'Calibri' })] })],
                   }),
                   new TableCell({
                     width: { size: 70, type: WidthType.PERCENTAGE },
                     shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
                     borders: borderThin,
                     margins: { top: 100, bottom: 100, left: 150, right: 150 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'AI Grievance Triage, GPS Geofenced Telemetry, and Ward SLA Governance', size: 19, color: '334155', font: 'Calibri' })] })],
+                    children: [new Paragraph({ children: [new TextRun({ text: 'YOLOv8 Vision Intake, 24-Ward GeoJSON Routing, Ward Broadcast Pool Dispatch, AI Quality Gates & Real-Time WebSockets', size: 19, color: '334155', font: 'Calibri' })] })],
                   }),
                 ],
               }),
@@ -151,7 +142,7 @@ async function generateProposalDocx() {
                     shading: { fill: 'F1F5F9', type: ShadingType.CLEAR },
                     borders: borderThin,
                     margins: { top: 100, bottom: 100, left: 150, right: 150 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Live Demonstration URL:', bold: true, size: 19, color: '1E293B', font: 'Calibri' })] })],
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Live Platform URL:', bold: true, size: 19, color: '1E293B', font: 'Calibri' })] })],
                   }),
                   new TableCell({
                     width: { size: 70, type: WidthType.PERCENTAGE },
@@ -185,12 +176,12 @@ async function generateProposalDocx() {
 
           new Paragraph({ spacing: { before: 200, after: 100 } }),
 
-          // Section 1: Executive Briefing
+          // Section 1: Executive Summary
           new Paragraph({
             spacing: { before: 250, after: 120 },
             children: [
               new TextRun({
-                text: '1. Official Header & Executive Briefing',
+                text: '1. Executive Summary & Vision Statement',
                 bold: true,
                 size: 26,
                 color: '0369A1',
@@ -223,7 +214,7 @@ async function generateProposalDocx() {
                             font: 'Calibri',
                           }),
                           new TextRun({
-                            text: 'Smart Civic AI transforms Mumbai\'s grievance management from a slow, retrospective ticketing portal into a real-time, AI-orchestrated City Operating System (CityOS). Built with edge YOLOv8 computer vision, Marathi/Hindi Web Audio voice parsing, hardware-level GPS coordinate locking, and SHA-256 chained audit logs, the platform eliminates contractor fraud while ensuring sub-second response times.',
+                            text: 'Smart Civic AI is a high-performance, real-time City Operating System (CityOS) engineered specifically for the Brihanmumbai Municipal Corporation (BMC). It replaces slow, error-prone manual triage with automated computer vision classification (YOLOv8 + NVIDIA NIM), spatial Point-in-Polygon 24-Ward routing, an open Ward Broadcast Pool for field worker task claiming, and strict AI-verified resolution quality gates that prevent fraudulent ticket closure.',
                             size: 19,
                             color: '1E3A8A',
                             font: 'Calibri',
@@ -236,24 +227,13 @@ async function generateProposalDocx() {
               }),
             ],
           }),
-          new Paragraph({
-            spacing: { before: 140, after: 100 },
-            children: [
-              new TextRun({
-                text: 'This proposal is formally addressed to the Municipal Commissioner, Additional Municipal Commissioners, Chief Information Officer (CIO), and Ward Executive Engineers across all 24 administrative wards (A to T) of the Brihanmumbai Municipal Corporation.',
-                size: 20,
-                color: '334155',
-                font: 'Calibri',
-              }),
-            ],
-          }),
 
-          // Section 2: Root-Cause Analysis
+          // Section 2: Core Engineering Capabilities
           new Paragraph({
             spacing: { before: 250, after: 120 },
             children: [
               new TextRun({
-                text: '2. Root-Cause Analysis of Mumbai\'s Civic Grievance Gaps',
+                text: '2. Detailed System Architecture & Implementation',
                 bold: true,
                 size: 26,
                 color: '0369A1',
@@ -261,41 +241,170 @@ async function generateProposalDocx() {
               }),
             ],
           }),
+
           new Paragraph({
             spacing: { before: 60, after: 80 },
             children: [
-              new TextRun({ text: '• Volume & Triage Bottleneck: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: 'During peak monsoon surges, complaint volumes rise by 420% exceeding 15,000 daily tickets. Over 68% are spatial duplicates of the same hazard, choking Ward Control Rooms.', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• Ghost Repairs & Telemetry Gaps: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: 'Legacy portals permit contractor ticket closures without verified GPS coordinates or real-time camera proof, leading to fraudulent payouts.', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• Static SLA Drift: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: 'Life-threatening hazards (open manholes, pipeline ruptures) share the same static 48-72h SLA as cosmetic defects without dynamic auto-escalation.', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• Vernacular & Digital Friction: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: 'Lack of native Marathi/Hindi voice intake creates barrier to reporting for transit workers, blue-collar citizens, and senior citizens.', size: 20, color: '334155', font: 'Calibri' }),
+              new TextRun({ text: 'A. Automated AI Vision Intake & Defect Classification:\n', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
+              new TextRun({ text: 'Citizens report issues by capturing or uploading photos. The intake engine classifies complaints into municipal categories (Potholes, Solid Waste, Drainage, Street Lighting, Water Supply, Encroachment) with real-time confidence scores and automatic severity grading (Low, Medium, High, Critical).', size: 19, color: '334155', font: 'Calibri' }),
             ],
           }),
 
-          // Section 3: Architecture Table
+          new Paragraph({
+            spacing: { before: 60, after: 80 },
+            children: [
+              new TextRun({ text: 'B. 24-Ward High-Precision Spatial Boundary Routing:\n', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
+              new TextRun({ text: 'Using Ray-Casting Point-in-Polygon (PIP) algorithms over authentic GeoJSON polygon coordinates for all 24 BMC Administrative Wards (Ward A to Ward T), complaints are instantly mapped to the correct municipal ward office and department without manual officer intervention.', size: 19, color: '334155', font: 'Calibri' }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { before: 60, after: 80 },
+            children: [
+              new TextRun({ text: 'C. Ward Broadcast Pool & Worker Self-Claim Workflow:\n', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
+              new TextRun({ text: 'Rather than locking complaints to a single worker, open tickets are broadcast to the entire Ward Pool. All officers and field workers assigned to that ward can view open tickets in real time. Any worker can claim a task with a single tap (PUT /api/complaints/:id/accept-task), automatically transitioning status to In Progress, incrementing worker active counts, and notifying citizens and officers instantly.', size: 19, color: '334155', font: 'Calibri' }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { before: 60, after: 80 },
+            children: [
+              new TextRun({ text: 'D. AI-Verified Resolution Quality Gatekeeper (Anti-Fraud):\n', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
+              new TextRun({ text: 'A complaint remains strictly In Progress until an authentic, on-site resolution photo is uploaded. The AI Inspector analyzes pixel variance and re-classifies the scene. If the worker uploads the citizen\'s original defect photo, a black/obscured photo, or if the defect is still present, the system returns HTTP 422 with a specific rejection reason, requiring genuine on-site repair proof.', size: 19, color: '334155', font: 'Calibri' }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { before: 60, after: 80 },
+            children: [
+              new TextRun({ text: 'E. Zero-Latency WebSocket Telemetry & Real-Time Push:\n', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
+              new TextRun({ text: 'Built on native Socket.IO rooms (complaint:<id>, user:<citizenId>, ward:<wardName>), progress steps update in real time with haptic vibrations and animated live telemetry notifications without requiring a page reload.', size: 19, color: '334155', font: 'Calibri' }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { before: 60, after: 80 },
+            children: [
+              new TextRun({ text: 'F. Traveling Salesperson Problem (TSP) Shift Route Optimizer:\n', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
+              new TextRun({ text: 'Field workers can optimize their daily assigned repairs into the shortest driving circuit across Mumbai wards using Nearest-Neighbor and 2-Opt heuristics, complete with interactive Leaflet TSP route visualization.', size: 19, color: '334155', font: 'Calibri' }),
+            ],
+          }),
+
+          new Paragraph({
+            spacing: { before: 60, after: 80 },
+            children: [
+              new TextRun({ text: 'G. Civic Karma Reward Engine & Gamification:\n', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
+              new TextRun({ text: 'Citizens earn +10 Civic Karma points for each verified issue reported, unlocking tiered badges (Citizen Contributor, Active Citizen, Ward Guardian) and redeeming municipal partner discount vouchers.', size: 19, color: '334155', font: 'Calibri' }),
+            ],
+          }),
+
+          // Section 3: 4-Tier Role Architecture
           new Paragraph({
             spacing: { before: 250, after: 120 },
             children: [
               new TextRun({
-                text: '3. The Proposed Solution: 4-Tier Unified Role Architecture',
+                text: '3. 4-Tier Unified Role Hierarchy & Dashboards',
+                bold: true,
+                size: 26,
+                color: '0369A1',
+                font: 'Calibri',
+              }),
+            ],
+          }),
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: [
+              new TableRow({
+                children: [
+                  new TableCell({
+                    width: { size: 25, type: WidthType.PERCENTAGE },
+                    shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 120, bottom: 120, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Role / Portal', bold: true, size: 20, color: 'FFFFFF', font: 'Calibri' })] })],
+                  }),
+                  new TableCell({
+                    width: { size: 75, type: WidthType.PERCENTAGE },
+                    shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 120, bottom: 120, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Key Capabilities & Workflows', bold: true, size: 20, color: 'FFFFFF', font: 'Calibri' })] })],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({
+                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: '1. Citizen', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
+                  }),
+                  new TableCell({
+                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Quick Snap reporting, Marathi/Hindi/English voice input, live GPS map explorer, real-time ticket tracking timeline with before/after resolution diff slider, and Civic Karma vouchers.', size: 19, color: '334155', font: 'Calibri' })] })],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({
+                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: '2. Field Worker', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
+                  }),
+                  new TableCell({
+                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Ward Open Pool tab for 1-tap task claiming, My Active Repairs queue, TSP shift route optimization, live turn-by-turn GPS navigation, low-bandwidth image compressor, offline queue sync, and AI-inspected resolution proof submission.', size: 19, color: '334155', font: 'Calibri' })] })],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({
+                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: '3. Ward Officer', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
+                  }),
+                  new TableCell({
+                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Ward control desk with real-time grievance triage, SLA countdown timers, dynamic department filtering, Monsoon flood radar monitoring, and manual worker dispatch overrides.', size: 19, color: '334155', font: 'Calibri' })] })],
+                  }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({
+                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: '4. Executive Admin', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
+                  }),
+                  new TableCell({
+                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
+                    borders: borderThin,
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'City-wide Command Center, 24-Ward GIS heatmaps, interactive Admin Data Studio for SQL/aggregate analytics, contractor scorecards, and tamper-evident audit ledger.', size: 19, color: '334155', font: 'Calibri' })] })],
+                  }),
+                ],
+              }),
+            ],
+          }),
+
+          // Section 4: Technology Stack
+          new Paragraph({
+            spacing: { before: 250, after: 120 },
+            children: [
+              new TextRun({
+                text: '4. Technology Stack & Enterprise Resilience',
                 bold: true,
                 size: 26,
                 color: '0369A1',
@@ -310,295 +419,65 @@ async function generateProposalDocx() {
                 children: [
                   new TableCell({
                     width: { size: 30, type: WidthType.PERCENTAGE },
-                    shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 120, bottom: 120, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Administrative Tier', bold: true, size: 20, color: 'FFFFFF', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    width: { size: 70, type: WidthType.PERCENTAGE },
-                    shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 120, bottom: 120, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Key Operational Capabilities & Controls', bold: true, size: 20, color: 'FFFFFF', font: 'Calibri' })] })],
-                  }),
-                ],
-              }),
-              new TableRow({
-                children: [
-                  new TableCell({
-                    width: { size: 30, type: WidthType.PERCENTAGE },
-                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Tier 1: Citizens & RWAs', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    width: { size: 70, type: WidthType.PERCENTAGE },
-                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: '1-click filing, Web Audio Marathi/Hindi/English voice notes, live ticket status timeline, and Civic Karma engagement credits.', size: 19, color: '334155', font: 'Calibri' })] })],
-                  }),
-                ],
-              }),
-              new TableRow({
-                children: [
-                  new TableCell({
-                    width: { size: 30, type: WidthType.PERCENTAGE },
-                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Tier 2: Field Contractors', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    width: { size: 70, type: WidthType.PERCENTAGE },
-                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Mandatory 50m GPS geofenced task queue, before/after camera locking (zero gallery uploads), offline SQLite sync.', size: 19, color: '334155', font: 'Calibri' })] })],
-                  }),
-                ],
-              }),
-              new TableRow({
-                children: [
-                  new TableCell({
-                    width: { size: 30, type: WidthType.PERCENTAGE },
-                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Tier 3: Ward Officers', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    width: { size: 70, type: WidthType.PERCENTAGE },
-                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Live SLA countdown radar, contractor scorecards, 1-click MMC Act notices (Section 354, 314, Clause 18.4) with SHA-256 seal.', size: 19, color: '334155', font: 'Calibri' })] })],
-                  }),
-                ],
-              }),
-              new TableRow({
-                children: [
-                  new TableCell({
-                    width: { size: 30, type: WidthType.PERCENTAGE },
-                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Tier 4: Commissioners HQ', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    width: { size: 70, type: WidthType.PERCENTAGE },
-                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'City-wide GIS heatmaps, 3D hydrological runoff digital twin, green bond CapEx ledger, and automated disaster protocols.', size: 19, color: '334155', font: 'Calibri' })] })],
-                  }),
-                ],
-              }),
-            ],
-          }),
-
-          // Section 4: Security & Compliance
-          new Paragraph({
-            spacing: { before: 250, after: 120 },
-            children: [
-              new TextRun({
-                text: '4. Sovereign Data Security, Legal Compliance & Audit Trails',
-                bold: true,
-                size: 26,
-                color: '0369A1',
-                font: 'Calibri',
-              }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• DPDPA 2023 Compliance: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: 'Strict data minimization, ephemeral telemetry storage, and citizen PII hashing (+91 98****1234).', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• MeitY Empanelled Cloud: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: '100% Indian data sovereignty (AWS Mumbai ap-south-1 / NIC Cloud) with AES-256-GCM rest and TLS 1.3 transit encryption.', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• SHA-256 Audit Trail: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: 'Cryptographically sealed ledger for every ticket action, providing tamper-proof evidence for RTI Act and CAG state audits.', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• Zero-Trust RBAC: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: '100% pass rate across 30 automated security penetration vectors (BOLA, NoSQL injection, DDoS throttling).', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-
-          // Section 5 & 6
-          new Paragraph({
-            spacing: { before: 250, after: 120 },
-            children: [
-              new TextRun({
-                text: '5. Interoperability & Disaster Recovery Protocol',
-                bold: true,
-                size: 26,
-                color: '0369A1',
-                font: 'Calibri',
-              }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• BMC SAP / MCGS Sync: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: 'Bidirectional RESTful webhook adapters allow parallel dual-run mode without disrupting existing enterprise investments.', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• 60-Second Instant Rollback: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: 'Containerized immutable deployments allow instant blue/green traffic cutover to prior certified baselines in case of systemic failure.', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-          new Paragraph({
-            spacing: { before: 60, after: 80 },
-            children: [
-              new TextRun({ text: '• High Availability & PITR: ', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-              new TextRun({ text: '99.99% uptime SLA with continuous replica-set backups (RPO < 1s, RTO < 15min) and Redis Dead-Letter Queues for failed background jobs.', size: 20, color: '334155', font: 'Calibri' }),
-            ],
-          }),
-
-          // Section 7: ROI Table
-          new Paragraph({
-            spacing: { before: 250, after: 120 },
-            children: [
-              new TextRun({
-                text: '6. Projected Annual ROI & Fiscal Benefits',
-                bold: true,
-                size: 26,
-                color: '0369A1',
-                font: 'Calibri',
-              }),
-            ],
-          }),
-          new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            rows: [
-              new TableRow({
-                children: [
-                  new TableCell({
-                    width: { size: 65, type: WidthType.PERCENTAGE },
                     shading: { fill: '0F766E', type: ShadingType.CLEAR },
                     borders: borderThin,
-                    margins: { top: 120, bottom: 120, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Optimization Stream', bold: true, size: 20, color: 'FFFFFF', font: 'Calibri' })] })],
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Layer', bold: true, size: 20, color: 'FFFFFF', font: 'Calibri' })] })],
                   }),
                   new TableCell({
-                    width: { size: 35, type: WidthType.PERCENTAGE },
+                    width: { size: 70, type: WidthType.PERCENTAGE },
                     shading: { fill: '0F766E', type: ShadingType.CLEAR },
                     borders: borderThin,
-                    margins: { top: 120, bottom: 120, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Annual Savings', bold: true, size: 20, color: 'FFFFFF', font: 'Calibri' })] })],
+                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
+                    children: [new Paragraph({ children: [new TextRun({ text: 'Implemented Technology & Framework', bold: true, size: 20, color: 'FFFFFF', font: 'Calibri' })] })],
                   }),
                 ],
               }),
               new TableRow({
                 children: [
-                  new TableCell({
-                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Elimination of Fraudulent Contractor Claims (50m Geofence Lock)', size: 19, color: '334155', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: '₹ 24.50 Crore', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
-                  }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'Frontend UI', bold: true, size: 19, font: 'Calibri' })] })] }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'React 19, TypeScript, Vite, Tailwind CSS, Framer Motion, Lucide Icons, PWA Service Worker', size: 19, font: 'Calibri' })] })] }),
                 ],
               }),
               new TableRow({
                 children: [
-                  new TableCell({
-                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Ward Control Room Man-Hour Savings (187,000 Hours Saved)', size: 19, color: '334155', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: '₹ 9.80 Crore', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
-                  }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'Backend API', bold: true, size: 19, font: 'Calibri' })] })] }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'Node.js, Express, Socket.IO, Helmet, Express-Rate-Limit, Compression, Morgan', size: 19, font: 'Calibri' })] })] }),
                 ],
               }),
               new TableRow({
                 children: [
-                  new TableCell({
-                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Automated Sub-Meter GIS Asset Routing (Fuel/Logistics)', size: 19, color: '334155', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    shading: { fill: 'F8FAFC', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: '₹ 3.20 Crore', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
-                  }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'Database & Storage', bold: true, size: 19, font: 'Calibri' })] })] }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'MongoDB (Mongoose ODM with 2dsphere indexing & exponential connection retry loop), Local Upload Storage with auto-initialization', size: 19, font: 'Calibri' })] })] }),
                 ],
               }),
               new TableRow({
                 children: [
-                  new TableCell({
-                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'Paperless MMC Act Legal Notices & Automated Compliance', size: 19, color: '334155', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    shading: { fill: 'FFFFFF', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 100, bottom: 100, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: '₹ 2.30 Crore', bold: true, size: 19, color: '0F172A', font: 'Calibri' })] })],
-                  }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'AI & Vision Pipeline', bold: true, size: 19, font: 'Calibri' })] })] }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'YOLOv8 + NVIDIA NIM / TensorRT, Sharp pixel variance inspection, and Gemini AI analysis', size: 19, font: 'Calibri' })] })] }),
                 ],
               }),
               new TableRow({
                 children: [
-                  new TableCell({
-                    shading: { fill: 'CCFBF1', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 110, bottom: 110, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: 'TOTAL PROJECTED ANNUAL FISCAL SAVINGS', bold: true, size: 20, color: '0F766E', font: 'Calibri' })] })],
-                  }),
-                  new TableCell({
-                    shading: { fill: 'CCFBF1', type: ShadingType.CLEAR },
-                    borders: borderThin,
-                    margins: { top: 110, bottom: 110, left: 140, right: 140 },
-                    children: [new Paragraph({ children: [new TextRun({ text: '₹ 39.80 Crore', bold: true, size: 20, color: '0F766E', font: 'Calibri' })] })],
-                  }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'GIS & Mapping', bold: true, size: 19, font: 'Calibri' })] })] }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'Leaflet, MarkerCluster, OpenStreetMap Tiles, Mumbai 24-Ward Polygon GeoJSON', size: 19, font: 'Calibri' })] })] }),
+                ],
+              }),
+              new TableRow({
+                children: [
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'Authentication & Push', bold: true, size: 19, font: 'Calibri' })] })] }),
+                  new TableCell({ borders: borderThin, margins: { top: 80, bottom: 80, left: 120, right: 120 }, children: [new Paragraph({ children: [new TextRun({ text: 'JWT Bearer Authentication, Firebase Auth & Firebase Cloud Messaging (FCM)', size: 19, font: 'Calibri' })] })] }),
                 ],
               }),
             ],
           }),
 
-          // Section 7: Pilot Proposal & Contact
+          // Section 5: Pilot Proposal & Contact
           new Paragraph({
             spacing: { before: 250, after: 120 },
             children: [
               new TextRun({
-                text: '7. 30-Day Zero-Risk Pilot & Call to Action',
+                text: '5. Proposed Pilot Deployment & Demonstration Access',
                 bold: true,
                 size: 26,
                 color: '0369A1',
@@ -610,7 +489,7 @@ async function generateProposalDocx() {
             spacing: { before: 60, after: 80 },
             children: [
               new TextRun({
-                text: 'We propose an immediate 30-day zero-cost trial across Ward K-West (Andheri West) and Ward G-North (Dadar / Dharavi) to validate sub-30-second AI triage, 0% false closures, and sub-24h resolution times.',
+                text: 'An immediate 30-day zero-risk trial is recommended across high-density pilot wards: Ward G-North (Dadar / Dharavi) and Ward H-West (Bandra / Khar), validating sub-30-second automated triage, 0% duplicate ticket leaks, and real-time field task claiming.',
                 size: 20,
                 color: '334155',
                 font: 'Calibri',
@@ -629,12 +508,11 @@ async function generateProposalDocx() {
                     children: [
                       new Paragraph({
                         children: [
-                          new TextRun({ text: 'OFFICIAL SYSTEM DEMO & EXECUTIVE BRIEFING\n', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
-                          new TextRun({ text: 'Live Production Link: ', bold: true, size: 19, color: '0284C7', font: 'Calibri' }),
+                          new TextRun({ text: 'OFFICIAL SYSTEM DEMONSTRATION ACCESS\n', bold: true, size: 20, color: '0F172A', font: 'Calibri' }),
+                          new TextRun({ text: 'Live Web App: ', bold: true, size: 19, color: '0284C7', font: 'Calibri' }),
                           new TextRun({ text: 'https://smart-civic-pi.vercel.app\n', size: 19, color: '0284C7', font: 'Calibri' }),
-                          new TextRun({ text: 'Demo Accounts: admin@smartcivic.gov.in | engineer@kwest.bmc.gov.in | contractor@mumbai-roads.com\n', size: 18, color: '475569', font: 'Calibri' }),
-                          new TextRun({ text: 'Secretariat Liaison: Municipal Solutions Architecture Group, Fort HQ, Mumbai - 400001\n', size: 18, color: '475569', font: 'Calibri' }),
-                          new TextRun({ text: 'Direct Line: +91 22 2262 0251 / Extension 4019', size: 18, color: '475569', font: 'Calibri' }),
+                          new TextRun({ text: 'Municipal Architecture Liaison: Municipal Solutions Architecture Group, Fort HQ, Mumbai - 400001\n', size: 18, color: '475569', font: 'Calibri' }),
+                          new TextRun({ text: 'Direct Reference: BMC/IT-CIVIC/2026/PROPOSAL-0419', size: 18, color: '475569', font: 'Calibri' }),
                         ],
                       }),
                     ],
@@ -650,7 +528,7 @@ async function generateProposalDocx() {
 
   const buffer = await Packer.toBuffer(doc);
   fs.writeFileSync(outputPath, buffer);
-  console.log('Successfully generated DOCX at:', outputPath);
+  console.log('Successfully generated updated DOCX proposal at:', outputPath);
 }
 
 generateProposalDocx().catch(err => {

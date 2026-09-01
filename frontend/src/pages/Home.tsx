@@ -14,9 +14,7 @@ import {
   Sparkles,
   Camera,
   Award,
-  Star,
-  ChevronDown,
-  Quote
+  ChevronDown
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -135,7 +133,15 @@ const HOME_FAQS = [
 
 export default function Home() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
-  const [testimonialFilter, setTestimonialFilter] = useState<string>("all")
+  const [currentTestimonialIdx, setCurrentTestimonialIdx] = useState(0)
+
+  const nextTestimonial = () => {
+    setCurrentTestimonialIdx((prev) => (prev + 1) % TESTIMONIALS_DATA.length)
+  }
+
+  const prevTestimonial = () => {
+    setCurrentTestimonialIdx((prev) => (prev - 1 + TESTIMONIALS_DATA.length) % TESTIMONIALS_DATA.length)
+  }
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex((prev) => (prev === index ? null : index))
@@ -606,150 +612,127 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ═══ MODERN INTERACTIVE TESTIMONIALS & COMMUNITY PROOF ═══════════════ */}
-        <section className="w-full py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 via-slate-100/40 to-slate-50 dark:from-slate-950 dark:via-slate-900/40 dark:to-slate-950 border-t border-slate-200/80 dark:border-slate-800 relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-emerald-500/5 rounded-full blur-[140px] pointer-events-none -z-10" />
+        {/* ═══ EDITORIAL SPOTLIGHT TESTIMONIAL CAROUSEL (FOOD TAILOR STYLE) ═══════════════ */}
+        <section className="w-full py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-[#faf8f5] dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800 relative overflow-hidden text-slate-900 dark:text-slate-100">
+          <div className="container px-4 md:px-6 mx-auto max-w-5xl">
+            
+            {/* Top Center Flourished Avatar with Laurel Wings */}
+            <div className="flex flex-col items-center justify-center text-center">
+              <div className="relative inline-flex items-center justify-center mb-8 sm:mb-10">
+                {/* Left Floral / Wing Flourish */}
+                <svg
+                  className="w-12 sm:w-16 h-8 text-slate-400 dark:text-slate-600 hidden sm:block -mr-2"
+                  viewBox="0 0 80 40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path d="M78 20 C55 12, 30 5, 2 18 C25 28, 50 30, 78 20 Z" />
+                  <path d="M60 14 C42 6, 25 6, 5 16" />
+                  <path d="M65 21 C48 22, 30 26, 12 30" />
+                </svg>
 
-          <div className="container px-4 md:px-6 mx-auto max-w-6xl space-y-12">
-            {/* Section Header */}
-            <div className="text-center max-w-3xl mx-auto space-y-3">
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 uppercase tracking-wider border border-emerald-300/40 dark:border-emerald-700/40 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>Verified Community Voice • 4.9/5 Rating</span>
+                {/* Center Circular Avatar */}
+                <div className="relative mx-3">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-1 bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-600 shadow-xl overflow-hidden ring-4 ring-white dark:ring-slate-900">
+                    <img
+                      src={TESTIMONIALS_DATA[currentTestimonialIdx].avatar}
+                      alt={TESTIMONIALS_DATA[currentTestimonialIdx].name}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Right Floral / Wing Flourish (Mirrored) */}
+                <svg
+                  className="w-12 sm:w-16 h-8 text-slate-400 dark:text-slate-600 hidden sm:block -ml-2 scale-x-[-1]"
+                  viewBox="0 0 80 40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path d="M78 20 C55 12, 30 5, 2 18 C25 28, 50 30, 78 20 Z" />
+                  <path d="M60 14 C42 6, 25 6, 5 16" />
+                  <path d="M65 21 C48 22, 30 26, 12 30" />
+                </svg>
               </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                Trusted by 100,000+ Citizens & BMC Officers
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-                Real evidence of rapid SLA turnarounds, transparent accountability, and measurable municipal impact across Greater Mumbai.
-              </p>
-            </div>
 
-            {/* Interactive Category Filter Tabs */}
-            <div className="flex items-center justify-center gap-2 flex-wrap pb-2">
-              {[
-                { id: "all", label: "🌟 All Stories" },
-                { id: "citizen", label: "👤 Citizens & Commuters" },
-                { id: "officer", label: "🏛️ BMC Ward Officers" },
-                { id: "alm", label: "🏘️ ALM Societies" },
-                { id: "worker", label: "👷 Field Crews" },
-              ].map((tab) => {
-                const isActive = testimonialFilter === tab.id
-                return (
+              {/* Main Content Row: <.. Button + Central Quote + ..> Button */}
+              <div className="relative w-full flex items-center justify-between gap-2 sm:gap-6 min-h-[220px]">
+                {/* Left Navigation Arrow */}
+                <button
+                  type="button"
+                  onClick={prevTestimonial}
+                  className="group px-2 sm:px-4 py-2 font-serif text-2xl sm:text-4xl text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 font-bold transition-all hover:-translate-x-1 cursor-pointer shrink-0 select-none"
+                  aria-label="Previous testimonial"
+                >
+                  &lt;..
+                </button>
+
+                {/* Centered Animated Quote */}
+                <div className="flex-1 max-w-3xl px-2 sm:px-6">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentTestimonialIdx}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -12 }}
+                      transition={{ duration: 0.35 }}
+                      className="space-y-6"
+                    >
+                      {/* Serif Italic Quote Text */}
+                      <p className="font-serif italic text-lg sm:text-2xl md:text-3xl text-slate-800 dark:text-slate-100 leading-relaxed sm:leading-loose">
+                        &ldquo;{TESTIMONIALS_DATA[currentTestimonialIdx].text}&rdquo;
+                      </p>
+
+                      {/* Author Name in Spaced Uppercase */}
+                      <div className="space-y-2 pt-2">
+                        <h4 className="font-bold tracking-[0.25em] text-xs sm:text-sm uppercase text-slate-900 dark:text-white">
+                          {TESTIMONIALS_DATA[currentTestimonialIdx].name}
+                        </h4>
+                        
+                        <div className="flex items-center justify-center gap-2 flex-wrap text-xs text-slate-600 dark:text-slate-400">
+                          <span className="font-medium">{TESTIMONIALS_DATA[currentTestimonialIdx].role}</span>
+                          <span>•</span>
+                          <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                            {TESTIMONIALS_DATA[currentTestimonialIdx].ward}
+                          </span>
+                          <span>•</span>
+                          <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
+                            {TESTIMONIALS_DATA[currentTestimonialIdx].tag}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Right Navigation Arrow */}
+                <button
+                  type="button"
+                  onClick={nextTestimonial}
+                  className="group px-2 sm:px-4 py-2 font-serif text-2xl sm:text-4xl text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 font-bold transition-all hover:translate-x-1 cursor-pointer shrink-0 select-none"
+                  aria-label="Next testimonial"
+                >
+                  ..&gt;
+                </button>
+              </div>
+
+              {/* Bottom Carousel Indicator Dots */}
+              <div className="flex items-center justify-center gap-2.5 mt-10">
+                {TESTIMONIALS_DATA.map((_, dotIdx) => (
                   <button
-                    key={tab.id}
+                    key={dotIdx}
                     type="button"
-                    onClick={() => setTestimonialFilter(tab.id)}
-                    className={`text-xs sm:text-sm px-4 py-2 rounded-full font-semibold transition-all duration-200 cursor-pointer ${
-                      isActive
-                        ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 scale-105"
-                        : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/80"
+                    onClick={() => setCurrentTestimonialIdx(dotIdx)}
+                    className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                      dotIdx === currentTestimonialIdx
+                        ? "w-8 bg-emerald-600 dark:bg-emerald-400"
+                        : "w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400"
                     }`}
-                  >
-                    {tab.label}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Testimonials Grid with AnimatePresence */}
-            <motion.div
-              layout
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              <AnimatePresence mode="popLayout">
-                {TESTIMONIALS_DATA.filter(
-                  (t) => testimonialFilter === "all" || t.category === testimonialFilter
-                ).map((t, i) => (
-                  <motion.div
-                    key={t.name}
-                    layout
-                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                    transition={{ duration: 0.35, delay: i * 0.05 }}
-                    className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800/90 shadow-sm hover:shadow-xl hover:border-emerald-500/50 hover:-translate-y-1.5 transition-all duration-300 relative flex flex-col justify-between group overflow-hidden"
-                  >
-                    {/* Subtle Corner Glow Accent */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/10 to-transparent rounded-bl-3xl pointer-events-none" />
-
-                    <div className="space-y-4">
-                      {/* Top Metric Tag & 5-Star Rating */}
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border shadow-xs ${t.tagColor}`}>
-                          {t.tag}
-                        </span>
-
-                        <div className="flex text-amber-400 gap-0.5" aria-label="5 stars">
-                          {[...Array(5)].map((_, s) => (
-                            <Star key={s} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Main Quote & Highlight */}
-                      <div className="relative pt-1">
-                        <Quote className="absolute -top-1 -left-1 w-6 h-6 text-emerald-500/20 dark:text-emerald-400/20 pointer-events-none" />
-                        <p className="text-slate-800 dark:text-slate-200 text-sm leading-relaxed relative z-10 pl-3">
-                          <span className="font-bold text-emerald-950 dark:text-emerald-300 block mb-1">
-                            &ldquo;{t.highlight}&rdquo;
-                          </span>
-                          {t.text}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Author Footer with Avatar & Stat Pill */}
-                    <div className="pt-5 mt-5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="relative shrink-0">
-                          <img
-                            src={t.avatar}
-                            alt={t.name}
-                            className="h-11 w-11 rounded-full object-cover border-2 border-emerald-500/40 shadow-sm"
-                            loading="lazy"
-                          />
-                          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center text-[8px] text-white font-bold">
-                            ✓
-                          </span>
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{t.name}</p>
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{t.role}</p>
-                          <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 truncate">{t.ward}</p>
-                        </div>
-                      </div>
-
-                      <div className="shrink-0 text-right">
-                        <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700/60 block">
-                          {t.stat}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
+                    aria-label={`Go to slide ${dotIdx + 1}`}
+                  />
                 ))}
-              </AnimatePresence>
-            </motion.div>
-
-            {/* Bottom Community Trust Highlights Ribbon */}
-            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div>
-                <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">4.9 / 5.0</p>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">Citizen Satisfaction (8,420+)</p>
-              </div>
-              <div>
-                <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">13.8 Hours</p>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">Average Pothole SLA Fix Time</p>
-              </div>
-              <div>
-                <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">25,480+</p>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">Verified Geofenced Proofs</p>
-              </div>
-              <div>
-                <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">24 / 24</p>
-                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">Active Mumbai BMC Wards</p>
               </div>
             </div>
           </div>

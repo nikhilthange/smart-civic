@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Building2, Filter, Loader2, AlertCircle, MapPin, Users, CheckCircle2, FileCheck, X, Camera, LayoutGrid, Kanban } from "lucide-react";
-import { complaintApi, type Complaint, type ComplaintStatus } from "../services/complaintApi";
+import { complaintApi, type Complaint, CATEGORY_LABELS } from "../services/complaintApi";
 import { getImageUrl, handleImageError } from "@/utils/imageUrl";
 import { ComplaintDetailModal } from "@/components/common/ComplaintDetailModal";
 import { SkeletonActivityFeed } from "@/components/common/SkeletonLoader";
@@ -10,28 +10,47 @@ import { useSocket } from "@/context/SocketContext";
 import { ComplaintsKanbanBoard } from "@/components/admin/ComplaintsKanbanBoard";
 import { BulkOperationsToolbar } from "@/components/admin/BulkOperationsToolbar";
 
-const CATEGORY_LABELS: Record<string, string> = {
-  pothole: "Pothole/Road Damage",
-  garbage: "Garbage Collection",
-  water: "Water Supply/Leakage",
-  electricity: "Streetlight/Electricity",
-  other: "Other Civic Issue",
-};
-
-const STATUS_CONFIG: Partial<Record<ComplaintStatus, { label: string; color: string; bg: string; border: string }>> = {
-  submitted: { label: "Filed", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300" },
-  pending: { label: "Filed", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300" },
-  ai_verified: { label: "AI Verified", color: "text-blue-700", bg: "bg-blue-100", border: "border-blue-300" },
-  ward_assigned: { label: "Ward Assigned", color: "text-indigo-700", bg: "bg-indigo-100", border: "border-indigo-300" },
-  officer_assigned: { label: "Officer Assigned", color: "text-purple-700", bg: "bg-purple-100", border: "border-purple-300" },
-  worker_assigned: { label: "Worker Assigned", color: "text-cyan-700", bg: "bg-cyan-100", border: "border-cyan-300" },
-  in_progress: { label: "In Progress", color: "text-amber-700", bg: "bg-amber-100", border: "border-amber-300" },
-  resolution_submitted: { label: "Proof Uploaded", color: "text-teal-700", bg: "bg-teal-100", border: "border-teal-300" },
-  resolved: { label: "Resolved", color: "text-emerald-700", bg: "bg-emerald-100", border: "border-emerald-300" },
-  closed: { label: "Closed", color: "text-slate-700", bg: "bg-slate-100", border: "border-slate-300" },
-  reopened: { label: "Reopened", color: "text-red-700", bg: "bg-red-100", border: "border-red-300" },
-  rejected: { label: "Rejected", color: "text-rose-700", bg: "bg-rose-100", border: "border-rose-300" },
-};
+function OfficerStatusBadge({ status }: { status: string }) {
+  const s = String(status).toLowerCase();
+  if (s === "resolved" || s === "closed") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+        Resolved
+      </span>
+    );
+  }
+  if (["officer_assigned", "worker_assigned", "in_progress", "ward_assigned"].includes(s)) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+        <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+        {s === "worker_assigned" ? "Worker Assigned" : s === "in_progress" ? "In Progress" : "Officer Assigned"}
+      </span>
+    );
+  }
+  if (s === "resolution_submitted") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+        <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
+        Proof Uploaded
+      </span>
+    );
+  }
+  if (s === "ai_verified") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+        AI Verified
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+      Filed
+    </span>
+  );
+}
 
 export default function OfficerDashboard() {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -266,40 +285,34 @@ export default function OfficerDashboard() {
     return matchesStatus && matchesWard;
   });
 
-  const priorityColors: Record<string, string> = {
-    critical: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20",
-    high: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
-    medium: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
-    low: "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20",
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-      className="p-6 max-w-7xl mx-auto space-y-6"
+      className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6"
     >
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 rounded-2xl border border-slate-200/80 dark:border-white/[0.08] shadow-sm">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white dark:bg-zinc-900 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <Building2 className="w-6 h-6" />
+            <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700/80">
+              <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h1 className="text-2xl font-bold font-display text-slate-900 dark:text-white">Municipal Officer Field Portal</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Ward Officer Governance Portal</h1>
           </div>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-            BMC Ward Governance Task Queue & SLA Breach Monitor
+          <p className="text-slate-500 dark:text-zinc-400 text-xs sm:text-sm mt-1">
+            SLA breach monitoring, field worker dispatch, and proof verification across BMC wards.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-500" />
+            <Filter className="w-4 h-4 text-slate-400" />
             <select
               value={wardFilter}
               onChange={(e) => setWardFilter(e.target.value)}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500"
+              className="bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
             >
               <option value="all">All BMC Wards</option>
               <option value="Ward A">Ward A (Colaba/Fort)</option>
@@ -317,7 +330,7 @@ export default function OfficerDashboard() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-200 text-xs rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500"
+            className="bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
           >
             <option value="all">All Statuses</option>
             <option value="officer_assigned">Officer Assigned</option>
@@ -328,30 +341,30 @@ export default function OfficerDashboard() {
           </select>
 
           {/* Grid vs Kanban View Mode Switcher */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+          <div className="flex items-center bg-slate-100 dark:bg-zinc-800 p-1 rounded-lg border border-slate-200 dark:border-zinc-700 text-xs">
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
                 viewMode === "grid"
-                  ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              Grid
+              <span>Grid</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode("kanban")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
                 viewMode === "kanban"
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               <Kanban className="w-3.5 h-3.5" />
-              Kanban
+              <span>Kanban</span>
             </button>
           </div>
         </div>
@@ -364,7 +377,7 @@ export default function OfficerDashboard() {
           <p className="text-sm text-red-600 mt-1 max-w-md">{fetchError}</p>
           <button
             onClick={() => loadComplaints(false)}
-            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium text-xs rounded-lg transition-colors"
+            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer"
           >
             Retry Loading
           </button>
@@ -391,24 +404,24 @@ export default function OfficerDashboard() {
           }}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filteredComplaints.map((c: Complaint) => {
-            const statusCfg = STATUS_CONFIG[c.status as ComplaintStatus] || { label: c.status || "Unknown", color: "text-gray-700", bg: "bg-gray-100", border: "border-gray-300" };
-            const priorityStyle = priorityColors[c.priority || "medium"];
             const isSelected = selectedComplaintIds.includes(c._id);
+            const priorityStr = (c.priority || "medium").toLowerCase();
+            const isCritical = priorityStr === "critical" || priorityStr === "high";
 
             return (
               <div
                 key={c._id}
-                className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border transition-all p-5 flex flex-col justify-between ${
+                className={`bg-white dark:bg-zinc-900 rounded-xl border transition-all p-4 sm:p-5 flex flex-col justify-between ${
                   isSelected
-                    ? "border-emerald-500 ring-2 ring-emerald-500/20 shadow-md"
-                    : "border-slate-200/80 dark:border-white/[0.08] shadow-sm hover:shadow-lg"
+                    ? "border-emerald-500 ring-2 ring-emerald-500/20 shadow-sm"
+                    : "border-slate-200/90 dark:border-zinc-800 shadow-xs hover:shadow-md hover:border-slate-300 dark:hover:border-zinc-700"
                 }`}
               >
-                {/* Multi-select checkbox bar */}
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800 mb-2">
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-mono text-slate-500 select-none">
+                {/* Checkbox bar with clean ticket ID */}
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 dark:border-zinc-800 mb-2">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 dark:text-zinc-300 select-none">
                     <input
                       type="checkbox"
                       checked={isSelected}
@@ -418,72 +431,80 @@ export default function OfficerDashboard() {
                           isSelected ? prev.filter((id: string) => id !== c._id) : [...prev, c._id]
                         );
                       }}
-                      className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                      className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4 cursor-pointer"
                     />
-                    <span>Select for Bulk Action</span>
+                    <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">{c.complaintId}</span>
                   </label>
-                  <span className="text-[10px] font-mono text-slate-400">{c.complaintId}</span>
+                  <span className="text-[11px] font-mono text-slate-400">
+                    {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                  </span>
                 </div>
+
                 <div
-                  className="cursor-pointer group"
+                  className="cursor-pointer group space-y-2.5"
                   onClick={() => setDetailModalComplaint(c)}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-bold uppercase border ${priorityStyle}`}
-                      >
-                        {c.priority || "medium"}
-                      </span>
-                      <span
-                        className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-medium border ${statusCfg.color} ${statusCfg.bg} ${statusCfg.border}`}
-                      >
-                        {statusCfg.label}
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-mono text-slate-400">
-                      {new Date(c.createdAt).toLocaleDateString()}
+                  {/* Status & Priority Row */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${
+                      isCritical
+                        ? "bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-900"
+                        : "bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
+                    }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? "bg-rose-500" : "bg-slate-400"}`} />
+                      {isCritical ? "P1 • Critical" : "P2 • Medium"}
                     </span>
+
+                    <OfficerStatusBadge status={c.status} />
                   </div>
 
-                  <h3 className="font-bold font-display text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors line-clamp-1">
-                    {c.title}
-                  </h3>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400 font-mono font-semibold mt-0.5">
-                    {CATEGORY_LABELS[c.category] || c.category}
+                  {/* Title & Department */}
+                  <div>
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base group-hover:text-emerald-600 transition-colors line-clamp-1">
+                      {c.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5 font-medium">
+                      {CATEGORY_LABELS[c.category] || c.category} • Ward {c.ward || (c.location as any)?.city || "H-West"}
+                    </p>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-xs text-slate-600 dark:text-zinc-300 line-clamp-2 leading-relaxed">
+                    {c.description}
                   </p>
 
-                  <p className="text-sm text-slate-600 dark:text-slate-300 mt-2 line-clamp-2">{c.description}</p>
-
+                  {/* Evidence Image */}
                   {c.attachments && c.attachments[0] && (
-                    <div className="mt-3 overflow-hidden rounded-xl border border-slate-200/80 dark:border-white/[0.08] h-36 bg-slate-100 dark:bg-slate-800">
+                    <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-zinc-800 h-28 bg-slate-100 dark:bg-zinc-800">
                       <img
                         src={getImageUrl(c.attachments[0])}
                         onError={handleImageError}
-                        alt="User Uploaded Evidence"
+                        alt="Evidence"
                         className="w-full h-full object-cover"
                       />
                     </div>
                   )}
 
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-1.5 text-xs text-slate-500">
+                  {/* Location & Impact */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 space-y-1.5 text-xs text-slate-500 dark:text-zinc-400">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                      <span className="truncate">{c.location?.address}</span>
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate text-[11px]">{c.location?.address || "Mumbai Area"}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-medium">
-                      <Users className="w-4 h-4 flex-shrink-0 text-amber-600" />
-                      <span className="font-mono font-tabular">{c.affectedCitizensCount || 1} Citizens Affected</span>
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-zinc-400">
+                      <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span>{c.affectedCitizensCount || 1} citizen report{(c.affectedCitizensCount || 1) > 1 ? "s" : ""} linked</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
+                {/* Card Action Controls */}
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-zinc-800 flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     {c.status === "officer_assigned" && (
                       <button
                         onClick={() => handleFetchEligibleWorkers(c)}
-                        className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-emerald-600/20 active:scale-[0.98] transition-all"
+                        className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs active:scale-98 transition-all cursor-pointer"
                       >
                         Assign Field Worker
                       </button>
@@ -491,7 +512,7 @@ export default function OfficerDashboard() {
                     {(c.status === "worker_assigned" || c.status === "in_progress") && (
                       <button
                         onClick={() => handleFetchEligibleWorkers(c, true)}
-                        className="w-full py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all"
+                        className="w-full py-2 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-all cursor-pointer"
                       >
                         Reassign Worker
                       </button>
@@ -499,7 +520,7 @@ export default function OfficerDashboard() {
                     {c.status === "worker_assigned" && (
                       <button
                         onClick={() => handleStartWork(c._id)}
-                        className="w-full py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-teal-600/20 active:scale-[0.98] transition-all"
+                        className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs active:scale-98 transition-all cursor-pointer"
                       >
                         Start Work
                       </button>
@@ -512,20 +533,20 @@ export default function OfficerDashboard() {
                         setSelectedComplaint(c);
                         setFeedback(null);
                       }}
-                      className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm hover:shadow-emerald-600/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                      className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-xs active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
-                      <FileCheck className="w-4 h-4" />
-                      Submit Resolution Proof
+                      <FileCheck className="w-3.5 h-3.5" />
+                      <span>Submit Resolution Proof</span>
                     </button>
                   )}
 
                   {c.status === "resolution_submitted" && (
                     <div className="flex flex-col gap-2">
-                      <div className="p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/[0.08] rounded-xl text-sm mb-2">
-                        <p className="font-semibold text-slate-700 dark:text-slate-300 text-xs uppercase mb-1 font-mono">Worker Description</p>
-                        <p className="text-slate-600 dark:text-slate-300 mb-2">{c.resolutionNotes || "No notes provided."}</p>
+                      <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs mb-1">
+                        <p className="font-semibold text-slate-700 dark:text-zinc-300 text-[10px] uppercase mb-0.5">Worker Note</p>
+                        <p className="text-slate-600 dark:text-zinc-300 text-xs mb-1">{c.resolutionNotes || "No notes provided."}</p>
                         {c.resolutionImage && c.resolutionImage.url && (
-                          <div className="mt-2 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 h-24 bg-slate-100 dark:bg-slate-800">
+                          <div className="mt-1 rounded-md overflow-hidden border border-slate-200 dark:border-zinc-700 h-20 bg-slate-100 dark:bg-zinc-800">
                              <img src={getImageUrl(c.resolutionImage)} onError={handleImageError} alt="Resolution" className="w-full h-full object-cover" />
                           </div>
                         )}
@@ -533,16 +554,16 @@ export default function OfficerDashboard() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleApproveResolution(c._id)}
-                          className="flex-1 py-2 px-3 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 shadow-sm transition-colors flex items-center justify-center gap-1.5"
+                          className="flex-1 py-1.5 px-3 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 shadow-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
                         >
-                          <CheckCircle2 className="w-4 h-4" />
+                          <CheckCircle2 className="w-3.5 h-3.5" />
                           Approve
                         </button>
                         <button
                           onClick={() => setSelectedForReject(c)}
-                          className="flex-1 py-2 px-3 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700 shadow-sm transition-colors flex items-center justify-center gap-1.5"
+                          className="flex-1 py-1.5 px-3 bg-rose-600 text-white rounded-lg text-xs font-semibold hover:bg-rose-700 shadow-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3.5 h-3.5" />
                           Rework
                         </button>
                       </div>
@@ -550,8 +571,8 @@ export default function OfficerDashboard() {
                   )}
 
                   {c.status === "resolved" && (
-                    <span className="w-full text-center py-2 text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                      Resolved on {new Date(c.resolvedAt || c.updatedAt).toLocaleDateString()}
+                    <span className="w-full text-center py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                      Resolved on {new Date(c.resolvedAt || c.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                     </span>
                   )}
                 </div>
@@ -560,7 +581,6 @@ export default function OfficerDashboard() {
           })}
         </div>
       )}
-
       {selectedComplaint && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative animate-in fade-in">

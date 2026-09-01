@@ -46,4 +46,4 @@ User-agent: Applebot
 Allow: /
 
 # Sitemap Index Location
-Sitemap: https://smartcivic.mumbai.gov.in/sitemap.xml
+Sitemap: https://smart-civic-pi.vercel.app/sitemap.xml

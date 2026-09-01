@@ -4,7 +4,7 @@
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <!-- Homepage & Report Portal -->
   <url>
-    <loc>https://smartcivic.mumbai.gov.in/</loc>
+    <loc>https://smart-civic-pi.vercel.app/</loc>
     <lastmod>2026-09-01T00:00:00+00:00</lastmod>
     <changefreq>always</changefreq>
     <priority>1.0</priority>
@@ -12,7 +12,7 @@
 
   <!-- Ticket Tracking & Resolution Status -->
   <url>
-    <loc>https://smartcivic.mumbai.gov.in/track</loc>
+    <loc>https://smart-civic-pi.vercel.app/track</loc>
     <lastmod>2026-09-01T00:00:00+00:00</lastmod>
     <changefreq>always</changefreq>
     <priority>0.9</priority>
@@ -20,7 +20,7 @@
 
   <!-- Live Municipal GIS MapView -->
   <url>
-    <loc>https://smartcivic.mumbai.gov.in/map</loc>
+    <loc>https://smart-civic-pi.vercel.app/map</loc>
     <lastmod>2026-09-01T00:00:00+00:00</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
@@ -28,7 +28,7 @@
 
   <!-- Monsoon Subway & Waterlogging Radar -->
   <url>
-    <loc>https://smartcivic.mumbai.gov.in/monsoon-radar</loc>
+    <loc>https://smart-civic-pi.vercel.app/monsoon-radar</loc>
     <lastmod>2026-09-01T00:00:00+00:00</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
@@ -36,7 +36,7 @@
 
   <!-- CCTV Surveillance & Encroachment Radar -->
   <url>
-    <loc>https://smartcivic.mumbai.gov.in/cctv-radar</loc>
+    <loc>https://smart-civic-pi.vercel.app/cctv-radar</loc>
     <lastmod>2026-09-01T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
@@ -44,7 +44,7 @@
 
   <!-- AQI & Environmental Enforcement -->
   <url>
-    <loc>https://smartcivic.mumbai.gov.in/aqi-enforcement</loc>
+    <loc>https://smart-civic-pi.vercel.app/aqi-enforcement</loc>
     <lastmod>2026-09-01T00:00:00+00:00</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
@@ -52,7 +52,7 @@
 
   <!-- Citizen Civic Karma Rewards & Vouchers -->
   <url>
-    <loc>https://smartcivic.mumbai.gov.in/karma-rewards</loc>
+    <loc>https://smart-civic-pi.vercel.app/karma-rewards</loc>
     <lastmod>2026-09-01T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -60,7 +60,7 @@
 
   <!-- 24-Ward Participatory Budgeting -->
   <url>
-    <loc>https://smartcivic.mumbai.gov.in/participatory-budget</loc>
+    <loc>https://smart-civic-pi.vercel.app/participatory-budget</loc>
     <lastmod>2026-09-01T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -68,7 +68,7 @@
 
   <!-- AI Manifest & System Summary -->
   <url>
-    <loc>https://smartcivic.mumbai.gov.in/llms.txt</loc>
+    <loc>https://smart-civic-pi.vercel.app/llms.txt</loc>
     <lastmod>2026-09-01T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>

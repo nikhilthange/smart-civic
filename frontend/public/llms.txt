@@ -15,10 +15,9 @@
 - **Eastern Suburbs**: Ward L (Kurla), Ward M-East (Govandi), Ward M-West (Chembur), Ward N (Ghatkopar), Ward S (Bhandup), Ward T (Mulund).
 
 ## Public Endpoints & Links
-- [Report a Civic Grievance](https://smartcivic.mumbai.gov.in/): Zero-touch intake with GPS location and photo upload.
-- [Track Complaint Status](https://smartcivic.mumbai.gov.in/track): Real-time ticket lifecycle tracking by Complaint ID (e.g. `SC-2026-XXXXXXXX`).
-- [Live GIS Map & Heatmap](https://smartcivic.mumbai.gov.in/map): 24-ward geospatial incident map, flood sensors, and CCTV streams.
-- [Monsoon & Subway Radar](https://smartcivic.mumbai.gov.in/monsoon-radar): Live telemetry on Milan, Andheri, and Khar subway water levels.
-- [AQI Environmental Enforcement](https://smartcivic.mumbai.gov.in/aqi-enforcement): Real-time air quality index monitoring and dust mitigation audits.
-- [Civic Karma Rewards](https://smartcivic.mumbai.gov.in/karma-rewards): View leaderboard standings and redeem civic vouchers.
+- [Report a Civic Grievance](https://smart-civic-pi.vercel.app/complaint/create): Zero-touch intake with GPS location and photo upload.
+- [Track Complaint Status](https://smart-civic-pi.vercel.app/track): Real-time ticket lifecycle tracking by Complaint ID (e.g. `SC-2026-XXXXXXXX`).
+- [Live GIS Map & Heatmap](https://smart-civic-pi.vercel.app/map): 24-ward geospatial incident map, flood sensors, and CCTV streams.
+- [Monsoon & Subway Radar](https://smart-civic-pi.vercel.app/monsoon-radar): Live telemetry on Milan, Andheri, and Khar subway water levels.
+- [Civic Karma Rewards](https://smart-civic-pi.vercel.app/rewards): View leaderboard standings and redeem civic vouchers.
 - [Emergency BMC Helpline](tel:1916): 24/7 disaster and monsoon helpline (Toll-Free: 1916).

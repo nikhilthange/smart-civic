@@ -24,9 +24,30 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("💥 Uncaught React Rendering Error in UI Component:", error, errorInfo)
+    // Auto-reload once if this is a stale chunk hash from a new deployment
+    if (
+      error.message?.includes("Failed to fetch dynamically imported module") ||
+      error.message?.includes("Importing a module script failed") ||
+      error.message?.includes("Loading chunk")
+    ) {
+      const lastReload = sessionStorage.getItem("chunk_reload_ts")
+      const now = Date.now()
+      if (!lastReload || now - Number(lastReload) > 10000) {
+        sessionStorage.setItem("chunk_reload_ts", String(now))
+        window.location.reload()
+      }
+    }
   }
 
   private handleReset = () => {
+    if (
+      this.state.error?.message?.includes("Failed to fetch dynamically imported module") ||
+      this.state.error?.message?.includes("Importing a module script failed") ||
+      this.state.error?.message?.includes("Loading chunk")
+    ) {
+      window.location.reload()
+      return
+    }
     this.setState({ hasError: false, error: null })
   }
 

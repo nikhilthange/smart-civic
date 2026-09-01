@@ -8,6 +8,12 @@ import { registerServiceWorker } from './registerServiceWorker'
 
 registerServiceWorker()
 
+// Handle stale chunk hash 404s on new deployment deployments automatically
+window.addEventListener('vite:preloadError', () => {
+  console.warn('New version detected. Reloading page to fetch latest application assets...')
+  window.location.reload()
+})
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

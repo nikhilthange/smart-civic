@@ -320,6 +320,7 @@ module.exports = {
   broadcastComplaintAssigned,
   broadcastComplaintResolved,
   broadcastStatusUpdated,
+  broadcastStatusUpdate: broadcastStatusUpdated,
   broadcastStatusChange: broadcastStatusUpdated,
   broadcastHotspotAlert,
   notifyUser,

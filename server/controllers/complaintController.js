@@ -1554,9 +1554,14 @@ const acceptComplaintTask = async (req, res) => {
       }
     }
 
-    // Broadcast real-time WebSocket update to all ward officers and workers
+    // Broadcast real-time WebSocket update to all ward officers, workers, and citizens
     try {
-      socketService.broadcastStatusUpdate(complaint);
+      socketService.broadcastStatusUpdated(complaint);
+      socketService.broadcastComplaintAssigned(complaint, "worker");
+      if (complaint.citizen) {
+        const citizenUserId = complaint.citizen._id || complaint.citizen;
+        notificationService.workerAssignedToCitizen(citizenUserId, complaint, workerName).catch(() => {});
+      }
     } catch (wsErr) {
       console.warn("WebSocket broadcast warning:", wsErr.message);
     }

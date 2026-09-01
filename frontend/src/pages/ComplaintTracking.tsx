@@ -6,7 +6,7 @@ import {
   XCircle, Bot, MapPin, Calendar, Tag, Phone,
   AlertCircle, Loader2, Paperclip, ExternalLink, Check, Building,
   Image as ImageIcon, HardHat, FileCheck, Search, ArrowRight,
-  History, Sparkles, Plus
+  History, Sparkles, Plus, ZoomIn, X, Copy, ShieldCheck, Camera
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
   complaintApi, STATUS_CONFIG, CATEGORY_LABELS,
-  type Complaint, type ComplaintStatus
+  type Complaint, type ComplaintStatus, type Attachment
 } from "@/services/complaintApi"
 import { useAuth } from "@/context/AuthContext"
 import { useSocket } from "@/context/SocketContext"
@@ -86,6 +86,20 @@ function StatusBadgeLg({ status }: { status: ComplaintStatus | string }) {
       {cfg.label}
     </span>
   )
+}
+
+/**
+ * Sanitizes technical / model debugging prefixes from AI explanations
+ */
+function sanitizeAiExplanation(text?: string): string {
+  if (!text) return "Automated municipal AI triage completed based on multi-modal evidence."
+  const cleaned = text
+    .replace(/^NVIDIA\s+NIM\s+Inference\s*\([^)]*\):\s*/i, "")
+    .replace(/^\[.*?\]:\s*/i, "")
+    .replace(/^AI\s+Analysis:\s*/i, "")
+    .replace(/^Model\s+output:\s*/i, "")
+    .trim()
+  return cleaned || "Automated municipal AI triage completed based on multi-modal evidence."
 }
 
 // ─── 1. Memoized SLA Stepper ───────────────────────────────────────────────────
@@ -164,7 +178,272 @@ export const SlaStepper = React.memo(function SlaStepper({ status }: SlaStepperP
   )
 })
 
-// ─── 2. Memoized Resolution Timeline ───────────────────────────────────────────
+// ─── 2. Citizen Uploaded Evidence & Photos Showcase ────────────────────────────
+interface CitizenEvidenceShowcaseProps {
+  attachments?: Attachment[]
+  title: string
+  createdAt: string | Date
+  onZoom: (url: string) => void
+}
+
+export const CitizenEvidenceShowcase = React.memo(function CitizenEvidenceShowcase({
+  attachments = [],
+  title,
+  createdAt,
+  onZoom,
+}: CitizenEvidenceShowcaseProps) {
+  const { t } = useTranslation()
+  const [selectedIdx, setSelectedIdx] = useState(0)
+
+  const hasAttachments = attachments && attachments.length > 0
+  const activeAttachment = hasAttachments ? attachments[selectedIdx] || attachments[0] : null
+  const activeUrl = activeAttachment ? getImageUrl(activeAttachment) : null
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <Camera className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          {t("tracking.citizenEvidence")}
+        </h3>
+        {hasAttachments && (
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            {t("tracking.verifiedGpsPhoto")}
+          </span>
+        )}
+      </div>
+
+      {hasAttachments && activeUrl ? (
+        <div className="space-y-3">
+          {/* Main Hero Photo Container */}
+          <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 shadow-md group max-h-[420px] flex items-center justify-center">
+            <img
+              src={activeUrl}
+              onError={handleImageError}
+              alt={title || "Citizen Uploaded Issue Evidence"}
+              className="w-full h-72 sm:h-96 object-cover object-center group-hover:scale-102 transition-transform duration-300 cursor-pointer"
+              onClick={() => onZoom(activeUrl)}
+            />
+
+            {/* Hover Fullscreen Button */}
+            <button
+              onClick={() => onZoom(activeUrl)}
+              className="absolute bottom-3.5 right-3.5 bg-slate-900/85 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs font-semibold backdrop-blur-md flex items-center gap-1.5 shadow-xl transition-all border border-white/10"
+              title="View Fullscreen Photo"
+            >
+              <ZoomIn className="w-4 h-4" />
+              {t("tracking.viewFullscreen")}
+            </button>
+
+            {/* Bottom Left Timestamp Tag */}
+            <div className="absolute bottom-3.5 left-3.5 bg-slate-900/85 text-slate-200 px-3 py-1.5 rounded-xl text-[11px] font-mono backdrop-blur-md flex items-center gap-1.5 border border-white/10">
+              <Calendar className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{formatDateTime(createdAt)}</span>
+            </div>
+          </div>
+
+          {/* Multi-Photo Thumbnail Strip (if multiple photos) */}
+          {attachments.length > 1 && (
+            <div className="space-y-1.5 pt-1">
+              <p className="text-xs font-semibold text-slate-500">
+                Uploaded Evidence Files ({attachments.length}) — Click to preview
+              </p>
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 pt-0.5">
+                {attachments.map((att, idx) => {
+                  const thumbUrl = getImageUrl(att)
+                  const isSelected = idx === selectedIdx
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedIdx(idx)}
+                      className={`relative rounded-xl overflow-hidden h-16 w-20 shrink-0 border-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? "border-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900 scale-105"
+                          : "border-slate-200 dark:border-slate-700 opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <img
+                        src={thumbUrl}
+                        onError={handleImageError}
+                        alt={`Evidence ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute bottom-0 inset-x-0 bg-slate-900/80 text-[10px] text-white font-mono py-0.5 text-center">
+                        #{idx + 1}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-2">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 mx-auto flex items-center justify-center">
+            <ImageIcon className="w-6 h-6" />
+          </div>
+          <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">
+            {t("tracking.noPhotoAttached")}
+          </h4>
+          <p className="text-[11px] text-slate-500 max-w-md mx-auto">
+            This grievance was registered through standard intake. Ward supervisor and field worker will conduct on-site physical inspection.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+})
+
+// ─── 3. Resolution Proof & Comparison Showcase ─────────────────────────────────
+interface ResolutionProofCardProps {
+  status: ComplaintStatus
+  resolutionImage?: any
+  attachments?: any[]
+  resolvedAt?: string | Date
+  updatedAt?: string | Date
+  resolutionNotes?: string
+  feedbackSubmitted?: boolean
+  onOpenFeedback: () => void
+  onOpenReopen: () => void
+  onZoom: (url: string) => void
+}
+
+export const ResolutionProofCard = React.memo(function ResolutionProofCard({
+  status,
+  resolutionImage,
+  attachments,
+  resolvedAt,
+  updatedAt,
+  resolutionNotes,
+  feedbackSubmitted,
+  onOpenFeedback,
+  onOpenReopen,
+  onZoom,
+}: ResolutionProofCardProps) {
+  const { t } = useTranslation()
+  const isResolvedOrSubmitted = status === "resolved" || status === "resolution_submitted"
+  const hasResolutionImage = Boolean(resolutionImage?.url || (typeof resolutionImage === "string" && resolutionImage.trim()))
+  const resolutionUrl = hasResolutionImage ? getImageUrl(resolutionImage) : null
+  const citizenFirstPhoto = attachments && attachments[0] ? getImageUrl(attachments[0]) : null
+
+  return (
+    <Card className="shadow-sm border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-bold flex items-center gap-2 text-emerald-900 dark:text-emerald-300">
+          <ImageIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          {t("tracking.timestampedResolutionProof")}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {isResolvedOrSubmitted ? (
+          <div>
+            {resolutionUrl ? (
+              <div>
+                {citizenFirstPhoto ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                      <span>{t("tracking.resolutionComparison")}</span>
+                      <span className="text-[11px] text-slate-500 font-mono">Drag slider to compare</span>
+                    </div>
+                    <BeforeAfterSlider
+                      beforeImage={citizenFirstPhoto}
+                      afterImage={resolutionUrl}
+                      className="mb-2 rounded-xl overflow-hidden shadow-sm"
+                    />
+                  </div>
+                ) : (
+                  <div className="rounded-xl overflow-hidden border border-emerald-200 dark:border-emerald-900 shadow-inner max-h-56 bg-slate-900 relative group">
+                    <img
+                      src={resolutionUrl}
+                      onError={handleImageError}
+                      loading="lazy"
+                      decoding="async"
+                      alt="Resolution Proof"
+                      className="w-full h-48 object-cover cursor-pointer group-hover:scale-105 transition-transform duration-300"
+                      onClick={() => onZoom(resolutionUrl)}
+                    />
+                    <button
+                      onClick={() => onZoom(resolutionUrl)}
+                      className="absolute bottom-2.5 right-2.5 bg-slate-900/80 text-white px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 backdrop-blur-md"
+                    >
+                      <ZoomIn className="w-3.5 h-3.5" /> Fullscreen
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-2.5 flex items-center justify-between flex-wrap gap-1">
+                  <Badge className="bg-emerald-600 text-white text-[11px] font-semibold gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    {t("tracking.verifiedProofUploaded")}
+                  </Badge>
+                  <time className="text-xs text-slate-500 font-mono">
+                    {resolvedAt
+                      ? formatDateTime(resolvedAt)
+                      : updatedAt
+                      ? formatDateTime(updatedAt)
+                      : ""}
+                  </time>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-emerald-200 dark:border-emerald-800 space-y-2">
+                <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold text-xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  {t("tracking.officialSignoff")}
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Field supervisor physically inspected and certified this complaint resolution on-site.
+                </p>
+                <time className="text-[11px] text-slate-400 block font-mono">
+                  {resolvedAt ? formatDateTime(resolvedAt) : formatDateTime(updatedAt || new Date())}
+                </time>
+              </div>
+            )}
+
+            {resolutionNotes && (
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 bg-white/90 dark:bg-slate-900/90 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900">
+                <strong>Resolution Note:</strong> {resolutionNotes}
+              </p>
+            )}
+
+            {status === "resolved" && (
+              <div className="mt-4 pt-3 border-t border-emerald-200 dark:border-emerald-900 space-y-2">
+                <Button
+                  onClick={onOpenFeedback}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs gap-1.5 shadow-sm min-h-[38px] rounded-xl"
+                >
+                  <Star className="w-3.5 h-3.5 fill-current text-amber-300" />
+                  {feedbackSubmitted ? "View / Update Rating" : "Rate Work Quality & Give Feedback"}
+                </Button>
+
+                <Button
+                  onClick={onOpenReopen}
+                  variant="outline"
+                  className="w-full border-red-300 text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-semibold gap-1.5 min-h-[38px] rounded-xl"
+                >
+                  <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                  Reopen Grievance / Incomplete (48h Window)
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="p-3.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-center space-y-1">
+            <Clock className="h-5 w-5 text-amber-600 mx-auto" />
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300">{t("tracking.groundResolutionPending")}</p>
+            <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-snug">
+              {t("tracking.resolutionPendingDesc")}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+})
+
+// ─── 4. Memoized Resolution Timeline ───────────────────────────────────────────
 interface ResolutionTimelineProps {
   status: ComplaintStatus
   statusHistory: Complaint["statusHistory"]
@@ -181,8 +460,8 @@ export const ResolutionTimeline = React.memo(function ResolutionTimeline({
   const historyMap = useMemo(() => new Map(statusHistory.map(h => [h.status, h])), [statusHistory])
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm w-full">
-      <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-6">{t("tracking.timelineTitle")}</h2>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm w-full">
+      <h2 className="text-base font-extrabold text-slate-900 dark:text-white mb-5">{t("tracking.timelineTitle")}</h2>
       <div className="relative space-y-6">
         {ALL_STATUSES.map((st, index) => {
           const Icon = STATUS_ICONS[st] || Clock
@@ -230,7 +509,7 @@ export const ResolutionTimeline = React.memo(function ResolutionTimeline({
                 )}
                 {historyEntry?.note && (
                   <div className="mt-1.5 space-y-1">
-                    <p className="text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 leading-relaxed">
                       {historyEntry.note}
                     </p>
                     {historyEntry.note.includes("Verified on-site") && (
@@ -256,7 +535,7 @@ export const ResolutionTimeline = React.memo(function ResolutionTimeline({
             <div className="flex-1 min-w-0 pt-0.5">
               <h3 className="font-semibold text-sm text-red-700 dark:text-red-400">Rejected</h3>
               {rejectionReason && (
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 bg-red-50 dark:bg-red-950/40 p-3 rounded-xl border border-red-100 dark:border-red-900/50">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 bg-red-50 dark:bg-red-950/40 p-2.5 rounded-xl border border-red-100 dark:border-red-900/50">
                   Reason: {rejectionReason}
                 </p>
               )}
@@ -268,7 +547,7 @@ export const ResolutionTimeline = React.memo(function ResolutionTimeline({
   )
 })
 
-// ─── 3. Memoized AI Verification Details ───────────────────────────────────────
+// ─── 5. Memoized AI Verification Details ───────────────────────────────────────
 interface AiVerificationDetailsProps {
   aiAnalysis?: Complaint["aiAnalysis"]
 }
@@ -280,63 +559,60 @@ export const AiVerificationDetails = React.memo(function AiVerificationDetails({
   if (!aiAnalysis) return null
 
   const confidencePct = Math.round((aiAnalysis.confidence || 0) * 100)
-  const analysisNote = (aiAnalysis as any).analysisNote || (aiAnalysis as any).explanation || "AI automated triage completed based on multi-modal evidence."
-  const sourceLabel = (aiAnalysis as any).source === "NVIDIA_NIM"
-    ? "NVIDIA NIM AI Vision (Llama-3.2)"
-    : (aiAnalysis as any).source === "YOLOV8_SERVICE" || (aiAnalysis as any).source === "LOCAL_YOLO_VISION"
-    ? "YOLOv8 Computer Vision Engine"
-    : (aiAnalysis as any).source === "LOCAL_ONNX_VISION"
-    ? "ONNX Vision Model + Rule Engine"
-    : "Smart Civic Multimodal Vision AI"
+  const rawNote = (aiAnalysis as any).analysisNote || (aiAnalysis as any).explanation || ""
+  const cleanExplanation = sanitizeAiExplanation(rawNote)
 
   return (
-    <Card className="shadow-sm border-violet-200 dark:border-violet-900/50 bg-violet-50/50 dark:bg-violet-950/30">
+    <Card className="shadow-sm border-violet-200 dark:border-violet-900/50 bg-violet-50/40 dark:bg-violet-950/30">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-bold text-violet-900 dark:text-violet-300 flex items-center gap-1.5">
             <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
             {t("tracking.aiVerificationDetails")}
           </CardTitle>
-          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md bg-violet-100 dark:bg-violet-900/60 text-violet-700 dark:text-violet-300 border border-violet-300 dark:border-violet-700">
-            {sourceLabel}
-          </span>
+          <Badge className="bg-violet-100 dark:bg-violet-900/60 text-violet-700 dark:text-violet-300 border border-violet-300 dark:border-violet-700 text-[10px] font-mono">
+            AI Vision 3.2
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-3 text-xs text-violet-900 dark:text-violet-200">
         <div className="grid grid-cols-2 gap-2">
-          <div>
-            <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.verifiedStatus")}</span>
-            <span className="font-semibold text-sm">
+          <div className="bg-white/70 dark:bg-slate-900/70 p-2 rounded-xl border border-violet-100 dark:border-violet-900/40">
+            <span className="text-[11px] text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.verifiedStatus")}</span>
+            <span className="font-bold text-xs text-emerald-700 dark:text-emerald-400 mt-0.5 block">
               {aiAnalysis.verified ? "Verified ✅" : "Triage Complete 🔍"}
             </span>
           </div>
-          <div>
-            <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.confidenceScore")}</span>
-            <span className="font-semibold text-sm font-mono text-emerald-600 dark:text-emerald-400">
+          <div className="bg-white/70 dark:bg-slate-900/70 p-2 rounded-xl border border-violet-100 dark:border-violet-900/40">
+            <span className="text-[11px] text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.confidenceScore")}</span>
+            <span className="font-bold text-xs font-mono text-emerald-600 dark:text-emerald-400 mt-0.5 block">
               {confidencePct}%
             </span>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <div>
-            <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.severityLevel")}</span>
-            <span className="font-semibold text-sm capitalize font-mono">
+          <div className="bg-white/70 dark:bg-slate-900/70 p-2 rounded-xl border border-violet-100 dark:border-violet-900/40">
+            <span className="text-[11px] text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.severityLevel")}</span>
+            <span className="font-bold text-xs capitalize font-mono text-amber-600 dark:text-amber-400 mt-0.5 block">
               {aiAnalysis.severity || "Medium"}
             </span>
           </div>
-          <div>
-            <span className="text-violet-600 dark:text-violet-400 block font-medium">Department Routing</span>
-            <span className="font-semibold text-sm font-mono">
+          <div className="bg-white/70 dark:bg-slate-900/70 p-2 rounded-xl border border-violet-100 dark:border-violet-900/40">
+            <span className="text-[11px] text-violet-600 dark:text-violet-400 block font-medium">Department Routing</span>
+            <span className="font-bold text-xs font-mono text-slate-800 dark:text-slate-200 mt-0.5 block">
               {aiAnalysis.department || "PWD"}
             </span>
           </div>
         </div>
 
-        <div>
-          <span className="text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.aiExplanation")}</span>
-          <p className="mt-0.5 text-violet-700 dark:text-violet-300 leading-relaxed text-xs">
-            {analysisNote}
+        <div className="bg-white/70 dark:bg-slate-900/70 p-2.5 rounded-xl border border-violet-100 dark:border-violet-900/40 space-y-1">
+          <span className="text-[11px] text-violet-600 dark:text-violet-400 font-semibold flex items-center gap-1">
+            <Sparkles className="w-3 h-3" />
+            {t("tracking.aiExplanation")}
+          </span>
+          <p className="text-violet-800 dark:text-violet-300 leading-relaxed text-[11px]">
+            {cleanExplanation}
           </p>
         </div>
       </CardContent>
@@ -344,7 +620,7 @@ export const AiVerificationDetails = React.memo(function AiVerificationDetails({
   )
 })
 
-// ─── 4. Memoized Complaint Metadata Card ───────────────────────────────────────
+// ─── 6. Memoized Complaint Metadata Card ───────────────────────────────────────
 interface ComplaintMetadataCardProps {
   category: string
   location: Complaint["location"]
@@ -387,7 +663,7 @@ export const ComplaintMetadataCard = React.memo(function ComplaintMetadataCard({
           <Star className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
           <div>
             <p className="text-xs text-slate-400 font-medium">{t("tracking.priority")}</p>
-            <Badge variant="outline" className="capitalize mt-0.5">{priority}</Badge>
+            <Badge variant="outline" className="capitalize mt-0.5 font-bold">{priority}</Badge>
           </div>
         </div>
         {estimatedResolution && (
@@ -406,7 +682,7 @@ export const ComplaintMetadataCard = React.memo(function ComplaintMetadataCard({
   )
 })
 
-// ─── 5. Memoized Ward & Field Team Card ────────────────────────────────────────
+// ─── 7. Memoized Ward & Field Team Card ────────────────────────────────────────
 interface WardAndFieldTeamCardProps {
   departmentName?: string
   wardName?: string
@@ -465,115 +741,7 @@ export const WardAndFieldTeamCard = React.memo(function WardAndFieldTeamCard({
   )
 })
 
-// ─── 6. Memoized Resolution Proof Photos Card ─────────────────────────────────
-interface ResolutionProofCardProps {
-  status: ComplaintStatus
-  resolutionImage?: any
-  attachments?: any[]
-  resolvedAt?: string | Date
-  updatedAt?: string | Date
-  resolutionNotes?: string
-  feedbackSubmitted?: boolean
-  onOpenFeedback: () => void
-  onOpenReopen: () => void
-}
-
-export const ResolutionProofCard = React.memo(function ResolutionProofCard({
-  status,
-  resolutionImage,
-  attachments,
-  resolvedAt,
-  updatedAt,
-  resolutionNotes,
-  feedbackSubmitted,
-  onOpenFeedback,
-  onOpenReopen,
-}: ResolutionProofCardProps) {
-  const { t } = useTranslation()
-
-  return (
-    <Card className="shadow-sm border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/40 dark:bg-emerald-950/20">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-bold flex items-center gap-2 text-emerald-900 dark:text-emerald-300">
-          <ImageIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          {t("tracking.timestampedResolutionProof")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {resolutionImage?.url ? (
-          <div>
-            {attachments && attachments[0] ? (
-              <BeforeAfterSlider
-                beforeImage={getImageUrl(attachments[0])}
-                afterImage={getImageUrl(resolutionImage)}
-                className="mb-3"
-              />
-            ) : (
-              <div className="rounded-xl overflow-hidden border border-emerald-200 dark:border-emerald-900 shadow-inner max-h-56 bg-slate-100 dark:bg-slate-800">
-                <img
-                  src={getImageUrl(resolutionImage)}
-                  onError={handleImageError}
-                  loading="lazy"
-                  decoding="async"
-                  alt="Resolution Proof"
-                  className="w-full h-48 object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-            )}
-            <div className="mt-2.5 flex items-center justify-between flex-wrap gap-1">
-              <Badge className="bg-emerald-600 text-white text-[11px]">
-                {t("tracking.verifiedProofUploaded")}
-              </Badge>
-              <time className="text-xs text-slate-500 font-mono">
-                {resolvedAt
-                  ? formatDateTime(resolvedAt)
-                  : updatedAt
-                  ? formatDateTime(updatedAt)
-                  : ""}
-              </time>
-            </div>
-            {resolutionNotes && (
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 bg-white/90 dark:bg-slate-900/90 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900">
-                <strong>Resolution Note:</strong> {resolutionNotes}
-              </p>
-            )}
-
-            {status === "resolved" && (
-              <div className="mt-4 pt-3 border-t border-emerald-200 dark:border-emerald-900 space-y-2">
-                <Button
-                  onClick={onOpenFeedback}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs gap-1.5 shadow-sm"
-                >
-                  <Star className="w-3.5 h-3.5 fill-current text-amber-300" />
-                  {feedbackSubmitted ? "View / Update Rating" : "Rate Work Quality & Give Feedback"}
-                </Button>
-
-                <Button
-                  onClick={onOpenReopen}
-                  variant="outline"
-                  className="w-full border-red-300 text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 text-xs font-semibold gap-1.5"
-                >
-                  <AlertCircle className="w-3.5 h-3.5 text-red-600" />
-                  Reopen Grievance / Incomplete (48h Window)
-                </Button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="p-3.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-center">
-            <Clock className="h-5 w-5 text-amber-600 mx-auto mb-1" />
-            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">{t("tracking.groundResolutionPending")}</p>
-            <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 leading-snug">
-              {t("tracking.resolutionPendingDesc")}
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-})
-
-// ─── 7. Memoized Attachments Card ──────────────────────────────────────────────
+// ─── 8. Memoized Attachments Card (Legacy Fallback) ─────────────────────────────
 interface AttachmentsCardProps {
   attachments: any[]
 }
@@ -590,10 +758,10 @@ export const AttachmentsCard = React.memo(function AttachmentsCard({ attachments
           {t("tracking.attachments")} ({attachments.length})
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2">
         {attachments.map((att, i) => (
           <div key={i} className="flex items-center gap-3 p-2 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-            <div className="h-12 w-12 rounded-md overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
+            <div className="h-10 w-10 rounded-md overflow-hidden border border-slate-200 bg-slate-100 shrink-0">
               <img
                 src={getImageUrl(att)}
                 onError={handleImageError}
@@ -607,7 +775,7 @@ export const AttachmentsCard = React.memo(function AttachmentsCard({ attachments
               href={getImageUrl(att)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-primary hover:underline font-medium truncate flex-1"
+              className="flex items-center gap-2 text-xs text-primary hover:underline font-medium truncate flex-1"
             >
               <ExternalLink className="h-3 w-3 shrink-0" />
               <span className="truncate">{att.filename || `Attachment ${i + 1}`}</span>
@@ -639,6 +807,8 @@ export default function ComplaintTracking() {
   const [isReopenModalOpen, setIsReopenModalOpen] = useState(false)
   const [reopenReason, setReopenReason] = useState("")
   const [isReopening, setIsReopening] = useState(false)
+  const [zoomImage, setZoomImage] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const load = useCallback(async (idToFetch?: string) => {
     const currentId = idToFetch || targetId
@@ -669,6 +839,17 @@ export default function ComplaintTracking() {
     }
   }, [targetId, load])
 
+  // ESC key listener to dismiss lightbox
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && zoomImage) {
+        setZoomImage(null)
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [zoomImage])
+
   // Fetch recent complaints when on the search page or if current lookup resulted in an error
   useEffect(() => {
     if (!targetId || error || !complaint) {
@@ -687,7 +868,7 @@ export default function ComplaintTracking() {
     }
   }, [targetId, error, complaint])
 
-  // Selective Socket.io listeners (decoupled from global broadcasts)
+  // Selective Socket.io listeners
   useEffect(() => {
     if (!socket || !targetId) return
 
@@ -719,7 +900,7 @@ export default function ComplaintTracking() {
     }
   }, [socket, complaint?._id, complaint?.complaintId, targetId])
 
-  // WebSocket Reconnection Resilience & Re-Sync with Randomized Jitter (50ms - 250ms) & Unmount Guard
+  // WebSocket Reconnection Resilience & Re-Sync
   useEffect(() => {
     if (!socket || !targetId) return
 
@@ -757,6 +938,15 @@ export default function ComplaintTracking() {
     setIsSearching(false)
   }
 
+  const handleCopyId = useCallback(() => {
+    if (!complaint) return
+    const idToCopy = complaint.complaintId || complaint._id
+    navigator.clipboard.writeText(idToCopy)
+    setCopied(true)
+    toast.success(`Copied Tracking ID: ${idToCopy}`)
+    setTimeout(() => setCopied(false), 2000)
+  }, [complaint])
+
   const handleOpenFeedback = useCallback(() => {
     setIsFeedbackOpen(true)
   }, [])
@@ -776,8 +966,8 @@ export default function ComplaintTracking() {
   const handleReopenComplaint = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     if (!complaint) return
-    if (!reopenReason.trim()) {
-      toast.error("Please explain why the civic issue is still unresolved.")
+    if (!reopenReason.trim() || reopenReason.trim().length < 15) {
+      toast.error("Please provide at least 15 characters explaining why the issue is still unresolved.")
       return
     }
 
@@ -828,7 +1018,7 @@ export default function ComplaintTracking() {
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   type="text"
-                  placeholder="Enter Complaint / Tracking ID (e.g. BMC-2026-XXXX)..."
+                  placeholder="Enter Complaint / Tracking ID (e.g. SC-2026-XXXX)..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   className="pl-10 h-12 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 text-sm font-medium border-0 focus-visible:ring-2 focus-visible:ring-indigo-400 shadow-md w-full"
@@ -956,22 +1146,37 @@ export default function ComplaintTracking() {
 
   // ─── 2. Active Complaint Detail Tracking View ────────────────────────────────
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pb-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-12">
+      {/* Top Breadcrumb & Controls Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div className="flex items-start gap-3 min-w-0">
           <Link to="/track" className="shrink-0" title="Back to Tracking Search">
-            <Button variant="outline" size="icon" className="min-h-[40px] min-w-[40px] rounded-xl">
+            <Button variant="outline" size="icon" className="min-h-[42px] min-w-[42px] rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate max-w-[280px] sm:max-w-md">{complaint.title}</h1>
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white truncate max-w-[280px] sm:max-w-xl">
+                {complaint.title}
+              </h1>
               <StatusBadgeLg status={complaint.status} />
             </div>
-            <div className="flex items-center gap-2 sm:gap-4 mt-1 flex-wrap text-xs text-slate-500">
-              <span className="font-mono font-semibold">{complaint.complaintId}</span>
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap text-xs text-slate-500">
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md font-mono font-bold text-slate-700 dark:text-slate-300">
+                <span>{complaint.complaintId || complaint._id}</span>
+                <button
+                  onClick={handleCopyId}
+                  className="hover:text-indigo-600 transition-colors p-0.5 cursor-pointer"
+                  title="Copy Tracking ID"
+                >
+                  {copied ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                </button>
+              </div>
+              <span>•</span>
+              <span className="font-medium text-slate-600 dark:text-slate-400">
+                {CATEGORY_LABELS[complaint.category] || complaint.category}
+              </span>
               <span>•</span>
               <span>
                 Submitted {new Date(complaint.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
@@ -996,8 +1201,8 @@ export default function ComplaintTracking() {
           {user?.role === "citizen" && 
            (complaint.status === "resolved" || (complaint.status as string) === "closed") && 
            !complaint.feedbackSubmitted && (
-            <Button onClick={handleOpenFeedback} className="gap-2 bg-indigo-600 hover:bg-indigo-700 w-full sm:w-auto min-h-[40px] rounded-xl shrink-0">
-              <Star className="h-4 w-4" />
+            <Button onClick={handleOpenFeedback} className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto min-h-[40px] rounded-xl shrink-0 font-semibold text-xs shadow-sm">
+              <Star className="h-4 w-4 fill-current text-amber-300" />
               {t("tracking.rateExperience")}
             </Button>
           )}
@@ -1014,67 +1219,40 @@ export default function ComplaintTracking() {
       {/* ── 1. Memoized 8-Stage SLA Stepper ── */}
       <SlaStepper status={complaint.status} />
 
-      {/* ── Main Responsive Grid ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full max-w-7xl mx-auto">
-        {/* Left Column: Timeline & Description */}
-        <div className="lg:col-span-2 space-y-6 w-full min-w-0">
-          {/* 2. Memoized Resolution Timeline */}
+      {/* ── Main Responsive 2-Column Grid ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
+        {/* Left Column (7 cols on desktop): Citizen Evidence, Overview, Comparison, Timeline */}
+        <div className="lg:col-span-7 space-y-6 w-full min-w-0">
+          {/* Citizen Uploaded Evidence Showcase */}
+          <CitizenEvidenceShowcase
+            attachments={complaint.attachments}
+            title={complaint.title}
+            createdAt={complaint.createdAt}
+            onZoom={(url) => setZoomImage(url)}
+          />
+
+          {/* Complaint Description Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm w-full space-y-2.5">
+            <h2 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <FileCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              {t("tracking.description")}
+            </h2>
+            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+              {complaint.description}
+            </p>
+          </div>
+
+          {/* 8-Stage Memoized Resolution Timeline */}
           <ResolutionTimeline
             status={complaint.status}
             statusHistory={complaint.statusHistory}
             rejectionReason={complaint.rejectionReason}
           />
-
-          {/* Description Card */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm w-full">
-            <h2 className="text-base font-extrabold text-slate-900 dark:text-white mb-3">{t("tracking.description")}</h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{complaint.description}</p>
-          </div>
         </div>
 
-        {/* Right Column: Details Sidebar */}
-        <div className="lg:col-span-1 space-y-6 w-full">
-          {/* 3. Memoized AI Analysis Card */}
-          <AiVerificationDetails aiAnalysis={complaint.aiAnalysis} />
-
-          {/* 4. Memoized Complaint Details Card */}
-          <ComplaintMetadataCard
-            category={complaint.category}
-            location={complaint.location}
-            priority={complaint.priority}
-            estimatedResolution={complaint.estimatedResolution}
-          />
-
-          {/* Location Map with Leaflet Canvas & Cleanup */}
-          {complaint.location?.coordinates?.coordinates && (
-            <Card className="shadow-sm border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-                  <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  {t("tracking.complaintLocationMap")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-                  <ComplaintMap
-                    lat={complaint.location.coordinates.coordinates[1]}
-                    lng={complaint.location.coordinates.coordinates[0]}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* 5. Memoized Ward Department & Ground Field Team Card */}
-          <WardAndFieldTeamCard
-            departmentName={complaint.departmentName}
-            wardName={complaint.wardName}
-            assignedWorker={complaint.assignedWorker}
-            assignedOfficer={complaint.assignedOfficer}
-            department={complaint.department}
-          />
-
-          {/* 6. Memoized Timestamped Resolution Proof Photos */}
+        {/* Right Column (5 cols on desktop): AI Verification, Resolution Proof, Map, Ward Team */}
+        <div className="lg:col-span-5 space-y-6 w-full">
+          {/* Resolution Proof Card (High visibility on right sidebar) */}
           <ResolutionProofCard
             status={complaint.status}
             resolutionImage={complaint.resolutionImage}
@@ -1085,24 +1263,97 @@ export default function ComplaintTracking() {
             feedbackSubmitted={complaint.feedbackSubmitted}
             onOpenFeedback={handleOpenFeedback}
             onOpenReopen={handleOpenReopen}
+            onZoom={(url) => setZoomImage(url)}
           />
 
-          {/* 7. Memoized Attachments Card */}
-          <AttachmentsCard attachments={complaint.attachments} />
+          {/* AI Municipal Triage & Verification Summary */}
+          <AiVerificationDetails aiAnalysis={complaint.aiAnalysis} />
 
-          {/* Admin notes */}
+          {/* Complaint Metadata Card */}
+          <ComplaintMetadataCard
+            category={complaint.category}
+            location={complaint.location}
+            priority={complaint.priority}
+            estimatedResolution={complaint.estimatedResolution}
+          />
+
+          {/* Interactive Incident Location Map */}
+          {complaint.location?.coordinates?.coordinates && (
+            <Card className="shadow-sm border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+                    <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                    {t("tracking.complaintLocationMap")}
+                  </CardTitle>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${complaint.location.coordinates.coordinates[1]},${complaint.location.coordinates.coordinates[0]}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] font-semibold text-indigo-600 hover:underline flex items-center gap-1"
+                  >
+                    Google Maps ↗
+                  </a>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-2">
+                <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+                  <ComplaintMap
+                    lat={complaint.location.coordinates.coordinates[1]}
+                    lng={complaint.location.coordinates.coordinates[0]}
+                  />
+                </div>
+                <p className="text-xs text-slate-500 truncate">
+                  📍 {complaint.location.address}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Ward Department & Ground Field Team Card */}
+          <WardAndFieldTeamCard
+            departmentName={complaint.departmentName}
+            wardName={complaint.wardName}
+            assignedWorker={complaint.assignedWorker}
+            assignedOfficer={complaint.assignedOfficer}
+            department={complaint.department}
+          />
+
+          {/* Admin Official Notes (if present) */}
           {complaint.adminNotes && (
             <Card className="shadow-sm border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold text-amber-800 dark:text-amber-300">{t("tracking.officialNote")}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-amber-700 dark:text-amber-400">{complaint.adminNotes}</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">{complaint.adminNotes}</p>
               </CardContent>
             </Card>
           )}
         </div>
       </div>
+
+      {/* ─── Fullscreen Zoom Lightbox Modal ─────────────────────────────── */}
+      {zoomImage && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setZoomImage(null)}
+        >
+          <button
+            onClick={() => setZoomImage(null)}
+            className="absolute top-5 right-5 text-white hover:text-slate-300 bg-slate-800/80 hover:bg-slate-800 p-3 rounded-full transition-all z-50 cursor-pointer shadow-lg"
+            aria-label="Close Lightbox"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={zoomImage}
+            alt="Fullscreen Preview"
+            className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-700/50"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
 
       {/* Reopen Complaint Dialog */}
       {isReopenModalOpen && (
@@ -1153,6 +1404,7 @@ export default function ComplaintTracking() {
                   variant="outline"
                   size="sm"
                   onClick={() => setIsReopenModalOpen(false)}
+                  className="rounded-xl min-h-[38px]"
                 >
                   Cancel
                 </Button>
@@ -1160,7 +1412,7 @@ export default function ComplaintTracking() {
                   type="submit"
                   size="sm"
                   disabled={isReopening || reopenReason.trim().length < 15}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold gap-1.5"
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold gap-1.5 rounded-xl min-h-[38px]"
                 >
                   {isReopening ? (
                     <>

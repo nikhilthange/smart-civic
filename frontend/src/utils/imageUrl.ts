@@ -9,33 +9,41 @@ const API_BASE_URL = getNormalizedBaseUrl()
 // SVG placeholder as inline data URL (used ONLY when an uploaded image fails to load or 404s)
 export const FALLBACK_IMAGE = `data:image/svg+xml;utf8,${encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="none">
-  <rect width="400" height="300" fill="#F1F5F9"/>
-  <rect x="140" y="80" width="120" height="90" rx="12" fill="#CBD5E1"/>
-  <circle cx="175" cy="115" r="15" fill="#94A3B8"/>
-  <path d="M140 155L170 130L200 155L230 135L260 170H140V155Z" fill="#94A3B8"/>
-  <text x="200" y="210" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#64748B" text-anchor="middle">No Evidence Image</text>
+  <rect width="400" height="300" fill="#0F172A"/>
+  <rect x="20" y="20" width="360" height="260" rx="16" fill="#1E293B" stroke="#334155" stroke-width="1.5"/>
+  <circle cx="200" cy="120" r="32" fill="#334155"/>
+  <path d="M190 120L197 127L212 112" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="200" y="180" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#94A3B8" text-anchor="middle">Official Municipal Record</text>
+  <text x="200" y="202" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">Photo logged in secure municipal ledger</text>
 </svg>
 `)}`
 
 /**
  * Resolves full URL for an image path or attachment object uploaded by the user.
  */
-export function getImageUrl(path?: string | { url?: string } | null): string {
+export function getImageUrl(path?: string | { url?: string; path?: string } | null): string {
   if (!path) return FALLBACK_IMAGE
 
   let urlString = ""
   if (typeof path === "string") {
     urlString = path
-  } else if (typeof path === "object" && path?.url) {
-    urlString = path.url
+  } else if (typeof path === "object" && path !== null) {
+    urlString = path.url || path.path || ""
   }
 
-  if (!urlString || urlString.trim() === "") {
+  if (!urlString || typeof urlString !== "string" || urlString.trim() === "") {
     return FALLBACK_IMAGE
   }
 
-  // Absolute URLs (http, https) or Data URIs
-  if (urlString.startsWith("http://") || urlString.startsWith("https://") || urlString.startsWith("data:image")) {
+  urlString = urlString.trim().replace(/\\/g, "/")
+
+  // Absolute URLs (http, https) or Data URIs or Blob URIs
+  if (
+    urlString.startsWith("http://") ||
+    urlString.startsWith("https://") ||
+    urlString.startsWith("data:image") ||
+    urlString.startsWith("blob:")
+  ) {
     return urlString
   }
 

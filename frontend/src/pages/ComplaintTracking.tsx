@@ -29,6 +29,7 @@ import { formatDateTime } from "@/utils/formatters"
 import { triggerHapticFeedback } from "@/utils/haptics"
 import api from "@/lib/axios"
 import toast from "react-hot-toast"
+import SeoHead from "@/components/common/SeoHead"
 
 const STATUS_ICONS: Partial<Record<ComplaintStatus, React.ElementType>> = {
   submitted:            Clock,
@@ -1041,6 +1042,22 @@ export default function ComplaintTracking() {
   if (!targetId || !complaint) {
     return (
       <div className="w-full max-w-5xl mx-auto space-y-8 pb-12">
+        <SeoHead
+          title="Track Grievance Resolution & SLA Progress | Smart Civic"
+          description="Enter your complaint ID to view real-time 8-stage progress, assigned ward engineer, 48-hour SLA countdown, and GPS geofenced resolution proof."
+          keywords="track civic complaint, BMC grievance status, check pothole repair status, municipal complaint tracking Mumbai"
+          canonicalPath="/track"
+          faqs={[
+            {
+              question: "How can I track the status of my BMC complaint?",
+              answer: "Enter your unique tracking ticket number (e.g. SC-2026-XXXXXXXX) into the search bar to inspect real-time progress, supervising officer assignments, and field repair photos.",
+            },
+            {
+              question: "What happens if my civic complaint is not resolved within the SLA?",
+              answer: "If the 48-hour SLA deadline is breached, the ticket is automatically escalated to the Assistant Municipal Commissioner (AMC) and contractor escrow penalties are assessed.",
+            },
+          ]}
+        />
         {/* Hero Search Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 text-white p-6 sm:p-10 shadow-2xl border border-emerald-700/40 text-center">
           <div className="relative z-10 max-w-2xl mx-auto space-y-3">
@@ -1196,6 +1213,11 @@ export default function ComplaintTracking() {
   // ─── 2. Active Complaint Detail Tracking View ────────────────────────────────
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-12">
+      <SeoHead
+        title={`${complaint.title || "Civic Grievance"} #${complaint.complaintId || targetId} | Smart Civic`}
+        description={`Status: ${complaint.status?.toUpperCase()} in ${complaint.ward || "Mumbai"}. Category: ${complaint.category}. Live 48h SLA progress and field resolution proof.`}
+        canonicalPath={`/track/${targetId}`}
+      />
       {/* Top Breadcrumb & Controls Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div className="flex items-start gap-3 min-w-0">

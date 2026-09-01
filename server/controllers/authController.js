@@ -3,6 +3,7 @@ const TokenBlacklist = require("../models/TokenBlacklist");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const emailService = require("../services/emailService");
+const redisManager = require("../config/redis");
 
 // ─── Helper: Send token response ──────────────────────────────────────────────
 const sendTokenResponse = (user, statusCode, res, extraData = {}) => {
@@ -201,27 +202,44 @@ const getMe = async (req, res) => {
   }
 };
 
-// ─── @desc    Logout current user (blacklist token)
+// ─── @desc    Logout current user (blacklist token across Redis and DB)
 // ─── @route   POST /api/auth/logout
 // ─── @access  Private
 const logoutUser = async (req, res) => {
   try {
-    const token = req.token;
+    const token = req.token || (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+    if (token) {
+      const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+      let ttl = 86400; // 24 hours default
+      let expiresAt = new Date(Date.now() + ttl * 1000);
+      try {
+        const decoded = jwt.decode(token);
+        if (decoded && decoded.exp) {
+          ttl = Math.max(60, Math.floor(decoded.exp - Date.now() / 1000));
+          expiresAt = new Date(decoded.exp * 1000);
+        }
+      } catch {
+        // use default
+      }
 
-    // Decode to get expiry without re-verifying (already verified by protect middleware)
-    const decoded = jwt.decode(token);
-    const expiresAt = new Date(decoded.exp * 1000);
+      // 1. Blacklist in Redis
+      await redisManager.setEx(`blacklist:${tokenHash}`, ttl, "1");
 
-    // Blacklist the token so it cannot be reused
-    await TokenBlacklist.create({
-      token,
-      expiresAt,
-      user: req.user.id,
-    });
+      // 2. Persist to MongoDB TokenBlacklist collection for permanent audit
+      try {
+        await TokenBlacklist.create({
+          token,
+          expiresAt,
+          user: req.user ? req.user.id || req.user._id : null,
+        });
+      } catch {
+        // Ignore duplicate key or DB errors
+      }
+    }
 
     res.status(200).json({
       success: true,
-      message: "Logged out successfully.",
+      message: "Logged out successfully. Session invalidated.",
     });
   } catch (error) {
     console.error("Logout Error:", error.message);

@@ -1,9 +1,13 @@
+"use strict";
+
 /**
  * ─── Civic Karma Credits & 24-Ward Citizen Leaderboard Service ────────────────
- * Manages citizen civic participation points, monthly rankings, and redeemable vouchers.
+ * Manages citizen civic participation points, monthly rankings, and redeemable vouchers
+ * using Redis Sorted Sets for O(log N) real-time leaderboards.
  */
 
 const User = require("../models/User");
+const redisManager = require("../config/redis");
 
 const VOUCHER_CATALOG = [
   {
@@ -42,7 +46,7 @@ const VOUCHER_CATALOG = [
 
 class CivicKarmaService {
   /**
-   * Awards Karma points for citizen civic actions
+   * Awards Karma points for citizen civic actions and updates Redis Sorted Sets
    */
   async awardPoints(userId, points, reasonCode, description) {
     let user = null;
@@ -63,6 +67,14 @@ class CivicKarmaService {
         timestamp: new Date(),
       });
       await user.save();
+
+      // Update Redis Sorted Sets asynchronously
+      const userKey = `${user._id}|${user.name || "Civic Contributor"}|${user.ward || "Ward A"}`;
+      redisManager.zIncrBy("leaderboard:all", userKey, points).catch(() => {});
+      if (user.ward) {
+        redisManager.zIncrBy(`leaderboard:${user.ward}`, userKey, points).catch(() => {});
+      }
+
       return {
         userId,
         currentBalance: user.karmaPoints,
@@ -78,10 +90,41 @@ class CivicKarmaService {
   }
 
   /**
-   * Retrieves 24-Ward top citizen contributors leaderboard dynamically from database
+   * Retrieves 24-Ward top citizen contributors leaderboard dynamically from Redis or database
    */
   async getWardLeaderboard(wardFilter = "all") {
-    const User = require("../models/User");
+    const redisKey = (!wardFilter || wardFilter === "all") ? "leaderboard:all" : `leaderboard:${wardFilter}`;
+    
+    // 1. Try reading from high-speed Redis Sorted Set
+    try {
+      const topMembers = await redisManager.zRevRangeWithScores(redisKey, 0, 19);
+      if (topMembers && topMembers.length > 0) {
+        return topMembers.map((item, idx) => {
+          const parts = String(item.member).split("|");
+          const name = parts[1] || "Civic Contributor";
+          const ward = parts[2] || (wardFilter !== "all" ? wardFilter : "Ward A");
+          const points = Number(item.score) || 0;
+
+          let tierBadge = "STEWARD";
+          if (points >= 800) tierBadge = "CIVIC_HERO";
+          else if (points >= 500) tierBadge = "GUARDIAN";
+          else if (points >= 300) tierBadge = "SENTINEL";
+
+          return {
+            rank: idx + 1,
+            name,
+            ward,
+            points,
+            verifiedReports: Math.max(1, Math.floor(points / 25)),
+            tierBadge,
+          };
+        });
+      }
+    } catch {
+      // Fallback to database
+    }
+
+    // 2. Fallback to MongoDB query
     const query = { role: { $in: ["citizen", "user"] } };
     if (wardFilter && wardFilter !== "all") {
       query.ward = wardFilter;
@@ -92,6 +135,16 @@ class CivicKarmaService {
       .limit(20)
       .select("name ward karmaPoints badges avatar")
       .lean();
+
+    // Populate Redis Sorted Set in background for future fast lookups
+    for (const c of citizens) {
+      const userKey = `${c._id}|${c.name || "Civic Contributor"}|${c.ward || "Ward A"}`;
+      const pts = c.karmaPoints || 0;
+      redisManager.zAdd("leaderboard:all", userKey, pts).catch(() => {});
+      if (c.ward) {
+        redisManager.zAdd(`leaderboard:${c.ward}`, userKey, pts).catch(() => {});
+      }
+    }
 
     return citizens.map((citizen, idx) => {
       const points = citizen.karmaPoints || 0;

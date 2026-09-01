@@ -1,16 +1,20 @@
+"use strict";
+
 /**
- * ─── Lightweight In-Memory / Telemetry TTL Cache Middleware ───────────────────
+ * ─── Distributed Redis & Resilient In-Memory TTL Cache Middleware ─────────────
  * Caches high-frequency read-heavy endpoints (Complaints, Subways, CCTV, SITREP)
  * with automatic TTL expiration, user- & role-scoped cache keys (preventing IDOR leaks),
- * and pattern-based cache invalidation on mutations.
+ * and pattern-based cache invalidation across all pods on mutations.
  */
+
+const redisManager = require("../config/redis");
 
 const MAX_CACHE_ENTRIES = 5000;
 const CLEANUP_INTERVAL_MS = 60 * 1000; // 60 seconds
 
 const cacheStore = new Map();
 
-// Periodic TTL Garbage Collection Sweep (Memory Hygiene)
+// Periodic TTL Garbage Collection Sweep for in-memory store
 const cleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of cacheStore.entries()) {
@@ -31,7 +35,7 @@ if (cleanupTimer && typeof cleanupTimer.unref === "function") {
  * @param {Object} options - { keyGenerator: (req) => string, userScoped: boolean }
  */
 function cacheMiddleware(ttlSeconds = 10, { keyGenerator, userScoped = true } = {}) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     // Only cache GET requests
     if (req.method !== "GET") {
       return next();
@@ -51,8 +55,26 @@ function cacheMiddleware(ttlSeconds = 10, { keyGenerator, userScoped = true } = 
       key = `${userId}:${userRole}:${rawUrl}`;
     }
 
-    const cachedEntry = cacheStore.get(key);
+    // 1. Try Redis cache if available
+    try {
+      const redisVal = await redisManager.get(`cache:${key}`);
+      if (redisVal) {
+        const parsed = JSON.parse(redisVal);
+        if (!res.headersSent) {
+          res.setHeader("Vary", "Authorization, Accept-Encoding");
+          res.setHeader("X-Cache", "HIT");
+          res.setHeader("X-Cache-Store", redisManager.isAvailable() ? "REDIS" : "MEMORY");
+          res.setHeader("Cache-Control", `private, max-age=${ttlSeconds}`);
+          return res.status(200).json(parsed);
+        }
+        return res.json(parsed);
+      }
+    } catch {
+      // Non-blocking fallback to local memory check
+    }
 
+    // 2. In-memory local check
+    const cachedEntry = cacheStore.get(key);
     if (cachedEntry) {
       const now = Date.now();
       if (now < (cachedEntry.expiresAt || cachedEntry.expiry || 0)) {
@@ -71,13 +93,13 @@ function cacheMiddleware(ttlSeconds = 10, { keyGenerator, userScoped = true } = 
       }
     }
 
-    // Intercept response json method
+    // 3. Intercept response json method
     const originalJson = res.json.bind(res);
     res.json = (data) => {
       // Strictly restrict caching to HTTP 2xx success responses (skip 4xx / 5xx error responses)
       const is2xx = res.statusCode >= 200 && res.statusCode < 300;
       if (is2xx && data && data.success !== false) {
-        // Enforce upper-bound size limit with FIFO/LRU eviction to prevent memory leaks
+        // Store in memory with FIFO/LRU eviction
         if (cacheStore.size >= MAX_CACHE_ENTRIES) {
           const oldestKey = cacheStore.keys().next().value;
           if (oldestKey) cacheStore.delete(oldestKey);
@@ -88,6 +110,9 @@ function cacheMiddleware(ttlSeconds = 10, { keyGenerator, userScoped = true } = 
           expiresAt: Date.now() + ttlSeconds * 1000,
           expiry: Date.now() + ttlSeconds * 1000,
         });
+
+        // Store asynchronously in Redis
+        redisManager.setEx(`cache:${key}`, ttlSeconds, data).catch(() => {});
 
         if (!res.headersSent) {
           res.setHeader("Vary", "Authorization, Accept-Encoding");
@@ -113,11 +138,16 @@ function invalidateCache(pattern) {
     if (!pat) continue;
     const strPattern = String(pat);
     const lowerPattern = strPattern.toLowerCase();
+
+    // 1. Invalidate local in-memory store
     for (const key of cacheStore.keys()) {
       if (key.includes(strPattern) || key.toLowerCase().includes(lowerPattern)) {
         cacheStore.delete(key);
       }
     }
+
+    // 2. Invalidate across Redis cluster
+    redisManager.invalidatePattern(strPattern).catch(() => {});
   }
 }
 
@@ -126,6 +156,7 @@ function invalidateCache(pattern) {
  */
 function clearAllCache() {
   cacheStore.clear();
+  redisManager.invalidatePattern("cache:").catch(() => {});
 }
 
 module.exports = {
@@ -133,5 +164,3 @@ module.exports = {
   invalidateCache,
   clearAllCache,
 };
-
-

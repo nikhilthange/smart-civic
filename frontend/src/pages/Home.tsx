@@ -19,6 +19,26 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import AiPipelineHeroVisual from "@/components/common/AiPipelineHeroVisual"
+import SeoHead from "@/components/common/SeoHead"
+
+const HOME_FAQS = [
+  {
+    question: "How do I report a pothole or civic defect in Mumbai using Smart Civic?",
+    answer: "You can report a civic defect by taking a photo on the Smart Civic portal or via WhatsApp. The platform uses AI computer vision to automatically classify the defect, detect GPS coordinates, and route the ticket to the designated BMC ward officer in real time.",
+  },
+  {
+    question: "What is the guaranteed SLA resolution timeline for civic complaints?",
+    answer: "Standard civic defects such as potholes carry a strict 48-hour SLA resolution guarantee. Monsoon subway waterlogging and pipeline ruptures are prioritized for critical response within 2 to 6 hours with automated contractor escrow penalties for missed deadlines.",
+  },
+  {
+    question: "How does geofenced resolution verification work for field repairs?",
+    answer: "Municipal field workers must be physically present within a 100-meter GPS radius of the incident coordinates to submit repair proof. The system enforces AI before-and-after photo comparisons to prevent false resolution claims.",
+  },
+  {
+    question: "How can citizens earn and redeem Civic Karma points?",
+    answer: "Citizens earn Karma points by reporting verified grievances and rating completed repairs. Accumulated points can be redeemed for official municipal incentives, including a 5% BMC property tax rebate, 30-day BEST bus digital passes, and Mumbai Metro card credits.",
+  },
+];
 
 export default function Home() {
   const fadeUpVariant = {
@@ -38,6 +58,13 @@ export default function Home() {
 
   return (
     <div className="min-h-[100dvh] h-full w-full overflow-y-auto overscroll-y-contain flex flex-col bg-slate-50 dark:bg-slate-950 font-sans">
+      <SeoHead
+        title="Smart Civic AI | BMC Mumbai Municipal CityOS & Citizen Grievance Portal"
+        description="Official BMC Mumbai CityOS. Report potholes, garbage, waterlogging, and civic defects with instant AI verification, 48-hour SLA resolution, and live 24-ward GIS tracking."
+        keywords="BMC Mumbai, Smart Civic, civic complaint portal Mumbai, report pothole Mumbai, BMC water logging, BMC garbage collection, Mumbai municipal grievance, civic karma rewards"
+        canonicalPath="/"
+        faqs={HOME_FAQS}
+      />
       {/* Navbar */}
       <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
         <div className="w-full max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">

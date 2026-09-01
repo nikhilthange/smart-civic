@@ -1,10 +1,51 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+
+    <!-- ─── Primary SEO Meta Tags ───────────────────────────────────────────── -->
+    <title>Smart Civic AI | BMC Mumbai Municipal CityOS & Citizen Grievance Portal</title>
+    <meta name="title" content="Smart Civic AI | BMC Mumbai Municipal CityOS & Citizen Grievance Portal" />
+    <meta name="description" content="Official Brihanmumbai Municipal Corporation (BMC) AI CityOS. Report potholes, garbage, waterlogging, and civic defects with instant AI verification, 48-hour SLA resolution, and live 24-ward GIS tracking." />
+    <meta name="keywords" content="BMC Mumbai, Smart Civic, civic complaint portal Mumbai, report pothole Mumbai, BMC water logging, BMC garbage collection, Mumbai municipal grievance, civic karma rewards, 24 wards Mumbai, BMC CityOS" />
+    <meta name="author" content="Brihanmumbai Municipal Corporation (BMC) Smart Governance" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="google-site-verification" content="googlee3c0d346e90cbfde" />
+    <link rel="canonical" href="https://smartcivic.mumbai.gov.in/" />
+
+    <!-- ─── GEO & Hyper-Local Geospatial Tags (Mumbai Jurisdiction) ────────── -->
+    <meta name="geo.region" content="IN-MH" />
+    <meta name="geo.placename" content="Mumbai, Maharashtra, India" />
+    <meta name="geo.position" content="18.9220;72.8347" />
+    <meta name="ICBM" content="18.9220, 72.8347" />
+    <meta name="DC.title" content="Smart Civic AI Mumbai Municipal CityOS" />
+    <meta name="DC.coverage" content="Greater Mumbai (24 Administrative Wards)" />
+
+    <!-- ─── OpenGraph / Facebook Meta Tags ──────────────────────────────────── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://smartcivic.mumbai.gov.in/" />
+    <meta property="og:site_name" content="Smart Civic AI CityOS" />
+    <meta property="og:title" content="Smart Civic AI | Next-Gen Mumbai Municipal Governance" />
+    <meta property="og:description" content="AI-powered civic grievance resolution across Mumbai's 24 wards. Real-time GPS tracking, 48-hour contractor SLA, and citizen Karma rewards." />
+    <meta property="og:image" content="https://smartcivic.mumbai.gov.in/og-preview.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Smart Civic AI Municipal Dashboard & Citizen Grievance Interface" />
+    <meta property="og:locale" content="en_IN" />
+
+    <!-- ─── Twitter Card Meta Tags ──────────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@mybmc" />
+    <meta name="twitter:creator" content="@mybmc" />
+    <meta name="twitter:url" content="https://smartcivic.mumbai.gov.in/" />
+    <meta name="twitter:title" content="Smart Civic AI | BMC Mumbai Municipal CityOS" />
+    <meta name="twitter:description" content="Report civic defects in Mumbai with instant AI vision triage, 48h SLA guarantee, and live GIS map tracking." />
+    <meta name="twitter:image" content="https://smartcivic.mumbai.gov.in/og-preview.png" />
+
+    <!-- ─── PWA & Mobile Web App Capabilities ──────────────────────────────── -->
     <meta name="theme-color" content="#064e3b" media="(prefers-color-scheme: dark)" />
     <meta name="theme-color" content="#10b981" media="(prefers-color-scheme: light)" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -12,13 +53,92 @@
     <meta name="apple-mobile-web-app-title" content="SmartCivic" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="manifest" href="/manifest.json" />
+
+    <!-- ─── Typography & Preconnect ─────────────────────────────────────────── -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" />
+
     <script>
       window.global = window;
     </script>
-    <title>Smart Civic AI</title>
+
+    <!-- ─── JSON-LD Structured Data: GovernmentOrganization & CivicStructure ── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "GovernmentOrganization",
+          "@id": "https://smartcivic.mumbai.gov.in/#organization",
+          "name": "Brihanmumbai Municipal Corporation (BMC) - Smart Civic",
+          "alternateName": ["BMC Smart Civic", "Mumbai CityOS", "Smart Civic AI"],
+          "url": "https://smartcivic.mumbai.gov.in/",
+          "logo": "https://smartcivic.mumbai.gov.in/favicon.svg",
+          "areaServed": {
+            "@type": "AdministrativeArea",
+            "name": "Greater Mumbai",
+            "addressCountry": "IN",
+            "addressRegion": "Maharashtra",
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 18.9220,
+              "longitude": 72.8347
+            }
+          },
+          "contactPoint": [
+            {
+              "@type": "ContactPoint",
+              "telephone": "+91-1916",
+              "contactType": "Emergency Civic Helpline",
+              "areaServed": "IN-MH",
+              "availableLanguage": ["English", "Hindi", "Marathi"]
+            }
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://smartcivic.mumbai.gov.in/#website",
+          "url": "https://smartcivic.mumbai.gov.in/",
+          "name": "Smart Civic AI CityOS",
+          "description": "Unified municipal citizen reporting, AI vision triage, and spatial tracking platform for Mumbai.",
+          "publisher": {
+            "@id": "https://smartcivic.mumbai.gov.in/#organization"
+          },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://smartcivic.mumbai.gov.in/track?ticket={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "GovernmentService",
+          "@id": "https://smartcivic.mumbai.gov.in/#service",
+          "name": "Municipal Civic Grievance & Defect Redressal Service",
+          "serviceType": "Public Infrastructure Maintenance & Grievance Resolution",
+          "provider": {
+            "@id": "https://smartcivic.mumbai.gov.in/#organization"
+          },
+          "areaServed": "Mumbai (24 Administrative Wards)",
+          "serviceOutput": "GPS Geofenced Verified Resolution with 48h SLA",
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Civic Grievance Categories",
+            "itemListElement": [
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Pothole & Road Repair (PWD)" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Solid Waste & Overflowing Dumpster (SWM)" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Monsoon Subway Flooding & Drainage (SWD)" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Water Pipe Burst & Pressure Loss (WSD)" } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Streetlight & Electrical Hazards (ELD)" } }
+            ]
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

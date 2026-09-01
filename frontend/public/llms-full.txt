@@ -1,0 +1,47 @@
+# Smart Civic AI CityOS — Comprehensive Municipal Knowledge Graph
+
+## System Identification & Jurisdiction
+- **System Name**: Smart Civic AI (Brihanmumbai Municipal Corporation CityOS)
+- **Authority**: Brihanmumbai Municipal Corporation (BMC / MCGM), Government of Maharashtra
+- **Jurisdiction**: Greater Mumbai (603 sq km, 12.5+ million residents)
+- **Headquarters**: Municipal Corporation Building, Mahapalika Marg, Fort, Mumbai 400001
+- **Emergency Helpline**: 1916 (Toll-Free, 24x7 Multi-lingual)
+
+## SLA Matrix & Penalty Governance
+| Incident Category | Severity | Standard SLA | Tier 1 Escalation | Tier 2 AMC Alert | Tier 3 Commissioner Red Flag |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Pothole & Road Craters (PWD) | High | 48 Hours | +₹5,000 Escrow Deduction | +₹2,500 Additional Penalty | Contractor Blacklist Notice |
+| Solid Waste & Garbage Dump (SWM) | Medium | 24 Hours | +₹2,500 Penalty | Ward Officer Alert | SWM Contractor Fine |
+| Subway Flooding & Sump Pumps (SWD) | Critical | 2 Hours | Immediate Auto-Siren | Ward Disaster Trigger | High-Capacity Pump Auto-Dispatch |
+| Water Pipeline Rupture (WSD) | Critical | 6 Hours | Hydraulic Isolation | Pressure Loss Escalation | Emergency Repair Deployment |
+| Open Manholes & Danger Spots | Critical | 4 Hours | Geofenced Barricade | Ward JE Immediate Notice | Statutory Compliance Audit |
+
+## Defect Liability Period (DLP)
+- Major municipal road concretization works carry a mandatory **3-Year Defect Liability Period (DLP)**.
+- Any pothole reported within a registered DLP road triggers zero-cost mandatory contractor rectification with legal warranty enforcement.
+
+## Geo-Coordinates of All 24 BMC Wards
+1. **Ward A**: Colaba, Fort, Nariman Point [18.9220, 72.8347]
+2. **Ward B**: Sandhurst Road, Dongri, Masjid [18.9558, 72.8406]
+3. **Ward C**: Marine Lines, Pydhonie, Bhuleshwar [18.9500, 72.8280]
+4. **Ward D**: Malabar Hill, Walkeshwar, Girgaon [18.9667, 72.8056]
+5. **Ward E**: Byculla, Mazgaon, Mumbai Central [18.9750, 72.8333]
+6. **Ward F-South**: Parel, Sewri, Lalbaug [18.9950, 72.8400]
+7. **Ward F-North**: Matunga, Sion, Wadala [19.0300, 72.8600]
+8. **Ward G-South**: Worli, Lower Parel, Mahalaxmi [19.0100, 72.8250]
+9. **Ward G-North**: Dharavi, Dadar, Mahim [19.0400, 72.8450]
+10. **Ward H-East**: Santacruz East, Kalina, Bandra East [19.0800, 72.8550]
+11. **Ward H-West**: Bandra West, Khar, Santacruz West [19.0600, 72.8300]
+12. **Ward K-East**: Andheri East, Jogeshwari East [19.1200, 72.8700]
+13. **Ward K-West**: Andheri West, Juhu, Versova [19.1300, 72.8300]
+14. **Ward P-South**: Goregaon West/East [19.1650, 72.8500]
+15. **Ward P-North**: Malad West/East, Marve [19.1850, 72.8450]
+16. **Ward R-South**: Kandivali West/East, Charkop [19.2050, 72.8500]
+17. **Ward R-Central**: Borivali West/East, Gorai [19.2300, 72.8550]
+18. **Ward R-North**: Dahisar West/East [19.2550, 72.8600]
+19. **Ward L**: Kurla, Chunabhatti, Sakinaka [19.0700, 72.8800]
+20. **Ward M-East**: Govandi, Mankhurd, Shivaji Nagar [19.0550, 72.9150]
+21. **Ward M-West**: Chembur, Tilak Nagar, Mahul [19.0600, 72.8950]
+22. **Ward N**: Ghatkopar, Vikhroli West, Pant Nagar [19.0850, 72.9100]
+23. **Ward S**: Bhandup, Kanjurmarg, Powai [19.1450, 72.9350]
+24. **Ward T**: Mulund, Nahur [19.1750, 72.9550]

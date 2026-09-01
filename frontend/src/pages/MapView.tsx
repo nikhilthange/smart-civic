@@ -23,6 +23,7 @@ import { SkeletonMap } from "@/components/common/SkeletonLoader"
 import { EmptyState } from "@/components/common/EmptyState"
 import { useSocket } from "@/context/SocketContext"
 import toast from "react-hot-toast"
+import SeoHead from "@/components/common/SeoHead"
 
 // Mumbai BMC Geographic Center & Fallbacks
 const MUMBAI_CENTER: [number, number] = [19.0760, 72.8777]
@@ -619,6 +620,12 @@ export default function MapView() {
       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
       className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 pb-28"
     >
+      <SeoHead
+        title="Live Mumbai GIS Civic Map & Incident Heatmap | Smart Civic"
+        description="Explore real-time civic defect density, monsoon waterlogging sensors, CCTV feeds, and SWM fleet tracking across Mumbai's 24 administrative wards."
+        keywords="Mumbai GIS map, BMC ward map, live civic incident map, Mumbai flood heatmap, pothole tracker Mumbai, 24 wards Mumbai"
+        canonicalPath="/map"
+      />
       {/* Active Monsoon Flood Emergency Radar Banner */}
       {activeHotspotAlert && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white shadow-xl animate-pulse gap-3">

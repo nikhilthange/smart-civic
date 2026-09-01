@@ -1,10 +1,14 @@
+"use strict";
+
 /**
  * ─── Meta WhatsApp Cloud Webhook Controller ───────────────────────────────────
- * Handles Meta Webhook Verification (GET hub.challenge) & Ingestion (POST) with HMAC SHA-256 validation.
+ * Handles Meta Webhook Verification (GET hub.challenge) & Ingestion (POST) with
+ * HMAC SHA-256 validation and distributed Redis deduplication.
  */
 
 const crypto = require("crypto");
 const whatsappCloudService = require("../services/whatsappCloudService");
+const redisManager = require("../config/redis");
 
 const verifyWebhookSignature = (req, res, next) => {
   const signature = req.headers["x-hub-signature-256"];
@@ -60,6 +64,19 @@ const verifyWebhook = async (req, res) => {
 const handleIncomingMessage = async (req, res) => {
   try {
     const normalized = whatsappCloudService.normalizeWebhookPayload(req.body);
+
+    // Redis Atomic Deduplication: Drop duplicate webhook deliveries within a 10-minute window
+    if (normalized && normalized.messageId) {
+      const isNew = await redisManager.setNx(`webhook:dedup:${normalized.messageId}`, 600, "1");
+      if (!isNew) {
+        return res.status(200).json({
+          success: true,
+          deduplicated: true,
+          message: "Duplicate webhook delivery ignored",
+        });
+      }
+    }
+
     const result = await whatsappCloudService.processIncomingMessage(normalized);
 
     return res.status(200).json({

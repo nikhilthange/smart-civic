@@ -1,0 +1,49 @@
+# ─── Smart Civic AI (BMC Mumbai CityOS) Robots Directive ───────────────────────
+User-agent: *
+Allow: /
+Allow: /track
+Allow: /map
+Allow: /monsoon-radar
+Allow: /cctv-radar
+Allow: /aqi-enforcement
+Allow: /karma-rewards
+Allow: /participatory-budget
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /geo.json
+
+# Restrict private administrative dashboards
+Disallow: /admin
+Disallow: /officer
+Disallow: /worker
+Disallow: /api/admin
+Disallow: /api/officers
+
+# ─── AI & Answer Engine Crawlers (AEO / GEO Enabled) ──────────────────────────
+User-agent: GPTBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# Sitemap Index Location
+Sitemap: https://smartcivic.mumbai.gov.in/sitemap.xml

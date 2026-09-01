@@ -1,6 +1,10 @@
+"use strict";
+
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const TokenBlacklist = require("../models/TokenBlacklist");
+const redisManager = require("../config/redis");
 
 // ─── protect ──────────────────────────────────────────────────────────────────
 // Verifies JWT from Authorization header, attaches req.user
@@ -23,19 +27,40 @@ const protect = async (req, res, next) => {
   }
 
   try {
-    // 1. Check if token has been blacklisted (logged out)
-    const isBlacklisted = await TokenBlacklist.findOne({ token });
-    if (isBlacklisted) {
-      return res.status(401).json({
-        success: false,
-        message: "Token has been invalidated. Please log in again.",
-      });
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+    // 1. Fast sub-millisecond check in Redis Blacklist
+    try {
+      const isRedisBlacklisted = await redisManager.get(`blacklist:${tokenHash}`);
+      if (isRedisBlacklisted) {
+        return res.status(401).json({
+          success: false,
+          message: "Token has been invalidated. Please log in again.",
+        });
+      }
+    } catch {
+      // Non-blocking fallback
     }
 
-    // 2. Verify token signature and expiry
+    // 2. Check MongoDB TokenBlacklist collection if not in Redis
+    try {
+      const isBlacklisted = await TokenBlacklist.findOne({ token });
+      if (isBlacklisted) {
+        // Cache in Redis for future requests
+        redisManager.setEx(`blacklist:${tokenHash}`, 3600, "1").catch(() => {});
+        return res.status(401).json({
+          success: false,
+          message: "Token has been invalidated. Please log in again.",
+        });
+      }
+    } catch {
+      // Non-blocking
+    }
+
+    // 3. Verify token signature and expiry
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 3. Check user still exists and is active
+    // 4. Check user still exists and is active
     const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(401).json({

@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
-  CheckCircle2, Loader2, Bot, Info, Camera, QrCode, Sparkles, ShieldCheck,
+  CheckCircle2, Loader2, Bot, Info, Camera, QrCode, ShieldCheck,
   Clock, ShieldAlert, Building2
 } from "lucide-react"
 import { motion } from "framer-motion"
@@ -16,8 +16,7 @@ import { CameraCaptureModal } from "@/components/common/CameraCaptureModal"
 import { VoiceInput } from "@/components/common/VoiceInput"
 import { QrScannerModal, type ScannedAssetData } from "@/components/common/QrScannerModal"
 
-import { parseImageExif, type ExifLocationResult } from "@/utils/exifParser"
-import { LiveTriageScanningOverlay } from "@/components/complaints/LiveTriageScanningOverlay"
+import { parseImageExif } from "@/utils/exifParser"
 import { saveOfflineResolution } from "@/utils/offlineQueue"
 import { detectWardByCoordinates } from "@/utils/mumbaiWardBoundaries"
 import toast from "react-hot-toast"
@@ -36,7 +35,6 @@ export default function CreateComplaint() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false)
-  const [exifData, setExifData] = useState<ExifLocationResult | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   const handleQrScan = (asset: ScannedAssetData) => {
@@ -163,7 +161,6 @@ export default function CreateComplaint() {
       if (firstImage) {
         setPreviewUrl(URL.createObjectURL(firstImage))
         const extracted = await parseImageExif(firstImage)
-        setExifData(extracted)
 
         const wardObj = extracted.lat && extracted.lng
           ? detectWardByCoordinates(extracted.lat, extracted.lng)
@@ -205,7 +202,6 @@ export default function CreateComplaint() {
           URL.revokeObjectURL(previewUrl)
         }
         setPreviewUrl(null)
-        setExifData(null)
       }
       return next
     })
@@ -605,27 +601,6 @@ export default function CreateComplaint() {
                 onClose={() => setIsQrScannerOpen(false)}
                 onScan={handleQrScan}
               />
-
-              {/* Live Triage HUD Scanning Overlay */}
-              {previewUrl && files.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
-                      <span>Live AI Computer Vision & EXIF Telemetry</span>
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-400">YOLOv8 Real-time Inference</span>
-                  </div>
-                  <LiveTriageScanningOverlay
-                    imagePreviewUrl={previewUrl}
-                    fileName={files[0]?.name || "upload.jpg"}
-                    exifData={exifData || undefined}
-                    predictedCategory={form.category || "roads_and_infrastructure"}
-                    predictedDepartment="PWD (Public Works Dept)"
-                    confidence={0.95}
-                  />
-                </div>
-              )}
 
               {/* Preview */}
               {files.length > 0 && (

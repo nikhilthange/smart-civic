@@ -12,7 +12,6 @@ import {
   Search,
   Shield,
   BarChart3,
-  LineChart,
   Wrench,
   MapPin,
   Command,
@@ -43,7 +42,6 @@ import { CommandPalette } from "@/components/common/CommandPalette"
 import MunicipalCopilotModal from "@/components/admin/MunicipalCopilotModal"
 import KeyboardShortcutsModal from "@/components/common/KeyboardShortcutsModal"
 import { OnboardingTourModal } from "@/components/common/OnboardingTourModal"
-import { LiveWebSocketEventTicker } from "@/components/common/LiveWebSocketEventTicker"
 import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
 import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { useTranslation } from "react-i18next"
@@ -68,30 +66,26 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "CORE NAVIGATION",
+    label: "CITIZEN PORTAL",
     items: [
-      { key: "nav.dashboard", defaultName: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { key: "nav.mapView", defaultName: "GIS Map Explorer", href: "/map", icon: MapPin, badge: "GIS" },
-      { key: "nav.quickReport", defaultName: "Snap & Send (1-Click)", href: "/quick-report", icon: Sparkles, citizenOnly: true, badge: "AI" },
+      { key: "nav.dashboard", defaultName: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
       { key: "nav.createComplaint", defaultName: "File Grievance", href: "/complaint/create", icon: FileEdit, citizenOnly: true },
       { key: "nav.trackComplaint", defaultName: "Track Grievance", href: "/track", icon: Search },
-      { key: "nav.complaintHistory", defaultName: "Grievance Ledger", href: "/complaints", icon: History },
-      { key: "nav.rewards", defaultName: "Civic Rewards & Karma", href: "/rewards", icon: Trophy, citizenOnly: true },
-      { key: "nav.whatsappSandbox", defaultName: "WhatsApp Bot Sandbox", href: "/whatsapp-sandbox", icon: MessageSquare, citizenOnly: true },
-      { key: "nav.search", defaultName: "Global Search", href: "/search", icon: Search },
-      { key: "nav.settings", defaultName: "Settings & Language", href: "/settings", icon: SettingsIcon },
+      { key: "nav.complaintHistory", defaultName: "Grievance Records", href: "/complaints", icon: History },
+      { key: "nav.mapView", defaultName: "Live Ward GIS Map", href: "/map", icon: MapPin },
+      { key: "nav.rewards", defaultName: "Civic Karma & Rewards", href: "/rewards", icon: Trophy, citizenOnly: true },
+      { key: "nav.whatsappSandbox", defaultName: "WhatsApp Bot", href: "/whatsapp-sandbox", icon: MessageSquare, citizenOnly: true },
+      { key: "nav.settings", defaultName: "Settings & Profile", href: "/settings", icon: SettingsIcon },
     ],
   },
   {
-    label: "ROLE MANAGEMENT",
+    label: "GOVERNANCE & FIELD",
     items: [
-      { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true, badge: "Field" },
-      { key: "nav.officerPortal", defaultName: "Officer Control Room", href: "/officer-portal", icon: Shield, officerOnly: true, badge: "SLA" },
-      { key: "nav.adminDashboard", defaultName: "Admin Command", href: "/admin", icon: BarChart3, adminOnly: true },
-      { key: "nav.dataStudio", defaultName: "Admin Data Studio", href: "/admin/data-studio", icon: Database, adminOnly: true },
-      { key: "nav.analytics", defaultName: "Analytics Telemetry", href: "/admin/analytics", icon: LineChart, adminOnly: true },
-      { key: "nav.monsoon", defaultName: "Monsoon Flood Radar", href: "/monsoon-radar", icon: Waves, badge: "Live" },
-      { key: "nav.auditLedger", defaultName: "Tamper-Evident Audit", href: "/audit-ledger", icon: Lock, adminOnly: true },
+      { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true },
+      { key: "nav.officerPortal", defaultName: "Ward Officer Portal", href: "/officer-portal", icon: Shield, officerOnly: true },
+      { key: "nav.adminDashboard", defaultName: "Executive Command", href: "/admin", icon: BarChart3, adminOnly: true },
+      { key: "nav.monsoon", defaultName: "Monsoon Flood Radar", href: "/monsoon-radar", icon: Waves },
+      { key: "nav.auditLedger", defaultName: "Compliance Ledger", href: "/audit-ledger", icon: Lock, adminOnly: true },
     ],
   },
 ]
@@ -354,9 +348,6 @@ export default function DashboardLayout() {
 
       {/* Main Content Area */}
       <div className="flex flex-col flex-1 h-full overflow-hidden min-w-0 w-full max-w-full">
-        {/* Real-Time WebSocket Event Stream Ticker */}
-        <LiveWebSocketEventTicker />
-
         {/* Offline Sync Banner */}
         <OfflineSyncBanner />
 

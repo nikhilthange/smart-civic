@@ -6,7 +6,8 @@ import {
   XCircle, Bot, MapPin, Calendar, Tag, Phone,
   AlertCircle, Loader2, Paperclip, ExternalLink, Check, Building,
   Image as ImageIcon, HardHat, FileCheck, Search, ArrowRight,
-  History, Sparkles, Plus, ZoomIn, X, Copy, ShieldCheck, Camera
+  History, Sparkles, Plus, ZoomIn, X, Copy, ShieldCheck, Camera,
+  Navigation
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +20,8 @@ import {
 import { useAuth } from "@/context/AuthContext"
 import { useSocket } from "@/context/SocketContext"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
+import { getTravelDetails, getGoogleMapsDirUrl, type TravelDetails } from "@/utils/geoUtils"
+import { LiveNavigationModal } from "@/components/navigation/LiveNavigationModal"
 import ComplaintMap from "@/components/ui/ComplaintMap"
 import FeedbackModal from "@/components/ui/FeedbackModal"
 import { BeforeAfterSlider } from "@/components/common/BeforeAfterSlider"
@@ -810,6 +813,11 @@ export default function ComplaintTracking() {
   const [zoomImage, setZoomImage] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
+  // Live Geolocation, Distance Matrix & Live Turn-by-Turn Navigation
+  const [travel, setTravel] = useState<TravelDetails | null>(null)
+  const [loadingGeo, setLoadingGeo] = useState(false)
+  const [isLiveNavOpen, setIsLiveNavOpen] = useState(false)
+
   const load = useCallback(async (idToFetch?: string) => {
     const currentId = idToFetch || targetId
     if (!currentId) {
@@ -838,6 +846,27 @@ export default function ComplaintTracking() {
       setIsLoading(false)
     }
   }, [targetId, load])
+
+  // Compute live distance and driving ETA whenever complaint is loaded
+  useEffect(() => {
+    if (!complaint) {
+      setTravel(null)
+      return
+    }
+
+    const coords = complaint.location?.coordinates?.coordinates
+    const locAny = complaint.location as any
+    const lat = coords && coords.length === 2 ? coords[1] : (locAny?.lat ?? locAny?.latitude)
+    const lng = coords && coords.length === 2 ? coords[0] : (locAny?.lng ?? locAny?.longitude)
+
+    if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+      setLoadingGeo(true)
+      getTravelDetails(lat, lng)
+        .then((res) => setTravel(res))
+        .catch(() => setTravel(null))
+        .finally(() => setLoadingGeo(false))
+    }
+  }, [complaint])
 
   // ESC key listener to dismiss lightbox
   useEffect(() => {
@@ -1144,6 +1173,12 @@ export default function ComplaintTracking() {
     )
   }
 
+  const coords = complaint.location?.coordinates?.coordinates
+  const locAny = complaint.location as any
+  const targetLat = coords && coords.length === 2 ? coords[1] : (locAny?.lat ?? locAny?.latitude ?? 19.0760)
+  const targetLng = coords && coords.length === 2 ? coords[0] : (locAny?.lng ?? locAny?.longitude ?? 72.8777)
+  const mapDirUrl = getGoogleMapsDirUrl(targetLat, targetLng, complaint.location?.address)
+
   // ─── 2. Active Complaint Detail Tracking View ────────────────────────────────
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pb-12">
@@ -1250,9 +1285,114 @@ export default function ComplaintTracking() {
           />
         </div>
 
-        {/* Right Column (5 cols on desktop): AI Verification, Resolution Proof, Map, Ward Team */}
+        {/* Right Column (5 cols on desktop): Live Navigation Matrix, Map, AI Verification, Resolution Proof, Ward Team */}
         <div className="lg:col-span-5 space-y-6 w-full">
-          {/* Resolution Proof Card (High visibility on right sidebar) */}
+          {/* ─── Live GPS Distance & Navigation Matrix Card ────────────── */}
+          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-xl space-y-4 border border-indigo-500/20">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Navigation className="w-5 h-5 text-cyan-400 animate-pulse" />
+                <h3 className="font-bold text-sm text-white">Live Geolocation & Distance Matrix</h3>
+              </div>
+              {travel?.isRealTimeRoute && (
+                <span className="text-[10px] font-mono bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+                  Real-time OSRM Routing
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 bg-white/5 p-3.5 rounded-xl border border-white/10">
+              {/* Distance */}
+              <div className="space-y-1">
+                <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5 text-cyan-400" /> Distance from You
+                </span>
+                <p className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                  {loadingGeo ? (
+                    <span className="text-xs text-slate-400 animate-pulse">Calculating...</span>
+                  ) : travel ? (
+                    `${travel.distanceKm} km`
+                  ) : (
+                    "N/A"
+                  )}
+                </p>
+              </div>
+
+              {/* Driving Duration */}
+              <div className="space-y-1">
+                <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-cyan-400" /> Driving Estimate
+                </span>
+                <p className="text-xl sm:text-2xl font-extrabold text-cyan-300 tracking-tight">
+                  {loadingGeo ? (
+                    <span className="text-xs text-slate-400 animate-pulse">Calculating...</span>
+                  ) : travel ? (
+                    `${travel.durationMins} mins`
+                  ) : (
+                    "N/A"
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Navigation Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setIsLiveNavOpen(true)}
+                className="w-full sm:flex-1 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 cursor-pointer"
+              >
+                <Navigation className="w-4 h-4" />
+                Start In-App Live Navigation
+              </button>
+
+              <a
+                href={mapDirUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 border border-slate-700"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Google Maps ↗
+              </a>
+            </div>
+          </div>
+
+          {/* Interactive Incident Location Map with Route Line */}
+          <Card className="shadow-sm border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+                  <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  {t("tracking.complaintLocationMap")}
+                </CardTitle>
+                <a
+                  href={mapDirUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] font-semibold text-indigo-600 hover:underline flex items-center gap-1"
+                >
+                  Directions ↗
+                </a>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-2">
+              <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+                <ComplaintMap
+                  lat={targetLat}
+                  lng={targetLng}
+                  userLat={travel?.userLocation?.lat}
+                  userLng={travel?.userLocation?.lng}
+                  address={complaint.location.address}
+                />
+              </div>
+              <p className="text-xs text-slate-500 truncate">
+                📍 {complaint.location.address}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Resolution Proof Card */}
           <ResolutionProofCard
             status={complaint.status}
             resolutionImage={complaint.resolutionImage}
@@ -1277,39 +1417,6 @@ export default function ComplaintTracking() {
             estimatedResolution={complaint.estimatedResolution}
           />
 
-          {/* Interactive Incident Location Map */}
-          {complaint.location?.coordinates?.coordinates && (
-            <Card className="shadow-sm border-slate-200 dark:border-slate-800">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-                    <MapPin className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                    {t("tracking.complaintLocationMap")}
-                  </CardTitle>
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${complaint.location.coordinates.coordinates[1]},${complaint.location.coordinates.coordinates[0]}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] font-semibold text-indigo-600 hover:underline flex items-center gap-1"
-                  >
-                    Google Maps ↗
-                  </a>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0 space-y-2">
-                <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-                  <ComplaintMap
-                    lat={complaint.location.coordinates.coordinates[1]}
-                    lng={complaint.location.coordinates.coordinates[0]}
-                  />
-                </div>
-                <p className="text-xs text-slate-500 truncate">
-                  📍 {complaint.location.address}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Ward Department & Ground Field Team Card */}
           <WardAndFieldTeamCard
             departmentName={complaint.departmentName}
@@ -1332,6 +1439,17 @@ export default function ComplaintTracking() {
           )}
         </div>
       </div>
+
+      {/* ─── Live Turn-by-Turn GPS Navigation Modal ────────────────────── */}
+      <LiveNavigationModal
+        isOpen={isLiveNavOpen}
+        onClose={() => setIsLiveNavOpen(false)}
+        targetLat={targetLat}
+        targetLng={targetLng}
+        targetAddress={complaint.location?.address}
+        ticketTitle={complaint.title}
+        ticketId={complaint.complaintId || complaint._id}
+      />
 
       {/* ─── Fullscreen Zoom Lightbox Modal ─────────────────────────────── */}
       {zoomImage && (

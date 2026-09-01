@@ -6,15 +6,15 @@
     <link rel="apple-touch-icon" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
 
-    <!-- ─── Primary SEO Meta Tags ───────────────────────────────────────────── -->
-    <title>Smart Civic AI | BMC Mumbai Municipal CityOS & Citizen Grievance Portal</title>
-    <meta name="title" content="Smart Civic AI | BMC Mumbai Municipal CityOS & Citizen Grievance Portal" />
-    <meta name="description" content="Official Brihanmumbai Municipal Corporation (BMC) AI CityOS. Report potholes, garbage, waterlogging, and civic defects with instant AI verification, 48-hour SLA resolution, and live 24-ward GIS tracking." />
+    <!-- ─── Primary SEO Meta Tags (Optimized 30-65 chars title, 110-165 chars desc) ─ -->
+    <title>Smart Civic AI - BMC Mumbai Grievance & CityOS Portal</title>
+    <meta name="title" content="Smart Civic AI - BMC Mumbai Grievance & CityOS Portal" />
+    <meta name="description" content="Report Mumbai potholes, garbage, and civic defects with instant AI verification, guaranteed 48-hour SLA resolution, and live 24-ward tracking." />
     <meta name="keywords" content="BMC Mumbai, Smart Civic, civic complaint portal Mumbai, report pothole Mumbai, BMC water logging, BMC garbage collection, Mumbai municipal grievance, civic karma rewards, 24 wards Mumbai, BMC CityOS" />
     <meta name="author" content="Brihanmumbai Municipal Corporation (BMC) Smart Governance" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="google-site-verification" content="googlee3c0d346e90cbfde" />
-    <link rel="canonical" href="https://smartcivic.mumbai.gov.in/" />
+    <link rel="canonical" href="https://smart-civic-pi.vercel.app/" />
 
     <!-- ─── GEO & Hyper-Local Geospatial Tags (Mumbai Jurisdiction) ────────── -->
     <meta name="geo.region" content="IN-MH" />
@@ -26,11 +26,11 @@
 
     <!-- ─── OpenGraph / Facebook Meta Tags ──────────────────────────────────── -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://smartcivic.mumbai.gov.in/" />
+    <meta property="og:url" content="https://smart-civic-pi.vercel.app/" />
     <meta property="og:site_name" content="Smart Civic AI CityOS" />
-    <meta property="og:title" content="Smart Civic AI | Next-Gen Mumbai Municipal Governance" />
-    <meta property="og:description" content="AI-powered civic grievance resolution across Mumbai's 24 wards. Real-time GPS tracking, 48-hour contractor SLA, and citizen Karma rewards." />
-    <meta property="og:image" content="https://smartcivic.mumbai.gov.in/og-preview.png" />
+    <meta property="og:title" content="Smart Civic AI - BMC Mumbai Grievance & CityOS Portal" />
+    <meta property="og:description" content="Report Mumbai potholes, garbage, and civic defects with instant AI verification, guaranteed 48-hour SLA resolution, and live 24-ward tracking." />
+    <meta property="og:image" content="https://smart-civic-pi.vercel.app/og-preview.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Smart Civic AI Municipal Dashboard & Citizen Grievance Interface" />
@@ -40,10 +40,10 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@mybmc" />
     <meta name="twitter:creator" content="@mybmc" />
-    <meta name="twitter:url" content="https://smartcivic.mumbai.gov.in/" />
-    <meta name="twitter:title" content="Smart Civic AI | BMC Mumbai Municipal CityOS" />
-    <meta name="twitter:description" content="Report civic defects in Mumbai with instant AI vision triage, 48h SLA guarantee, and live GIS map tracking." />
-    <meta name="twitter:image" content="https://smartcivic.mumbai.gov.in/og-preview.png" />
+    <meta name="twitter:url" content="https://smart-civic-pi.vercel.app/" />
+    <meta name="twitter:title" content="Smart Civic AI - BMC Mumbai Grievance & CityOS Portal" />
+    <meta name="twitter:description" content="Report Mumbai potholes, garbage, and civic defects with instant AI verification, guaranteed 48-hour SLA resolution, and live 24-ward tracking." />
+    <meta name="twitter:image" content="https://smart-civic-pi.vercel.app/og-preview.png" />
 
     <!-- ─── PWA & Mobile Web App Capabilities ──────────────────────────────── -->
     <meta name="theme-color" content="#064e3b" media="(prefers-color-scheme: dark)" />
@@ -63,18 +63,23 @@
       window.global = window;
     </script>
 
-    <!-- ─── JSON-LD Structured Data: GovernmentOrganization & CivicStructure ── -->
+    <!-- ─── JSON-LD Structured Data: GovernmentOrganization, Breadcrumb & Service ── -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
           "@type": "GovernmentOrganization",
-          "@id": "https://smartcivic.mumbai.gov.in/#organization",
+          "@id": "https://smart-civic-pi.vercel.app/#organization",
           "name": "Brihanmumbai Municipal Corporation (BMC) - Smart Civic",
           "alternateName": ["BMC Smart Civic", "Mumbai CityOS", "Smart Civic AI"],
-          "url": "https://smartcivic.mumbai.gov.in/",
-          "logo": "https://smartcivic.mumbai.gov.in/favicon.svg",
+          "url": "https://smart-civic-pi.vercel.app/",
+          "logo": "https://smart-civic-pi.vercel.app/favicon.svg",
+          "sameAs": [
+            "https://en.wikipedia.org/wiki/Brihanmumbai_Municipal_Corporation",
+            "https://www.mcgm.gov.in",
+            "https://twitter.com/mybmc"
+          ],
           "areaServed": {
             "@type": "AdministrativeArea",
             "name": "Greater Mumbai",
@@ -97,30 +102,54 @@
           ]
         },
         {
+          "@type": "BreadcrumbList",
+          "@id": "https://smart-civic-pi.vercel.app/#breadcrumb",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://smart-civic-pi.vercel.app/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Track Grievance",
+              "item": "https://smart-civic-pi.vercel.app/track"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "Live GIS Map",
+              "item": "https://smart-civic-pi.vercel.app/map"
+            }
+          ]
+        },
+        {
           "@type": "WebSite",
-          "@id": "https://smartcivic.mumbai.gov.in/#website",
-          "url": "https://smartcivic.mumbai.gov.in/",
+          "@id": "https://smart-civic-pi.vercel.app/#website",
+          "url": "https://smart-civic-pi.vercel.app/",
           "name": "Smart Civic AI CityOS",
           "description": "Unified municipal citizen reporting, AI vision triage, and spatial tracking platform for Mumbai.",
           "publisher": {
-            "@id": "https://smartcivic.mumbai.gov.in/#organization"
+            "@id": "https://smart-civic-pi.vercel.app/#organization"
           },
           "potentialAction": {
             "@type": "SearchAction",
             "target": {
               "@type": "EntryPoint",
-              "urlTemplate": "https://smartcivic.mumbai.gov.in/track?ticket={search_term_string}"
+              "urlTemplate": "https://smart-civic-pi.vercel.app/track?ticket={search_term_string}"
             },
             "query-input": "required name=search_term_string"
           }
         },
         {
           "@type": "GovernmentService",
-          "@id": "https://smartcivic.mumbai.gov.in/#service",
+          "@id": "https://smart-civic-pi.vercel.app/#service",
           "name": "Municipal Civic Grievance & Defect Redressal Service",
           "serviceType": "Public Infrastructure Maintenance & Grievance Resolution",
           "provider": {
-            "@id": "https://smartcivic.mumbai.gov.in/#organization"
+            "@id": "https://smart-civic-pi.vercel.app/#organization"
           },
           "areaServed": "Mumbai (24 Administrative Wards)",
           "serviceOutput": "GPS Geofenced Verified Resolution with 48h SLA",

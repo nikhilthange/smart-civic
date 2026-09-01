@@ -16,10 +16,10 @@ export interface SeoHeadProps {
   schemaOverride?: Record<string, any>;
 }
 
-const DEFAULT_TITLE = "Smart Civic AI | BMC Mumbai Municipal CityOS & Citizen Grievance Portal";
-const DEFAULT_DESC = "Official Brihanmumbai Municipal Corporation (BMC) AI CityOS. Report potholes, garbage, and civic defects with instant AI verification, 48-hour SLA resolution, and live 24-ward GIS tracking.";
-const DEFAULT_IMAGE = "https://smartcivic.mumbai.gov.in/og-preview.png";
-const BASE_URL = "https://smartcivic.mumbai.gov.in";
+const DEFAULT_TITLE = "Smart Civic AI - BMC Mumbai Grievance & CityOS Portal";
+const DEFAULT_DESC = "Report Mumbai potholes, garbage, and civic defects with instant AI verification, guaranteed 48-hour SLA resolution, and live 24-ward tracking.";
+const DEFAULT_IMAGE = "https://smart-civic-pi.vercel.app/og-preview.png";
+const BASE_URL = "https://smart-civic-pi.vercel.app";
 
 export const SeoHead: React.FC<SeoHeadProps> = ({
   title = DEFAULT_TITLE,
@@ -75,7 +75,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
     }
     canonical.setAttribute("href", fullUrl);
 
-    // 3. Dynamic JSON-LD Schema Injection (AEO & GEO)
+    // 3. Dynamic JSON-LD Schema Injection (AEO, GEO, Breadcrumbs)
     const scriptId = "dynamic-seo-schema";
     let schemaScript = document.getElementById(scriptId) as HTMLScriptElement | null;
     if (!schemaScript) {
@@ -85,27 +85,44 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
       document.head.appendChild(schemaScript);
     }
 
-    let dynamicSchema: Record<string, any> = {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "@id": `${fullUrl}#webpage`,
-      url: fullUrl,
-      name: title,
-      description,
-      inLanguage: "en-IN",
-      isPartOf: {
-        "@type": "WebSite",
-        name: "Smart Civic AI CityOS",
-        url: BASE_URL,
-      },
+    const breadcrumbSchema = {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": BASE_URL
+        },
+        ...(canonicalPath !== "/" ? [
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": title.split("|")[0].trim(),
+            "item": fullUrl
+          }
+        ] : [])
+      ]
     };
 
-    // Add FAQ schema if provided (AEO)
-    if (faqs && faqs.length > 0) {
-      dynamicSchema = {
-        "@context": "https://schema.org",
-        "@graph": [
-          dynamicSchema,
+    let dynamicSchema: Record<string, any> = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebPage",
+          "@id": `${fullUrl}#webpage`,
+          url: fullUrl,
+          name: title,
+          description,
+          inLanguage: "en-IN",
+          isPartOf: {
+            "@type": "WebSite",
+            name: "Smart Civic AI CityOS",
+            url: BASE_URL,
+          },
+        },
+        breadcrumbSchema,
+        ...(faqs && faqs.length > 0 ? [
           {
             "@type": "FAQPage",
             mainEntity: faqs.map((f) => ({
@@ -116,10 +133,12 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
                 text: f.answer,
               },
             })),
-          },
-        ],
-      };
-    } else if (schemaOverride) {
+          }
+        ] : []),
+      ]
+    };
+
+    if (schemaOverride) {
       dynamicSchema = schemaOverride;
     }
 

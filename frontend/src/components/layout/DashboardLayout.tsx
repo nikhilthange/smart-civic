@@ -380,14 +380,6 @@ export default function DashboardLayout() {
               <span>AI Copilot</span>
             </Button>
 
-            {/* Karma Points Badge strictly for Citizen Role */}
-            {user?.role === "citizen" && (
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded-full border border-amber-200/60 dark:border-amber-800/60 font-medium text-xs">
-                <Trophy className="w-3.5 h-3.5 text-amber-500" />
-                <span>{user?.karmaPoints || 0} Karma</span>
-              </div>
-            )}
-
             <NotificationBell />
 
             <DropdownMenu>

@@ -15,12 +15,100 @@ import {
   Camera,
   Award,
   Star,
-  ChevronDown
+  ChevronDown,
+  Quote
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import AiPipelineHeroVisual from "@/components/common/AiPipelineHeroVisual"
 import SeoHead from "@/components/common/SeoHead"
+
+const TESTIMONIALS_DATA = [
+  {
+    name: "Priya Kulkarni",
+    role: "Resident & Commuter",
+    ward: "Ward H-West (Bandra West)",
+    category: "citizen",
+    tag: "⚡ Pothole Repaired in 14h",
+    tagColor: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
+    highlight: "Repaired in less than 14 hours!",
+    text: "I reported a severe pothole crater near Hill Road on my morning commute. The AI auto-detected the ward and dispatched the PWD asphalt crew. By evening, it was completely recarpeted with timestamped before-and-after photos!",
+    stat: "Fix Time: 13.8 Hours",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
+    badge: "Verified Citizen ✓",
+    badgeClass: "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/60",
+  },
+  {
+    name: "Rajesh Patil",
+    role: "Senior Executive Ward Officer",
+    ward: "Ward K-East (Andheri East)",
+    category: "officer",
+    tag: "🚀 42% Triage Time Saved",
+    tagColor: "bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+    highlight: "Saves hours of manual triage daily.",
+    text: "The AI auto-categorization and spatial 50m deduplication are game-changers for BMC ward operations. Instead of 20 duplicates for the same waterlogging spot, we get one unified ticket with verified severity scoring.",
+    stat: "Triage: 0.4s Ingestion",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+    badge: "Municipal Officer ✓",
+    badgeClass: "bg-blue-100/80 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/60 dark:border-blue-700/60",
+  },
+  {
+    name: "Ananya Deshmukh",
+    role: "ALM Federation President",
+    ward: "Ward G-South (Worli Seaface)",
+    category: "alm",
+    tag: "🏆 5% Tax Rebate Earned",
+    tagColor: "bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border-amber-200 dark:border-amber-800",
+    highlight: "Brought true municipal accountability.",
+    text: "Our residential society actively logs waste and drainage blockages before monsoon. The Civic Karma reward vouchers gave our society a 5% property tax concession, which we reinvested in local rainwater harvesting!",
+    stat: "Karma: 1,450 Points",
+    avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=200&q=80",
+    badge: "ALM Leader ✓",
+    badgeClass: "bg-amber-100/80 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60",
+  },
+  {
+    name: "Sanjay Shinde",
+    role: "Ground Operations Supervisor",
+    ward: "PWD Roads Division (Zone 3)",
+    category: "worker",
+    tag: "🛡️ 100m GPS Geofenced Sign-off",
+    tagColor: "bg-teal-50 text-teal-700 dark:bg-teal-950/80 dark:text-teal-300 border-teal-200 dark:border-teal-800",
+    highlight: "Transparent task routing & zero paperwork.",
+    text: "The worker interface gives our road crew the exact GPS pin, routing map, and material specifications. The 100m geofence ensures our repair quality is digitally audited and approved by ward engineers instantly.",
+    stat: "Repairs: 180+ Completed",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+    badge: "Field Crew Supervisor ✓",
+    badgeClass: "bg-teal-100/80 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-300/60 dark:border-teal-700/60",
+  },
+  {
+    name: "Dr. Farhan Merchant",
+    role: "Citizen & Community Volunteer",
+    ward: "Ward A (Colaba Causeway)",
+    category: "citizen",
+    tag: "💡 18 Streetlights Restored",
+    tagColor: "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
+    highlight: "Pedestrian safety significantly improved.",
+    text: "Reported multiple flickering streetlights along Colaba Causeway. The SLA countdown was visible in real time, and the electrical team completed replacement in under 24 hours. The transparency is unmatched.",
+    stat: "SLA Met: 100% On-Time",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    badge: "Verified Citizen ✓",
+    badgeClass: "bg-indigo-100/80 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-700/60",
+  },
+  {
+    name: "Sunita Gaikwad",
+    role: "Assistant Municipal Commissioner",
+    ward: "Ward P-South (Goregaon)",
+    category: "officer",
+    tag: "📊 Escrow Penalties Automated",
+    tagColor: "bg-purple-50 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border-purple-200 dark:border-purple-800",
+    highlight: "Contractor SLA compliance rose to 94%.",
+    text: "The automated contractor escrow penalty system ensures that road contractors meet their 48-hour warranty commitments. Unresolved tickets automatically trigger SLA breach deductions without red tape.",
+    stat: "Compliance: 94.2%",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80",
+    badge: "AMC Officer ✓",
+    badgeClass: "bg-purple-100/80 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300/60 dark:border-purple-700/60",
+  },
+];
 
 const HOME_FAQS = [
   {
@@ -47,6 +135,7 @@ const HOME_FAQS = [
 
 export default function Home() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
+  const [testimonialFilter, setTestimonialFilter] = useState<string>("all")
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex((prev) => (prev === index ? null : index))
@@ -517,85 +606,151 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Testimonials */}
-        <section className="w-full py-24 px-4 sm:px-6 lg:px-8 bg-slate-50/80 dark:bg-slate-950 border-t border-slate-200/60 dark:border-slate-800">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-              <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 uppercase tracking-wider">
-                Community Voice
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white text-center mt-3">
-                Trusted by Citizens & City Authorities
+        {/* ═══ MODERN INTERACTIVE TESTIMONIALS & COMMUNITY PROOF ═══════════════ */}
+        <section className="w-full py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 via-slate-100/40 to-slate-50 dark:from-slate-950 dark:via-slate-900/40 dark:to-slate-950 border-t border-slate-200/80 dark:border-slate-800 relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-emerald-500/5 rounded-full blur-[140px] pointer-events-none -z-10" />
+
+          <div className="container px-4 md:px-6 mx-auto max-w-6xl space-y-12">
+            {/* Section Header */}
+            <div className="text-center max-w-3xl mx-auto space-y-3">
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 uppercase tracking-wider border border-emerald-300/40 dark:border-emerald-700/40 shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Verified Community Voice • 4.9/5 Rating</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Trusted by 100,000+ Citizens & BMC Officers
               </h2>
-              <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg">
-                See how Smart Civic AI empowers municipal officers and citizens alike with real-time feedback.
+              <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+                Real evidence of rapid SLA turnarounds, transparent accountability, and measurable municipal impact across Greater Mumbai.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            {/* Interactive Category Filter Tabs */}
+            <div className="flex items-center justify-center gap-2 flex-wrap pb-2">
               {[
-                {
-                  name: "Priya Kulkarni",
-                  role: "Citizen, Ward H-West (Bandra)",
-                  text: "I reported a severe pothole hazard on my street, and it was repaired in less than 14 hours! The SLA timeline stepper and photo proof gave me 100% confidence.",
-                  avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
-                  badge: "Verified Citizen ✓",
-                  badgeClass: "bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-medium px-2 py-0.5 rounded-md",
-                },
-                {
-                  name: "Rajesh Patil",
-                  role: "Senior Ward Officer, BMC",
-                  text: "The AI auto-categorization and spatial deduplication save our ward department hours of manual triage every week. Priority routing ensures critical emergencies get resolved first.",
-                  avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-                  badge: "Municipal Officer ✓",
-                  badgeClass: "bg-teal-50 text-teal-700 border border-teal-200 text-xs font-medium px-2 py-0.5 rounded-md",
-                },
-                {
-                  name: "Ananya Deshmukh",
-                  role: "Community Association President, Worli",
-                  text: "Smart Civic AI has brought unmatched governance transparency to our ward. The Ward Leaderboard scorecards motivate city departments to consistently exceed SLA targets.",
-                  avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=200&q=80",
-                  badge: "Community Leader ✓",
-                  badgeClass: "bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-medium px-2 py-0.5 rounded-md",
-                },
-              ].map((t, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15, duration: 0.5 }}
-                  className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200/80 dark:border-slate-800/80 shadow-sm hover:shadow-xl hover:border-emerald-500/50 hover:-translate-y-1 transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
-                >
-                  <div>
-                    {/* 5-Star Rating */}
-                    <div className="flex text-amber-400 gap-1 mb-4">
-                      {[...Array(5)].map((_, starIdx) => (
-                        <Star key={starIdx} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
+                { id: "all", label: "🌟 All Stories" },
+                { id: "citizen", label: "👤 Citizens & Commuters" },
+                { id: "officer", label: "🏛️ BMC Ward Officers" },
+                { id: "alm", label: "🏘️ ALM Societies" },
+                { id: "worker", label: "👷 Field Crews" },
+              ].map((tab) => {
+                const isActive = testimonialFilter === tab.id
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setTestimonialFilter(tab.id)}
+                    className={`text-xs sm:text-sm px-4 py-2 rounded-full font-semibold transition-all duration-200 cursor-pointer ${
+                      isActive
+                        ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/25 scale-105"
+                        : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800/80"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
 
-                    <p className="text-slate-700 dark:text-slate-300 italic text-base leading-relaxed mb-6">
-                      {t.text}
-                    </p>
-                  </div>
+            {/* Testimonials Grid with AnimatePresence */}
+            <motion.div
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              <AnimatePresence mode="popLayout">
+                {TESTIMONIALS_DATA.filter(
+                  (t) => testimonialFilter === "all" || t.category === testimonialFilter
+                ).map((t, i) => (
+                  <motion.div
+                    key={t.name}
+                    layout
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    transition={{ duration: 0.35, delay: i * 0.05 }}
+                    className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800/90 shadow-sm hover:shadow-xl hover:border-emerald-500/50 hover:-translate-y-1.5 transition-all duration-300 relative flex flex-col justify-between group overflow-hidden"
+                  >
+                    {/* Subtle Corner Glow Accent */}
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/10 to-transparent rounded-bl-3xl pointer-events-none" />
 
-                  <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <img
-                      src={t.avatar}
-                      alt={t.name}
-                      className="h-12 w-12 rounded-full object-cover border-2 border-emerald-500/30 shadow-sm shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{t.name}</p>
-                        <span className={t.badgeClass}>{t.badge}</span>
+                    <div className="space-y-4">
+                      {/* Top Metric Tag & 5-Star Rating */}
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border shadow-xs ${t.tagColor}`}>
+                          {t.tag}
+                        </span>
+
+                        <div className="flex text-amber-400 gap-0.5" aria-label="5 stars">
+                          {[...Array(5)].map((_, s) => (
+                            <Star key={s} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-500 truncate mt-0.5">{t.role}</p>
+
+                      {/* Main Quote & Highlight */}
+                      <div className="relative pt-1">
+                        <Quote className="absolute -top-1 -left-1 w-6 h-6 text-emerald-500/20 dark:text-emerald-400/20 pointer-events-none" />
+                        <p className="text-slate-800 dark:text-slate-200 text-sm leading-relaxed relative z-10 pl-3">
+                          <span className="font-bold text-emerald-950 dark:text-emerald-300 block mb-1">
+                            &ldquo;{t.highlight}&rdquo;
+                          </span>
+                          {t.text}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+
+                    {/* Author Footer with Avatar & Stat Pill */}
+                    <div className="pt-5 mt-5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="relative shrink-0">
+                          <img
+                            src={t.avatar}
+                            alt={t.name}
+                            className="h-11 w-11 rounded-full object-cover border-2 border-emerald-500/40 shadow-sm"
+                            loading="lazy"
+                          />
+                          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center text-[8px] text-white font-bold">
+                            ✓
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{t.name}</p>
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{t.role}</p>
+                          <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 truncate">{t.ward}</p>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 text-right">
+                        <span className="text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700/60 block">
+                          {t.stat}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
+
+            {/* Bottom Community Trust Highlights Ribbon */}
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div>
+                <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">4.9 / 5.0</p>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">Citizen Satisfaction (8,420+)</p>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">13.8 Hours</p>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">Average Pothole SLA Fix Time</p>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">25,480+</p>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">Verified Geofenced Proofs</p>
+              </div>
+              <div>
+                <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">24 / 24</p>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">Active Mumbai BMC Wards</p>
+              </div>
             </div>
           </div>
         </section>

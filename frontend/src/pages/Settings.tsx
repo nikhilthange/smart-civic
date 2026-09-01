@@ -24,7 +24,7 @@ import { toast } from "react-hot-toast"
 
 export default function Settings() {
   const { user } = useAuth()
-  const { i18n, t } = useTranslation()
+  const { i18n } = useTranslation()
 
   // Profile Form State
   const [profileName, setProfileName] = useState(user?.name || "Citizen User")

@@ -325,7 +325,7 @@ export default function WorkerDashboard() {
       {/* Optimized Daily Route Statistics Banner & Interactive TSP Map */}
       {routeOptResult && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white shadow-lg border border-indigo-700/50 gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 text-white shadow-lg border border-emerald-700/50 gap-3">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-white/10 rounded-lg text-amber-300">
                 <Route className="w-5 h-5" />
@@ -337,7 +337,7 @@ export default function WorkerDashboard() {
                     Shortest Path
                   </span>
                 </h3>
-                <p className="text-xs text-indigo-200 mt-0.5">
+                <p className="text-xs text-emerald-100/90 mt-0.5">
                   Tasks arranged in optimal driving sequence to minimize travel time across Mumbai wards.
                 </p>
               </div>
@@ -345,17 +345,17 @@ export default function WorkerDashboard() {
 
             <div className="flex items-center gap-4 text-xs font-mono font-bold bg-white/10 px-4 py-2 rounded-lg border border-white/10">
               <div>
-                <span className="text-[10px] text-indigo-300 uppercase block font-sans">Stops</span>
+                <span className="text-[10px] text-emerald-200 uppercase block font-sans">Stops</span>
                 {routeOptResult.orderedTasks.length} Sites
               </div>
               <div className="h-6 w-px bg-white/20" />
               <div>
-                <span className="text-[10px] text-indigo-300 uppercase block font-sans">Distance</span>
+                <span className="text-[10px] text-emerald-200 uppercase block font-sans">Distance</span>
                 {routeOptResult.totalDistanceKm} km
               </div>
               <div className="h-6 w-px bg-white/20" />
               <div>
-                <span className="text-[10px] text-indigo-300 uppercase block font-sans">Est. Shift</span>
+                <span className="text-[10px] text-emerald-200 uppercase block font-sans">Est. Shift</span>
                 {Math.floor(routeOptResult.totalDurationMins / 60) > 0
                   ? `${Math.floor(routeOptResult.totalDurationMins / 60)}h ${routeOptResult.totalDurationMins % 60}m`
                   : `${routeOptResult.totalDurationMins}m`}

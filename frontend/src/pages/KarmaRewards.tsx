@@ -152,7 +152,7 @@ export default function KarmaRewards() {
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12 w-full">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-5 sm:p-10 shadow-2xl border border-indigo-700/40">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-teal-900 to-slate-900 text-white p-5 sm:p-10 shadow-2xl border border-emerald-700/40">
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
             <Badge className="bg-amber-400/20 text-amber-300 border-amber-400/30 gap-1.5 py-1 px-3">
@@ -162,18 +162,18 @@ export default function KarmaRewards() {
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
               Civic Hero Badges & Karma Perks
             </h1>
-            <p className="text-indigo-200 text-xs sm:text-sm max-w-xl leading-relaxed">
+            <p className="text-emerald-100/90 text-xs sm:text-sm max-w-xl leading-relaxed">
               Earn Civic Karma by reporting valid neighborhood issues and verifying ground resolutions. Redeem your points for exclusive Mumbai municipal perks.
             </p>
           </div>
 
           {/* Karma Points Display Card */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/20 text-center w-full sm:w-auto sm:min-w-[200px] shadow-inner">
-            <span className="text-xs uppercase tracking-wider text-indigo-200 font-bold">Your Available Karma</span>
+            <span className="text-xs uppercase tracking-wider text-emerald-200 font-bold">Your Available Karma</span>
             <div className="text-3xl sm:text-5xl font-black text-amber-300 mt-1 font-mono">
               {karmaPoints} <span className="text-lg font-bold text-white">PTS</span>
             </div>
-            <p className="text-[11px] text-indigo-200 mt-1.5">
+            <p className="text-[11px] text-emerald-200 mt-1.5">
               +10 pts per ticket • +5 pts per upvote
             </p>
           </div>
@@ -232,7 +232,7 @@ export default function KarmaRewards() {
       <div className="space-y-4">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Gift className="w-5 h-5 text-indigo-600" />
+            <Gift className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             Redeem Municipal Perks & Vouchers
           </h2>
           <p className="text-xs text-slate-500">Redeem your hard-earned Karma for real-world benefits across Mumbai</p>
@@ -248,10 +248,10 @@ export default function KarmaRewards() {
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="text-3xl p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900">
+                    <div className="text-3xl p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60">
                       {perk.icon}
                     </div>
-                    <Badge className="bg-indigo-600 text-white font-mono font-bold text-xs px-2.5 py-1">
+                    <Badge className="bg-emerald-600 text-white font-mono font-bold text-xs px-2.5 py-1">
                       {perk.pointsCost} PTS
                     </Badge>
                   </div>
@@ -273,7 +273,7 @@ export default function KarmaRewards() {
                     disabled={!canAfford || isRedeeming === perk.id}
                     className={`w-full font-bold text-xs gap-1.5 min-h-[44px] rounded-xl ${
                       canAfford
-                        ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20"
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20"
                         : "bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
                     }`}
                   >
@@ -355,16 +355,16 @@ export default function KarmaRewards() {
             </div>
 
             {/* Voucher Code Box */}
-            <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-indigo-400 space-y-2">
+            <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-emerald-400 space-y-2">
               <span className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Your Unique Voucher Code</span>
-              <div className="text-2xl font-black font-mono tracking-widest text-indigo-700 dark:text-indigo-400">
+              <div className="text-2xl font-black font-mono tracking-widest text-emerald-700 dark:text-emerald-400">
                 {activeVoucherModal.voucherCode}
               </div>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => handleCopyCode(activeVoucherModal.voucherCode)}
-                className="gap-1.5 text-xs font-bold"
+                className="gap-1.5 text-xs font-bold border-emerald-300 text-emerald-800 dark:text-emerald-300"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? "Copied!" : "Copy Voucher Code"}
@@ -372,7 +372,7 @@ export default function KarmaRewards() {
             </div>
 
             <Button
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
               onClick={() => setActiveVoucherModal(null)}
             >
               Done & Return

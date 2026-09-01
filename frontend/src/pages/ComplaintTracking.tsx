@@ -1028,16 +1028,16 @@ export default function ComplaintTracking() {
     return (
       <div className="w-full max-w-5xl mx-auto space-y-8 pb-12">
         {/* Hero Search Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white p-6 sm:p-10 shadow-2xl border border-indigo-700/40 text-center">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 text-white p-6 sm:p-10 shadow-2xl border border-emerald-700/40 text-center">
           <div className="relative z-10 max-w-2xl mx-auto space-y-3">
-            <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-400/30 gap-1.5 py-1 px-3">
+            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-400/30 gap-1.5 py-1 px-3">
               <Sparkles className="w-3.5 h-3.5" />
               Real-time Municipal SLA Radar
             </Badge>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
               Track Grievance Resolution
             </h1>
-            <p className="text-indigo-200 text-xs sm:text-sm leading-relaxed">
+            <p className="text-emerald-100/80 text-xs sm:text-sm leading-relaxed">
               Enter your tracking ticket number to inspect live 8-stage progress, supervising officer assignments, and timestamped field proof.
             </p>
 
@@ -1050,13 +1050,13 @@ export default function ComplaintTracking() {
                   placeholder="Enter Complaint / Tracking ID (e.g. SC-2026-XXXX)..."
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-10 h-12 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 text-sm font-medium border-0 focus-visible:ring-2 focus-visible:ring-indigo-400 shadow-md w-full"
+                  className="pl-10 h-12 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 text-sm font-medium border-0 focus-visible:ring-2 focus-visible:ring-emerald-400 shadow-md w-full"
                 />
               </div>
               <Button
                 type="submit"
                 disabled={!searchInput.trim() || isSearching}
-                className="w-full sm:w-auto h-12 px-6 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shrink-0 gap-2 text-sm min-h-[48px]"
+                className="w-full sm:w-auto h-12 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shrink-0 gap-2 text-sm min-h-[48px]"
               >
                 {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 Track Grievance
@@ -1083,7 +1083,7 @@ export default function ComplaintTracking() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <History className="w-5 h-5 text-indigo-600" />
+                <History className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 Your Recent Civic Reports
               </h2>
               <p className="text-xs text-slate-500">Click any grievance to inspect its live status and SLA timeline</p>
@@ -1113,7 +1113,7 @@ export default function ComplaintTracking() {
               </p>
               {user?.role === "citizen" && (
                 <Link to="/complaint/create">
-                  <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 mt-1 min-h-[40px] rounded-xl">
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 mt-1 min-h-[40px] rounded-xl">
                     <Plus className="w-4 h-4" />
                     File a New Grievance
                   </Button>
@@ -1126,7 +1126,7 @@ export default function ComplaintTracking() {
                 <Card
                   key={c._id}
                   onClick={() => navigate(`/track/${c.complaintId || c._id}`)}
-                  className="cursor-pointer hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700 transition-all border-slate-200 dark:border-slate-800 group"
+                  className="cursor-pointer hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition-all border-slate-200 dark:border-slate-800 group"
                 >
                   <CardContent className="p-4 sm:p-5 flex items-start gap-3.5">
                     {c.attachments && c.attachments[0] ? (
@@ -1139,26 +1139,26 @@ export default function ComplaintTracking() {
                         />
                       </div>
                     ) : (
-                      <div className="w-16 h-16 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 flex items-center justify-center text-indigo-600 shrink-0">
+                      <div className="w-16 h-16 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center text-emerald-600 shrink-0">
                         <Clock className="w-7 h-7" />
                       </div>
                     )}
 
                     <div className="flex-1 min-w-0 space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-800">
+                        <span className="font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
                           {c.complaintId || c._id.substring(0, 10)}
                         </span>
                         <StatusBadge status={c.status} />
                       </div>
 
-                      <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate group-hover:text-indigo-600 transition-colors">
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate group-hover:text-emerald-600 transition-colors">
                         {c.title}
                       </h4>
 
                       <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
                         <span>{CATEGORY_LABELS[c.category] || c.category}</span>
-                        <span className="flex items-center gap-1 font-semibold text-indigo-600 dark:text-indigo-400">
+                        <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
                           Track Live SLA <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                         </span>
                       </div>

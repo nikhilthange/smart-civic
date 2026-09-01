@@ -5,7 +5,6 @@ const Complaint = require("../models/Complaint");
 const User = require("../models/User");
 const Officer = require("../models/Officer");
 const Worker = require("../models/Worker");
-const Department = require("../models/Department");
 
 const REALISTIC_MUMBAI_COMPLAINTS = [
   {
@@ -24,7 +23,7 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     attachments: [
       {
         url: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80",
-        filename: "linking_road_pothole.jpg",
+        filename: "pothole_crater_evidence.jpg",
         mimetype: "image/jpeg",
         size: 145000
       }
@@ -45,8 +44,8 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     },
     attachments: [
       {
-        url: "https://images.unsplash.com/photo-1605600659908-0ef719419d41?auto=format&fit=crop&w=800&q=80",
-        filename: "dadar_waste_overflow.jpg",
+        url: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=800&q=80",
+        filename: "roadside_waste_overflow.jpg",
         mimetype: "image/jpeg",
         size: 198000
       }
@@ -67,8 +66,8 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     },
     attachments: [
       {
-        url: "https://images.unsplash.com/photo-1584467735815-f778f274e296?auto=format&fit=crop&w=800&q=80",
-        filename: "kurla_water_leak.jpg",
+        url: "https://images.unsplash.com/photo-1585687174572-c93d9b01518f?auto=format&fit=crop&w=800&q=80",
+        filename: "water_pipe_leakage.jpg",
         mimetype: "image/jpeg",
         size: 162000
       }
@@ -82,7 +81,7 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     priority: "high",
     status: "resolution_submitted",
     affectedCitizensCount: 19,
-    resolutionNotes: "Desilting crew dispatched. 1.2 tons of wet silt and aggregate extracted using vacuum suction suction truck. Drain flow restored to 100% capacity.",
+    resolutionNotes: "Desilting crew dispatched. 1.2 tons of wet silt and aggregate extracted using vacuum suction truck. Drain flow restored to 100% capacity.",
     resolutionImage: {
       url: "https://images.unsplash.com/photo-1590496793929-36417d3117de?auto=format&fit=crop&w=800&q=80",
       filename: "hindmata_cleared_drain.jpg"
@@ -95,7 +94,7 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     attachments: [
       {
         url: "https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=800&q=80",
-        filename: "hindmata_clogged_drain.jpg",
+        filename: "clogged_drainage_grate.jpg",
         mimetype: "image/jpeg",
         size: 175000
       }
@@ -117,7 +116,7 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     attachments: [
       {
         url: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80",
-        filename: "worli_dark_street.jpg",
+        filename: "unlit_streetlamp_pole.jpg",
         mimetype: "image/jpeg",
         size: 133000
       }
@@ -139,7 +138,7 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     attachments: [
       {
         url: "https://images.unsplash.com/photo-1584467735867-4297ae2ebcee?auto=format&fit=crop&w=800&q=80",
-        filename: "andheri_sidewalk.jpg",
+        filename: "broken_sidewalk_paving.jpg",
         mimetype: "image/jpeg",
         size: 154000
       }
@@ -161,7 +160,7 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     attachments: [
       {
         url: "https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?auto=format&fit=crop&w=800&q=80",
-        filename: "colaba_manhole.jpg",
+        filename: "loose_manhole_cover.jpg",
         mimetype: "image/jpeg",
         size: 180000
       }
@@ -183,7 +182,7 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     attachments: [
       {
         url: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=800&q=80",
-        filename: "ghatkopar_tree_debris.jpg",
+        filename: "fallen_tree_road_blockage.jpg",
         mimetype: "image/jpeg",
         size: 210000
       }
@@ -204,8 +203,8 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     },
     attachments: [
       {
-        url: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
-        filename: "bandra_encroachment.jpg",
+        url: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80",
+        filename: "sidewalk_stall_encroachment.jpg",
         mimetype: "image/jpeg",
         size: 167000
       }
@@ -226,8 +225,8 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     },
     attachments: [
       {
-        url: "https://images.unsplash.com/photo-1584467735815-f778f274e296?auto=format&fit=crop&w=800&q=80",
-        filename: "kurla_sewage_leak.jpg",
+        url: "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=800&q=80",
+        filename: "street_drainage_overflow.jpg",
         mimetype: "image/jpeg",
         size: 189000
       }
@@ -248,8 +247,8 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     },
     attachments: [
       {
-        url: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80",
-        filename: "vile_parle_feeder.jpg",
+        url: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=80",
+        filename: "exposed_electrical_pillar.jpg",
         mimetype: "image/jpeg",
         size: 142000
       }
@@ -270,8 +269,8 @@ const REALISTIC_MUMBAI_COMPLAINTS = [
     },
     attachments: [
       {
-        url: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80",
-        filename: "marine_drive_balustrade.jpg",
+        url: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
+        filename: "damaged_concrete_barrier.jpg",
         mimetype: "image/jpeg",
         size: 195000
       }
@@ -290,7 +289,7 @@ async function cleanAndSeedRealData() {
   await mongoose.connect(uri);
   console.log("Connected to MongoDB Atlas.");
 
-  // 1. Clean out bogus test records containing 'bbbb', 'smoke test', 'test', 'dummy', 'asdf'
+  // Clean out any corrupt test records
   console.log("Purging junk/mock data records...");
   const deleteResult = await Complaint.deleteMany({
     $or: [
@@ -300,7 +299,6 @@ async function cleanAndSeedRealData() {
   });
   console.log(`Purged ${deleteResult.deletedCount} junk test complaints.`);
 
-  // 2. Fetch or create reference Citizen, Officer, Worker
   let citizen = await User.findOne({ role: "citizen" });
   let officerDoc = await Officer.findOne();
   let workerDoc = await Worker.findOne();
@@ -309,8 +307,7 @@ async function cleanAndSeedRealData() {
     citizen = await User.findOne();
   }
 
-  // 3. Upsert high-fidelity real Mumbai complaints
-  console.log(`Seeding ${REALISTIC_MUMBAI_COMPLAINTS.length} authentic Mumbai civic grievances...`);
+  console.log(`Seeding ${REALISTIC_MUMBAI_COMPLAINTS.length} authentic Mumbai civic grievances with real evidence photos...`);
   for (const item of REALISTIC_MUMBAI_COMPLAINTS) {
     const payload = {
       ...item,
@@ -325,11 +322,11 @@ async function cleanAndSeedRealData() {
     await Complaint.findOneAndUpdate(
       { complaintId: item.complaintId },
       { $set: payload },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     );
   }
 
-  console.log("✅ Successfully seeded realistic municipal records in MongoDB Atlas!");
+  console.log("✅ Successfully seeded realistic civic evidence photos in MongoDB Atlas!");
   await mongoose.disconnect();
 }
 

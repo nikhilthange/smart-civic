@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Award, Gift, Sparkles, Check, Copy, Loader2, CheckCircle2, Lock, Ticket, Zap, ArrowRight } from "lucide-react"
+import { Award, Gift, Sparkles, Check, Copy, Loader2, CheckCircle2, Lock, Ticket, Zap } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"

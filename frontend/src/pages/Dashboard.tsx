@@ -18,6 +18,11 @@ import {
   Gift,
   Building2,
   ExternalLink,
+  Wrench,
+  Shield,
+  ShieldAlert,
+  Database,
+  Waves,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -529,51 +534,54 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0 grid grid-cols-2 gap-2.5">
-              <Link
-                to="/complaint/create"
-                className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-all text-center group"
-              >
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform mb-1.5">
-                  <Plus className="w-4 h-4" />
-                </div>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">File Grievance</span>
-                <span className="text-[10px] text-slate-400">AI Vision upload</span>
-              </Link>
+              {(() => {
+                const role = user?.role || "citizen"
+                const actions =
+                  role === "worker"
+                    ? [
+                        { to: "/worker-queue", label: "Worker Queue", sub: "Active & Pool", icon: Wrench, iconColor: "text-amber-600 dark:text-amber-400 bg-amber-500/10", borderHover: "hover:border-amber-500/50 hover:bg-amber-50/50 dark:hover:bg-amber-950/20" },
+                        { to: "/map", label: "Ward Map", sub: "24-Ward GIS", icon: MapPin, iconColor: "text-sky-600 dark:text-sky-400 bg-sky-500/10", borderHover: "hover:border-sky-500/50 hover:bg-sky-50/50 dark:hover:bg-sky-950/20" },
+                        { to: "/complaints", label: "View Ledger", sub: "Task history", icon: BarChart3, iconColor: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10", borderHover: "hover:border-indigo-500/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20" },
+                        { to: "/quick-report", label: "Field Snap", sub: "Instant report", icon: Plus, iconColor: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10", borderHover: "hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20" },
+                      ]
+                    : role === "officer"
+                    ? [
+                        { to: "/officer-portal", label: "Officer Triage", sub: "Ward desk", icon: Shield, iconColor: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10", borderHover: "hover:border-indigo-500/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20" },
+                        { to: "/monsoon-radar", label: "Monsoon Radar", sub: "Flood telemetry", icon: Waves, iconColor: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10", borderHover: "hover:border-cyan-500/50 hover:bg-cyan-50/50 dark:hover:bg-cyan-950/20" },
+                        { to: "/map", label: "Ward Map", sub: "24-Ward GIS", icon: MapPin, iconColor: "text-sky-600 dark:text-sky-400 bg-sky-500/10", borderHover: "hover:border-sky-500/50 hover:bg-sky-50/50 dark:hover:bg-sky-950/20" },
+                        { to: "/complaints", label: "All Complaints", sub: "Triage ledger", icon: BarChart3, iconColor: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10", borderHover: "hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20" },
+                      ]
+                    : role === "admin"
+                    ? [
+                        { to: "/admin", label: "Admin Command", sub: "Operations", icon: ShieldAlert, iconColor: "text-rose-600 dark:text-rose-400 bg-rose-500/10", borderHover: "hover:border-rose-500/50 hover:bg-rose-50/50 dark:hover:bg-rose-950/20" },
+                        { to: "/admin/data-studio", label: "Data Studio", sub: "Analytics", icon: Database, iconColor: "text-purple-600 dark:text-purple-400 bg-purple-500/10", borderHover: "hover:border-purple-500/50 hover:bg-purple-50/50 dark:hover:bg-purple-950/20" },
+                        { to: "/admin/analytics", label: "Analytics", sub: "KPI metrics", icon: BarChart3, iconColor: "text-blue-600 dark:text-blue-400 bg-blue-500/10", borderHover: "hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/20" },
+                        { to: "/map", label: "City GIS Map", sub: "Mumbai live", icon: MapPin, iconColor: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10", borderHover: "hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20" },
+                      ]
+                    : [
+                        { to: "/complaint/create", label: "File Grievance", sub: "AI Vision upload", icon: Plus, iconColor: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10", borderHover: "hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20" },
+                        { to: "/map", label: "Ward Map", sub: "24-Ward GIS", icon: MapPin, iconColor: "text-sky-600 dark:text-sky-400 bg-sky-500/10", borderHover: "hover:border-sky-500/50 hover:bg-sky-50/50 dark:hover:bg-sky-950/20" },
+                        { to: "/complaints", label: "View Ledger", sub: "Status history", icon: BarChart3, iconColor: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10", borderHover: "hover:border-indigo-500/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20" },
+                        { to: "/rewards", label: "Rewards", sub: "Redeem vouchers", icon: Gift, iconColor: "text-amber-600 dark:text-amber-400 bg-amber-500/10", borderHover: "hover:border-amber-500/50 hover:bg-amber-50/50 dark:hover:bg-amber-950/20" },
+                      ]
 
-              <Link
-                to="/map"
-                className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-sky-500/50 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 transition-all text-center group"
-              >
-                <div className="p-2 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform mb-1.5">
-                  <MapPin className="w-4 h-4" />
-                </div>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Ward Map</span>
-                <span className="text-[10px] text-slate-400">24-Ward GIS</span>
-              </Link>
-
-              <Link
-                to="/complaints"
-                className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-indigo-500/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-all text-center group"
-              >
-                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform mb-1.5">
-                  <BarChart3 className="w-4 h-4" />
-                </div>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">View Ledger</span>
-                <span className="text-[10px] text-slate-400">Status history</span>
-              </Link>
-
-              {user?.role === "citizen" && (
-                <Link
-                  to="/rewards"
-                  className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:border-amber-500/50 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-all text-center group"
-                >
-                  <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform mb-1.5">
-                    <Gift className="w-4 h-4" />
-                  </div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Rewards</span>
-                  <span className="text-[10px] text-slate-400">Redeem vouchers</span>
-                </Link>
-              )}
+                return actions.map((act) => {
+                  const Icon = act.icon
+                  return (
+                    <Link
+                      key={act.to}
+                      to={act.to}
+                      className={`flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 ${act.borderHover} transition-all text-center group`}
+                    >
+                      <div className={`p-2 rounded-lg ${act.iconColor} group-hover:scale-110 transition-transform mb-1.5`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{act.label}</span>
+                      <span className="text-[10px] text-slate-400">{act.sub}</span>
+                    </Link>
+                  )
+                })
+              })()}
             </CardContent>
           </Card>
 

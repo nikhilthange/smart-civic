@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   Truck,
   Radio,
@@ -9,6 +10,10 @@ import {
   ShieldAlert,
   Activity,
   Gauge,
+  Navigation,
+  Fuel,
+  Weight,
+  Sparkles,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,6 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import { municipalApi, type SmartBin } from "@/services/municipalApi"
 import { formatCurrencyINR, formatNumber } from "@/utils/formatters"
 import toast from "react-hot-toast"
+import { triggerHapticFeedback } from "@/utils/haptics"
 
 interface CompactorTruck {
   truckId: string
@@ -179,6 +185,7 @@ export default function SwmFleetRadar() {
 
   // Simulate Hydraulic Arm RFID Lift
   const handleSimulateLift = async (rfidTag: string, binId: string) => {
+    triggerHapticFeedback("medium")
     setIsLifting(binId)
     try {
       try {
@@ -186,7 +193,7 @@ export default function SwmFleetRadar() {
       } catch {
         // Fallback local update
       }
-      
+
       setBins((prev) =>
         prev.map((b) =>
           b.binId === binId || b.rfidTag === rfidTag
@@ -199,11 +206,13 @@ export default function SwmFleetRadar() {
             : b
         )
       )
+      triggerHapticFeedback("success")
       toast.success(`RFID Lift Confirmed for ${binId}! Logged 380 kg MSW. Fill reset to 0%.`, {
         icon: "🚛",
         duration: 4000,
       })
     } catch {
+      triggerHapticFeedback("error")
       toast.error("Failed to log RFID bin lift")
     } finally {
       setIsLifting(null)
@@ -212,6 +221,7 @@ export default function SwmFleetRadar() {
 
   // Simulate Missed Society SLA Breach
   const handleSimulateBreach = () => {
+    triggerHapticFeedback("warning")
     const penalty = 5000
     setContractorEscrow((prev) => Math.max(0, prev - penalty))
     setPenaltiesLogged((prev) => prev + 1)
@@ -222,31 +232,38 @@ export default function SwmFleetRadar() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pt-2 pb-24 sm:pb-28 safe-bottom px-2 sm:px-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900/70 p-4 sm:p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
-        <div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="w-full max-w-7xl mx-auto space-y-6 pt-2 pb-24 sm:pb-28 safe-bottom px-2 sm:px-4"
+    >
+      {/* ─── Header ─── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative z-10">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
+            <div className="p-2.5 rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
               <Truck className="w-5 h-5" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold font-display tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               SWM Compactor GPS Fleet & RFID Smart Bin Radar
             </h1>
-            <Badge className="bg-teal-600 text-white font-mono text-xs px-2.5 py-0.5 rounded-full">
+            <Badge className="bg-teal-600 text-white font-mono text-xs px-2.5 py-0.5 rounded-full shadow-xs">
               RFID HYDRAULIC TELEMETRY
             </Badge>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
             Live compactor GPS tracking, route corridor compliance, RFID hydraulic bin lift verification, and statutory contractor SLA enforcement.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 relative z-10">
           <select
             value={selectedWard}
             onChange={(e) => setSelectedWard(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none"
+            className="px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-teal-500/30 transition-all cursor-pointer"
           >
             <option value="Ward G-North">Ward G-North (Dadar/Dharavi)</option>
             <option value="Ward H-West">Ward H-West (Bandra/Khar)</option>
@@ -256,182 +273,222 @@ export default function SwmFleetRadar() {
             onClick={fetchBins}
             variant="outline"
             size="sm"
-            className="border-slate-200 dark:border-slate-800 text-xs font-semibold gap-1.5 rounded-xl h-9 shadow-sm"
+            className="border-slate-200 dark:border-slate-800 text-xs font-semibold gap-1.5 rounded-xl h-9 shadow-xs hover:bg-teal-50 dark:hover:bg-teal-950/40 cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-teal-600" : ""}`} />
             <span>Refresh</span>
           </Button>
         </div>
       </div>
 
-      {/* KPI Overview Summary Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-mono">
-            <span>ACTIVE COMPACTORS</span>
-            <Activity className="w-4 h-4 text-teal-600" />
-          </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white">
-            {trucks.length} Vehicles
-          </div>
-          <p className="text-[11px] text-emerald-600 font-medium">● 100% GPS Transponders Online</p>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-mono">
-            <span>ROUTE COMPLIANCE</span>
-            <Gauge className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-            96.4% On-Route
-          </div>
-          <p className="text-[11px] text-slate-400">Corridor geo-fences verified</p>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-mono">
-            <span>RFID LIFTS LOGGED</span>
-            <Radio className="w-4 h-4 text-blue-600" />
-          </div>
-          <div className="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">
-            {formatNumber(342 + (bins.filter((b) => b.currentFillPercentage === 0).length || 0))} Bins
-          </div>
-          <p className="text-[11px] text-slate-400">132.8 MT Solid Waste Collected</p>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
-          <div className="flex items-center justify-between text-slate-500 text-xs font-mono">
-            <span>CONTRACTOR ESCROW</span>
-            <ShieldAlert className="w-4 h-4 text-amber-600" />
-          </div>
-          <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white">
-            {formatCurrencyINR(contractorEscrow)}
-          </div>
-          <p className="text-[11px] text-rose-600 font-medium">
-            {penaltiesLogged > 0 ? `${formatCurrencyINR(penaltiesLogged * 5000)} Deducted (MMC Act Sec 354)` : "No active breaches"}
-          </p>
-        </div>
+      {/* ─── KPI Overview Summary Cards ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          {
+            label: "ACTIVE COMPACTORS",
+            icon: Activity,
+            iconColor: "text-teal-600 dark:text-teal-400",
+            value: `${trucks.length} Vehicles`,
+            subtext: "● 100% GPS Transponders Online",
+            subColor: "text-emerald-600 dark:text-emerald-400",
+          },
+          {
+            label: "ROUTE COMPLIANCE",
+            icon: Gauge,
+            iconColor: "text-emerald-600 dark:text-emerald-400",
+            value: "96.4% On-Route",
+            subtext: "Corridor geo-fences verified",
+            subColor: "text-slate-400",
+          },
+          {
+            label: "RFID LIFTS LOGGED",
+            icon: Radio,
+            iconColor: "text-blue-600 dark:text-blue-400",
+            value: `${formatNumber(342 + (bins.filter((b) => b.currentFillPercentage === 0).length || 0))} Bins`,
+            subtext: "132.8 MT Solid Waste Collected",
+            subColor: "text-slate-400",
+          },
+          {
+            label: "CONTRACTOR ESCROW",
+            icon: ShieldAlert,
+            iconColor: "text-amber-600 dark:text-amber-400",
+            value: formatCurrencyINR(contractorEscrow),
+            subtext: penaltiesLogged > 0 ? `${formatCurrencyINR(penaltiesLogged * 5000)} Deducted (MMC Act Sec 354)` : "No active breaches",
+            subColor: penaltiesLogged > 0 ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400",
+          },
+        ].map((kpi, idx) => {
+          const Icon = kpi.icon
+          return (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05, duration: 0.25 }}
+            >
+              <Card className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-5 shadow-xs hover:shadow-md transition-all space-y-1.5">
+                <div className="flex items-center justify-between text-slate-500 text-xs font-mono">
+                  <span>{kpi.label}</span>
+                  <Icon className={`w-4 h-4 ${kpi.iconColor}`} />
+                </div>
+                <div className="text-2xl font-bold font-mono text-slate-900 dark:text-white">
+                  {kpi.value}
+                </div>
+                <p className={`text-[11px] font-medium ${kpi.subColor}`}>{kpi.subtext}</p>
+              </Card>
+            </motion.div>
+          )
+        })}
       </div>
 
-      {/* Main Dual-Pane Grid: Live GPS Radar & Fleet Tracking */}
+      {/* ─── Main Dual-Pane Grid: Live GPS Radar & Fleet Tracking ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Column: Live Compactor Fleet Status & Map HUD (5 Cols) */}
-        <Card className="lg:col-span-5 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm space-y-4">
+        <Card className="lg:col-span-5 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-xs space-y-4">
           <CardHeader className="p-0 pb-2 flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
               <Truck className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-              <CardTitle className="text-sm font-bold font-display text-slate-900 dark:text-white">
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                 Live Compactor GPS Fleet Radar
               </CardTitle>
             </div>
-            <Badge variant="outline" className="text-[10px] font-mono text-teal-600 border-teal-300">
+            <Badge variant="outline" className="text-[10px] font-mono text-teal-600 border-teal-300 dark:border-teal-800">
               REAL-TIME GNSS
             </Badge>
           </CardHeader>
 
-          <CardContent className="p-0 space-y-3">
+          <CardContent className="p-0 space-y-3.5">
             {/* Simulated Live Municipal Map Canvas */}
             <div
-              className="h-44 w-full rounded-2xl border border-slate-300 dark:border-slate-700 relative p-3 overflow-hidden bg-slate-100 dark:bg-slate-950 flex flex-col justify-between"
+              className="h-48 w-full rounded-2xl border border-slate-200 dark:border-slate-800 relative p-3.5 overflow-hidden bg-slate-950 flex flex-col justify-between"
               style={{
                 backgroundImage: `
-                  radial-gradient(#94a3b8 1px, transparent 1px),
-                  radial-gradient(#94a3b8 1px, #f8fafc 1px)
+                  radial-gradient(rgba(20, 184, 166, 0.15) 1px, transparent 1px),
+                  radial-gradient(rgba(20, 184, 166, 0.05) 1px, #020617 1px)
                 `,
-                backgroundSize: "16px 16px",
+                backgroundSize: "20px 20px",
               }}
             >
-              <div className="flex items-center justify-between text-[10px] font-mono text-slate-600 dark:text-slate-400">
-                <span className="bg-white/90 dark:bg-slate-900/90 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 font-bold">
-                  GIS Mesh: Ward G-North (Dadar / Shivaji Park)
+              {/* Radar Sweep Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-teal-500/10 to-transparent animate-pulse pointer-events-none" />
+
+              <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 relative z-10">
+                <span className="bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800 font-bold text-slate-200">
+                  GIS Mesh: {selectedWard}
                 </span>
-                <span className="text-emerald-600 font-bold flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  GNSS Live (3/3 Active)
+                <span className="text-emerald-400 font-bold flex items-center gap-1.5 bg-slate-900/90 px-2 py-1 rounded-lg border border-slate-800">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
+                  GNSS Live (3/3)
                 </span>
               </div>
 
               {/* Geo-Fenced Route Corridors on Map */}
-              <div className="relative flex items-center justify-around py-4">
+              <div className="relative flex items-center justify-around py-3 z-10">
                 {trucks.map((truck) => (
-                  <button
+                  <motion.button
                     key={truck.truckId}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     type="button"
                     onClick={() => setSelectedTruck(truck)}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all ${
+                    className={`flex flex-col items-center gap-1 p-2.5 rounded-2xl border transition-all cursor-pointer ${
                       selectedTruck?.truckId === truck.truckId
-                        ? "bg-teal-50 dark:bg-teal-950/60 border-teal-500 shadow-md scale-105"
-                        : "bg-white/90 dark:bg-slate-900/90 border-slate-300 dark:border-slate-700 hover:border-teal-400"
+                        ? "bg-teal-950/80 border-teal-400 text-white shadow-lg shadow-teal-500/20"
+                        : "bg-slate-900/80 border-slate-700 text-slate-300 hover:border-teal-500/60"
                     }`}
                   >
                     <Truck
                       className={`w-5 h-5 ${
-                        truck.status === "DEVIATION" ? "text-amber-500" : "text-teal-600"
+                        truck.status === "DEVIATION" ? "text-amber-400 animate-bounce" : "text-teal-400"
                       }`}
                     />
-                    <span className="text-[10px] font-mono font-bold text-slate-800 dark:text-slate-200">
+                    <span className="text-[10px] font-mono font-bold">
                       {truck.vehiclePlate}
                     </span>
-                    <span className="text-[9px] font-mono text-slate-500">
+                    <span className="text-[9px] font-mono text-slate-400">
                       {truck.speedKmH} km/h
                     </span>
-                  </button>
+                  </motion.button>
                 ))}
               </div>
 
-              <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
-                <span>Green Polyline: On-Corridor</span>
-                <span>Amber: Speed &lt; 5km/h</span>
+              <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 relative z-10">
+                <span className="flex items-center gap-1 text-emerald-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> On Corridor
+                </span>
+                <span className="flex items-center gap-1 text-amber-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" /> Speed &lt; 5km/h
+                </span>
               </div>
             </div>
 
             {/* Selected Vehicle Telemetry Details */}
-            {selectedTruck && (
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-xs text-slate-900 dark:text-white font-display">
-                      {selectedTruck.vehiclePlate} ({selectedTruck.truckId})
-                    </h3>
-                    <p className="text-[11px] text-slate-500">Driver: <strong>{selectedTruck.driverName}</strong></p>
+            <AnimatePresence mode="wait">
+              {selectedTruck && (
+                <motion.div
+                  key={selectedTruck.truckId}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                        {selectedTruck.vehiclePlate} ({selectedTruck.truckId})
+                      </h3>
+                      <p className="text-[11px] text-slate-500">Driver: <strong>{selectedTruck.driverName}</strong></p>
+                    </div>
+                    <Badge
+                      className={`text-[10px] font-mono font-bold ${
+                        selectedTruck.status === "ON_ROUTE"
+                          ? "bg-emerald-600 text-white"
+                          : "bg-amber-500 text-white"
+                      }`}
+                    >
+                      {selectedTruck.status}
+                    </Badge>
                   </div>
-                  <Badge
-                    className={`text-[10px] font-mono font-bold ${
-                      selectedTruck.status === "ON_ROUTE"
-                        ? "bg-emerald-600 text-white"
-                        : "bg-amber-500 text-white"
-                    }`}
-                  >
-                    {selectedTruck.status}
-                  </Badge>
-                </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                  <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="text-[10px] text-slate-400 block">Current Location</span>
-                    <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block text-[11px]">
-                      {selectedTruck.currentLocation}
-                    </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono">
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                      <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                        <Navigation className="w-3 h-3 text-teal-500" /> Location
+                      </span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block text-[11px] mt-0.5">
+                        {selectedTruck.currentLocation}
+                      </span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                      <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                        <Weight className="w-3 h-3 text-teal-500" /> MSW Load
+                      </span>
+                      <span className="font-semibold text-teal-600 dark:text-teal-400 text-[11px] mt-0.5">
+                        {selectedTruck.currentLoadTonnes} / {selectedTruck.wasteCapacityTonnes} T
+                      </span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                      <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                        <Fuel className="w-3 h-3 text-amber-500" /> Fuel Level
+                      </span>
+                      <span className="font-semibold text-amber-600 dark:text-amber-400 text-[11px] mt-0.5">
+                        {selectedTruck.fuelLevelPercent}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                    <span className="text-[10px] text-slate-400 block">Current MSW Load</span>
-                    <span className="font-semibold text-teal-600 dark:text-teal-400 text-[11px]">
-                      {selectedTruck.currentLoadTonnes} / {selectedTruck.wasteCapacityTonnes} Tonnes
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </CardContent>
         </Card>
 
         {/* Right Column: SWM Contractor SLA & Route Penalty Control (7 Cols) */}
-        <Card className="lg:col-span-7 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
+        <Card className="lg:col-span-7 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-xs space-y-4 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                <h3 className="text-sm font-bold font-display uppercase tracking-wider text-slate-900 dark:text-white">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                   Contractor SLA & Statutory Escrow Enforcement
                 </h3>
               </div>
@@ -463,7 +520,7 @@ export default function SwmFleetRadar() {
               </div>
 
               {/* Live Breach Simulation Trigger */}
-              <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-300 font-bold text-xs">
                     <AlertTriangle className="w-4 h-4" />
@@ -477,7 +534,7 @@ export default function SwmFleetRadar() {
                 <Button
                   size="sm"
                   onClick={handleSimulateBreach}
-                  className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold h-8 rounded-xl gap-1.5 shadow-sm shrink-0"
+                  className="bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-xs font-semibold h-9 px-3 rounded-xl gap-1.5 shadow-sm shrink-0 cursor-pointer transition-transform"
                 >
                   <TrendingDown className="w-3.5 h-3.5" />
                   <span>Simulate SLA Breach (-₹5,000)</span>
@@ -486,7 +543,7 @@ export default function SwmFleetRadar() {
             </div>
           </div>
 
-          <div className="p-3 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-800 dark:text-teal-300 text-xs flex items-center justify-between">
+          <div className="p-3.5 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-800 dark:text-teal-300 text-xs flex items-center justify-between">
             <span className="flex items-center gap-1.5 font-medium">
               <CheckCircle2 className="w-4 h-4 text-teal-600 dark:text-teal-400" />
               Automated Zero-Trust Escrow Recovery: <strong>100% Guaranteed</strong>
@@ -496,11 +553,11 @@ export default function SwmFleetRadar() {
         </Card>
       </div>
 
-      {/* Smart Bins Live Audit Ledger & Grid */}
-      <div className="space-y-3.5 pt-2">
+      {/* ─── Smart Bins Live Audit Ledger & Grid ─── */}
+      <div className="space-y-4 pt-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h2 className="text-base sm:text-lg font-bold font-display text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Radio className="w-4 h-4 text-teal-600" />
               Smart Bins RFID Fill & Lift Telemetry ({selectedWard})
             </h2>
@@ -508,88 +565,97 @@ export default function SwmFleetRadar() {
               Solar ultrasonic fill level sensors with automated hydraulic arm RFID clearance logging.
             </p>
           </div>
-          <span className="text-xs font-mono text-slate-400 self-start sm:self-auto">
-            Auto-Resets to 0% upon Truck Lift
+          <span className="text-xs font-mono text-slate-400 self-start sm:self-auto flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-teal-500" /> Auto-Resets to 0% upon Truck Lift
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {bins.map((bin) => {
+          {bins.map((bin, idx) => {
             const isOver = bin.currentFillPercentage >= 80
             const isModerate = bin.currentFillPercentage >= 50 && bin.currentFillPercentage < 80
 
             return (
-              <Card
+              <motion.div
                 key={bin._id || bin.binId}
-                className={`border rounded-3xl p-4 transition-all shadow-sm flex flex-col justify-between space-y-3 ${
-                  isOver
-                    ? "bg-rose-50/50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-500/30"
-                    : "bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800"
-                }`}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: idx * 0.05 }}
+                whileHover={{ y: -4 }}
               >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
-                      {bin.binId}
-                    </span>
-                    <Badge
-                      className={`text-[10px] font-mono uppercase font-bold px-2.5 py-0.5 rounded-full ${
-                        isOver
-                          ? "bg-rose-600 text-white animate-pulse"
-                          : isModerate
-                          ? "bg-amber-500 text-white"
-                          : "bg-emerald-600 text-white"
-                      }`}
-                    >
-                      {isOver ? "OVERFLOW ALERT" : isModerate ? "MODERATE FILL" : "NORMAL"}
-                    </Badge>
-                  </div>
-
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white font-display line-clamp-1">
-                    {bin.locality}
-                  </h3>
-                  <p className="text-[11px] text-slate-400 font-mono">
-                    {bin.rfidTag} • {bin.wasteType}
-                  </p>
-
-                  {/* Fill Level Progress Bar */}
-                  <div className="space-y-1 pt-1">
-                    <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-slate-400">Fill Level</span>
-                      <span className={`font-bold ${isOver ? "text-rose-600" : "text-slate-800 dark:text-slate-200"}`}>
-                        {bin.currentFillPercentage}%
+                <Card
+                  className={`border rounded-3xl p-4.5 transition-all shadow-xs hover:shadow-lg flex flex-col justify-between space-y-3 h-full ${
+                    isOver
+                      ? "bg-rose-50/50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-500/30"
+                      : "bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                        {bin.binId}
                       </span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          isOver ? "bg-rose-500" : isModerate ? "bg-amber-500" : "bg-teal-500"
+                      <Badge
+                        className={`text-[10px] font-mono uppercase font-bold px-2.5 py-0.5 rounded-full ${
+                          isOver
+                            ? "bg-rose-600 text-white animate-pulse"
+                            : isModerate
+                            ? "bg-amber-500 text-white"
+                            : "bg-emerald-600 text-white"
                         }`}
-                        style={{ width: `${bin.currentFillPercentage}%` }}
-                      />
+                      >
+                        {isOver ? "OVERFLOW ALERT" : isModerate ? "MODERATE FILL" : "NORMAL"}
+                      </Badge>
+                    </div>
+
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">
+                      {bin.locality}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-mono">
+                      {bin.rfidTag} • {bin.wasteType}
+                    </p>
+
+                    {/* Fill Level Progress Bar */}
+                    <div className="space-y-1 pt-1">
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="text-slate-400">Fill Level</span>
+                        <span className={`font-bold ${isOver ? "text-rose-600" : "text-slate-800 dark:text-slate-200"}`}>
+                          {bin.currentFillPercentage}%
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <motion.div
+                          className={`h-full ${
+                            isOver ? "bg-rose-500" : isModerate ? "bg-amber-500" : "bg-teal-500"
+                          }`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${bin.currentFillPercentage}%` }}
+                          transition={{ duration: 0.6, ease: "easeOut" }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                  <span className="text-[10px] text-slate-400 font-mono truncate">
-                    Last: {new Date(bin.lastLiftedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </span>
-                  <Button
-                    size="sm"
-                    disabled={isLifting === bin.binId}
-                    onClick={() => handleSimulateLift(bin.rfidTag, bin.binId)}
-                    className="bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-semibold h-8 px-2.5 rounded-xl shadow-sm gap-1 shrink-0 active:scale-95"
-                  >
-                    <Truck className={`w-3 h-3 ${isLifting === bin.binId ? "animate-bounce" : ""}`} />
-                    <span>{isLifting === bin.binId ? "Lifting..." : "Simulate Lift"}</span>
-                  </Button>
-                </div>
-              </Card>
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                    <span className="text-[10px] text-slate-400 font-mono truncate">
+                      Last: {new Date(bin.lastLiftedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <Button
+                      size="sm"
+                      disabled={isLifting === bin.binId}
+                      onClick={() => handleSimulateLift(bin.rfidTag, bin.binId)}
+                      className="bg-teal-600 hover:bg-teal-700 active:scale-95 text-white text-[11px] font-semibold h-8 px-3 rounded-xl shadow-xs gap-1.5 shrink-0 cursor-pointer transition-transform"
+                    >
+                      <Truck className={`w-3 h-3 ${isLifting === bin.binId ? "animate-bounce" : ""}`} />
+                      <span>{isLifting === bin.binId ? "Lifting..." : "Simulate Lift"}</span>
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
             )
           })}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

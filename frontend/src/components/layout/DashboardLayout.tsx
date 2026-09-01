@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -47,6 +47,7 @@ import { OnboardingTourModal } from "@/components/common/OnboardingTourModal"
 import { LiveWebSocketEventTicker } from "@/components/common/LiveWebSocketEventTicker"
 import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
 import { useTranslation } from "react-i18next"
+import { triggerHapticFeedback } from "@/utils/haptics"
 
 interface NavItem {
   key: string
@@ -136,6 +137,46 @@ export default function DashboardLayout() {
     worker: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
     citizen: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
   }
+
+  // Mobile Bottom Navigation items tailored to current role
+  const mobileNavItems = useMemo(() => {
+    const role = user?.role || "citizen"
+    if (role === "worker") {
+      return [
+        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { name: "My Queue", href: "/worker-queue", icon: Wrench, isPrimaryAction: true },
+        { name: "GIS Map", href: "/map", icon: MapPin },
+        { name: "Ledger", href: "/complaints", icon: History },
+        { name: "Settings", href: "/settings", icon: SettingsIcon },
+      ]
+    }
+    if (role === "officer") {
+      return [
+        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { name: "Control", href: "/officer-portal", icon: Shield, isPrimaryAction: true },
+        { name: "GIS Map", href: "/map", icon: MapPin },
+        { name: "Monsoon", href: "/monsoon-radar", icon: Waves },
+        { name: "Ledger", href: "/complaints", icon: History },
+      ]
+    }
+    if (role === "admin") {
+      return [
+        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { name: "Command", href: "/admin", icon: BarChart3, isPrimaryAction: true },
+        { name: "GIS Map", href: "/map", icon: MapPin },
+        { name: "Data Studio", href: "/admin/data-studio", icon: Database },
+        { name: "Ledger", href: "/complaints", icon: History },
+      ]
+    }
+    // Default Citizen Role
+    return [
+      { name: "Home", href: "/dashboard", icon: LayoutDashboard },
+      { name: "GIS Map", href: "/map", icon: MapPin },
+      { name: "Report", href: "/quick-report", icon: Sparkles, isPrimaryAction: true },
+      { name: "Ledger", href: "/complaints", icon: History },
+      { name: "Rewards", href: "/rewards", icon: Trophy },
+    ]
+  }, [user?.role])
 
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex h-full flex-col bg-white dark:bg-[#090A0F]">
@@ -444,6 +485,63 @@ export default function DashboardLayout() {
             <Outlet />
           </motion.div>
         </main>
+
+        {/* Mobile Glassmorphic Bottom Navigation Bar */}
+        <nav aria-label="Mobile Navigation" className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-xl border-t border-zinc-200/80 dark:border-zinc-800/80 px-2 py-1.5 pb-[calc(env(safe-area-inset-bottom,0px)+0.4rem)] shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+          <div className="flex items-center justify-around max-w-lg mx-auto">
+            {mobileNavItems.map((item) => {
+              const Icon = item.icon
+              const isActive = location.pathname === item.href
+
+              if (item.isPrimaryAction) {
+                return (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    onClick={() => triggerHapticFeedback("medium")}
+                    className="flex flex-col items-center relative -top-3.5 group touch-manipulation focus:outline-hidden"
+                  >
+                    <motion.div
+                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.05 }}
+                      className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 text-white flex items-center justify-center shadow-lg shadow-emerald-500/35 border-2 border-white dark:border-zinc-900"
+                    >
+                      <Icon className="w-5 h-5 animate-pulse" />
+                    </motion.div>
+                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 mt-0.5">
+                      {item.name}
+                    </span>
+                  </Link>
+                )
+              }
+
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => triggerHapticFeedback("light")}
+                  className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl min-w-[52px] min-h-[44px] transition-all relative touch-manipulation focus:outline-hidden ${
+                    isActive
+                      ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="mobileActiveNavPill"
+                      className="absolute inset-0 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-xl"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <Icon className={`w-5 h-5 relative z-10 ${isActive ? "text-emerald-600 dark:text-emerald-400" : ""}`} />
+                  <span className="text-[10px] tracking-tight mt-0.5 relative z-10 leading-none">
+                    {item.name}
+                  </span>
+                </Link>
+              )
+            })}
+          </div>
+        </nav>
 
         {/* Floating Global Simulator Widget, Copilot Modal, Onboarding Tour & Keyboard Shortcuts */}
         <MunicipalSimulatorFloatingWidget />

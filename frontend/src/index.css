@@ -175,12 +175,45 @@
     @apply bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 rounded-xl shadow-sm transition-all duration-150;
   }
 
+  /* Mobile utilities */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  .mobile-touch-press {
+    touch-action: manipulation;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .mobile-touch-press:active {
+    transform: scale(0.97);
+  }
+
+  .table-mobile-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 1rem;
+  }
+
   /* Safe area padding utilities */
   .safe-top {
     padding-top: env(safe-area-inset-top, 0px);
   }
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .safe-bottom-nav {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
   }
 }
 

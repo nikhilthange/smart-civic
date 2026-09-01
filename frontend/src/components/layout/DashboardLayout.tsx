@@ -21,7 +21,6 @@ import {
   Lock,
   Sparkles,
   Trophy,
-  Eye,
   Settings as SettingsIcon,
   LifeBuoy,
   X,
@@ -41,7 +40,6 @@ import {
 import { useAuth } from "@/context/AuthContext"
 import { NotificationBell } from "@/components/ui/NotificationBell"
 import LanguageSelector from "@/components/common/LanguageSelector"
-import { useViewMode } from "@/context/ViewModeContext"
 import { CommandPalette } from "@/components/common/CommandPalette"
 import MunicipalSimulatorFloatingWidget from "@/components/common/MunicipalSimulatorFloatingWidget"
 import MunicipalCopilotModal from "@/components/admin/MunicipalCopilotModal"
@@ -106,7 +104,6 @@ export default function DashboardLayout() {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
   const { user, logout } = useAuth()
   const { t } = useTranslation()
-  const { isEasyView, toggleEasyView } = useViewMode()
 
   // Global Cmd+K / Ctrl+K & ? Hotkey listeners
   useEffect(() => {
@@ -372,22 +369,6 @@ export default function DashboardLayout() {
           </Button>
 
           <div className="flex items-center gap-1.5 sm:gap-3 ml-auto">
-            {/* Accessibility: Easy View Toggle */}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={toggleEasyView}
-              className={`hidden sm:inline-flex items-center gap-1.5 rounded-full text-xs font-semibold shadow-sm transition-all min-h-[36px] ${
-                isEasyView
-                  ? "bg-amber-500 text-slate-950 font-bold border-amber-600 shadow-md shadow-amber-500/20"
-                  : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100"
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>{isEasyView ? "Easy View: ON" : "Easy View"}</span>
-            </Button>
-
             <Button
               type="button"
               variant="outline"

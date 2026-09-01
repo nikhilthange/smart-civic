@@ -208,21 +208,3 @@
     scroll-behavior: auto !important;
   }
 }
-
-/* Accessibility: Easy View High-Contrast & Large Touch Target Mode */
-html.easy-view-mode {
-  font-size: 118%;
-}
-
-html.easy-view-mode button,
-html.easy-view-mode a,
-html.easy-view-mode input,
-html.easy-view-mode select {
-  min-height: 48px;
-  font-weight: 700;
-}
-
-html.easy-view-mode .badge {
-  font-size: 0.85rem;
-  padding: 0.35rem 0.65rem;
-}

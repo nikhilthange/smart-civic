@@ -4,15 +4,12 @@ import './index.css'
 import './lib/leafletSetup'
 import './i18n/config'
 import App from './App.tsx'
-import { ViewModeProvider } from './context/ViewModeContext'
 import { registerServiceWorker } from './registerServiceWorker'
 
 registerServiceWorker()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ViewModeProvider>
-      <App />
-    </ViewModeProvider>
+    <App />
   </StrictMode>,
 )

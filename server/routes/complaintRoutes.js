@@ -18,6 +18,7 @@ const {
   assignWorker,
   getEligibleWorkers,
   getWorkerTasks,
+  acceptComplaintTask,
   workerSubmitProof,
   workerStartWork,
   rejectResolution,
@@ -185,6 +186,9 @@ router.put(
 
 // GET /api/complaints/:id/eligible-workers — Get eligible workers for a complaint
 router.get("/:id/eligible-workers", protect, authorize("officer", "admin"), getEligibleWorkers);
+
+// PUT /api/complaints/:id/accept-task — Worker claims/accepts complaint from Ward Pool
+router.put("/:id/accept-task", protect, authorize("worker", "officer", "admin"), acceptComplaintTask);
 
 // PUT /api/complaints/:id/start-work — Worker starts work on a complaint
 router.put("/:id/start-work", protect, authorize("worker", "officer", "admin"), workerStartWork);

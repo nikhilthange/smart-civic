@@ -1439,19 +1439,138 @@ const getEligibleWorkers = async (req, res) => {
   }
 };
 
-// ─── @desc    Get tasks assigned to logged-in worker
+// ─── @desc    Get tasks assigned to logged-in worker & Ward Open Pool complaints
 // ─── @route   GET /api/complaints/worker-tasks
-// ─── @access  Private (worker)
+// ─── @access  Private (worker, officer, admin)
 const getWorkerTasks = async (req, res) => {
   try {
-    const complaints = await Complaint.find({ assignedWorker: req.user.id })
-      .populate("citizen", "name email phoneNumber")
-      .sort({ createdAt: -1 });
+    const userId = req.user.id || req.user._id;
+    let workerDoc = null;
+    try {
+      const Worker = require("../models/Worker");
+      workerDoc = await Worker.findOne({ user: userId });
+    } catch (wErr) {
+      console.warn("Worker profile lookup warning:", wErr.message);
+    }
 
-    return res.status(200).json({ success: true, complaints });
+    const workerId = workerDoc ? workerDoc._id : userId;
+
+    // 1. My Claimed / In-Progress Tasks
+    const claimedTasks = await Complaint.find({
+      $or: [{ assignedWorker: workerId }, { assignedWorker: userId }],
+      status: { $nin: ["resolved", "closed", "rejected"] },
+    })
+      .populate("citizen", "name email phoneNumber")
+      .sort({ priorityScore: -1, createdAt: -1 });
+
+    // 2. Open Ward Pool Tasks (Broadcast to all workers in the ward/dept)
+    let openWardTasks = [];
+    const openStatusFilter = ["submitted", "pending", "ai_verified", "ward_assigned", "officer_assigned", "worker_assigned", "assigned"];
+
+    if (workerDoc && (workerDoc.wardName || workerDoc.wardId)) {
+      const wardQuery = {
+        $or: [
+          ...(workerDoc.wardName ? [{ ward: workerDoc.wardName }, { wardName: workerDoc.wardName }] : []),
+          ...(workerDoc.wardId ? [{ wardId: workerDoc.wardId }] : []),
+        ],
+        assignedWorker: { $nin: [workerId, userId] },
+        status: { $in: openStatusFilter },
+      };
+      openWardTasks = await Complaint.find(wardQuery)
+        .populate("citizen", "name email phoneNumber")
+        .sort({ priorityScore: -1, createdAt: -1 });
+    } else {
+      // Fallback for workers without explicit ward: show general unassigned active complaints
+      openWardTasks = await Complaint.find({
+        assignedWorker: null,
+        status: { $in: openStatusFilter },
+      })
+        .populate("citizen", "name email phoneNumber")
+        .sort({ priorityScore: -1, createdAt: -1 })
+        .limit(25);
+    }
+
+    // Combine all active tasks for backwards compatibility
+    const allComplaints = [...claimedTasks, ...openWardTasks];
+
+    return res.status(200).json({
+      success: true,
+      worker: workerDoc,
+      claimedCount: claimedTasks.length,
+      openPoolCount: openWardTasks.length,
+      claimedTasks,
+      openWardTasks,
+      complaints: allComplaints,
+    });
   } catch (error) {
     console.error("GetWorkerTasks Error:", error.message);
     res.status(500).json({ success: false, message: "Server error fetching worker tasks." });
+  }
+};
+
+// ─── @desc    Worker accepts/claims a complaint from the Ward Pool
+// ─── @route   PUT /api/complaints/:id/accept-task
+// ─── @access  Private (worker, officer, admin)
+const acceptComplaintTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const complaint = await Complaint.findById(id);
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    if (complaint.status === "resolved" || complaint.status === "closed") {
+      return res.status(400).json({ success: false, message: "Cannot accept a resolved or closed complaint." });
+    }
+
+    let workerDoc = null;
+    try {
+      const Worker = require("../models/Worker");
+      workerDoc = await Worker.findOne({ user: req.user.id || req.user._id });
+    } catch (wErr) {
+      console.warn("Worker lookup warning:", wErr.message);
+    }
+
+    const workerId = workerDoc ? workerDoc._id : (req.user.id || req.user._id);
+    const workerName = req.user.name || (workerDoc ? workerDoc.employeeId : "Field Worker");
+
+    complaint.assignedWorker = workerId;
+    complaint.status = "in_progress";
+
+    complaint.statusHistory.push({
+      status: "in_progress",
+      changedBy: req.user.id || req.user._id,
+      note: `Task claimed from Ward Pool by ${workerName} (Field Worker). Ground resolution initiated.`,
+    });
+
+    await complaint.save();
+
+    if (workerDoc) {
+      try {
+        const Worker = require("../models/Worker");
+        await Worker.findByIdAndUpdate(workerDoc._id, { $inc: { activeComplaintsCount: 1 } });
+      } catch (incErr) {
+        console.warn("Worker count update warning:", incErr.message);
+      }
+    }
+
+    // Broadcast real-time WebSocket update to all ward officers and workers
+    try {
+      socketService.broadcastStatusUpdate(complaint);
+    } catch (wsErr) {
+      console.warn("WebSocket broadcast warning:", wsErr.message);
+    }
+
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
+    return res.status(200).json({
+      success: true,
+      message: `Task successfully claimed! Status updated to In Progress.`,
+      complaint,
+    });
+  } catch (error) {
+    console.error("AcceptComplaintTask Error:", error.message);
+    res.status(500).json({ success: false, message: "Server error claiming task." });
   }
 };
 
@@ -2192,6 +2311,7 @@ module.exports = {
   getEligibleWorkers,
   reassignWorker,
   getWorkerTasks,
+  acceptComplaintTask,
   workerSubmitProof,
   workerStartWork,
   rejectResolution,

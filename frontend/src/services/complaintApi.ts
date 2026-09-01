@@ -282,6 +282,11 @@ export const complaintApi = {
     return res.data
   },
 
+  acceptTask: async (id: string) => {
+    const res = await api.put<{ success: boolean; message: string; complaint: Complaint }>(`/complaints/${id}/accept-task`)
+    return res.data
+  },
+
   startWork: async (id: string) => {
     const res = await api.put(`/complaints/${id}/start-work`)
     return res.data

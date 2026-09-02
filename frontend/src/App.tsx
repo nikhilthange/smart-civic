@@ -130,6 +130,7 @@ function App() {
                       {/* Rewards Routes */}
                       <Route path="/rewards" element={<KarmaRewards />} />
                       <Route path="/civic-karma" element={<KarmaRewards />} />
+                      <Route path="/karma-rewards" element={<KarmaRewards />} />
                     </Route>
                   </Route>
 
@@ -150,12 +151,14 @@ function App() {
                       <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
                       
                       <Route path="/map" element={<MapView />} />
+                      <Route path="/public-map" element={<MapView />} />
                       
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/monsoon-radar" element={<MonsoonRadar />} />
                       <Route path="/dlp-registry" element={<DlpRegistry />} />
                       <Route path="/swm-fleet" element={<SwmFleetRadar />} />
                       <Route path="/ward-budget" element={<ParticipatoryBudget />} />
+                      <Route path="/participatory-budget" element={<ParticipatoryBudget />} />
                       <Route path="/trenching-coordinator" element={<TrenchingCoordinator />} />
                       <Route path="/aqi-enforcement" element={<AqiEnforcement />} />
                       <Route path="/water-governance" element={<WaterGovernance />} />
@@ -169,6 +172,7 @@ function App() {
                       <Route path="/whatsapp-sandbox" element={<WhatsAppSandbox />} />
                       <Route path="/audit-ledger" element={<AuditLedger />} />
                       <Route path="/cctv-surveillance" element={<CctvSurveillanceRadar />} />
+                      <Route path="/cctv-radar" element={<CctvSurveillanceRadar />} />
                       <Route path="/digital-twin" element={<DigitalTwinSim />} />
                       <Route path="/green-bonds" element={<GreenBondLedger />} />
                       <Route path="/social-radar" element={<SocialMediaRadar />} />

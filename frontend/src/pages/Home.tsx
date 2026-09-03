@@ -215,33 +215,28 @@ export default function Home() {
           <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 h-[450px] w-[900px] rounded-full bg-emerald-500/15 opacity-40 blur-[130px]"></div>
 
           <div className="container relative px-4 md:px-6 mx-auto text-center max-w-6xl space-y-10">
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={staggerContainer}
-              className="flex flex-col items-center gap-5"
-            >
+            <div className="flex flex-col items-center gap-5">
               {/* Live Status Pill */}
-              <motion.div variants={fadeUpVariant} className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50/90 dark:bg-emerald-950/60 px-4 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-sm backdrop-blur-sm">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50/90 dark:bg-emerald-950/60 px-4 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-sm backdrop-blur-sm">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span>BMC Mumbai Smart Governance • 24 Municipal Wards • Live AI Triage</span>
-              </motion.div>
+              </div>
 
               {/* Main Headline */}
-              <motion.h1 variants={fadeUpVariant} className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl text-slate-900 dark:text-white leading-[1.12]">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl text-slate-900 dark:text-white leading-[1.12]">
                 Report Mumbai Civic Grievances with <br className="hidden sm:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600">
                   AI-Powered 48h SLA Resolution
                 </span>
-              </motion.h1>
+              </h1>
 
               {/* Subtitle */}
-              <motion.p variants={fadeUpVariant} className="mx-auto max-w-2xl text-slate-600 dark:text-slate-300 text-sm sm:text-base md:text-lg leading-relaxed">
+              <p className="mx-auto max-w-2xl text-slate-600 dark:text-slate-300 text-sm sm:text-base md:text-lg leading-relaxed">
                 Official BMC digital municipal platform. Report potholes, garbage, and drainage defects with 96.4% AI vision verification, live GIS map tracking, and geofenced field proof.
-              </motion.p>
+              </p>
 
               {/* CTA Action Buttons */}
-              <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full sm:w-auto">
                 <Button asChild size="lg" className="w-full sm:w-auto rounded-full h-12 sm:h-13 px-7 text-sm sm:text-base font-bold shadow-lg shadow-emerald-600/25 transition-all hover:scale-105 bg-emerald-600 hover:bg-emerald-700 text-white">
                   <Link to="/auth">
                     <span>Report an Issue Now</span>
@@ -259,16 +254,11 @@ export default function Home() {
                     Live Ward Map
                   </Link>
                 </Button>
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
 
             {/* ═══ 3-CARD GOVERNANCE & AEO DEFINITION TRUST GRID ═══ */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.6 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left pt-6"
-            >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left pt-6">
               <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
                 <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base">
                   ⚡
@@ -298,7 +288,7 @@ export default function Home() {
                   Field crews must be physically on-site within a 100m radius to submit timestamped before-and-after photo verification.
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 

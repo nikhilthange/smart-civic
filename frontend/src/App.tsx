@@ -37,8 +37,8 @@ export function lazyRetry<T extends React.ComponentType<any>>(
 }
 
 // ─── Route-Level Dynamic Lazy Imports (Code-Splitting with Auto-Recovery) ──────
+import Home from "./pages/Home"
 const DashboardLayout = lazyRetry(() => import("./components/layout/DashboardLayout"))
-const Home = lazyRetry(() => import("./pages/Home"))
 const Auth = lazyRetry(() => import("./pages/Auth"))
 const VerifyEmail = lazyRetry(() => import("./pages/VerifyEmail"))
 const Dashboard = lazyRetry(() => import("./pages/Dashboard"))

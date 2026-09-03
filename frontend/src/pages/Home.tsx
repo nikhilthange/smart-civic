@@ -163,7 +163,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-[100dvh] h-full w-full overflow-y-auto overscroll-y-contain flex flex-col bg-slate-50 dark:bg-slate-950 font-sans">
+    <div className="min-h-[100dvh] h-full w-full overflow-x-hidden overflow-y-auto overscroll-y-contain flex flex-col bg-slate-50 dark:bg-slate-950 font-sans">
       <SeoHead
         title="Smart Civic AI - BMC Mumbai Grievance & CityOS Portal"
         description="Report Mumbai potholes, garbage, and civic defects with instant AI verification, guaranteed 48-hour SLA resolution, and live 24-ward tracking."
@@ -476,36 +476,36 @@ export default function Home() {
         </section>
 
         {/* AI Powered Section */}
-        <section id="ai" className="w-full py-20 md:py-32 bg-white dark:bg-slate-900 border-y">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+        <section id="ai" className="w-full py-16 md:py-32 bg-white dark:bg-slate-900 border-y overflow-hidden">
+          <div className="container px-4 md:px-6 mx-auto max-w-full">
+            <div className="grid gap-8 lg:grid-cols-2 lg:gap-16 items-center">
               <motion.div
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeUpVariant}
-                className="space-y-6"
+                className="space-y-4 sm:space-y-6 min-w-0"
               >
-                <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">
+                <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-xs sm:text-sm text-primary font-medium">
                   Smart AI Routing
                 </div>
-                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-slate-900 dark:text-white">
-                  Zero delays. <br /> Infinite efficiency.
+                <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  Zero delays. <br className="hidden sm:inline" /> Infinite efficiency.
                 </h2>
-                <p className="text-lg text-slate-500 dark:text-slate-400">
+                <p className="text-sm sm:text-base md:text-lg text-slate-500 dark:text-slate-400">
                   Our platform uses advanced Machine Learning models to automatically categorize and prioritize complaints as soon as they are submitted.
                 </p>
-                <ul className="space-y-4">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                <ul className="space-y-3 sm:space-y-4 text-xs sm:text-base">
+                  <li className="flex items-center gap-2.5 sm:gap-3">
+                    <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 shrink-0" />
                     <span className="text-slate-700 dark:text-slate-300">Auto-categorization of issues from text and images.</span>
                   </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                  <li className="flex items-center gap-2.5 sm:gap-3">
+                    <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 shrink-0" />
                     <span className="text-slate-700 dark:text-slate-300">Intelligent priority scoring based on urgency and impact.</span>
                   </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                  <li className="flex items-center gap-2.5 sm:gap-3">
+                    <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 shrink-0" />
                     <span className="text-slate-700 dark:text-slate-300">Instant routing to the correct municipal department.</span>
                   </li>
                 </ul>
@@ -515,7 +515,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
-                className="w-full"
+                className="w-full min-w-0 max-w-full overflow-hidden"
               >
                 <AiPipelineHeroVisual />
               </motion.div>

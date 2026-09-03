@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider } from "./context/AuthContext"
 import { SocketProvider } from "./context/SocketContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
-import DashboardLayout from "./components/layout/DashboardLayout"
 import ErrorBoundary from "./components/common/ErrorBoundary"
 import { GoogleOAuthProvider } from "@react-oauth/google"
 
@@ -38,6 +37,7 @@ export function lazyRetry<T extends React.ComponentType<any>>(
 }
 
 // ─── Route-Level Dynamic Lazy Imports (Code-Splitting with Auto-Recovery) ──────
+const DashboardLayout = lazyRetry(() => import("./components/layout/DashboardLayout"))
 const Home = lazyRetry(() => import("./pages/Home"))
 const Auth = lazyRetry(() => import("./pages/Auth"))
 const VerifyEmail = lazyRetry(() => import("./pages/VerifyEmail"))

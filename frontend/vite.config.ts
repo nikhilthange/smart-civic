@@ -17,15 +17,41 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 800,
+    chunkSizeWarningLimit: 600,
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id: string) {
-          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom") || id.includes("node_modules/react-router-dom")) {
+          if (
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/") ||
+            id.includes("node_modules/react-router")
+          ) {
             return "vendor"
+          }
+          if (id.includes("node_modules/framer-motion")) {
+            return "motion"
           }
           if (id.includes("node_modules/recharts")) {
             return "charts"
+          }
+          if (
+            id.includes("node_modules/leaflet") ||
+            id.includes("node_modules/leaflet.markercluster") ||
+            id.includes("node_modules/leaflet.heat") ||
+            id.includes("node_modules/@react-google-maps")
+          ) {
+            return "maps"
+          }
+          if (id.includes("node_modules/firebase")) {
+            return "firebase"
+          }
+          if (
+            id.includes("node_modules/jspdf") ||
+            id.includes("node_modules/jspdf-autotable") ||
+            id.includes("node_modules/html2canvas")
+          ) {
+            return "pdf"
           }
           if (id.includes("node_modules/@radix-ui") || id.includes("node_modules/lucide-react")) {
             return "ui"

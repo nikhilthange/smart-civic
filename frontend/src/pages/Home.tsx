@@ -32,7 +32,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Repaired in less than 14 hours!",
     text: "I reported a severe pothole crater near Hill Road on my morning commute. The AI auto-detected the ward and dispatched the PWD asphalt crew. By evening, it was completely recarpeted with timestamped before-and-after photos!",
     stat: "Fix Time: 13.8 Hours",
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&q=75&fm=webp",
     badge: "Verified Citizen ✓",
     badgeClass: "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/60",
   },
@@ -46,7 +46,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Saves hours of manual triage daily.",
     text: "The AI auto-categorization and spatial 50m deduplication are game-changers for BMC ward operations. Instead of 20 duplicates for the same waterlogging spot, we get one unified ticket with verified severity scoring.",
     stat: "Triage: 0.4s Ingestion",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=75&fm=webp",
     badge: "Municipal Officer ✓",
     badgeClass: "bg-blue-100/80 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/60 dark:border-blue-700/60",
   },
@@ -60,7 +60,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Brought true municipal accountability.",
     text: "Our residential society actively logs waste and drainage blockages before monsoon. The Civic Karma reward vouchers gave our society a 5% property tax concession, which we reinvested in local rainwater harvesting!",
     stat: "Karma: 1,450 Points",
-    avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=200&q=80",
+    avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=120&q=75&fm=webp",
     badge: "ALM Leader ✓",
     badgeClass: "bg-amber-100/80 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60",
   },
@@ -74,7 +74,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Transparent task routing & zero paperwork.",
     text: "The worker interface gives our road crew the exact GPS pin, routing map, and material specifications. The 100m geofence ensures our repair quality is digitally audited and approved by ward engineers instantly.",
     stat: "Repairs: 180+ Completed",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=75&fm=webp",
     badge: "Field Crew Supervisor ✓",
     badgeClass: "bg-teal-100/80 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-300/60 dark:border-teal-700/60",
   },
@@ -88,7 +88,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Pedestrian safety significantly improved.",
     text: "Reported multiple flickering streetlights along Colaba Causeway. The SLA countdown was visible in real time, and the electrical team completed replacement in under 24 hours. The transparency is unmatched.",
     stat: "SLA Met: 100% On-Time",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=75&fm=webp",
     badge: "Verified Citizen ✓",
     badgeClass: "bg-indigo-100/80 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-700/60",
   },
@@ -102,7 +102,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Contractor SLA compliance rose to 94%.",
     text: "The automated contractor escrow penalty system ensures that road contractors meet their 48-hour warranty commitments. Unresolved tickets automatically trigger SLA breach deductions without red tape.",
     stat: "Compliance: 94.2%",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200&q=80",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&q=75&fm=webp",
     badge: "AMC Officer ✓",
     badgeClass: "bg-purple-100/80 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300/60 dark:border-purple-700/60",
   },
@@ -350,8 +350,12 @@ export default function Home() {
                       🔴 Reported Critical
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=1600&q=80"
+                      src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=600&q=75&fm=webp"
                       alt="Before Pothole"
+                      loading="lazy"
+                      decoding="async"
+                      width="600"
+                      height="340"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -365,12 +369,16 @@ export default function Home() {
                       🟢 Resolved & Verified
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1600&q=80"
+                      src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=75&fm=webp"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1000&q=80";
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=600&q=75&fm=webp";
                       }}
                       alt="After Repair"
+                      loading="lazy"
+                      decoding="async"
+                      width="600"
+                      height="340"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -420,12 +428,16 @@ export default function Home() {
                       🔴 Reported Critical
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=1600&q=80"
+                      src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=600&q=75&fm=webp"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1604186837056-8e7c286756f2?auto=format&fit=crop&w=1000&q=80";
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1604186837056-8e7c286756f2?auto=format&fit=crop&w=600&q=75&fm=webp";
                       }}
                       alt="Before Waste Clearance"
+                      loading="lazy"
+                      decoding="async"
+                      width="600"
+                      height="340"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -439,12 +451,16 @@ export default function Home() {
                       🟢 Cleaned & Sanitized
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=1600&q=80"
+                      src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=600&q=75&fm=webp"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=1000&q=80";
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=600&q=75&fm=webp";
                       }}
                       alt="After Sanitation"
+                      loading="lazy"
+                      decoding="async"
+                      width="600"
+                      height="340"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">

@@ -35,17 +35,14 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     })
 
     socketInstance.on("connect", () => {
-      console.log("🔌 Connected to Native WebSocket Gateway");
       setIsConnected(true)
     })
 
-    socketInstance.on("disconnect", (reason) => {
-      console.log(`🔌 Disconnected from Native WebSocket Gateway: ${reason}`);
+    socketInstance.on("disconnect", () => {
       setIsConnected(false)
     })
 
-    socketInstance.on("connect_error", (error) => {
-      console.warn("⚠️ WebSocket connection retry in progress:", error.message);
+    socketInstance.on("connect_error", () => {
       setIsConnected(false)
     })
 

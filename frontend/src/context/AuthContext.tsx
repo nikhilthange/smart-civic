@@ -175,6 +175,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
             setUser(fallbackUser)
           }
+        } else {
           // 3. User is signed out in Firebase
           const storedToken = localStorage.getItem("token")
           const storedUserStr = localStorage.getItem("user")
@@ -225,7 +226,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           delete api.defaults.headers.common["Authorization"]
         }
       } catch (err) {
-        console.error("Auth observer hydration failed:", err)
+        console.warn("Auth observer hydration:", err)
         setUser(null)
         setToken(null)
         localStorage.removeItem("token")

@@ -37,7 +37,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
     severity: "P1 - Critical",
     slaHours: "24h SLA Triggered",
     coords: "19.0596° N, 72.8295° E",
-    imageUrl: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=480&q=75&fm=webp"
   },
   {
     id: "#SWD-FLOOD-8120",
@@ -50,7 +50,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
     severity: "P1 - Critical",
     slaHours: "12h Monsoon SLA",
     coords: "19.0182° N, 72.8168° E",
-    imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=480&q=75&fm=webp"
   },
   {
     id: "#SWM-WASTE-4592",
@@ -63,7 +63,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
     severity: "P2 - Elevated",
     slaHours: "48h Standard SLA",
     coords: "19.1136° N, 72.8697° E",
-    imageUrl: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=800&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=480&q=75&fm=webp"
   },
   {
     id: "#ELD-LIGHT-3019",
@@ -76,7 +76,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
     severity: "P2 - Elevated",
     slaHours: "24h Priority SLA",
     coords: "18.9682° N, 72.8085° E",
-    imageUrl: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80"
+    imageUrl: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=480&q=75&fm=webp"
   }
 ]
 
@@ -162,6 +162,10 @@ export default function AiPipelineHeroVisual() {
                 key={current.id}
                 src={current.imageUrl}
                 alt="Feed Stream"
+                loading="lazy"
+                decoding="async"
+                width="480"
+                height="280"
                 initial={{ opacity: 0.25, scale: 1.05 }}
                 animate={{ opacity: 0.75, scale: 1 }}
                 exit={{ opacity: 0.25 }}

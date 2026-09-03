@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, lazy, Suspense } from "react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
@@ -38,14 +38,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/context/AuthContext"
 import { NotificationBell } from "@/components/ui/NotificationBell"
-import { CommandPalette } from "@/components/common/CommandPalette"
-import MunicipalCopilotModal from "@/components/admin/MunicipalCopilotModal"
-import KeyboardShortcutsModal from "@/components/common/KeyboardShortcutsModal"
-import { OnboardingTourModal } from "@/components/common/OnboardingTourModal"
 import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
 import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { useTranslation } from "react-i18next"
 import { triggerHapticFeedback } from "@/utils/haptics"
+
+const CommandPalette = lazy(() => import("@/components/common/CommandPalette").then(m => ({ default: m.CommandPalette })))
+const MunicipalCopilotModal = lazy(() => import("@/components/admin/MunicipalCopilotModal"))
+const KeyboardShortcutsModal = lazy(() => import("@/components/common/KeyboardShortcutsModal"))
+const OnboardingTourModal = lazy(() => import("@/components/common/OnboardingTourModal").then(m => ({ default: m.OnboardingTourModal })))
 
 interface NavItem {
   key: string
@@ -336,10 +337,14 @@ export default function DashboardLayout() {
   return (
     <div className="flex h-[100dvh] min-h-[100dvh] w-full max-w-full overflow-hidden bg-[#FAFAFA] dark:bg-[#090A0F]">
       {/* Global Command Palette Modal */}
-      <CommandPalette
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-      />
+      {isCommandPaletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette
+            isOpen={isCommandPaletteOpen}
+            onClose={() => setIsCommandPaletteOpen(false)}
+          />
+        </Suspense>
+      )}
 
       {/* Permanent Fixed Sidebar */}
       <div className="hidden md:block shrink-0 w-[240px] lg:w-[255px] h-full border-r border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-[#090A0F]/70 backdrop-blur-xl">
@@ -526,9 +531,11 @@ export default function DashboardLayout() {
         </nav>
 
         {/* Copilot Modal, Onboarding Tour & Keyboard Shortcuts */}
-        <MunicipalCopilotModal isOpen={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />
-        <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />
-        <OnboardingTourModal />
+        <Suspense fallback={null}>
+          {isCopilotOpen && <MunicipalCopilotModal isOpen={isCopilotOpen} onClose={() => setIsCopilotOpen(false)} />}
+          {isShortcutsOpen && <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />}
+          <OnboardingTourModal />
+        </Suspense>
       </div>
     </div>
   )

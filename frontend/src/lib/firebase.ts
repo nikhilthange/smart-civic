@@ -32,38 +32,24 @@ const firebaseConfig = {
 // Initialize Firebase App (singleton pattern for Vite HMR)
 const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 
-// Lazy Initialize Firebase Authentication
-let _auth: Auth | null = null
+// Initialize Firebase Authentication
+const auth: Auth = getAuth(app)
+
+// Google Auth Provider configured to always prompt account selection
+const googleProvider = new GoogleAuthProvider()
+googleProvider.setCustomParameters({
+  prompt: "select_account",
+})
+
 export function getFirebaseAuth(): Auth {
-  if (!_auth) {
-    _auth = getAuth(app)
-  }
-  return _auth
+  return auth
 }
 
-export const auth = new Proxy({} as Auth, {
-  get(_target, prop) {
-    const instance = getFirebaseAuth() as any
-    const val = instance[prop]
-    return typeof val === "function" ? val.bind(instance) : val
-  },
-})
-
-let _googleProvider: GoogleAuthProvider | null = null
 export function getGoogleProvider(): GoogleAuthProvider {
-  if (!_googleProvider) {
-    _googleProvider = new GoogleAuthProvider()
-  }
-  return _googleProvider
+  return googleProvider
 }
 
-export const googleProvider = new Proxy({} as GoogleAuthProvider, {
-  get(_target, prop) {
-    const instance = getGoogleProvider() as any
-    const val = instance[prop]
-    return typeof val === "function" ? val.bind(instance) : val
-  },
-})
+export { auth, googleProvider }
 
 export {
   app,

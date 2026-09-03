@@ -330,112 +330,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true)
     setError(null)
     try {
-      let userCredential: any = null
-      let popupError: any = null
+      // 1. Trigger actual Firebase Google Sign-In Popup
+      const userCredential = await signInWithPopup(auth, googleProvider)
+      const idToken = await userCredential.user.getIdToken()
+
+      const userEmail = userCredential.user.email || ""
+      const userName = registrationMeta?.name || userCredential.user.displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")
 
       try {
-        userCredential = await signInWithPopup(auth, googleProvider)
-      } catch (err: any) {
-        popupError = err
-        console.warn("Firebase Google popup notice:", err)
-      }
-
-      if (userCredential?.user) {
-        const idToken = await userCredential.user.getIdToken()
-        try {
-          // Attempt backend sync with registration details
-          const response = await api.post("/auth/google", {
-            token: idToken,
-            role: registrationMeta?.role,
-            ward: registrationMeta?.ward,
-            phoneNumber: registrationMeta?.phoneNumber,
-            name: registrationMeta?.name || userCredential.user.displayName || undefined,
-          })
-          const { token: newToken, user: newUser } = response.data
-          localStorage.setItem("token", newToken)
-          localStorage.setItem("user", JSON.stringify(newUser))
-          api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
-          setToken(newToken)
-          setUser(newUser)
-          return
-        } catch {
-          // Resilient fallback for preview/client-only sessions
-          const firebaseUser: AuthUser = {
-            id: userCredential.user.uid,
-            name: registrationMeta?.name || userCredential.user.displayName || "Google Citizen",
-            email: userCredential.user.email || "citizen.google@smartcity.gov.in",
-            role: registrationMeta?.role || "citizen",
-            ward: registrationMeta?.ward || "Ward H-West",
-            phoneNumber: registrationMeta?.phoneNumber,
-            isActive: true,
-            createdAt: new Date().toISOString(),
-          }
-          localStorage.setItem("token", idToken)
-          localStorage.setItem("user", JSON.stringify(firebaseUser))
-          api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`
-          setToken(idToken)
-          setUser(firebaseUser)
-          return
-        }
-      }
-
-      // If user closed or cancelled popup explicitly:
-      if (popupError?.code === "auth/popup-closed-by-user") {
-        throw new Error("Google sign-in popup was closed before completing.")
-      }
-      if (popupError?.code === "auth/popup-blocked") {
-        throw new Error("Google sign-in popup was blocked by your browser. Please allow popups for this site.")
-      }
-      if (popupError?.code === "auth/cancelled-popup-request") {
-        throw new Error("Google sign-in was cancelled.")
-      }
-
-      // For environment restrictions (e.g. unauthorized-domain, operation-not-allowed, network-request-failed)
-      // gracefully authenticate as Google Citizen via backend or resilient session
-      try {
-        const fallbackRes = await api.post("/auth/google", {
-          token: "mock-google-id-token",
-          email: "citizen.google@smartcity.gov.in",
-          name: registrationMeta?.name || "Google Citizen",
-          role: registrationMeta?.role || "citizen",
-          ward: registrationMeta?.ward || "Ward H-West",
+        // 2. Synchronize with Backend MongoDB Database
+        const response = await api.post("/auth/google", {
+          token: idToken,
+          role: registrationMeta?.role,
+          ward: registrationMeta?.ward,
           phoneNumber: registrationMeta?.phoneNumber,
+          name: userName,
+          email: userEmail,
         })
-        if (fallbackRes.data?.token && fallbackRes.data?.user) {
-          const { token: newToken, user: newUser } = fallbackRes.data
-          localStorage.setItem("token", newToken)
-          localStorage.setItem("user", JSON.stringify(newUser))
-          api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
-          setToken(newToken)
-          setUser(newUser)
-          return
-        }
-      } catch {
-        // Seamless client session fallback
-        const googleCitizenUser: AuthUser = {
-          id: "google-citizen-" + Date.now(),
-          name: registrationMeta?.name || "Google Citizen",
-          email: "citizen.google@smartcity.gov.in",
+        const { token: newToken, user: newUser } = response.data
+        localStorage.setItem("token", newToken)
+        localStorage.setItem("user", JSON.stringify(newUser))
+        api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`
+        setToken(newToken)
+        setUser(newUser)
+      } catch (syncErr: any) {
+        // If backend is offline, establish authenticated session with the REAL Firebase Google account
+        console.warn("Backend sync notice after Firebase Google login:", syncErr?.message)
+        const firebaseUser: AuthUser = {
+          id: userCredential.user.uid,
+          name: userName,
+          email: userEmail,
           role: registrationMeta?.role || "citizen",
           ward: registrationMeta?.ward || "Ward H-West",
           phoneNumber: registrationMeta?.phoneNumber,
           isActive: true,
-          karmaPoints: 10,
           createdAt: new Date().toISOString(),
         }
-        const fallbackToken = "demo-google-token-" + Date.now()
-        localStorage.setItem("token", fallbackToken)
-        localStorage.setItem("user", JSON.stringify(googleCitizenUser))
-        api.defaults.headers.common["Authorization"] = `Bearer ${fallbackToken}`
-        setToken(fallbackToken)
-        setUser(googleCitizenUser)
-        return
-      }
-
-      if (popupError) {
-        throw popupError
+        localStorage.setItem("token", idToken)
+        localStorage.setItem("user", JSON.stringify(firebaseUser))
+        api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`
+        setToken(idToken)
+        setUser(firebaseUser)
       }
     } catch (err: unknown) {
+      console.error("Firebase Google Auth Error:", err)
       const msg = extractErrorMessage(err)
       setError(msg)
       throw new Error(msg)

@@ -330,23 +330,14 @@ const googleAuth = async (req, res) => {
           googleId = decoded.sub || decoded.user_id || decoded.uid;
         }
       } catch {
-        // Continue to fallback
-      }
-    }
-
-    // 3. Fallback for mock/demo google tokens
-    if (!email) {
-      if (token && typeof token === "string" && (token.includes("google") || token.includes("mock") || token.includes("demo"))) {
-        email = "citizen.google@smartcity.gov.in";
-        name = "Google Citizen";
-        googleId = "google-demo-" + Date.now();
+        // Token decode failed
       }
     }
 
     if (!email) {
       return res.status(401).json({
         success: false,
-        message: "Invalid Google or Firebase token payload.",
+        message: "Invalid Google or Firebase authentication token.",
       });
     }
 

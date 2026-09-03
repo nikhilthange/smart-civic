@@ -343,12 +343,12 @@ export default function Home() {
                       🔴 Reported Critical
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=400&q=50&fm=webp"
+                      src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=340&q=45&fm=webp"
                       alt="Before Pothole"
                       loading="lazy"
                       decoding="async"
-                      width="400"
-                      height="225"
+                      width="340"
+                      height="192"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -362,16 +362,16 @@ export default function Home() {
                       🟢 Resolved & Verified
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=400&q=50&fm=webp"
+                      src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=340&q=45&fm=webp"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=400&q=50&fm=webp";
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=340&q=45&fm=webp";
                       }}
                       alt="After Repair"
                       loading="lazy"
                       decoding="async"
-                      width="400"
-                      height="225"
+                      width="340"
+                      height="192"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -421,16 +421,16 @@ export default function Home() {
                       🔴 Reported Critical
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=400&q=50&fm=webp"
+                      src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=340&q=45&fm=webp"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1604186837056-8e7c286756f2?auto=format&fit=crop&w=400&q=50&fm=webp";
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1604186837056-8e7c286756f2?auto=format&fit=crop&w=340&q=45&fm=webp";
                       }}
                       alt="Before Waste Clearance"
                       loading="lazy"
                       decoding="async"
-                      width="400"
-                      height="225"
+                      width="340"
+                      height="192"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -444,16 +444,16 @@ export default function Home() {
                       🟢 Cleaned & Sanitized
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=400&q=50&fm=webp"
+                      src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=340&q=45&fm=webp"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=400&q=50&fm=webp";
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=340&q=45&fm=webp";
                       }}
                       alt="After Sanitation"
                       loading="lazy"
                       decoding="async"
-                      width="400"
-                      height="225"
+                      width="340"
+                      height="192"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">

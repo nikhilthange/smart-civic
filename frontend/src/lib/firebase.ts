@@ -19,7 +19,6 @@ import {
   type Auth,
   type User as FirebaseUser,
 } from "firebase/auth"
-import { getMessaging, getToken, onMessage, type Messaging } from "firebase/messaging"
 
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCXwkjyqoMg_i-baAqu05Gk6y-fQr2Jj6k",
@@ -37,21 +36,6 @@ const app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) 
 const auth: Auth = getAuth(app)
 const googleProvider = new GoogleAuthProvider()
 
-// Messaging is only initialized in supported browser environments
-let messaging: Messaging | null = null
-try {
-  if (
-    typeof window !== "undefined" &&
-    "serviceWorker" in navigator &&
-    firebaseConfig.apiKey &&
-    !firebaseConfig.apiKey.includes("your_firebase_api_key")
-  ) {
-    messaging = getMessaging(app)
-  }
-} catch {
-  // Gracefully bypass if service workers or push notifications are unsupported
-}
-
 export {
   app,
   auth,
@@ -65,18 +49,31 @@ export {
   sendPasswordResetEmail,
   sendEmailVerification,
   updateProfile,
-  messaging,
-  getToken,
-  onMessage,
 }
 
 export type { FirebaseUser }
 
 /**
- * Helper to request notification permission and retrieve the FCM token.
+ * Dynamically listen for foreground FCM push notifications without static import overhead.
+ */
+export async function onForegroundMessage(callback: (payload: any) => void): Promise<(() => void) | undefined> {
+  if (typeof window === "undefined" || !("Notification" in window) || !("serviceWorker" in navigator)) {
+    return undefined
+  }
+  try {
+    const { getMessaging, onMessage } = await import("firebase/messaging")
+    const messaging = getMessaging(app)
+    return onMessage(messaging, callback)
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Helper to request notification permission and retrieve the FCM token dynamically.
  */
 export async function requestFCMToken(): Promise<string | null> {
-  if (!messaging || typeof window === "undefined" || !("Notification" in window)) {
+  if (typeof window === "undefined" || !("Notification" in window) || !("serviceWorker" in navigator)) {
     return null
   }
 
@@ -88,7 +85,6 @@ export async function requestFCMToken(): Promise<string | null> {
     !rawVapidKey.includes("your_vapid")
 
   if (!isKeyConfigured) {
-    // Graceful skip — in-app WebSockets handle real-time alerts cleanly
     return null
   }
 
@@ -96,6 +92,8 @@ export async function requestFCMToken(): Promise<string | null> {
     const permission = await Notification.requestPermission()
     if (permission !== "granted") return null
 
+    const { getMessaging, getToken } = await import("firebase/messaging")
+    const messaging = getMessaging(app)
     const token = await getToken(messaging, {
       vapidKey: rawVapidKey.trim(),
     })

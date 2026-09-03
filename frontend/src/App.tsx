@@ -4,7 +4,6 @@ import { AuthProvider } from "./context/AuthContext"
 import { SocketProvider } from "./context/SocketContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
 import ErrorBoundary from "./components/common/ErrorBoundary"
-import { GoogleOAuthProvider } from "@react-oauth/google"
 
 // ─── Chunk Mismatch & Dynamic Import Resilience Helper ────────────────────────
 export function lazyRetry<T extends React.ComponentType<any>>(
@@ -100,15 +99,12 @@ const RouteLoadingFallback = () => (
 )
 
 function App() {
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "your_google_client_id_here"
-
   return (
     <ErrorBoundary>
-      <GoogleOAuthProvider clientId={clientId}>
-        <AuthProvider>
-          <SocketProvider>
-            <Router>
-              <Suspense fallback={<RouteLoadingFallback />}>
+      <AuthProvider>
+        <SocketProvider>
+          <Router>
+            <Suspense fallback={<RouteLoadingFallback />}>
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Home />} />
@@ -223,9 +219,8 @@ function App() {
                 </Routes>
               </Suspense>
             </Router>
-          </SocketProvider>
-        </AuthProvider>
-      </GoogleOAuthProvider>
+        </SocketProvider>
+      </AuthProvider>
     </ErrorBoundary>
   )
 }

@@ -18,7 +18,7 @@ import { Button } from "./button"
 import { Badge } from "./badge"
 import { useNavigate } from "react-router-dom"
 import { notificationApi, type AppNotification } from "../../services/notificationApi"
-import { requestFCMToken, messaging, onMessage } from "../../lib/firebase"
+import { requestFCMToken, onForegroundMessage } from "../../lib/firebase"
 import { useSocket } from "@/context/SocketContext"
 import { triggerHapticFeedback } from "@/utils/haptics"
 import toast from "react-hot-toast"
@@ -165,8 +165,8 @@ export function NotificationBell() {
 
   // Listen for foreground FCM messages
   useEffect(() => {
-    if (!messaging) return
-    const unsubscribe = onMessage(messaging, (payload) => {
+    let unsubscribe: (() => void) | undefined
+    onForegroundMessage((payload: any) => {
       const { title, body } = payload.notification || {}
       toast.custom(
         (t) => (
@@ -184,18 +184,22 @@ export function NotificationBell() {
             </div>
             <button
               onClick={() => toast.dismiss(t.id)}
-              aria-label="Dismiss notification"
-              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-md shrink-0"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
               <X className="h-3.5 w-3.5" />
             </button>
           </div>
         ),
-        { duration: 6000 }
+        { duration: 5000, position: "top-right" }
       )
       fetchNotifications()
+    }).then((unsub) => {
+      unsubscribe = unsub
     })
-    return () => unsubscribe()
+
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
   }, [fetchNotifications])
 
   // Close panel on outside click

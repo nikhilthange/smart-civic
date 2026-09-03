@@ -501,35 +501,6 @@ export default function Auth() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full min-h-[44px] h-11 flex items-center justify-center gap-2 border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold text-xs sm:text-sm rounded-xl"
-                  onClick={async () => {
-                    try {
-                      setLocalError(null)
-                      await login({ email: "citizen.bandra@smartcity.gov.in", password: "Password@123" })
-                      navigate("/quick-report", { replace: true })
-                    } catch {
-                      const demoUser = {
-                        id: "66d0a1b2c3d4e5f6a7b8c9d0",
-                        name: "Aarav Deshmukh (Citizen)",
-                        email: "citizen.bandra@smartcity.gov.in",
-                        role: "citizen" as const,
-                        isActive: true,
-                        ward: "Ward H-West",
-                        karmaPoints: 45,
-                      }
-                      localStorage.setItem("user", JSON.stringify(demoUser))
-                      localStorage.setItem("token", "demo-token-citizen-snap")
-                      window.location.href = "/quick-report"
-                    }
-                  }}
-                >
-                  <Building2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>1-Click Demo Citizen Login</span>
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
                   className="w-full min-h-[44px] h-11 flex items-center justify-center gap-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl text-xs sm:text-sm font-medium"
                   onClick={async () => {
                     try {

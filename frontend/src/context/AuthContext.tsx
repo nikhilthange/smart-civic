@@ -81,20 +81,40 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(() => {
     try {
+      const storedToken = localStorage.getItem("token")
       const storedUser = localStorage.getItem("user")
+      // Automatically purge any stale demo or mock logins
+      if (
+        !storedToken ||
+        storedToken.startsWith("demo-") ||
+        storedUser?.includes("citizen.google@smartcity.gov.in") ||
+        storedUser?.includes("citizen.bandra@smartcity.gov.in")
+      ) {
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+        return null
+      }
       return storedUser ? JSON.parse(storedUser) : null
     } catch {
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
       return null
     }
   })
   const [token, setToken] = useState<string | null>(() => {
     const storedToken = localStorage.getItem("token")
-    if (storedToken) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
+    if (
+      !storedToken ||
+      storedToken.startsWith("demo-")
+    ) {
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
+      return null
     }
+    api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
     return storedToken
   })
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
   const currentUserRef = useRef<AuthUser | null>(user)
@@ -102,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   currentUserRef.current = user
   currentTokenRef.current = token
 
-  // ─── Unified Firebase Auth Observer: Single Source of Truth (Non-blocking idle init) ───
+  // ─── Unified Firebase Auth Observer: Single Source of Truth ─────────────────
   useEffect(() => {
     let unsubscribe: (() => void) | undefined
     let isMounted = true
@@ -110,137 +130,138 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const initObserver = () => {
       if (!isMounted) return
       unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      try {
-        if (firebaseUser) {
-          const isPasswordProvider = firebaseUser.providerData.some(
-            (p) => p.providerId === "password"
-          )
+        try {
+          if (firebaseUser) {
+            const isPasswordProvider = firebaseUser.providerData.some(
+              (p) => p.providerId === "password"
+            )
 
-          // 1. Block unverified email/password accounts
-          if (isPasswordProvider && !firebaseUser.emailVerified) {
-            if (currentUserRef.current !== null || currentTokenRef.current !== null) {
+            // 1. Block unverified email/password accounts
+            if (isPasswordProvider && !firebaseUser.emailVerified) {
+              setUser(null)
+              setToken(null)
+              localStorage.removeItem("token")
+              localStorage.removeItem("user")
+              delete api.defaults.headers.common["Authorization"]
+              setIsLoading(false)
+              return
+            }
+
+            // 2. Exchange Firebase ID token for Backend-issued JWT
+            const idToken = await firebaseUser.getIdToken()
+            let backendToken = localStorage.getItem("token")
+            let resolvedUser: AuthUser | null = null
+
+            // Test existing backend token first if available
+            if (backendToken && !backendToken.startsWith("demo-")) {
+              try {
+                const { data } = await api.get("/auth/me", {
+                  headers: { Authorization: `Bearer ${backendToken}` },
+                })
+                if (data?.user) {
+                  resolvedUser = data.user
+                }
+              } catch {
+                backendToken = null
+              }
+            }
+
+            // If no valid backend token, exchange Firebase ID token with backend
+            if (!backendToken || !resolvedUser) {
+              try {
+                const res = await api.post("/auth/firebase-login", { idToken })
+                if (res.data?.token) {
+                  backendToken = res.data.token
+                  resolvedUser = res.data.user
+                }
+              } catch (exchangeErr) {
+                console.warn("Backend Firebase token exchange notice:", exchangeErr)
+              }
+            }
+
+            if (backendToken && resolvedUser) {
+              localStorage.setItem("token", backendToken)
+              localStorage.setItem("user", JSON.stringify(resolvedUser))
+              api.defaults.headers.common["Authorization"] = `Bearer ${backendToken}`
+              setToken(backendToken)
+              setUser(resolvedUser)
+            } else {
+              // Real Firebase user session
+              const realFirebaseUser: AuthUser = {
+                id: firebaseUser.uid,
+                name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "Citizen",
+                email: firebaseUser.email || "",
+                role: "citizen",
+                isActive: true,
+                createdAt: new Date().toISOString(),
+              }
+              localStorage.setItem("token", idToken)
+              localStorage.setItem("user", JSON.stringify(realFirebaseUser))
+              api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`
+              setToken(idToken)
+              setUser(realFirebaseUser)
+            }
+          } else {
+            // 3. User is signed out in Firebase
+            const storedToken = localStorage.getItem("token")
+            const storedUserStr = localStorage.getItem("user")
+
+            // Purge any mock/demo tokens immediately
+            if (
+              storedToken &&
+              (storedToken.startsWith("demo-") ||
+                storedUserStr?.includes("citizen.google@smartcity.gov.in") ||
+                storedUserStr?.includes("citizen.bandra@smartcity.gov.in"))
+            ) {
+              setUser(null)
+              setToken(null)
+              localStorage.removeItem("token")
+              localStorage.removeItem("user")
+              delete api.defaults.headers.common["Authorization"]
+              setIsLoading(false)
+              return
+            }
+
+            if (storedToken) {
+              // Strictly verify stored JWT with backend (/auth/me)
+              try {
+                const { data } = await api.get("/auth/me", {
+                  headers: { Authorization: `Bearer ${storedToken}` },
+                })
+                if (data?.user) {
+                  setUser(data.user)
+                  setToken(storedToken)
+                  api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
+                  setIsLoading(false)
+                  return
+                }
+              } catch {
+                // Token is invalid/expired - clear completely
+                setUser(null)
+                setToken(null)
+                localStorage.removeItem("token")
+                localStorage.removeItem("user")
+                delete api.defaults.headers.common["Authorization"]
+              }
+            } else {
               setUser(null)
               setToken(null)
               localStorage.removeItem("token")
               localStorage.removeItem("user")
               delete api.defaults.headers.common["Authorization"]
             }
-            setIsLoading(false)
-            return
           }
-
-          // 2. Exchange Firebase ID token for Backend-issued JWT
-          const idToken = await firebaseUser.getIdToken()
-          let backendToken = localStorage.getItem("token")
-          let resolvedUser: AuthUser | null = null
-
-          // Test existing backend token first if available
-          if (backendToken) {
-            try {
-              const { data } = await api.get("/auth/me", {
-                headers: { Authorization: `Bearer ${backendToken}` },
-              })
-              if (data?.user) {
-                resolvedUser = data.user
-              }
-            } catch {
-              backendToken = null
-            }
-          }
-
-          // If no valid backend token, exchange Firebase ID token with backend
-          if (!backendToken || !resolvedUser) {
-            try {
-              const res = await api.post("/auth/firebase-login", { idToken })
-              if (res.data?.token) {
-                backendToken = res.data.token
-                resolvedUser = res.data.user
-              }
-            } catch (exchangeErr) {
-              console.warn("Backend Firebase token exchange failed:", exchangeErr)
-            }
-          }
-
-          if (backendToken && resolvedUser) {
-            localStorage.setItem("token", backendToken)
-            localStorage.setItem("user", JSON.stringify(resolvedUser))
-            api.defaults.headers.common["Authorization"] = `Bearer ${backendToken}`
-            setToken(backendToken)
-            setUser(resolvedUser)
-          } else {
-            // Fallback for offline/preview mode
-            const fallbackUser: AuthUser = {
-              id: firebaseUser.uid,
-              name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "Citizen",
-              email: firebaseUser.email || "",
-              role: "citizen",
-              isActive: true,
-              karmaPoints: currentUserRef.current?.karmaPoints ?? 0,
-              createdAt: new Date().toISOString(),
-            }
-            setUser(fallbackUser)
-          }
-        } else {
-          // 3. User is signed out in Firebase
-          const storedToken = localStorage.getItem("token")
-          const storedUserStr = localStorage.getItem("user")
-          if (storedToken) {
-            // Handle Demo / Local session
-            if (storedToken.startsWith("demo-") && storedUserStr) {
-              try {
-                const parsed = JSON.parse(storedUserStr)
-                setUser(parsed)
-                setToken(storedToken)
-                api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
-                setIsLoading(false)
-                return
-              } catch {}
-            }
-
-            // Verify if non-Firebase backend session exists (e.g. staff/admin password login)
-            try {
-              const { data } = await api.get("/auth/me", {
-                headers: { Authorization: `Bearer ${storedToken}` },
-              })
-              if (data?.user) {
-                setUser(data.user)
-                setToken(storedToken)
-                api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
-                setIsLoading(false)
-                return
-              }
-            } catch {
-              // If offline or network error, retain stored local user
-              if (storedUserStr) {
-                try {
-                  const parsed = JSON.parse(storedUserStr)
-                  setUser(parsed)
-                  setToken(storedToken)
-                  api.defaults.headers.common["Authorization"] = `Bearer ${storedToken}`
-                  setIsLoading(false)
-                  return
-                } catch {}
-              }
-            }
-          }
-
+        } catch (err) {
+          console.warn("Auth observer validation notice:", err)
           setUser(null)
           setToken(null)
           localStorage.removeItem("token")
           localStorage.removeItem("user")
           delete api.defaults.headers.common["Authorization"]
+        } finally {
+          setIsLoading(false)
         }
-      } catch (err) {
-        console.warn("Auth observer hydration:", err)
-        setUser(null)
-        setToken(null)
-        localStorage.removeItem("token")
-        localStorage.removeItem("user")
-        delete api.defaults.headers.common["Authorization"]
-      } finally {
-        setIsLoading(false)
-      }
-    })
+      })
     }
 
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {

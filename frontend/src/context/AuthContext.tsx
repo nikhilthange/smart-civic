@@ -62,7 +62,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   login: (data: LoginData) => Promise<void>
   loginWithGoogle: (token: string) => Promise<void>
-  loginWithFirebaseGoogle: () => Promise<void>
+  loginWithFirebaseGoogle: (registrationMeta?: Partial<RegisterData>) => Promise<void>
   register: (data: RegisterData) => Promise<void>
   registerWithFirebaseEmail: (data: RegisterData) => Promise<{ needsVerification: boolean; email: string }>
   loginWithFirebaseEmail: (data: LoginData) => Promise<void>
@@ -326,7 +326,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   // ─── Login with Firebase Google (Native Firebase Popup OAuth) ───────────────
-  const loginWithFirebaseGoogle = useCallback(async () => {
+  const loginWithFirebaseGoogle = useCallback(async (registrationMeta?: Partial<RegisterData>) => {
     setIsLoading(true)
     setError(null)
     try {
@@ -343,8 +343,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (userCredential?.user) {
         const idToken = await userCredential.user.getIdToken()
         try {
-          // Attempt backend sync
-          const response = await api.post("/auth/google", { token: idToken })
+          // Attempt backend sync with registration details
+          const response = await api.post("/auth/google", {
+            token: idToken,
+            role: registrationMeta?.role,
+            ward: registrationMeta?.ward,
+            phoneNumber: registrationMeta?.phoneNumber,
+            name: registrationMeta?.name || userCredential.user.displayName || undefined,
+          })
           const { token: newToken, user: newUser } = response.data
           localStorage.setItem("token", newToken)
           localStorage.setItem("user", JSON.stringify(newUser))
@@ -356,11 +362,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Resilient fallback for preview/client-only sessions
           const firebaseUser: AuthUser = {
             id: userCredential.user.uid,
-            name: userCredential.user.displayName || "Google Citizen",
+            name: registrationMeta?.name || userCredential.user.displayName || "Google Citizen",
             email: userCredential.user.email || "citizen.google@smartcity.gov.in",
-            role: "citizen",
+            role: registrationMeta?.role || "citizen",
+            ward: registrationMeta?.ward || "Ward H-West",
+            phoneNumber: registrationMeta?.phoneNumber,
             isActive: true,
-            ward: "Ward H-West",
             createdAt: new Date().toISOString(),
           }
           localStorage.setItem("token", idToken)
@@ -389,7 +396,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const fallbackRes = await api.post("/auth/google", {
           token: "mock-google-id-token",
           email: "citizen.google@smartcity.gov.in",
-          name: "Google Citizen",
+          name: registrationMeta?.name || "Google Citizen",
+          role: registrationMeta?.role || "citizen",
+          ward: registrationMeta?.ward || "Ward H-West",
+          phoneNumber: registrationMeta?.phoneNumber,
         })
         if (fallbackRes.data?.token && fallbackRes.data?.user) {
           const { token: newToken, user: newUser } = fallbackRes.data
@@ -404,11 +414,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Seamless client session fallback
         const googleCitizenUser: AuthUser = {
           id: "google-citizen-" + Date.now(),
-          name: "Google Citizen",
+          name: registrationMeta?.name || "Google Citizen",
           email: "citizen.google@smartcity.gov.in",
-          role: "citizen",
+          role: registrationMeta?.role || "citizen",
+          ward: registrationMeta?.ward || "Ward H-West",
+          phoneNumber: registrationMeta?.phoneNumber,
           isActive: true,
-          ward: "Ward H-West",
           karmaPoints: 10,
           createdAt: new Date().toISOString(),
         }

@@ -353,13 +353,24 @@ const googleAuth = async (req, res) => {
     // 4. Find or Create User in MongoDB
     let user = await User.findOne({ email });
 
+    const safeRole = ["citizen", "officer", "worker", "admin"].includes(req.body.role) ? req.body.role : "citizen";
+    const ward = req.body.ward || "Ward H-West";
+    const phoneNumber = req.body.phoneNumber || undefined;
+
     if (user) {
       if (!user.googleId && googleId) {
         user.googleId = googleId;
       }
-      if (!user.name && name) {
-        user.name = name;
+      if (!user.name && (req.body.name || name)) {
+        user.name = req.body.name || name;
       }
+      if (req.body.ward && (!user.ward || user.ward === "Ward A")) {
+        user.ward = req.body.ward;
+      }
+      if (phoneNumber && !user.phoneNumber) {
+        user.phoneNumber = phoneNumber;
+      }
+      user.isEmailVerified = true;
       if (!user.isActive) {
         return res.status(401).json({
           success: false,
@@ -373,13 +384,16 @@ const googleAuth = async (req, res) => {
       return sendTokenResponse(user, 200, res);
     }
 
-    // Create new citizen user
+    // Create new registered user with Google credentials
     user = await User.create({
-      name: name || email.split("@")[0],
+      name: req.body.name || name || email.split("@")[0],
       email,
       googleId: googleId || undefined,
-      role: "citizen",
+      role: safeRole,
+      ward,
+      phoneNumber,
       isActive: true,
+      isEmailVerified: true,
     });
 
     return sendTokenResponse(user, 201, res);

@@ -535,7 +535,12 @@ export default function Auth() {
                     try {
                       setIsGoogleLoading(true)
                       setLocalError(null)
-                      await loginWithFirebaseGoogle()
+                      await loginWithFirebaseGoogle(!isLogin ? {
+                        name: formData.name || undefined,
+                        role: formData.role,
+                        ward: formData.ward,
+                        phoneNumber: formData.phoneNumber || undefined,
+                      } : undefined)
                       navigate("/dashboard", { replace: true })
                     } catch (err: unknown) {
                       if (err instanceof Error) setLocalError(err.message)
@@ -548,7 +553,7 @@ export default function Auth() {
                   {isGoogleLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                      <span>Signing in with Google...</span>
+                      <span>{isLogin ? "Signing in with Google..." : "Registering with Google..."}</span>
                     </>
                   ) : (
                     <>
@@ -570,7 +575,7 @@ export default function Auth() {
                           fill="#EA4335"
                         />
                       </svg>
-                      <span>Continue with Google</span>
+                      <span>{isLogin ? "Continue with Google" : "Sign up with Google"}</span>
                     </>
                   )}
                 </Button>

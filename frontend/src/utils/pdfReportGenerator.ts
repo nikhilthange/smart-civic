@@ -1,5 +1,3 @@
-import jsPDF from "jspdf"
-import autoTable from "jspdf-autotable"
 import type { WardScore, Complaint } from "@/services/complaintApi"
 import { CATEGORY_LABELS } from "@/services/complaintApi"
 
@@ -12,9 +10,13 @@ export interface PdfReportData {
 
 /**
  * Generates an executive PDF report for municipal ward governance audit.
- * Uses jsPDF and jspdf-autotable for structured vector rendering.
+ * Dynamically loads jsPDF and jspdf-autotable only when executed.
  */
 export const generateExecutiveWardPdf = async (data: PdfReportData): Promise<void> => {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ])
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" })
   
   // ── Header Banner ──

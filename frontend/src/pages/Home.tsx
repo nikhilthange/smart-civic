@@ -32,7 +32,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Repaired in less than 14 hours!",
     text: "I reported a severe pothole crater near Hill Road on my morning commute. The AI auto-detected the ward and dispatched the PWD asphalt crew. By evening, it was completely recarpeted with timestamped before-and-after photos!",
     stat: "Fix Time: 13.8 Hours",
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=80&h=80&q=70&fm=webp",
+    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
     badge: "Verified Citizen ✓",
     badgeClass: "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/60",
   },
@@ -46,7 +46,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Saves hours of manual triage daily.",
     text: "The AI auto-categorization and spatial 50m deduplication are game-changers for BMC ward operations. Instead of 20 duplicates for the same waterlogging spot, we get one unified ticket with verified severity scoring.",
     stat: "Triage: 0.4s Ingestion",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=70&fm=webp",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
     badge: "Municipal Officer ✓",
     badgeClass: "bg-blue-100/80 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/60 dark:border-blue-700/60",
   },
@@ -60,7 +60,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Brought true municipal accountability.",
     text: "Our residential society actively logs waste and drainage blockages before monsoon. The Civic Karma reward vouchers gave our society a 5% property tax concession, which we reinvested in local rainwater harvesting!",
     stat: "Karma: 1,450 Points",
-    avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=80&h=80&q=70&fm=webp",
+    avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
     badge: "ALM Leader ✓",
     badgeClass: "bg-amber-100/80 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60",
   },
@@ -74,7 +74,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Transparent task routing & zero paperwork.",
     text: "The worker interface gives our road crew the exact GPS pin, routing map, and material specifications. The 100m geofence ensures our repair quality is digitally audited and approved by ward engineers instantly.",
     stat: "Repairs: 180+ Completed",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=70&fm=webp",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
     badge: "Field Crew Supervisor ✓",
     badgeClass: "bg-teal-100/80 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-300/60 dark:border-teal-700/60",
   },
@@ -88,7 +88,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Pedestrian safety significantly improved.",
     text: "Reported multiple flickering streetlights along Colaba Causeway. The SLA countdown was visible in real time, and the electrical team completed replacement in under 24 hours. The transparency is unmatched.",
     stat: "SLA Met: 100% On-Time",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=70&fm=webp",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
     badge: "Verified Citizen ✓",
     badgeClass: "bg-indigo-100/80 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-700/60",
   },
@@ -102,7 +102,7 @@ const TESTIMONIALS_DATA = [
     highlight: "Contractor SLA compliance rose to 94%.",
     text: "The automated contractor escrow penalty system ensures that road contractors meet their 48-hour warranty commitments. Unresolved tickets automatically trigger SLA breach deductions without red tape.",
     stat: "Compliance: 94.2%",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=80&h=80&q=70&fm=webp",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
     badge: "AMC Officer ✓",
     badgeClass: "bg-purple-100/80 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300/60 dark:border-purple-700/60",
   },
@@ -258,35 +258,38 @@ export default function Home() {
             </div>
 
             {/* ═══ 3-CARD GOVERNANCE & AEO DEFINITION TRUST GRID ═══ */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left pt-6">
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
-                <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base">
-                  ⚡
+            <div className="pt-6">
+              <h2 className="sr-only">Key Governance Capabilities</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left">
+                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base">
+                    ⚡
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">Instant AI Vision Triage</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    96.4% computer-vision classification automatically routes road, waste, and flood hazards to designated BMC departments in 420ms.
+                  </p>
                 </div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Instant AI Vision Triage</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  96.4% computer-vision classification automatically routes road, waste, and flood hazards to designated BMC departments in 420ms.
-                </p>
-              </div>
 
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
-                <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-base">
-                  ⏱️
+                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-base">
+                    ⏱️
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">Guaranteed 48-Hour SLA</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Enforces 3-tier municipal escalation with automated contractor escrow penalties up to ₹12,500 for unfulfilled deadlines.
+                  </p>
                 </div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Guaranteed 48-Hour SLA</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Enforces 3-tier municipal escalation with automated contractor escrow penalties up to ₹12,500 for unfulfilled deadlines.
-                </p>
-              </div>
 
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
-                <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-base">
-                  🛡️
+                <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
+                  <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-base">
+                    🛡️
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-white">100m GPS Geofenced Proof</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Field crews must be physically on-site within a 100m radius to submit timestamped before-and-after photo verification.
+                  </p>
                 </div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white">100m GPS Geofenced Proof</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Field crews must be physically on-site within a 100m radius to submit timestamped before-and-after photo verification.
-                </p>
               </div>
             </div>
           </div>
@@ -340,12 +343,12 @@ export default function Home() {
                       🔴 Reported Critical
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=480&q=70&fm=webp"
+                      src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=400&q=50&fm=webp"
                       alt="Before Pothole"
                       loading="lazy"
                       decoding="async"
-                      width="480"
-                      height="270"
+                      width="400"
+                      height="225"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -359,16 +362,16 @@ export default function Home() {
                       🟢 Resolved & Verified
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=480&q=70&fm=webp"
+                      src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=400&q=50&fm=webp"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=480&q=70&fm=webp";
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=400&q=50&fm=webp";
                       }}
                       alt="After Repair"
                       loading="lazy"
                       decoding="async"
-                      width="480"
-                      height="270"
+                      width="400"
+                      height="225"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -418,16 +421,16 @@ export default function Home() {
                       🔴 Reported Critical
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=480&q=70&fm=webp"
+                      src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=400&q=50&fm=webp"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1604186837056-8e7c286756f2?auto=format&fit=crop&w=480&q=70&fm=webp";
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1604186837056-8e7c286756f2?auto=format&fit=crop&w=400&q=50&fm=webp";
                       }}
                       alt="Before Waste Clearance"
                       loading="lazy"
                       decoding="async"
-                      width="480"
-                      height="270"
+                      width="400"
+                      height="225"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -441,16 +444,16 @@ export default function Home() {
                       🟢 Cleaned & Sanitized
                     </span>
                     <img
-                      src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=480&q=70&fm=webp"
+                      src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=400&q=50&fm=webp"
                       onError={(e) => {
                         e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=480&q=70&fm=webp";
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=400&q=50&fm=webp";
                       }}
                       alt="After Sanitation"
                       loading="lazy"
                       decoding="async"
-                      width="480"
-                      height="270"
+                      width="400"
+                      height="225"
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
@@ -600,7 +603,8 @@ export default function Home() {
         </section>
 
         {/* Statistics Section Banner */}
-        <section className="container px-4 md:px-6 mx-auto my-12">
+        <section className="container px-4 md:px-6 mx-auto my-12" aria-labelledby="stats-heading">
+          <h2 id="stats-heading" className="sr-only">Platform Statistics & Municipal Impact</h2>
           <div className="bg-gradient-to-br from-emerald-900 to-teal-950 text-white rounded-3xl p-10 shadow-xl max-w-7xl mx-auto border border-emerald-800/40">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {[
@@ -610,7 +614,7 @@ export default function Home() {
                 { number: "100k+", label: "Active Citizens" },
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col items-center justify-center">
-                  <h3 className="text-4xl lg:text-5xl font-extrabold text-emerald-400 mb-2 tracking-tight">{stat.number}</h3>
+                  <p className="text-4xl lg:text-5xl font-extrabold text-emerald-400 mb-2 tracking-tight">{stat.number}</p>
                   <p className="text-emerald-100/80 text-sm font-medium uppercase tracking-wider">{stat.label}</p>
                 </div>
               ))}
@@ -621,7 +625,9 @@ export default function Home() {
         {/* ═══ EDITORIAL SPOTLIGHT TESTIMONIAL CAROUSEL (FOOD TAILOR STYLE) ═══════════════ */}
         <section className="w-full py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-[#faf8f5] dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800 relative overflow-hidden text-slate-900 dark:text-slate-100">
           <div className="container px-4 md:px-6 mx-auto max-w-5xl">
-            
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-center mb-8 text-slate-900 dark:text-white">
+              Voices of Mumbai Citizens &amp; Municipal Officers
+            </h2>
             {/* Top Center Flourished Avatar with Laurel Wings */}
             <div className="flex flex-col items-center justify-center text-center">
               <div className="relative inline-flex items-center justify-center mb-8 sm:mb-10">
@@ -644,6 +650,10 @@ export default function Home() {
                     <img
                       src={TESTIMONIALS_DATA[currentTestimonialIdx].avatar}
                       alt={TESTIMONIALS_DATA[currentTestimonialIdx].name}
+                      width="80"
+                      height="80"
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover rounded-full"
                     />
                   </div>
@@ -693,9 +703,9 @@ export default function Home() {
 
                       {/* Author Name in Spaced Uppercase */}
                       <div className="space-y-2 pt-2">
-                        <h4 className="font-bold tracking-[0.25em] text-xs sm:text-sm uppercase text-slate-900 dark:text-white">
+                        <h3 className="font-bold tracking-[0.25em] text-xs sm:text-sm uppercase text-slate-900 dark:text-white">
                           {TESTIMONIALS_DATA[currentTestimonialIdx].name}
-                        </h4>
+                        </h3>
                         
                         <div className="flex items-center justify-center gap-2 flex-wrap text-xs text-slate-600 dark:text-slate-400">
                           <span className="font-medium">{TESTIMONIALS_DATA[currentTestimonialIdx].role}</span>
@@ -888,7 +898,7 @@ export default function Home() {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Platform</h4>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Platform</h3>
               <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
                 <li><a href="#" className="hover:text-primary">How it works</a></li>
                 <li><a href="#" className="hover:text-primary">Features</a></li>
@@ -897,7 +907,7 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Resources</h4>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Resources</h3>
               <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
                 <li><a href="#" className="hover:text-primary">Help Center</a></li>
                 <li><a href="#" className="hover:text-primary">Community Guidelines</a></li>
@@ -906,7 +916,7 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Legal</h4>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Legal</h3>
               <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
                 <li><a href="#" className="hover:text-primary">Privacy Policy</a></li>
                 <li><a href="#" className="hover:text-primary">Terms of Service</a></li>

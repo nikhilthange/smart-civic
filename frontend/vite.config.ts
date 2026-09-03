@@ -19,6 +19,17 @@ export default defineConfig({
   build: {
     chunkSizeWarningLimit: 600,
     sourcemap: false,
+    modulePreload: {
+      polyfill: false,
+      resolveDependencies(_url: string, deps: string[]) {
+        return deps.filter(
+          (dep) =>
+            !dep.includes("pdf") &&
+            !dep.includes("charts") &&
+            !dep.includes("maps")
+        )
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks(id: string) {

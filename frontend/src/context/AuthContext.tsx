@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     return storedToken
   })
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
   const currentUserRef = useRef<AuthUser | null>(user)
@@ -102,9 +102,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   currentUserRef.current = user
   currentTokenRef.current = token
 
-  // ─── Unified Firebase Auth Observer: Single Source of Truth ───────────────────
+  // ─── Unified Firebase Auth Observer: Single Source of Truth (Non-blocking idle init) ───
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    let unsubscribe: (() => void) | undefined
+    let isMounted = true
+
+    const initObserver = () => {
+      if (!isMounted) return
+      unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
           const isPasswordProvider = firebaseUser.providerData.some(
@@ -236,8 +241,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false)
       }
     })
+    }
 
-    return () => unsubscribe()
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const idleId = (window as any).requestIdleCallback(initObserver, { timeout: 1500 })
+      return () => {
+        isMounted = false
+        if ("cancelIdleCallback" in window) {
+          (window as any).cancelIdleCallback(idleId)
+        }
+        if (unsubscribe) unsubscribe()
+      }
+    } else {
+      const timer = setTimeout(initObserver, 200)
+      return () => {
+        isMounted = false
+        clearTimeout(timer)
+        if (unsubscribe) unsubscribe()
+      }
+    }
   }, [])
 
   // ─── Register ────────────────────────────────────────────────────────────────

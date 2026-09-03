@@ -43,34 +43,39 @@ self.addEventListener("fetch", (event) => {
     return
   }
 
-  // STRICT GUARD 2: Completely bypass API routes, WebSocket gateways, and remote backend hosts
+  // STRICT GUARD 2: Completely bypass API routes, WebSocket gateways, Vercel SSO, and remote backend hosts
   if (
     url.pathname.includes("/api/") ||
     url.pathname.startsWith("/api") ||
     url.pathname.startsWith("/socket.io") ||
+    url.pathname.includes("_vercel") ||
+    url.pathname.includes("sso-api") ||
+    url.hostname.includes("vercel.com") ||
     url.hostname.includes("onrender.com") ||
     url.hostname.includes("localhost:5000") ||
     url.port === "5000" ||
+    url.pathname.endsWith("manifest.json") ||
     (url.origin !== self.location.origin && !url.hostname.includes("tile.openstreetmap.org"))
   ) {
     return
   }
 
-  // Helper to safely match cache or return a valid error Response
-  const matchCacheOrError = async (request) => {
+  // Helper to safely match cache or return a clean fallback
+  const matchCacheOrFallback = async (request) => {
     try {
       const match = await caches.match(request)
       if (match) return match
     } catch {
       // ignore cache lookup errors
     }
-    return Response.error()
+    // Return empty 204 response instead of crashing with Response.error()
+    return new Response(null, { status: 204, statusText: "No Content" })
   }
 
   // 1. Navigation / HTML Document -> ALWAYS Bypass Cache & Fetch Direct from Network
   if (event.request.mode === "navigate" || event.request.destination === "document") {
     event.respondWith(
-      fetch(event.request).catch(() => matchCacheOrError(event.request))
+      fetch(event.request).catch(() => matchCacheOrFallback(event.request))
     )
     return
   }
@@ -82,7 +87,7 @@ self.addEventListener("fetch", (event) => {
     event.request.destination === "style"
   ) {
     event.respondWith(
-      fetch(event.request).catch(() => matchCacheOrError(event.request))
+      fetch(event.request).catch(() => matchCacheOrFallback(event.request))
     )
     return
   }
@@ -105,17 +110,17 @@ self.addEventListener("fetch", (event) => {
             }
             return response
           })
-          .catch(() => cached || Response.error())
+          .catch(() => cached || new Response(null, { status: 204 }))
 
         return cached || networkFetch
-      }).catch(() => matchCacheOrError(event.request))
+      }).catch(() => matchCacheOrFallback(event.request))
     )
     return
   }
 
-  // 4. Default fallback: Network direct with safe response error fallback
+  // 4. Default fallback: Network direct with safe response fallback
   event.respondWith(
-    fetch(event.request).catch(() => matchCacheOrError(event.request))
+    fetch(event.request).catch(() => matchCacheOrFallback(event.request))
   )
 })
 

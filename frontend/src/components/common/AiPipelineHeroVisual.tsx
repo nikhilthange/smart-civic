@@ -100,7 +100,7 @@ export default function AiPipelineHeroVisual() {
 
       {/* ── Main Luminous Glass Card ── */}
       <div className="relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-emerald-100/90 dark:border-emerald-950/60 shadow-[0_10px_30px_rgba(16,185,129,0.1)] sm:shadow-[0_20px_50px_rgba(16,185,129,0.12)] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 text-slate-800 dark:text-slate-100 overflow-hidden font-sans">
-        
+
         {/* ── Card Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-3 gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -138,11 +138,10 @@ export default function AiPipelineHeroVisual() {
                 key={feed.id}
                 type="button"
                 onClick={() => setActiveIdx(idx)}
-                className={`text-[11px] sm:text-xs px-2.5 py-1 sm:py-1.5 rounded-xl font-medium transition-all flex items-center gap-1 shrink-0 ${
-                  isSelected
+                className={`text-[11px] sm:text-xs px-2.5 py-1 sm:py-1.5 rounded-xl font-medium transition-all flex items-center gap-1 shrink-0 ${isSelected
                     ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 scale-102"
                     : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
-                }`}
+                  }`}
               >
                 <span>{feed.icon}</span>
                 <span className="truncate max-w-[120px] sm:max-w-none">{feed.label}</span>
@@ -153,7 +152,7 @@ export default function AiPipelineHeroVisual() {
 
         {/* ── Main Split Viewport: Defect Scanner + Model Ledger ── */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-5 items-stretch">
-          
+
           {/* Left Side: Defect Camera Viewport (5 cols) */}
           <div className="md:col-span-5 relative bg-slate-950/90 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col min-h-[190px] sm:min-h-[230px] shadow-sm">
             {/* Background Feed Image */}
@@ -236,7 +235,7 @@ export default function AiPipelineHeroVisual() {
 
           {/* Right Side: Live Model Inference Ledger (7 cols) */}
           <div className="md:col-span-7 flex flex-col justify-between space-y-2.5 sm:space-y-3 bg-slate-50 dark:bg-slate-900/60 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden">
-            
+
             {/* Model Spec */}
             <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60 dark:border-slate-800 gap-2">
               <div className="flex items-center gap-1.5 min-w-0">
@@ -299,7 +298,7 @@ export default function AiPipelineHeroVisual() {
         {/* ── Pipeline Execution Footer Breadcrumb ── */}
         <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-center text-xs">
-            
+
             {/* Step 1 */}
             <div className="bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-medium text-[9px] sm:text-xs px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl flex items-center justify-center gap-1 shadow-sm truncate">
               <span>📸</span>

@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom"
 import { notificationApi, type AppNotification } from "../../services/notificationApi"
 import { requestFCMToken, onForegroundMessage } from "../../lib/firebase"
 import { useSocket } from "@/context/SocketContext"
+import { useAuth } from "@/context/AuthContext"
 import { triggerHapticFeedback } from "@/utils/haptics"
 import toast from "react-hot-toast"
 
@@ -55,6 +56,7 @@ function getNotificationIcon(type: string) {
 
 export function NotificationBell() {
   const navigate = useNavigate()
+  const { isAuthenticated, token } = useAuth()
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -62,6 +64,7 @@ export function NotificationBell() {
   const panelRef = useRef<HTMLDivElement>(null)
 
   const fetchNotifications = useCallback(async () => {
+    if (!isAuthenticated || !token) return
     try {
       setLoading(true)
       const data = await notificationApi.getAll()
@@ -72,29 +75,31 @@ export function NotificationBell() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [isAuthenticated, token])
 
   // Fetch on mount and poll every 60s
   useEffect(() => {
+    if (!isAuthenticated || !token) return
     fetchNotifications()
     const interval = setInterval(fetchNotifications, 60000)
     return () => clearInterval(interval)
-  }, [fetchNotifications])
+  }, [fetchNotifications, isAuthenticated, token])
 
   // Request FCM permission and register token on mount
   useEffect(() => {
+    if (!isAuthenticated || !token) return
     const initFCM = async () => {
       try {
-        const token = await requestFCMToken()
-        if (token) {
-          await notificationApi.saveFcmToken(token)
+        const fcmToken = await requestFCMToken()
+        if (fcmToken) {
+          await notificationApi.saveFcmToken(fcmToken)
         }
       } catch {
         // FCM not configured — silently skip
       }
     }
     initFCM()
-  }, [])
+  }, [isAuthenticated, token])
 
   const { socket } = useSocket()
 

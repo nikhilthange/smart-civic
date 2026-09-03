@@ -76,11 +76,11 @@ api.interceptors.response.use(
       }
 
       // If /auth/me or core auth failed, clean up invalid tokens
-      if (requestUrl.includes("/auth/me")) {
+      if (requestUrl.includes("/auth/me") || requestUrl.includes("/auth/logout")) {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         delete api.defaults.headers.common["Authorization"]
-      } else {
+      } else if (!requestUrl.includes("/notifications")) {
         console.warn("⚠️ Unauthorized request (401) on endpoint:", requestUrl)
       }
     } else if (!error.response && error.message === "Network Error") {

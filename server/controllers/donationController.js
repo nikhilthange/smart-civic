@@ -103,7 +103,7 @@ exports.verifyPayment = async (req, res) => {
         razorpaySignature: razorpay_signature || "mock_signature",
         status: "successful",
       },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     res.status(200).json({

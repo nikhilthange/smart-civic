@@ -45,7 +45,7 @@ router.patch("/:id/read", protect, async (req, res) => {
     const notif = await Notification.findOneAndUpdate(
       { _id: req.params.id, recipient: req.user.id },
       { $set: { isRead: true, readAt: new Date() } },
-      { new: true }
+      { returnDocument: "after" }
     );
     if (!notif) return res.status(404).json({ success: false, message: "Notification not found" });
     res.status(200).json({ success: true, notification: notif });

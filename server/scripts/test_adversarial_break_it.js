@@ -175,7 +175,7 @@ async function runAdversarialSuite() {
           {
             $inc: { upvotes: 1, upvoteCount: 1, affectedCitizensCount: 1, priorityScore: 5 },
           },
-          { new: true }
+          { returnDocument: "after" }
         );
       }
     });

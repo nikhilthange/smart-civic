@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { motion } from "framer-motion"
 import {
   Wrench, MapPin, CheckCircle2, Camera, X, Loader2, Navigation, WifiOff, CloudUpload, Route,
@@ -47,7 +47,7 @@ export default function WorkerDashboard() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const fetchWorkerTasks = async (silent = false) => {
+  const fetchWorkerTasks = useCallback(async (silent = false) => {
     if (!silent) setIsLoading(true)
     try {
       const res = await api.get("/complaints/worker-tasks")
@@ -76,7 +76,7 @@ export default function WorkerDashboard() {
     } finally {
       if (!silent) setIsLoading(false)
     }
-  }
+  }, [activeTab])
 
   useEffect(() => {
     fetchWorkerTasks()
@@ -112,14 +112,14 @@ export default function WorkerDashboard() {
       window.removeEventListener("online", handleOnline)
       window.removeEventListener("offline", handleOffline)
     }
-  }, [])
+  }, [fetchWorkerTasks])
 
   // Reactive WebSocket event sync
   useEffect(() => {
     if (lastEvent) {
       fetchWorkerTasks(true)
     }
-  }, [lastEvent])
+  }, [lastEvent, fetchWorkerTasks])
 
   const handleClaimTask = async (taskId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation()

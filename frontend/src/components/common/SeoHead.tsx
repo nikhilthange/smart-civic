@@ -149,7 +149,7 @@ export const SeoHead: React.FC<SeoHeadProps> = ({
       const el = document.getElementById(scriptId);
       if (el) el.remove();
     };
-  }, [title, description, keywords, fullUrl, ogType, ogImage, faqs, schemaOverride]);
+  }, [title, description, keywords, fullUrl, ogType, ogImage, faqs, schemaOverride, canonicalPath]);
 
   return null;
 };

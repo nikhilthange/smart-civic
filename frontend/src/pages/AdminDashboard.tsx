@@ -178,7 +178,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const fetchComplaints = async () => {
+  const fetchComplaints = useCallback(async () => {
     try {
       const params: any = { page, limit: 100 }
       if (statusFilter) params.status = statusFilter
@@ -188,7 +188,7 @@ export default function AdminDashboard() {
     } catch {
       toast.error("Failed to load complaints.")
     }
-  }
+  }, [page, statusFilter, wardFilter])
 
   const fetchOfficers = async () => {
     try {
@@ -291,7 +291,7 @@ export default function AdminDashboard() {
       fetchWardScores(),
     ])
     setLoading(false)
-  }, [page, statusFilter, wardFilter])
+  }, [fetchComplaints])
 
   useEffect(() => {
     fetchAll()

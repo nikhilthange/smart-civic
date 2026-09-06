@@ -129,7 +129,7 @@ const verifyPayment = async (req, res) => {
         paymentMethod:     rzpPayment?.method || "other",
         gatewayResponse:   rzpPayment || {},
       },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!payment) {

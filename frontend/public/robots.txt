@@ -22,16 +22,18 @@ Disallow: /api/officers
 # ─── AI & Answer Engine Crawlers (AEO / GEO Enabled) ──────────────────────────
 User-agent: GPTBot
 Allow: /
-Allow: /llms.txt
-Allow: /llms-full.txt
 
 User-agent: ChatGPT-User
 Allow: /
 
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
 User-agent: PerplexityBot
 Allow: /
-Allow: /llms.txt
-Allow: /llms-full.txt
 
 User-agent: ClaudeBot
 Allow: /
@@ -39,10 +41,16 @@ Allow: /
 User-agent: Claude-Web
 Allow: /
 
-User-agent: Google-Extended
+User-agent: Applebot-Extended
 Allow: /
 
-User-agent: Applebot
+User-agent: CCBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Bingbot
 Allow: /
 
 # Sitemap Index Location

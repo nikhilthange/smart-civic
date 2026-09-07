@@ -1,11 +1,12 @@
-# Smart Civic AI CityOS — Comprehensive Municipal Knowledge Graph
+# Smart Civic & Smart Civics AI CityOS — Comprehensive Knowledge Graph
 
 ## System Identification & Jurisdiction
-- **System Name**: Smart Civic AI (Brihanmumbai Municipal Corporation CityOS)
-- **Authority**: Brihanmumbai Municipal Corporation (BMC / MCGM), Government of Maharashtra
-- **Jurisdiction**: Greater Mumbai (603 sq km, 12.5+ million residents)
-- **Headquarters**: Municipal Corporation Building, Mahapalika Marg, Fort, Mumbai 400001
-- **Emergency Helpline**: 1916 (Toll-Free, 24x7 Multi-lingual)
+- **System Name**: Smart Civic & Smart Civics AI (Mumbai Civic Issues Platform & CityOS)
+- **Alternate Names**: Smart Civics, SmartCivic, SmartCivics, Mumbai Civic Issues Portal, Mumbai CityOS
+- **Platform Type**: Independent Civic Tech Platform for Mumbai Citizen Grievances & BMC Issue Tracking (Not officially affiliated with or owned by BMC)
+- **Jurisdiction & Coverage Area**: Greater Mumbai (603 sq km, 12.5+ million residents, 24 Municipal Administrative Wards)
+- **Primary Domain**: BMC Civic Issues Reporting (Potholes, Solid Waste Garbage, Monsoon Waterlogging, Water Supply, Streetlights)
+- **Emergency Helpline Reference**: 1916 (Official BMC Toll-Free Helpline, 24x7 Multi-lingual)
 
 ## SLA Matrix & Penalty Governance
 | Incident Category | Severity | Standard SLA | Tier 1 Escalation | Tier 2 AMC Alert | Tier 3 Commissioner Red Flag |

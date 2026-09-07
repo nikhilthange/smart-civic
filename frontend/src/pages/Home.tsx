@@ -110,24 +110,28 @@ const TESTIMONIALS_DATA = [
 
 const HOME_FAQS = [
   {
-    question: "What is Smart Civic AI and how does it work in Mumbai?",
-    answer: "Smart Civic AI is Greater Mumbai's official municipal operating system (CityOS). It allows residents across all 24 BMC administrative wards to report potholes, waterlogging, and garbage with instant AI computer-vision classification, automatic GPS tagging, and guaranteed 48-hour SLA resolution.",
+    question: "What is Smart Civics (Smart Civic AI) and how does it help with BMC issues?",
+    answer: "Smart Civics (Smart Civic AI) is an independent AI-powered citizen civic platform for Greater Mumbai. It empowers residents across all 24 administrative wards to report and track BMC issues—such as potholes, overflowing garbage, drainage blocks, and broken streetlights—with instant AI computer-vision classification, automatic GPS tagging, and real-time tracking.",
   },
   {
-    question: "How do I report a civic complaint in 3 easy steps?",
-    answer: "Step 1: Take a photo of the defect on your phone. Step 2: Allow the AI engine to classify the issue and auto-detect your ward. Step 3: Track real-time repair progress until geofenced resolution proof is submitted by the field crew.",
+    question: "How do I report BMC issues and civic complaints online in 3 easy steps?",
+    answer: "Step 1: Take a photo of the defect (pothole, garbage, water leakage, or streetlight) on your smartphone. Step 2: Allow the Smart Civics AI engine to classify the issue and pinpoint your Mumbai ward. Step 3: Track real-time repair progress until geofenced resolution proof is submitted by field crews.",
   },
   {
-    question: "What is the guaranteed SLA resolution timeline for civic complaints?",
-    answer: "Standard civic defects like potholes and broken streetlights carry a strict 48-hour SLA resolution guarantee. Monsoon subway waterlogging and pipeline ruptures are responded to within 2 to 6 hours with automated contractor escrow penalty deductions (up to ₹12,500) for missed deadlines.",
+    question: "Which BMC issues can be reported on Smart Civics?",
+    answer: "You can report all major municipal defects including: PWD road potholes & asphalt cracks, SWM solid waste & uncollected garbage, SWD storm water drain blockages & monsoon waterlogging, WSD water pipe bursts & contamination, and ELD streetlight failures across all 24 Mumbai wards.",
+  },
+  {
+    question: "Is Smart Civics an official BMC portal?",
+    answer: "Smart Civics is an independent civic-tech platform created to help Mumbai citizens document, AI-verify, and track municipal defects and BMC issues across all 24 administrative wards with complete transparency.",
   },
   {
     question: "How does geofenced resolution verification work for field repairs?",
-    answer: "Municipal field workers must be physically present within a 100-meter GPS radius of the incident coordinates to submit repair proof. The system enforces AI before-and-after photo comparisons to prevent false resolution claims.",
+    answer: "Field workers confirm presence within a 100-meter GPS radius of the incident coordinates to submit repair proof. The Smart Civics platform supports before-and-after photo comparisons to prevent false resolution claims.",
   },
   {
-    question: "How can citizens earn and redeem Civic Karma points?",
-    answer: "Citizens earn Karma points by reporting verified grievances and rating completed repairs. Accumulated points can be redeemed for official municipal incentives, including a 5% BMC property tax rebate, 30-day BEST bus digital passes, and Mumbai Metro card credits.",
+    question: "How can citizens earn and redeem Civic Karma points on Smart Civics?",
+    answer: "Citizens earn Karma points by reporting verified civic issues and rating completed community repairs. Points unlock civic badges, community leaderboard standings, and citizen recognition rewards.",
   },
 ];
 
@@ -165,9 +169,9 @@ export default function Home() {
   return (
     <div className="min-h-[100dvh] h-full w-full overflow-x-hidden overflow-y-auto overscroll-y-contain flex flex-col bg-slate-50 dark:bg-slate-950 font-sans">
       <SeoHead
-        title="Smart Civic AI - BMC Mumbai Grievance & CityOS Portal"
-        description="Report Mumbai potholes, garbage, and civic defects with instant AI verification, guaranteed 48-hour SLA resolution, and live 24-ward tracking."
-        keywords="BMC Mumbai, Smart Civic, civic complaint portal Mumbai, report pothole Mumbai, BMC water logging, BMC garbage collection, Mumbai municipal grievance, civic karma rewards"
+        title="Smart Civic (Smart Civics) - Mumbai Civic Issues, Smart Cities & BMC Grievance Tracker"
+        description="Independent AI citizen platform for Mumbai & smart cities to report, verify, and track BMC municipal issues (potholes, garbage, waterlogging, streetlights) across 24 administrative wards."
+        keywords="Smart Civic, Smart Civics, SmartCivic, SmartCivics, Smart Civc, Smart Civix, Smart Sivic, Smart Sivics, Smart Civic Cities, Smart Cities Civic, SmartCity Civic, Smart City Mumbai, BMC issues, BMC complaint, BMC Mumbai, report BMC issues, BMC grievance portal, BMC pothole complaint, BMC garbage issue, BMC water supply problem, BMC streetlight complaint, Mumbai municipal corporation issues, BMC 24 wards, BMC helpline 1916, civic issues mumbai, mumbai municipal grievance redressal"
         canonicalPath="/"
         faqs={HOME_FAQS}
       />
@@ -219,20 +223,20 @@ export default function Home() {
               {/* Live Status Pill */}
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50/90 dark:bg-emerald-950/60 px-4 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-sm backdrop-blur-sm">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>BMC Mumbai Smart Governance • 24 Municipal Wards • Live AI Triage</span>
+                <span>Smart Civics • Independent Citizen Platform for Mumbai & BMC Issues • 24 Wards</span>
               </div>
 
               {/* Main Headline */}
               <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl text-slate-900 dark:text-white leading-[1.12]">
-                Report Mumbai Civic Grievances with <br className="hidden sm:block" />
+                Report & Track BMC Issues with <br className="hidden sm:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600">
-                  AI-Powered 48h SLA Resolution
+                  AI-Powered 48h SLA Tracking
                 </span>
               </h1>
 
               {/* Subtitle */}
               <p className="mx-auto max-w-2xl text-slate-600 dark:text-slate-300 text-sm sm:text-base md:text-lg leading-relaxed">
-                Official BMC digital municipal platform. Report potholes, garbage, and drainage defects with 96.4% AI vision verification, live GIS map tracking, and geofenced field proof.
+                Smart Civics (Smart Civic AI) is an independent civic intelligence platform for Mumbai residents. Report and track BMC municipal issues—potholes, garbage, water supply leaks, and drainage defects—with 96.4% AI vision verification and live 24-ward GIS tracking.
               </p>
 
               {/* CTA Action Buttons */}
@@ -865,7 +869,7 @@ export default function Home() {
 
             {/* Credible External Sources & Citations */}
             <div className="pt-4 border-t border-slate-200/60 dark:border-slate-800/60 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1.5">
-              <p className="font-semibold text-slate-700 dark:text-slate-300">Official Municipal Government Sources & References:</p>
+              <p className="font-semibold text-slate-700 dark:text-slate-300">Public Municipal References & Portals (For Citizen Information):</p>
               <div className="flex flex-wrap items-center justify-center gap-3 text-emerald-600 dark:text-emerald-400">
                 <a href="https://www.mcgm.gov.in" target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
                   Brihanmumbai Municipal Corporation (BMC Portal) ↗
@@ -879,6 +883,9 @@ export default function Home() {
                   OpenStreetMap Mumbai GIS ↗
                 </a>
               </div>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+                * Smart Civic AI is an independent community civic intelligence initiative created to help citizens report and monitor municipal issues in Mumbai. Not an official BMC government property.
+              </p>
             </div>
           </div>
         </section>

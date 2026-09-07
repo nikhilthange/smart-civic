@@ -3,7 +3,6 @@ import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ArrowRight,
-  Building2,
   ShieldCheck,
   MapPin,
   BarChart3,
@@ -179,10 +178,8 @@ export default function Home() {
       <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
         <div className="w-full max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           {/* Brand Logo */}
-          <Link className="flex items-center gap-2 min-w-0 shrink" to="/">
-            <div className="bg-primary/10 p-1.5 rounded-lg shrink-0">
-              <Building2 className="h-5 w-5 text-primary" />
-            </div>
+          <Link className="flex items-center gap-2.5 min-w-0 shrink" to="/">
+            <img src="/favicon.svg" alt="Smart Civic Logo" className="h-7 w-7 rounded-lg shrink-0 shadow-sm" />
             <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">
               Smart Civic <span className="text-primary">AI</span>
             </span>
@@ -896,8 +893,8 @@ export default function Home() {
         <div className="container px-4 md:px-6 mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 lg:col-span-2">
-              <Link className="flex items-center gap-2 mb-4" to="/">
-                <Building2 className="h-6 w-6 text-primary" />
+              <Link className="flex items-center gap-2.5 mb-4" to="/">
+                <img src="/favicon.svg" alt="Smart Civic Logo" className="h-7 w-7 rounded-lg shrink-0 shadow-sm" />
                 <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic AI</span>
               </Link>
               <p className="text-slate-500 dark:text-slate-400 max-w-xs mb-6">

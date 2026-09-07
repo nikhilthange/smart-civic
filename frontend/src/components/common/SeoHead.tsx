@@ -16,8 +16,8 @@ export interface SeoHeadProps {
   schemaOverride?: Record<string, any>;
 }
 
-const DEFAULT_TITLE = "Smart Civic (Smart Civics) - Mumbai Civic Issues, Smart Cities & BMC Grievance Tracker";
-const DEFAULT_DESC = "Report Mumbai potholes, garbage, waterlogging, and BMC civic issues on Smart Civics (Smart Civic AI) with instant AI verification and live 24-ward tracking.";
+const DEFAULT_TITLE = "Smart Civic (Smart Civics) - Mumbai BMC Civic Issues Tracker";
+const DEFAULT_DESC = "Report and track Mumbai BMC civic issues, potholes, and garbage on Smart Civic (Smart Civics). AI-powered municipal grievance tracking across 24 wards.";
 const DEFAULT_IMAGE = "https://smart-civic-pi.vercel.app/og-preview.png";
 const BASE_URL = "https://smart-civic-pi.vercel.app";
 const DEFAULT_KEYWORDS = "Smart Civic, Smart Civics, SmartCivic, SmartCivics, Smart Civc, Smart Civix, Smart Sivic, Smart Sivics, Smart Civic Cities, Smart Cities Civic, SmartCity Civic, Smart City Mumbai, BMC issues, BMC complaint, BMC Mumbai, report BMC issues, BMC grievance portal, BMC pothole complaint, BMC garbage issue, BMC water supply problem, BMC streetlight complaint, Mumbai municipal corporation issues, BMC 24 wards, BMC helpline 1916, civic issues mumbai, mumbai municipal grievance redressal";

@@ -12,12 +12,16 @@ const indexHtml = fs.readFileSync(indexHtmlPath, 'utf-8');
 // Title check
 const titleMatch = indexHtml.match(/<title>(.*?)<\/title>/);
 if (!titleMatch) throw new Error('Missing <title> tag in index.html');
-console.log('✓ <title> tag verified:', titleMatch[1]);
+if (titleMatch[1].length > 60) throw new Error(`Title too long (${titleMatch[1].length} chars, max 60): "${titleMatch[1]}"`);
+console.log(`✓ <title> tag verified (${titleMatch[1].length} chars, optimal <=60):`, titleMatch[1]);
 
 // Meta Description check
 const descMatch = indexHtml.match(/<meta name="description" content="(.*?)"/);
 if (!descMatch) throw new Error('Missing meta description');
-console.log('✓ Meta description verified:', descMatch[1].slice(0, 70) + '...');
+if (descMatch[1].length < 120 || descMatch[1].length > 160) {
+  throw new Error(`Meta description length invalid (${descMatch[1].length} chars, optimal 120-160): "${descMatch[1]}"`);
+}
+console.log(`✓ Meta description verified (${descMatch[1].length} chars, optimal 120-160):`, descMatch[1]);
 
 // Meta Keywords check
 const keywordsMatch = indexHtml.match(/<meta name="keywords" content="(.*?)"/);

@@ -47,9 +47,7 @@ export default defineConfig({
             return "charts"
           }
           if (
-            id.includes("node_modules/leaflet") ||
-            id.includes("node_modules/leaflet.markercluster") ||
-            id.includes("node_modules/leaflet.heat") ||
+            id.includes("node_modules/leaflet/") ||
             id.includes("node_modules/@react-google-maps")
           ) {
             return "maps"

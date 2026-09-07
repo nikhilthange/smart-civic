@@ -2,15 +2,8 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './i18n/config'
-import L from './lib/leafletSetup'
 import App from './App.tsx'
 import { registerServiceWorker } from './registerServiceWorker'
-
-if (typeof window !== 'undefined') {
-  ;(window as any).L = L
-  ;(window as any).global = window
-  ;(globalThis as any).L = L
-}
 
 registerServiceWorker()
 

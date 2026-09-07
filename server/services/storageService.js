@@ -17,8 +17,12 @@ class StorageService {
   constructor() {
     this.provider = process.env.STORAGE_PROVIDER || (process.env.CLOUDINARY_CLOUD_NAME ? "cloudinary" : "local");
     this.uploadDir = path.join(__dirname, "../uploads");
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
+    try {
+      if (!fs.existsSync(this.uploadDir)) {
+        fs.mkdirSync(this.uploadDir, { recursive: true });
+      }
+    } catch (err) {
+      console.warn("⚠️ StorageService: Could not ensure upload directory:", err.message);
     }
   }
 

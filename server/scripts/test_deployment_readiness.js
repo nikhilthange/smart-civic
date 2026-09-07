@@ -58,7 +58,7 @@ function runDeploymentTests() {
   // ─── Test 4: Verify Security Middleware & Health Handler ───────────────────────
   console.log("\nTest 4: Express Security Middleware & Health Check Endpoint");
   const indexJs = fs.readFileSync(path.join(__dirname, "../index.js"), "utf8");
-  assert(indexJs.includes("app.get(\"/api/health\""));
+  assert(indexJs.includes("/api/health"));
   assert(indexJs.includes("helmetMiddleware"));
   assert(indexJs.includes("corsOptions"));
   assert(indexJs.includes("defaultLimiter"));

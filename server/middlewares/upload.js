@@ -50,7 +50,11 @@ const cloudinaryStorage = new CloudinaryStorage({
 // ─── Fallback disk storage (when Cloudinary creds are missing) ────────────────
 const fs = require("fs");
 const diskUploadDir = path.join(__dirname, "../uploads");
-if (!fs.existsSync(diskUploadDir)) fs.mkdirSync(diskUploadDir, { recursive: true });
+try {
+  if (!fs.existsSync(diskUploadDir)) fs.mkdirSync(diskUploadDir, { recursive: true });
+} catch (err) {
+  console.warn("⚠️ Upload middleware: Could not ensure disk upload directory:", err.message);
+}
 
 const diskStorage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, diskUploadDir),

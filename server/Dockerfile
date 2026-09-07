@@ -18,11 +18,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=5000
 
-# Run with non-root user for security hardening
-USER node
-
 # Copy built dependencies and app from builder
 COPY --chown=node:node --from=builder /app /app
+
+# Pre-create uploads directory and ensure node user has full write permissions
+RUN mkdir -p /app/uploads && chown -R node:node /app
+
+# Run with non-root user for security hardening
+USER node
 
 EXPOSE 5000
 

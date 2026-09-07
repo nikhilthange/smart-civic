@@ -14,8 +14,12 @@ const morgan     = require("morgan");
 
 // ─── Ensure uploads storage directory exists ──────────────────────────────────
 const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn("⚠️ Warning: Could not initialize uploads directory:", err.message);
 }
 
 // ─── Load env vars FIRST ──────────────────────────────────────────────────────

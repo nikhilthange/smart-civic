@@ -19,52 +19,45 @@ export const SmartCivicLogo: React.FC<SmartCivicLogoProps> = ({
       aria-label="Smart Civic Logo"
     >
       <defs>
-        <linearGradient id="scEmeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="scCityGradComp" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#10b981" />
-          <stop offset="100%" stopColor="#047857" />
-        </linearGradient>
-        <linearGradient id="scMintAccent" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#34d399" />
-          <stop offset="100%" stopColor="#10b981" />
+          <stop offset="50%" stopColor="#059669" />
+          <stop offset="100%" stopColor="#0d9488" />
         </linearGradient>
       </defs>
 
-      {/* Background Squircle Container */}
-      <rect x="2" y="2" width="96" height="96" rx="26" fill="#022c22" />
-      <rect x="2" y="2" width="96" height="96" rx="26" fill="none" stroke="#10b981" strokeWidth="1.5" strokeOpacity="0.25" />
+      {/* Vibrant Rounded Emblem Base */}
+      <rect x="4" y="4" width="92" height="92" rx="24" fill="url(#scCityGradComp)" />
+      <rect x="4" y="4" width="92" height="92" rx="24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeOpacity="0.3" />
 
-      {/* Precision Geometric 'S + C' Monogram */}
-      <g transform="translate(18, 18)">
-        {/* Dynamic S Ribbon */}
-        <path
-          d="M 12 28 
-             C 12 14, 22 8, 38 8 
-             C 52 8, 60 16, 60 26 
-             C 60 38, 46 42, 34 46
-             C 22 50, 16 56, 16 64
-             C 16 76, 26 84, 42 84
-             C 56 84, 62 76, 62 66"
-          fill="none"
-          stroke="url(#scEmeraldGrad)"
-          strokeWidth="9"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+      {/* Smart City & Civic Architecture */}
+      <g fill="#ffffff">
+        {/* Left Building with Windows */}
+        <rect x="22" y="42" width="14" height="32" rx="2" fill="#ffffff" fillOpacity="0.9" />
+        <rect x="25.5" y="47" width="3" height="3" rx="0.5" fill="#065f46" />
+        <rect x="30.5" y="47" width="3" height="3" rx="0.5" fill="#065f46" />
+        <rect x="25.5" y="54" width="3" height="3" rx="0.5" fill="#065f46" />
+        <rect x="30.5" y="54" width="3" height="3" rx="0.5" fill="#065f46" />
 
-        {/* Interlocking Inner C Pillar */}
-        <path
-          d="M 38 28
-             C 46 28, 48 34, 48 40
-             C 48 48, 40 52, 32 54"
-          fill="none"
-          stroke="url(#scMintAccent)"
-          strokeWidth="5"
-          strokeLinecap="round"
-        />
+        {/* Center Civic Tower with Triangular Roof & Archway */}
+        <path d="M 42 74 L 42 34 L 50 24 L 58 34 L 58 74 Z" fill="#ffffff" />
+        <path d="M 46.5 74 L 46.5 56 Q 50 51 53.5 56 L 53.5 74 Z" fill="#065f46" />
 
-        {/* Keystone Point */}
-        <circle cx="48" cy="64" r="4.5" fill="#ffffff" />
+        {/* Right Building with Windows */}
+        <rect x="64" y="46" width="14" height="28" rx="2" fill="#ffffff" fillOpacity="0.9" />
+        <rect x="67.5" y="51" width="3" height="3" rx="0.5" fill="#065f46" />
+        <rect x="72.5" y="51" width="3" height="3" rx="0.5" fill="#065f46" />
+        <rect x="67.5" y="58" width="3" height="3" rx="0.5" fill="#065f46" />
+        <rect x="72.5" y="58" width="3" height="3" rx="0.5" fill="#065f46" />
+
+        {/* Municipal Foundation Ground Line */}
+        <rect x="18" y="72" width="64" height="4" rx="2" fill="#ffffff" />
       </g>
+
+      {/* Smart AI / GPS Connection Waves above Civic Hall */}
+      <path d="M 38 18 Q 50 10 62 18" fill="none" stroke="#fef08a" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M 42 22 Q 50 16 58 22" fill="none" stroke="#fef08a" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="50" cy="24" r="2.5" fill="#facc15" />
     </svg>
   );
 };

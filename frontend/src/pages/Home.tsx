@@ -299,7 +299,7 @@ export default function Home() {
 
         {/* ═══ 4K BEFORE & AFTER AI RESOLUTION PROOF SHOWCASE ═══════════════════ */}
         <section id="proof-showcase" className="w-full py-20 md:py-28 bg-slate-100/70 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800">
-          <div className="container px-4 md:px-6 mx-auto">
+          <div className="container px-4 md:px-6 mx-auto max-w-7xl">
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/50 px-4 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                 <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
@@ -478,8 +478,8 @@ export default function Home() {
         </section>
 
         {/* AI Powered Section */}
-        <section id="ai" className="w-full py-16 md:py-32 bg-white dark:bg-slate-900 border-y overflow-hidden">
-          <div className="container px-4 md:px-6 mx-auto max-w-full">
+        <section id="ai" className="w-full py-20 md:py-28 bg-white dark:bg-slate-900 border-y border-slate-200/80 dark:border-slate-800 overflow-hidden">
+          <div className="container px-4 md:px-6 mx-auto max-w-7xl">
             <div className="grid gap-8 lg:grid-cols-2 lg:gap-16 items-center">
               <motion.div
                 initial="hidden"
@@ -526,8 +526,8 @@ export default function Home() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="w-full py-20 md:py-32">
-          <div className="container px-4 md:px-6 mx-auto">
+        <section id="features" className="w-full py-20 md:py-28">
+          <div className="container px-4 md:px-6 mx-auto max-w-7xl">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-slate-900 dark:text-white">Everything you need to report efficiently</h2>
               <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
@@ -569,8 +569,8 @@ export default function Home() {
         </section>
 
         {/* How It Works Section */}
-        <section id="how-it-works" className="w-full py-20 bg-slate-50 dark:bg-slate-950 border-y border-slate-200/60 dark:border-slate-800">
-          <div className="container px-4 md:px-6 mx-auto">
+        <section id="how-it-works" className="w-full py-20 md:py-28 bg-slate-50 dark:bg-slate-950 border-y border-slate-200/60 dark:border-slate-800">
+          <div className="container px-4 md:px-6 mx-auto max-w-7xl">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900 dark:text-white">How it works</h2>
               <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
@@ -891,7 +891,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-white dark:bg-slate-900 border-t py-12 md:py-16">
-        <div className="container px-4 md:px-6 mx-auto">
+        <div className="container px-4 md:px-6 mx-auto max-w-7xl">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 lg:col-span-2">
               <Link className="flex items-center gap-2.5 mb-4" to="/">

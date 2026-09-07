@@ -4,21 +4,45 @@ node_modules/
 dist/
 build/
 .DS_Store
+Thumbs.db
 coverage/
 *.log
 *.pt
+*.tmp
+*.bak
+
+# Presentations & Office Documents
+*.pptx
+*.ppt
+*.pps
+*.odp
+*.docx
+*.doc
+
+# Documentation and internal tracking files (ignored from git)
+docs/
+PROJECT_STATUS.md
+SOP.md
+STATUS.md
+frontend/README.md
+
+# Uploaded Files & Temporary Assets
 server/uploads/*
 !server/uploads/.gitkeep
+
+# Load test reports & artifacts
+tests/load/report.html
+tests/load/report.json
+
+# IDE & Editor Configurations
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Python & Node Runtime
 __pycache__/
 .venv/
 venv/
 server/ai_service/venv/
 
-# Documentation and internal tracking files (ignored from git)
-docs/
-*.docx
-*.doc
-PROJECT_STATUS.md
-SOP.md
-STATUS.md
-frontend/README.md

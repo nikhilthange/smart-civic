@@ -334,12 +334,14 @@ export default function AdminDashboard() {
           maxZoom: 19,
         }).addTo(map)
 
-        const clusterGroup = (L as any).markerClusterGroup({
-          showCoverageOnHover: false,
-          zoomToBoundsOnClick: true,
-          spiderfyOnMaxZoom: true,
-          maxClusterRadius: 40,
-        })
+        const clusterGroup = typeof (L as any).markerClusterGroup === "function"
+          ? (L as any).markerClusterGroup({
+              showCoverageOnHover: false,
+              zoomToBoundsOnClick: true,
+              spiderfyOnMaxZoom: true,
+              maxClusterRadius: 40,
+            })
+          : L.featureGroup()
         map.addLayer(clusterGroup)
 
         mapInstanceRef.current = map
@@ -453,7 +455,7 @@ export default function AdminDashboard() {
 
     if (mapLayerMode === "heatmap") {
       if (clusterGroup && map.hasLayer(clusterGroup)) map.removeLayer(clusterGroup)
-      if (heatPoints.length > 0) {
+      if (heatPoints.length > 0 && typeof (L as any).heatLayer === "function") {
         const heat = (L as any).heatLayer(heatPoints, { radius: 28, blur: 18, maxZoom: 16 })
         heat.addTo(map)
         heatLayerRef.current = heat

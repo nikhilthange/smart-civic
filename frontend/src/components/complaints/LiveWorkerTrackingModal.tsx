@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { Truck, Phone, X, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import L from "leaflet"
+import L from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
 import api from "@/lib/axios"
 

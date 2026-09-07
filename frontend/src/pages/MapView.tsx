@@ -211,78 +211,80 @@ export default function MapView() {
       }).addTo(map)
 
       // Dynamic Severity-aware Cluster Group
-      const clusterGroup = (L as any).markerClusterGroup({
-        showCoverageOnHover: false,
-        zoomToBoundsOnClick: true,
-        spiderfyOnMaxZoom: true,
-        maxClusterRadius: 45,
-        iconCreateFunction: function (cluster: any) {
-          const markers = cluster.getAllChildMarkers()
-          const count = markers.length
+      const clusterGroup = typeof (L as any).markerClusterGroup === "function"
+        ? (L as any).markerClusterGroup({
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true,
+            spiderfyOnMaxZoom: true,
+            maxClusterRadius: 45,
+            iconCreateFunction: function (cluster: any) {
+              const markers = cluster.getAllChildMarkers()
+              const count = markers.length
 
-          let hasCritical = false
-          let hasHigh = false
-          let hasMedium = false
+              let hasCritical = false
+              let hasHigh = false
+              let hasMedium = false
 
-          markers.forEach((m: any) => {
-            const p = m.options?.priority || "medium"
-            if (p === "critical") hasCritical = true
-            else if (p === "high") hasHigh = true
-            else if (p === "medium") hasMedium = true
+              markers.forEach((m: any) => {
+                const p = m.options?.priority || "medium"
+                if (p === "critical") hasCritical = true
+                else if (p === "high") hasHigh = true
+                else if (p === "medium") hasMedium = true
+              })
+
+              let clusterColor = "#16a34a" // Low (Green)
+              let clusterBg = "rgba(22, 163, 74, 0.25)"
+              let clusterBorder = "#15803d"
+
+              if (hasCritical) {
+                clusterColor = "#dc2626" // Critical (Red)
+                clusterBg = "rgba(220, 38, 38, 0.35)"
+                clusterBorder = "#b91c1c"
+              } else if (hasHigh || hasMedium) {
+                clusterColor = "#d97706" // High / Medium (Amber/Orange)
+                clusterBg = "rgba(217, 119, 6, 0.30)"
+                clusterBorder = "#b45309"
+              }
+
+              return L.divIcon({
+                html: `
+                  <div style="
+                    width: 44px;
+                    height: 44px;
+                    border-radius: 50%;
+                    background: ${clusterBg};
+                    border: 1.5px solid ${clusterBorder};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+                  ">
+                    <div style="
+                      width: 32px;
+                      height: 32px;
+                      border-radius: 50%;
+                      background: ${clusterColor};
+                      color: #ffffff;
+                      font-weight: 800;
+                      font-size: 13px;
+                      font-family: system-ui, sans-serif;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      border: 2px solid #ffffff;
+                      box-shadow: inset 0 1px 2px rgba(255,255,255,0.4);
+                    ">
+                      ${count}
+                    </div>
+                  </div>
+                `,
+                className: "custom-cluster-marker",
+                iconSize: [44, 44],
+                iconAnchor: [22, 22],
+              })
+            },
           })
-
-          let clusterColor = "#16a34a" // Low (Green)
-          let clusterBg = "rgba(22, 163, 74, 0.25)"
-          let clusterBorder = "#15803d"
-
-          if (hasCritical) {
-            clusterColor = "#dc2626" // Critical (Red)
-            clusterBg = "rgba(220, 38, 38, 0.35)"
-            clusterBorder = "#b91c1c"
-          } else if (hasHigh || hasMedium) {
-            clusterColor = "#d97706" // High / Medium (Amber/Orange)
-            clusterBg = "rgba(217, 119, 6, 0.30)"
-            clusterBorder = "#b45309"
-          }
-
-          return L.divIcon({
-            html: `
-              <div style="
-                width: 44px;
-                height: 44px;
-                border-radius: 50%;
-                background: ${clusterBg};
-                border: 1.5px solid ${clusterBorder};
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-              ">
-                <div style="
-                  width: 32px;
-                  height: 32px;
-                  border-radius: 50%;
-                  background: ${clusterColor};
-                  color: #ffffff;
-                  font-weight: 800;
-                  font-size: 13px;
-                  font-family: system-ui, sans-serif;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  border: 2px solid #ffffff;
-                  box-shadow: inset 0 1px 2px rgba(255,255,255,0.4);
-                ">
-                  ${count}
-                </div>
-              </div>
-            `,
-            className: "custom-cluster-marker",
-            iconSize: [44, 44],
-            iconAnchor: [22, 22],
-          })
-        },
-      })
+        : L.featureGroup()
 
       const choroplethGroup = L.layerGroup()
 
@@ -566,7 +568,7 @@ export default function MapView() {
       if (clusterGroup && map.hasLayer(clusterGroup)) {
         map.removeLayer(clusterGroup)
       }
-      if (heatPoints.length > 0) {
+      if (heatPoints.length > 0 && typeof (L as any).heatLayer === "function") {
         const heat = (L as any).heatLayer(heatPoints, {
           radius: 32,
           blur: 22,

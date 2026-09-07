@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
-import L from "leaflet"
+import L from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
 import {
   X, Volume2, VolumeX, Locate,

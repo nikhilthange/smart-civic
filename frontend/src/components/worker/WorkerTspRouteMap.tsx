@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import L from "leaflet"
+import L from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
 import { type Complaint } from "@/services/complaintApi"
 import { Badge } from "@/components/ui/badge"

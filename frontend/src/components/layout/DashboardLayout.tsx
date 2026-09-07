@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, lazy, Suspense } from "react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import {
-  Building2,
   Database,
   LayoutDashboard,
   FileEdit,
@@ -42,6 +41,8 @@ import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
 import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { useTranslation } from "react-i18next"
 import { triggerHapticFeedback } from "@/utils/haptics"
+
+import SmartCivicLogo from "@/components/common/SmartCivicLogo"
 
 const CommandPalette = lazy(() => import("@/components/common/CommandPalette").then(m => ({ default: m.CommandPalette })))
 const MunicipalCopilotModal = lazy(() => import("@/components/admin/MunicipalCopilotModal"))
@@ -182,9 +183,7 @@ export default function DashboardLayout() {
           onClick={() => isMobile && setIsMobileMenuOpen(false)}
           className="flex items-center gap-2.5 min-w-0 font-semibold transition-opacity hover:opacity-80"
         >
-          <div className="bg-primary/10 p-2 rounded-xl text-primary shrink-0">
-            <Building2 className="h-5 w-5" />
-          </div>
+          <SmartCivicLogo className="w-8 h-8 rounded-xl shadow-sm" />
           <div className="min-w-0">
             <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight leading-none truncate">
               Smart Civic AI

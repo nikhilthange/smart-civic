@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import AiPipelineHeroVisual from "@/components/common/AiPipelineHeroVisual"
 import SeoHead from "@/components/common/SeoHead"
+import SmartCivicLogo from "@/components/common/SmartCivicLogo"
 
 const TESTIMONIALS_DATA = [
   {
@@ -179,7 +180,7 @@ export default function Home() {
         <div className="w-full max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           {/* Brand Logo */}
           <Link className="flex items-center gap-2.5 min-w-0 shrink" to="/">
-            <img src="/favicon.svg" alt="Smart Civic Logo" className="h-7 w-7 rounded-lg shrink-0 shadow-sm" />
+            <SmartCivicLogo className="w-7 h-7" />
             <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">
               Smart Civic <span className="text-primary">AI</span>
             </span>
@@ -894,7 +895,7 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
             <div className="col-span-2 lg:col-span-2">
               <Link className="flex items-center gap-2.5 mb-4" to="/">
-                <img src="/favicon.svg" alt="Smart Civic Logo" className="h-7 w-7 rounded-lg shrink-0 shadow-sm" />
+                <SmartCivicLogo className="w-8 h-8" />
                 <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic AI</span>
               </Link>
               <p className="text-slate-500 dark:text-slate-400 max-w-xs mb-6">

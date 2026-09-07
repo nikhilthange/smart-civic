@@ -13,3 +13,12 @@ __pycache__/
 .venv/
 venv/
 server/ai_service/venv/
+
+# Documentation and internal tracking files (ignored from git)
+docs/
+*.docx
+*.doc
+PROJECT_STATUS.md
+SOP.md
+STATUS.md
+frontend/README.md

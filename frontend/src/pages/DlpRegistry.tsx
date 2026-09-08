@@ -41,60 +41,10 @@ export default function DlpRegistry() {
     try {
       setLoading(true)
       const res = await municipalApi.getRoadContracts()
-      if (res.contracts && res.contracts.length > 0) {
-        setContracts(res.contracts)
-        if (!selectedContract) setSelectedContract(res.contracts[0])
-      } else {
-        // Fallback demo contracts
-        const defaultContracts: RoadContract[] = [
-          {
-            _id: "1",
-            contractId: "DLP-2024-RD-109",
-            roadName: "Linking Road (Khar to Bandra Station)",
-            ward: "Ward H-West",
-            contractorName: "RPS Infraprojects Ltd",
-            surfaceType: "MASTIC_ASPHALT",
-            completionDate: "2024-04-15",
-            dlpExpiryDate: "2027-04-15",
-            totalProjectCostInr: 45000000,
-            retentionFundAmountInr: 4500000,
-            retentionFundFrozen: false,
-            activeDefectCount: 3,
-            status: "ACTIVE_WARRANTY",
-          },
-          {
-            _id: "2",
-            contractId: "DLP-2023-RD-884",
-            roadName: "S.V. Road Junction (Andheri West)",
-            ward: "Ward K-West",
-            contractorName: "J. Kumar Infraprojects",
-            surfaceType: "CEMENT_CONCRETE",
-            completionDate: "2023-11-20",
-            dlpExpiryDate: "2026-11-20",
-            totalProjectCostInr: 68000000,
-            retentionFundAmountInr: 6800000,
-            retentionFundFrozen: true,
-            activeDefectCount: 4,
-            status: "PENALTY_LOCKED",
-          },
-          {
-            _id: "3",
-            contractId: "DLP-2025-RD-204",
-            roadName: "Dr. B.A. Road Corridor (Dadar to Parel)",
-            ward: "Ward F-South",
-            contractorName: "Eagle Infra India Ltd",
-            surfaceType: "MASTIC_ASPHALT",
-            completionDate: "2025-01-10",
-            dlpExpiryDate: "2028-01-10",
-            totalProjectCostInr: 52000000,
-            retentionFundAmountInr: 5200000,
-            retentionFundFrozen: false,
-            activeDefectCount: 1,
-            status: "ACTIVE_WARRANTY",
-          },
-        ]
-        setContracts(defaultContracts)
-        if (!selectedContract) setSelectedContract(defaultContracts[0])
+      const list = res.contracts || []
+      setContracts(list)
+      if (list.length > 0 && !selectedContract) {
+        setSelectedContract(list[0])
       }
     } catch {
       toast.error("Failed to load road contracts")

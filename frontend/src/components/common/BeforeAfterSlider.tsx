@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react"
-import { ChevronsLeftRight, Sparkles, AlertCircle } from "lucide-react"
+import { ChevronsLeftRight, CheckCircle2, AlertCircle } from "lucide-react"
 
 interface BeforeAfterSliderProps {
   beforeImage: string
@@ -16,7 +16,23 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
 }) => {
   const [sliderPosition, setSliderPosition] = useState<number>(50)
   const [isDragging, setIsDragging] = useState<boolean>(false)
+  const [containerWidth, setContainerWidth] = useState<number>(0)
   const containerRef = useRef<HTMLDivElement | null>(null)
+
+  // Measure container width on mount and resize
+  useEffect(() => {
+    if (!containerRef.current) return
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth)
+      }
+    }
+    updateWidth()
+
+    const observer = new ResizeObserver(updateWidth)
+    observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return
@@ -43,6 +59,14 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     setIsDragging(false)
   }, [])
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowLeft") {
+      setSliderPosition((prev) => Math.max(0, prev - 5))
+    } else if (e.key === "ArrowRight") {
+      setSliderPosition((prev) => Math.min(100, prev + 5))
+    }
+  }
+
   useEffect(() => {
     if (isDragging) {
       window.addEventListener("mousemove", handleMouseMove)
@@ -60,21 +84,30 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
 
   return (
     <div className={`space-y-2 select-none ${className}`}>
-      <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400">
-        <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
+      {/* Header labels */}
+      <div className="flex items-center justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+        <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
           <AlertCircle className="w-3.5 h-3.5" />
           Reported Defect (Before)
         </span>
-        <span className="text-[11px] text-slate-400">↔ Drag to Compare</span>
-        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-          <Sparkles className="w-3.5 h-3.5" />
+        <span className="text-[11px] font-mono text-zinc-400">↔ Drag or use ← → keys</span>
+        <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+          <CheckCircle2 className="w-3.5 h-3.5" />
           Municipal Repair (After)
         </span>
       </div>
 
+      {/* Comparison interactive viewport */}
       <div
         ref={containerRef}
-        className={`relative w-full ${aspectRatio} rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-md cursor-ew-resize bg-slate-950`}
+        role="slider"
+        aria-valuenow={Math.round(sliderPosition)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Before and after comparison slider"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        className={`relative w-full ${aspectRatio} rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xs cursor-ew-resize bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-emerald-500`}
         onMouseDown={() => setIsDragging(true)}
         onTouchStart={() => setIsDragging(true)}
       >
@@ -85,7 +118,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           className="absolute inset-0 w-full h-full object-cover pointer-events-none"
         />
 
-        {/* Before Image (Foreground / Left Side with Clip-Path) */}
+        {/* Before Image (Foreground / Left Side with dynamic clip) */}
         <div
           className="absolute inset-0 overflow-hidden"
           style={{ width: `${sliderPosition}%` }}
@@ -93,30 +126,29 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           <img
             src={beforeImage}
             alt="Reported Defect (Before)"
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none max-w-none"
+            className="absolute inset-0 h-full object-cover pointer-events-none max-w-none"
             style={{
-              width: containerRef.current ? `${containerRef.current.clientWidth}px` : "100%",
-              height: containerRef.current ? `${containerRef.current.clientHeight}px` : "100%",
+              width: containerWidth ? `${containerWidth}px` : "100%",
             }}
           />
           {/* Badge: Before */}
-          <div className="absolute top-3 left-3 bg-red-600/90 text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full shadow-md backdrop-blur-sm">
+          <div className="absolute top-3 left-3 bg-rose-600/90 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-md shadow-xs backdrop-blur-sm">
             Before
           </div>
         </div>
 
         {/* Badge: After */}
-        <div className="absolute top-3 right-3 bg-emerald-600/90 text-white text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full shadow-md backdrop-blur-sm">
+        <div className="absolute top-3 right-3 bg-emerald-600/90 text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded-md shadow-xs backdrop-blur-sm">
           After
         </div>
 
         {/* Divider Slider Line & Handle */}
         <div
-          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,0.6)] cursor-ew-resize flex items-center justify-center -translate-x-1/2"
+          className="absolute top-0 bottom-0 w-0.5 bg-white shadow-sm cursor-ew-resize flex items-center justify-center -translate-x-1/2 pointer-events-none"
           style={{ left: `${sliderPosition}%` }}
         >
-          <div className="w-8 h-8 rounded-full bg-white text-slate-800 flex items-center justify-center shadow-lg border-2 border-indigo-600 transition-transform active:scale-110">
-            <ChevronsLeftRight className="w-4 h-4 text-indigo-700" />
+          <div className="w-7 h-7 rounded-full bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-200 flex items-center justify-center shadow-md border border-zinc-300 dark:border-zinc-700 transition-transform active:scale-110 pointer-events-auto">
+            <ChevronsLeftRight className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
           </div>
         </div>
       </div>

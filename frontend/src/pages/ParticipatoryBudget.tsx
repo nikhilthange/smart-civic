@@ -305,7 +305,7 @@ export default function ParticipatoryBudget() {
           ? 1800000
           : 3500000,
       fundsDisbursedInr: 0,
-      corporatorName: ledger?.corporatorName || "Adv. Rahul Sawant",
+      corporatorName: ledger?.corporatorName || "Hon. Ward Councilor (BMC)",
       estimatedBeneficiaryCitizens: parseInt(newProposal.beneficiaries, 10) || 20000,
       votesCount: 1,
       status: "PROPOSED",
@@ -434,7 +434,7 @@ export default function ParticipatoryBudget() {
             <ShieldCheck className="w-4 h-4 text-teal-600" />
           </div>
           <div className="text-base font-bold font-display text-slate-900 dark:text-white truncate">
-            {ledger?.corporatorName || "Adv. Rahul Sawant"}
+            {ledger?.corporatorName || "Hon. Ward Councilor (BMC)"}
           </div>
           <p className="text-[11px] text-slate-400 font-mono">{selectedWard}</p>
         </div>

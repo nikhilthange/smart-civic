@@ -143,7 +143,8 @@ async function sendNotification({ recipientId, complaintId, type, title, message
 
     // 3. Email notification
     const mailer = getMailer();
-    if (mailer && user.email) {
+    const isMockTestEmail = /(@mumbai\.gov\.in|@example\.com|@test\.com|test\.citizen\.)/i.test(user.email || "");
+    if (mailer && user.email && !isMockTestEmail) {
       promises.push(
         mailer.sendMail({
           from: `"Smart Civic AI" <${process.env.SMTP_USER}>`,
@@ -152,6 +153,8 @@ async function sendNotification({ recipientId, complaintId, type, title, message
           html: buildEmailHtml({ title, message, actionUrl }),
         }).catch(err => console.error("Email send error:", err.message))
       );
+    } else if (isMockTestEmail) {
+      console.log(`ℹ️ [NotificationService] Skipped SMTP dispatch for mock/test address: ${user.email}`);
     }
 
     // 4. FCM push notification

@@ -25,12 +25,13 @@ import {
 } from "@/services/complaintApi"
 
 function StatusBadge({ status }: { status: ComplaintStatus | string }) {
+  const { t } = useTranslation()
   const s = String(status).toLowerCase()
   if (s === "resolved" || s === "closed") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-        Resolved
+        {t("status.resolved", "Resolved")}
       </span>
     )
   }
@@ -38,7 +39,7 @@ function StatusBadge({ status }: { status: ComplaintStatus | string }) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/80">
         <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
-        In Progress
+        {t("status.in_progress", "In Progress")}
       </span>
     )
   }
@@ -46,7 +47,7 @@ function StatusBadge({ status }: { status: ComplaintStatus | string }) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/80">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-        AI Verified
+        {t("status.ai_verified", "AI Verified")}
       </span>
     )
   }
@@ -54,14 +55,14 @@ function StatusBadge({ status }: { status: ComplaintStatus | string }) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200/80 dark:border-rose-800/80">
         <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-        Rejected
+        {t("status.rejected", "Rejected")}
       </span>
     )
   }
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
       <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
-      Pending
+      {t("status.pending", "Pending")}
     </span>
   )
 }
@@ -165,7 +166,7 @@ export default function ComplaintHistory() {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Search by ID, title, ward, or category..."
+                placeholder={t("complaints.searchPlaceholder", "Search complaints by title, ID, or location...")}
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1) }}
                 className="pl-10 h-10 text-xs sm:text-sm w-full rounded-xl bg-slate-50/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-900 transition-all"
@@ -183,12 +184,12 @@ export default function ComplaintHistory() {
             {/* Filter Tabs */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
               {[
-                { label: "All", value: "all" },
-                { label: "Pending", value: "pending" },
-                { label: "AI Verified", value: "ai_verified" },
-                { label: "In Progress", value: "in_progress" },
-                { label: "Resolved", value: "resolved" },
-                { label: "Rejected", value: "rejected" },
+                { label: t("complaints.all", "All Complaints"), value: "all" },
+                { label: t("complaints.pending", "Pending"), value: "pending" },
+                { label: t("complaints.aiVerified", "AI Verified"), value: "ai_verified" },
+                { label: t("complaints.inProgress", "In Progress"), value: "in_progress" },
+                { label: t("complaints.resolved", "Resolved"), value: "resolved" },
+                { label: t("complaints.rejected", "Rejected"), value: "rejected" },
               ].map((f) => {
                 const isSelected = statusFilter === f.value
                 return (
@@ -244,11 +245,11 @@ export default function ComplaintHistory() {
                 description={
                   search || statusFilter !== "all"
                     ? `No submissions found for status "${statusFilter}" matching query "${search}". Try resetting filters.`
-                    : "You haven't reported any civic complaints yet. File a complaint to get potholes, garbage, or water supply issues resolved in your ward."
+                    : t("complaints.noComplaintsDesc", "You haven't reported any civic complaints yet.")
                 }
                 actionLabel={
                   !search && statusFilter === "all" && user?.role === "citizen"
-                    ? "File Your First Grievance"
+                    ? t("complaints.newComplaint", "File New Complaint")
                     : undefined
                 }
                 onAction={
@@ -276,12 +277,12 @@ export default function ComplaintHistory() {
                   <TableHeader>
                     <TableRow className="bg-slate-50/80 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                       <TableHead className="w-14">Photo</TableHead>
-                      <TableHead className="w-36 font-mono">Ticket ID</TableHead>
-                      <TableHead>Complaint Title & Location</TableHead>
-                      <TableHead className="w-36">Category</TableHead>
-                      <TableHead className="w-32 font-mono">Date Filed</TableHead>
-                      <TableHead className="w-32">Status</TableHead>
-                      <TableHead className="w-24 text-right">Actions</TableHead>
+                      <TableHead className="w-36 font-mono">{t("table.id", "Ticket ID")}</TableHead>
+                      <TableHead>{t("table.title", "Complaint Title")}</TableHead>
+                      <TableHead className="w-36">{t("table.category", "Category")}</TableHead>
+                      <TableHead className="w-32 font-mono">{t("table.date", "Date Filed")}</TableHead>
+                      <TableHead className="w-32">{t("table.status", "Status")}</TableHead>
+                      <TableHead className="w-24 text-right">{t("table.actions", "Actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
@@ -332,7 +333,7 @@ export default function ComplaintHistory() {
                         {/* Category */}
                         <TableCell>
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                            {CATEGORY_LABELS[c.category] || c.category}
+                            {t(`categories.${c.category}`, CATEGORY_LABELS[c.category] || c.category)}
                           </span>
                         </TableCell>
 
@@ -355,7 +356,7 @@ export default function ComplaintHistory() {
                               onClick={() => navigate(`/complaint/${c._id || (c as any).id || c.complaintId}/track`)}
                               className="h-8 px-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 gap-1 rounded-lg"
                             >
-                              <span>Track</span>
+                              <span>{t("table.track", "Track")}</span>
                               <ExternalLink className="w-3 h-3" />
                             </Button>
 

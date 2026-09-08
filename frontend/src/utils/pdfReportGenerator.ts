@@ -106,7 +106,7 @@ export const generateExecutiveWardPdf = async (data: PdfReportData): Promise<voi
     startY: finalY2 + 14,
     head: [["Ticket ID", "Title / Issue", "Category", "Ward", "Priority", "Status"]],
     body: criticalRows.length > 0 ? criticalRows : [
-      ["SC-2026-X81", "Dangerous Deep Pothole on Hill Road", "Roads & Infrastructure", "Ward H-West", "CRITICAL", "pending"]
+      ["-", "No unresolved critical tickets recorded in selected ward", "N/A", "-", "NOMINAL", "RESOLVED"]
     ],
     theme: "striped",
     headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255], fontStyle: "bold" },

@@ -41,6 +41,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useSocket } from "@/context/SocketContext"
+import { useAuth } from "@/context/AuthContext"
 import toast from "react-hot-toast"
 import api from "@/lib/axios"
 
@@ -226,6 +227,7 @@ function playWebAudioChime(type: "send" | "receive") {
 }
 
 export default function WhatsAppSandbox() {
+  const { user } = useAuth()
   const { lastEvent, isConnected } = useSocket()
 
   // Persistent localStorage hydration
@@ -239,7 +241,7 @@ export default function WhatsAppSandbox() {
   })
 
   const [inputMessage, setInputMessage] = useState("")
-  const [phoneNumber] = useState("+91 98200 12345")
+  const [phoneNumber] = useState(() => user?.phoneNumber || "+91 98000 00000")
   const [isSending, setIsSending] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isLiveGatewayMode, setIsLiveGatewayMode] = useState(false)
@@ -256,9 +258,9 @@ export default function WhatsAppSandbox() {
   const [sessionKarma, setSessionKarma] = useState(() => {
     try {
       const saved = localStorage.getItem("smart_civic_wa_karma")
-      return saved ? parseInt(saved, 10) : 120
+      return saved ? parseInt(saved, 10) : (user?.karmaPoints || 120)
     } catch {
-      return 120
+      return user?.karmaPoints || 120
     }
   })
 
@@ -677,7 +679,6 @@ export default function WhatsAppSandbox() {
     [dialogueStage, currentGrievanceContext.category, inputMessage, isLiveGatewayMode, isMuted, phoneNumber]
   )
 
-  // Real Browser MediaRecorder Audio Capture with Whisper STT simulation
   const handleStartRealRecording = async () => {
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
@@ -691,6 +692,26 @@ export default function WhatsAppSandbox() {
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
 
+      const realVoiceRef = { current: "" }
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      let recognition: any = null
+      if (SpeechRecognition) {
+        try {
+          recognition = new SpeechRecognition()
+          recognition.continuous = true
+          recognition.interimResults = true
+          recognition.lang = "mr-IN"
+          recognition.onresult = (event: any) => {
+            let text = ""
+            for (let i = 0; i < event.results.length; i++) {
+              text += event.results[i][0].transcript + " "
+            }
+            realVoiceRef.current = text.trim()
+          }
+          recognition.start()
+        } catch (_) {}
+      }
+
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) {
           audioChunksRef.current.push(e.data)
@@ -700,6 +721,11 @@ export default function WhatsAppSandbox() {
       mediaRecorder.onerror = () => {
         stream.getTracks().forEach((track) => track.stop())
         mediaStreamRef.current = null
+        if (recognition) {
+          try {
+            recognition.stop()
+          } catch (_) {}
+        }
         setIsRecording(false)
       }
 
@@ -708,16 +734,16 @@ export default function WhatsAppSandbox() {
         const audioUrl = URL.createObjectURL(audioBlob)
         createdAudioUrls.current.push(audioUrl)
 
+        if (recognition) {
+          try {
+            recognition.stop()
+          } catch (_) {}
+        }
+
         setIsTranscribing(true)
         setTimeout(() => {
           setIsTranscribing(false)
-          const sampleTranscriptions = [
-            "दादर पश्चिम भाजी मार्केट जवळ उघडे मॅनहोल आहे, त्वरित दुरुस्त करा.",
-            "वांद्रे हिल रोडवर कचरा पेटी तुंबली असून दुर्गंधी पसरली आहे.",
-            "अंधेरी पश्चिमेत एस व्ही रोडवर पिण्याच्या पाण्याची मुख्य लाईन फुटली आहे.",
-          ]
-          const transcribedText =
-            sampleTranscriptions[Math.floor(Math.random() * sampleTranscriptions.length)]
+          const transcribedText = realVoiceRef.current || "Voice Grievance Audio Note"
 
           const formattedDuration = `0:${recordingSeconds < 10 ? `0${recordingSeconds}` : recordingSeconds}`
           handleSendMessage(transcribedText, {
@@ -726,7 +752,7 @@ export default function WhatsAppSandbox() {
             audioBlobUrl: audioUrl,
             transcription: transcribedText,
           })
-        }, 1200)
+        }, 800)
 
         // Stop all tracks
         stream.getTracks().forEach((track) => track.stop())
@@ -736,8 +762,7 @@ export default function WhatsAppSandbox() {
       mediaRecorder.start()
       setIsRecording(true)
     } catch {
-      // Fall back gracefully to simulated recording
-      setIsRecording(true)
+      setIsRecording(false)
     }
   }
 

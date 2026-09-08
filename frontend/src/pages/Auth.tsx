@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate, Link, Navigate } from "react-router-dom"
-import { Building2, Eye, EyeOff, Loader2, Mail, CheckCircle2, ArrowLeft, RefreshCw } from "lucide-react"
+import { Eye, EyeOff, Loader2, Mail, CheckCircle2, ArrowLeft, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { useAuth } from "@/context/AuthContext"
+import SmartCivicLogo from "@/components/common/SmartCivicLogo"
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true)
@@ -124,11 +125,9 @@ export default function Auth() {
             return
           }
         } catch (firebaseErr: any) {
-          // If Firebase throws, check if backend registration is preferred
           if (firebaseErr?.message?.includes("auth/email-already-in-use")) {
             throw new Error("This email address is already registered. Please sign in.")
           }
-          // Fallback to backend registration if needed
           await register({
             name: formData.name,
             email: formData.email,
@@ -163,19 +162,13 @@ export default function Auth() {
   }
 
   return (
-    <div className="fixed inset-0 h-full w-full overflow-y-auto overscroll-y-contain bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:py-12 pb-[calc(env(safe-area-inset-bottom,0px)+6rem)] z-10 flex flex-col items-center justify-start">
-      {/* Background gradients */}
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-70 pointer-events-none -z-10"></div>
-      <div className="fixed left-1/2 top-0 -z-10 -translate-x-1/2 h-[400px] w-[800px] rounded-full bg-primary/10 opacity-40 blur-[120px] pointer-events-none"></div>
-
+    <div className="fixed inset-0 h-full w-full overflow-y-auto overscroll-y-contain bg-zinc-50 dark:bg-zinc-950 px-4 py-8 sm:py-12 pb-[calc(env(safe-area-inset-bottom,0px)+6rem)] z-10 flex flex-col items-center justify-start">
       {/* Top Brand Header */}
       <div className="w-full max-w-md flex items-center justify-center gap-3 mb-6 sm:mb-8 shrink-0 relative z-10">
-        <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105">
-          <div className="bg-primary/10 p-2.5 rounded-2xl">
-            <Building2 className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
-          </div>
-          <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Smart Civic AI
+        <Link to="/" className="flex items-center gap-2.5 transition-transform hover:scale-102">
+          <SmartCivicLogo className="w-9 h-9 rounded-xl shadow-xs" />
+          <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            Smart Civic Portal
           </span>
         </Link>
       </div>
@@ -183,24 +176,24 @@ export default function Auth() {
       {/* Form Card Container */}
       <div className="w-full max-w-md shrink-0 relative z-10 mb-6">
         {needsVerification ? (
-          <Card className="glass-card border-t-4 border-t-emerald-500 border-x-slate-200/50 border-b-slate-200/50 dark:border-x-slate-800/50 dark:border-b-slate-800/50 rounded-2xl shadow-xl shadow-emerald-500/5">
+          <Card className="border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 rounded-2xl shadow-xs">
             <CardHeader className="space-y-2 text-center pb-4">
-              <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-2">
-                <Mail className="h-7 w-7 animate-pulse" />
+              <div className="mx-auto w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-2">
+                <Mail className="h-6 w-6" />
               </div>
-              <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              <CardTitle className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 Check your email & verify, then log in
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+              <CardDescription className="text-xs text-zinc-500 dark:text-zinc-400">
                 We've sent a verification link to:
               </CardDescription>
-              <div className="font-mono text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800/80 px-3 py-2 rounded-xl border border-slate-200/70 dark:border-slate-700 break-all">
+              <div className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800/80 px-3 py-2 rounded-xl border border-zinc-200/70 dark:border-zinc-700 break-all">
                 {verificationEmail}
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-4 pt-2 text-center">
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            <CardContent className="space-y-3.5 pt-2 text-center">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                 Please click the link in your email to activate your account. Once verified, click below to log in.
               </p>
 
@@ -212,13 +205,13 @@ export default function Auth() {
               )}
 
               {localError && (
-                <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 text-xs text-red-700 dark:text-red-400">
+                <div className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 p-3 text-xs text-red-700 dark:text-red-400">
                   {localError}
                 </div>
               )}
 
               <Button
-                className="w-full min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md shadow-emerald-600/20 font-semibold"
+                className="w-full min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs font-semibold cursor-pointer"
                 onClick={() => {
                   setNeedsVerification(false)
                   setIsLogin(true)
@@ -232,7 +225,7 @@ export default function Auth() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full min-h-[44px] rounded-xl border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-medium"
+                className="w-full min-h-[44px] rounded-xl border-zinc-200 dark:border-zinc-800 text-xs font-medium cursor-pointer"
                 disabled={isResending || resendCooldown > 0}
                 onClick={async () => {
                   if (!formData.password) {
@@ -263,7 +256,7 @@ export default function Auth() {
                   </>
                 ) : resendCooldown > 0 ? (
                   <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin text-slate-400" />
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin text-zinc-400" />
                     Resend in {resendCooldown}s
                   </>
                 ) : (
@@ -278,7 +271,7 @@ export default function Auth() {
             <CardFooter className="pt-0 pb-6">
               <button
                 type="button"
-                className="text-xs sm:text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 mx-auto flex items-center gap-1.5 min-h-[44px] py-2 px-3"
+                className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 mx-auto flex items-center gap-1.5 min-h-[44px] py-2 px-3 cursor-pointer"
                 onClick={() => {
                   setNeedsVerification(false)
                   setLocalError(null)
@@ -290,65 +283,65 @@ export default function Auth() {
             </CardFooter>
           </Card>
         ) : (
-          <Card className="glass-card border-t-4 border-t-primary border-x-slate-200/50 border-b-slate-200/50 dark:border-x-slate-800/50 dark:border-b-slate-800/50 rounded-2xl shadow-xl shadow-primary/5">
+          <Card className="border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 rounded-2xl shadow-xs">
             <CardHeader className="space-y-1 text-center pb-4 sm:pb-6">
-              <CardTitle className="text-2xl sm:text-3xl font-bold tracking-tight">
-                {isLogin ? "Welcome back" : "Create an account"}
+              <CardTitle className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                {isLogin ? "Sign in to Civic Portal" : "Create Citizen Account"}
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
+              <CardDescription className="text-xs text-zinc-500 dark:text-zinc-400">
                 {isLogin
-                  ? "Sign in to access your citizen portal"
-                  : "Register to submit and track civic complaints"}
+                  ? "Enter your credentials to access your municipal portal"
+                  : "Register to submit and track civic grievances"}
               </CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-4">
               {/* Error Banner */}
               {localError && (
-                <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-3 text-xs sm:text-sm text-red-700 dark:text-red-400">
+                <div className="rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 p-3 text-xs text-red-700 dark:text-red-400">
                   {localError}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3.5">
                 {!isLogin && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="name" className="text-xs sm:text-sm font-medium">Full Name</Label>
+                    <Label htmlFor="name" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Full Name</Label>
                     <Input
                       id="name"
-                      placeholder="e.g. Citizen / Officer Name"
+                      placeholder="Enter your full name"
                       value={formData.name}
                       onChange={handleChange}
                       required={!isLogin}
                       autoComplete="name"
-                      className="min-h-[44px] h-11 text-sm rounded-xl"
+                      className="min-h-[44px] h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800"
                     />
                   </div>
                 )}
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-xs sm:text-sm font-medium">Email Address</Label>
+                  <Label htmlFor="email" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="e.g. user@domain.com"
+                    placeholder="name@domain.com"
                     value={formData.email}
                     onChange={handleChange}
                     required
                     autoComplete="email"
-                    className="min-h-[44px] h-11 text-sm rounded-xl"
+                    className="min-h-[44px] h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800"
                   />
                 </div>
 
                 {!isLogin && (
                   <>
                     <div className="space-y-1.5">
-                      <Label htmlFor="role" className="text-xs sm:text-sm font-medium">Register As (Testing Role)</Label>
+                      <Label htmlFor="role" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Portal Role</Label>
                       <select
                         id="role"
                         value={formData.role}
                         onChange={handleChange}
-                        className="w-full text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 min-h-[44px] bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full text-xs sm:text-sm border border-zinc-200 dark:border-zinc-800 rounded-xl p-2.5 min-h-[44px] bg-zinc-50/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="citizen">Citizen (Public Grievance Reporter)</option>
                         <option value="officer">Municipal Officer (Ward Manager)</option>
@@ -359,12 +352,12 @@ export default function Auth() {
 
                     {(formData.role === "officer" || formData.role === "worker") && (
                       <div className="space-y-1.5">
-                        <Label htmlFor="ward" className="text-xs sm:text-sm font-medium">Assigned BMC Ward</Label>
+                        <Label htmlFor="ward" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Assigned BMC Ward</Label>
                         <select
                           id="ward"
                           value={formData.ward}
                           onChange={handleChange}
-                          className="w-full text-sm border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 min-h-[44px] bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full text-xs sm:text-sm border border-zinc-200 dark:border-zinc-800 rounded-xl p-2.5 min-h-[44px] bg-zinc-50/50 dark:bg-zinc-900/50 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                         >
                           <option value="Ward A">Ward A (Colaba/Fort)</option>
                           <option value="Ward G-South">Ward G-South (Worli)</option>
@@ -378,11 +371,11 @@ export default function Auth() {
 
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-xs sm:text-sm font-medium">Password</Label>
+                    <Label htmlFor="password" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Password</Label>
                     {isLogin && (
                       <a
                         href="#"
-                        className="text-xs font-medium text-primary hover:underline py-1"
+                        className="text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
                       >
                         Forgot password?
                       </a>
@@ -397,11 +390,11 @@ export default function Auth() {
                       onChange={handleChange}
                       required
                       autoComplete={isLogin ? "current-password" : "new-password"}
-                      className="pr-10 min-h-[44px] h-11 text-sm rounded-xl"
+                      className="pr-10 min-h-[44px] h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800"
                     />
                     <button
                       type="button"
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg flex items-center justify-center min-h-[36px] min-w-[36px]"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg flex items-center justify-center cursor-pointer"
                       onClick={() => setShowPassword((s) => !s)}
                       tabIndex={-1}
                       aria-label={showPassword ? "Hide password" : "Show password"}
@@ -414,7 +407,7 @@ export default function Auth() {
                     </button>
                   </div>
                   {!isLogin && (
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-zinc-400">
                       Must contain uppercase, lowercase, and a number.
                     </p>
                   )}
@@ -422,7 +415,7 @@ export default function Auth() {
 
                 {!isLogin && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="confirmPassword" className="text-xs sm:text-sm font-medium">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Confirm Password</Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
@@ -435,11 +428,11 @@ export default function Auth() {
                         }}
                         required
                         autoComplete="new-password"
-                        className="pr-10 min-h-[44px] h-11 text-sm rounded-xl"
+                        className="pr-10 min-h-[44px] h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800"
                       />
                       <button
                         type="button"
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg flex items-center justify-center min-h-[36px] min-w-[36px]"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-1.5 rounded-lg flex items-center justify-center cursor-pointer"
                         onClick={() => setShowConfirmPassword((s) => !s)}
                         tabIndex={-1}
                         aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
@@ -456,23 +449,23 @@ export default function Auth() {
 
                 {!isLogin && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="phoneNumber" className="text-xs sm:text-sm font-medium">
+                    <Label htmlFor="phoneNumber" className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
                       Phone Number{" "}
-                      <span className="text-slate-400 text-xs">(optional)</span>
+                      <span className="text-zinc-400 text-xs">(optional)</span>
                     </Label>
                     <Input
                       id="phoneNumber"
                       type="tel"
-                      placeholder="+91 00000 00000"
+                      placeholder="+91 98000 00000"
                       value={formData.phoneNumber}
                       onChange={handleChange}
                       autoComplete="tel"
-                      className="min-h-[44px] h-11 text-sm rounded-xl"
+                      className="min-h-[44px] h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800"
                     />
                   </div>
                 )}
 
-                <Button className="w-full min-h-[44px] h-11 text-sm font-semibold rounded-xl mt-2" type="submit" disabled={isLoading}>
+                <Button className="w-full min-h-[44px] h-10 text-xs sm:text-sm font-semibold rounded-xl mt-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer" type="submit" disabled={isLoading}>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -486,12 +479,12 @@ export default function Auth() {
                 </Button>
               </form>
 
-              <div className="relative my-5">
+              <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-slate-200 dark:border-slate-800" />
+                  <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white dark:bg-slate-900 px-2 text-slate-500 font-medium">
+                <div className="relative flex justify-center text-[11px] uppercase">
+                  <span className="bg-white dark:bg-zinc-900 px-2 text-zinc-400 font-medium">
                     Or continue with
                   </span>
                 </div>
@@ -501,7 +494,7 @@ export default function Auth() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full min-h-[44px] h-11 flex items-center justify-center gap-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl text-xs sm:text-sm font-medium"
+                  className="w-full min-h-[44px] h-10 flex items-center justify-center gap-2 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl text-xs sm:text-sm font-medium cursor-pointer"
                   onClick={async () => {
                     try {
                       setIsGoogleLoading(true)
@@ -523,7 +516,7 @@ export default function Auth() {
                 >
                   {isGoogleLoading ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
                       <span>{isLogin ? "Signing in with Google..." : "Registering with Google..."}</span>
                     </>
                   ) : (
@@ -554,11 +547,11 @@ export default function Auth() {
             </CardContent>
 
             <CardFooter className="pt-2 pb-6">
-              <p className="text-center text-xs sm:text-sm text-slate-500 w-full">
+              <p className="text-center text-xs text-zinc-500 w-full">
                 {isLogin ? "Don't have an account? " : "Already have an account? "}
                 <button
                   type="button"
-                  className="font-semibold text-primary hover:underline ml-1 min-h-[44px] inline-flex items-center"
+                  className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline ml-1 inline-flex items-center cursor-pointer"
                   onClick={switchMode}
                 >
                   {isLogin ? "Register now" : "Sign in instead"}
@@ -571,13 +564,13 @@ export default function Auth() {
 
       {/* Footer Terms & Legal */}
       <div className="w-full max-w-md text-center shrink-0 relative z-10 pb-8">
-        <p className="text-center text-xs text-slate-400">
+        <p className="text-center text-xs text-zinc-400">
           By continuing, you agree to our{" "}
-          <a href="#" className="underline hover:text-primary">
+          <a href="#" className="underline hover:text-zinc-600 dark:hover:text-zinc-200">
             Terms of Service
           </a>{" "}
           and{" "}
-          <a href="#" className="underline hover:text-primary">
+          <a href="#" className="underline hover:text-zinc-600 dark:hover:text-zinc-200">
             Privacy Policy
           </a>
           .

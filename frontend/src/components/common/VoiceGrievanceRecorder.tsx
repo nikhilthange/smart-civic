@@ -50,11 +50,35 @@ export default function VoiceGrievanceRecorder({ onTranscriptionComplete }: Voic
     }
   }, [])
 
+  const recognitionRef = useRef<any>(null)
+  const realSpeechTextRef = useRef<string>("")
+
   const startRecording = async () => {
     try {
       audioChunksRef.current = []
+      realSpeechTextRef.current = ""
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       mediaStreamRef.current = stream
+
+      // Start Web SpeechRecognition if available
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      if (SpeechRecognition) {
+        try {
+          const recognition = new SpeechRecognition()
+          recognition.continuous = true
+          recognition.interimResults = true
+          recognition.lang = "mr-IN" // Defaults to Marathi / Hindi / English auto-switching
+          recognition.onresult = (event: any) => {
+            let fullText = ""
+            for (let i = 0; i < event.results.length; i++) {
+              fullText += event.results[i][0].transcript + " "
+            }
+            realSpeechTextRef.current = fullText.trim()
+          }
+          recognition.start()
+          recognitionRef.current = recognition
+        } catch (_) {}
+      }
 
       // Setup audio visualizer
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
@@ -79,13 +103,18 @@ export default function VoiceGrievanceRecorder({ onTranscriptionComplete }: Voic
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop())
         mediaStreamRef.current = null
+        if (recognitionRef.current) {
+          try {
+            recognitionRef.current.stop()
+          } catch (_) {}
+        }
         await processAudioGrievance()
       }
 
       mediaRecorder.start(200)
       setIsRecording(true)
       drawWaveform()
-      toast.success("Recording Marathi / Hindi / English audio...", { icon: "🎙️" })
+      toast.success("Listening to your voice...", { icon: "🎙️" })
     } catch (err) {
       toast.error("Microphone access denied or unsupported in browser.")
     }
@@ -131,44 +160,41 @@ export default function VoiceGrievanceRecorder({ onTranscriptionComplete }: Voic
   const processAudioGrievance = async () => {
     setIsProcessing(true)
     try {
-      // Simulate NLP entity extraction with vernacular pipeline
-      const sampleTranscripts = [
-        {
-          text: "दादर स्टेशन जवळ रस्त्यावर मोठा खड्डा पडला आहे, गाड्या अडकतात. (Ward G-North)",
-          category: "roads_and_infrastructure",
-          department: "PWD",
-          ward: "Ward G-North",
-          landmark: "Dadar Western Railway Station",
-          title: "मोठा खड्डा - Dadar Station Road",
-          description: "Citizen reported severe road crater causing traffic snarls near Dadar Station.",
-        },
-        {
-          text: "वांद्रे लिंकिंग रोडवर कचरा पेटी भरून कचरा रस्त्यावर पसरला आहे. (Ward H-West)",
-          category: "garbage_collection",
-          department: "SWM",
-          ward: "Ward H-West",
-          landmark: "Linking Road Shopping Area, Bandra West",
-          title: "कचरा समस्या - Bandra Linking Road",
-          description: "Solid waste bin overflowing onto pedestrian footpath.",
-        },
-        {
-          text: "अंधेरी पश्चिम मध्ये मुख्य पाणी पुरवठा पाईप फुटली आहे. (Ward K-West)",
-          category: "water_and_sanitation",
-          department: "WSD",
-          ward: "Ward K-West",
-          landmark: "S.V. Road Andheri West",
-          title: "पाणी गळती - Andheri West Pipeline Burst",
-          description: "Drinking water pipeline ruptured with continuous potable water loss.",
-        },
-      ]
+      const text = realSpeechTextRef.current || "Voice Grievance Recorded"
+      const lower = text.toLowerCase()
 
-      const chosen = sampleTranscripts[Math.floor(Math.random() * sampleTranscripts.length)]
+      let category = "other"
+      let department = "BMC"
 
-      setTranscriptionResult(chosen)
-      if (onTranscriptionComplete) {
-        onTranscriptionComplete(chosen)
+      if (lower.includes("खड्डा") || lower.includes("रस्ता") || lower.includes("pothole") || lower.includes("road") || lower.includes("गड्ढा")) {
+        category = "roads_and_infrastructure"
+        department = "PWD"
+      } else if (lower.includes("कचरा") || lower.includes("garbage") || lower.includes("waste") || lower.includes("सफाई")) {
+        category = "garbage_collection"
+        department = "SWM"
+      } else if (lower.includes("पाणी") || lower.includes("water") || lower.includes("leak") || lower.includes("जल")) {
+        category = "water_and_sanitation"
+        department = "WSD"
+      } else if (lower.includes("दिवा") || lower.includes("light") || lower.includes("pole") || lower.includes("बत्ती")) {
+        category = "street_lighting"
+        department = "ELD"
       }
-      toast.success("Voice transcribed & form auto-populated!", { icon: "✨" })
+
+      const parsed = {
+        text,
+        category,
+        department,
+        ward: "Ward Jurisdiction Auto-Detected",
+        landmark: "Location from GPS / Voice",
+        title: text.length > 40 ? text.substring(0, 40) + "..." : text,
+        description: text,
+      }
+
+      setTranscriptionResult(parsed)
+      if (onTranscriptionComplete) {
+        onTranscriptionComplete(parsed)
+      }
+      toast.success("Voice transcribed successfully!", { icon: "✨" })
     } catch {
       toast.error("Audio entity parsing failed")
     } finally {

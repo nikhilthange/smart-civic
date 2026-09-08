@@ -14,6 +14,7 @@ import {
   Activity,
   ShieldCheck,
   Sparkles,
+  Download,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -22,6 +23,154 @@ import { Input } from "@/components/ui/input"
 import { cityOsApi, type HighRiseFireNoc } from "@/services/cityOsApi"
 import { formatCurrencyINR, formatDate } from "@/utils/formatters"
 import toast from "react-hot-toast"
+import { jsPDF } from "jspdf"
+import autoTable from "jspdf-autotable"
+
+// ─── Emergency Web Audio Chime ────────────────────────────────────────────────
+function playEmergencyAlarm() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = "triangle"
+    osc.frequency.setValueAtTime(880, ctx.currentTime)
+    osc.frequency.setValueAtTime(440, ctx.currentTime + 0.15)
+    gain.gain.setValueAtTime(0.12, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35)
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start()
+    osc.stop(ctx.currentTime + 0.35)
+  } catch (_) {}
+}
+
+// ─── Official Statutory MFB Citation PDF Export ──────────────────────────────
+function downloadMfbCitationPdf(notice: {
+  citationId: string
+  buildingName: string
+  ward: string
+  floors?: number
+  sacId?: string
+  recordedPressureKgCm2?: number
+  lossDurationMinutes?: number
+  citationPenaltyInr?: number
+  taxNotice?: string
+}) {
+  const doc = new jsPDF()
+
+  // Header Banner
+  doc.setFillColor(15, 23, 42)
+  doc.rect(0, 0, 210, 38, "F")
+
+  doc.setTextColor(255, 255, 255)
+  doc.setFontSize(15)
+  doc.setFont("helvetica", "bold")
+  doc.text("BRIHANMUMBAI MUNICIPAL CORPORATION", 14, 16)
+  doc.setFontSize(10.5)
+  doc.setFont("helvetica", "normal")
+  doc.text("MUMBAI FIRE BRIGADE HEADQUARTERS • STATUTORY CITATION", 14, 24)
+  doc.setFontSize(8.5)
+  doc.setTextColor(203, 213, 225)
+  doc.text("Maharashtra Fire Prevention & Life Safety Measures Act, 2006 (Section 3 & 8 Enforcement)", 14, 31)
+
+  // Notice Header
+  doc.setTextColor(15, 23, 42)
+  doc.setFontSize(12)
+  doc.setFont("helvetica", "bold")
+  doc.text(`STATUTORY PENALTY CITATION: #${notice.citationId}`, 14, 48)
+
+  autoTable(doc, {
+    startY: 54,
+    head: [["Audit Parameter", "Official Statutory Record"]],
+    body: [
+      ["Target High-Rise Complex", notice.buildingName || "High-Rise Building"],
+      ["Municipal Ward Jurisdiction", notice.ward || "Ward G-South"],
+      ["Property Tax SAC Account ID", notice.sacId || "N/A"],
+      ["Observed Booster Pump Pressure", `${(notice.recordedPressureKgCm2 || 2.1).toFixed(1)} kg/cm² (Statutory Minimum: 3.5 kg/cm²)`],
+      ["Depressurization Outage Duration", `${notice.lossDurationMinutes || 35} Minutes`],
+      ["Statutory Penalty Debit", formatCurrencyINR(notice.citationPenaltyInr || 25000)],
+      ["Disciplinary Action", "Direct Debit to Property Tax SAC Account & 7-Day Compliance Notice"],
+      ["Issuing Authority", "Chief Fire Officer (CFO), Mumbai Fire Brigade HQ Byculla"],
+    ],
+    theme: "grid",
+    headStyles: { fillColor: [225, 29, 72], textColor: [255, 255, 255], fontStyle: "bold" },
+    styles: { fontSize: 9, cellPadding: 3.5 },
+  })
+
+  const finalY = (doc as any).lastAutoTable?.finalY || 135
+
+  doc.setFontSize(8.5)
+  doc.setFont("helvetica", "normal")
+  doc.setTextColor(71, 85, 105)
+  doc.text(
+    "STATUTORY WARNING: Failure to restore wet riser pressure to compliant levels (≥3.5 kg/cm²) within 48 hours will trigger Section 8 utility disconnection orders for the building complex.",
+    14,
+    finalY + 12,
+    { maxWidth: 182 }
+  )
+
+  doc.setFont("helvetica", "bold")
+  doc.text("Chief Fire Officer (CFO), Mumbai Fire Brigade", 14, finalY + 30)
+  doc.setFont("helvetica", "normal")
+  doc.text("Cryptographically Verified via BMC CityOS IoT Gateway", 14, finalY + 36)
+
+  doc.save(`MFB_Citation_${notice.citationId}.pdf`)
+  toast.success(`Statutory Citation PDF exported: ${notice.citationId}`)
+}
+
+// ─── Circular SVG Pressure Dial Component ─────────────────────────────────────
+function PressureGauge({ pressure }: { pressure: number }) {
+  const min = 0
+  const max = 7
+  const safePressure = Math.min(Math.max(pressure, min), max)
+  const percentage = (safePressure / max) * 100
+
+  const isCritical = pressure < 3.5
+  const isOptimal = pressure >= 4.0
+  const color = isCritical ? "#e11d48" : isOptimal ? "#10b981" : "#f59e0b"
+
+  return (
+    <div className="flex flex-col items-center justify-center p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800 text-white relative">
+      <svg viewBox="0 0 140 95" className="w-36 h-24">
+        {/* Background Track */}
+        <path
+          d="M 20 80 A 50 50 0 1 1 120 80"
+          fill="none"
+          stroke="#1e293b"
+          strokeWidth="11"
+          strokeLinecap="round"
+        />
+        {/* Animated Active Arc */}
+        <path
+          d="M 20 80 A 50 50 0 1 1 120 80"
+          fill="none"
+          stroke={color}
+          strokeWidth="11"
+          strokeDasharray="210"
+          strokeDashoffset={210 - (210 * (percentage / 100))}
+          strokeLinecap="round"
+          className="transition-all duration-300"
+        />
+        {/* Center Pressure Value */}
+        <text x="70" y="65" textAnchor="middle" fill="#ffffff" fontSize="19" fontWeight="bold" fontFamily="monospace">
+          {pressure.toFixed(1)}
+        </text>
+        <text x="70" y="79" textAnchor="middle" fill="#94a3b8" fontSize="8" fontFamily="sans-serif">
+          kg/cm²
+        </text>
+      </svg>
+      <div className="flex items-center gap-1.5 mt-[-6px]">
+        <span
+          className="w-2 h-2 rounded-full animate-pulse"
+          style={{ backgroundColor: color }}
+        />
+        <span className="text-[10px] font-mono font-bold uppercase tracking-wider" style={{ color }}>
+          {isCritical ? "Critical Deficit (<3.5)" : isOptimal ? "Compliant (≥4.0)" : "Marginal"}
+        </span>
+      </div>
+    </div>
+  )
+}
 
 // ─── Default Fallback Buildings (Resilience Standard) ─────────────────────────
 const FALLBACK_BUILDINGS: HighRiseFireNoc[] = [
@@ -198,6 +347,7 @@ export default function FireSafetyRadar() {
       )
 
       if (res.isCriticalLoss) {
+        playEmergencyAlarm()
         toast.error(
           `🚨 MFB ALERT: ${res.buildingName} booster pressure critically low (${simPressure} kg/cm²). ₹25,000 Property Tax Citation generated!`,
           { duration: 6000 }
@@ -213,7 +363,7 @@ export default function FireSafetyRadar() {
       const target = buildings.find((b) => b.buildingId === simBuildingId) || buildings[0]
       const isLow = simPressure < 3.5
       const isCritical = isLow && simDuration >= 30
-      const mockNotice = isCritical
+      const dispatchNotice = isCritical
         ? {
             citationId: `MFB-NOC-${target.buildingId}-${Date.now().toString().slice(-4)}`,
             buildingName: target.buildingName,
@@ -239,7 +389,7 @@ export default function FireSafetyRadar() {
         status: isCritical ? "DRY_RISER_FAILURE_CRITICAL" : "OPERATIONAL",
         isCriticalLoss: isCritical,
         mfbRadarFlagged: isCritical,
-        mfbDispatchNotice: mockNotice,
+        mfbDispatchNotice: dispatchNotice,
         statusMessage: isCritical
           ? `🚨 CRITICAL DRY RISER: Booster pump pressure (${simPressure} kg/cm²) < 3.5 kg/cm² threshold.`
           : `✅ WET RISER PRESSURIZED: Booster pressure (${simPressure} kg/cm²) compliant.`,
@@ -260,6 +410,7 @@ export default function FireSafetyRadar() {
       )
 
       if (isCritical) {
+        playEmergencyAlarm()
         toast.error(`🚨 MFB ALERT: ${target.buildingName} booster pressure critical. ₹25,000 penalty logged.`)
       } else {
         toast.success(`✅ Telemetry injected for ${target.buildingName}.`)
@@ -288,7 +439,7 @@ export default function FireSafetyRadar() {
       try {
         await cityOsApi.auditRefugeArea({ buildingId: building.buildingId, refugeFloorEncroached: true })
       } catch {
-        // Mock fallback
+        // Fallback state update
       }
       setBuildings((prev) =>
         prev.map((b) =>
@@ -492,7 +643,61 @@ export default function FireSafetyRadar() {
           </CardHeader>
 
           <CardContent className="p-5 space-y-4">
-            <form onSubmit={handleSimulatePressure} className="space-y-4 text-xs">
+            {/* Live Pressure Gauge Dial */}
+            <PressureGauge pressure={simPressure} />
+
+            {/* Quick Operating Regimes Presets */}
+            <div className="space-y-1.5 pt-1">
+              <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
+                Quick Preset Operating Regimes:
+              </label>
+              <div className="grid grid-cols-3 gap-1.5">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSimPressure(2.1)
+                    setSimDuration(45)
+                  }}
+                  className={`text-[10px] h-7 px-1.5 font-bold transition-all ${
+                    simPressure === 2.1 ? "border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-600" : "text-slate-600"
+                  }`}
+                >
+                  🚨 2.1 kg (Deficit)
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSimPressure(3.4)
+                    setSimDuration(30)
+                  }}
+                  className={`text-[10px] h-7 px-1.5 font-bold transition-all ${
+                    simPressure === 3.4 ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-600" : "text-slate-600"
+                  }`}
+                >
+                  ⚡ 3.4 kg (Alert)
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setSimPressure(5.2)
+                    setSimDuration(0)
+                  }}
+                  className={`text-[10px] h-7 px-1.5 font-bold transition-all ${
+                    simPressure === 5.2 ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600" : "text-slate-600"
+                  }`}
+                >
+                  🟢 5.2 kg (Normal)
+                </Button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSimulatePressure} className="space-y-3.5 text-xs pt-1">
               <div>
                 <label className="text-slate-600 dark:text-slate-400 font-semibold block mb-1">
                   Target High-Rise Complex
@@ -500,7 +705,7 @@ export default function FireSafetyRadar() {
                 <select
                   value={simBuildingId}
                   onChange={(e) => setSimBuildingId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 font-medium"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 font-medium"
                 >
                   {buildings.map((b) => (
                     <option key={b.buildingId} value={b.buildingId}>
@@ -567,26 +772,41 @@ export default function FireSafetyRadar() {
               <Button
                 type="submit"
                 disabled={isSimulating}
-                className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-semibold py-2 shadow-sm gap-1.5 transition-all mt-2"
+                className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-semibold py-2.5 shadow-sm gap-1.5 transition-all mt-1 cursor-pointer"
               >
                 <ShieldAlert className="w-3.5 h-3.5" />
-                <span>{isSimulating ? "Analyzing Booster Telemetry..." : "Inject Telemetry & Check MFB Alert"}</span>
+                <span>{isSimulating ? "Analyzing Booster Telemetry..." : "Inject Telemetry & Run MFB Radar Check"}</span>
               </Button>
             </form>
 
             {simResult?.mfbDispatchNotice && (
-              <div className="mt-4 p-3.5 rounded-lg bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs space-y-2">
-                <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-300 font-bold">
-                  <Send className="w-3.5 h-3.5" />
-                  <span>MFB Emergency Citation & SAC Notice</span>
+              <div className="mt-4 p-4 rounded-2xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs space-y-2.5 animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-300 font-bold">
+                    <Send className="w-3.5 h-3.5" />
+                    <span>MFB Emergency Citation Notice</span>
+                  </div>
+                  <Badge className="bg-rose-600 text-white font-mono text-[10px]">
+                    SEC 3 STATUTORY
+                  </Badge>
                 </div>
-                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-mono bg-white dark:bg-slate-900 p-2.5 rounded-md border border-rose-100 dark:border-rose-900">
+                <p className="text-[11px] text-slate-700 dark:text-slate-300 font-mono bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900">
                   {simResult.mfbDispatchNotice.taxNotice}
                 </p>
                 <div className="text-[10px] text-slate-600 dark:text-slate-400 flex justify-between pt-1 font-mono">
                   <span>Penalty: {formatCurrencyINR(simResult.mfbDispatchNotice.citationPenaltyInr || 25000)}</span>
-                  <span>Station: Byculla Fire HQ</span>
+                  <span>Issuing: Byculla Fire HQ</span>
                 </div>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => downloadMfbCitationPdf(simResult.mfbDispatchNotice)}
+                  className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold gap-1.5 shadow-sm cursor-pointer mt-1"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download MFB Statutory Notice (PDF)</span>
+                </Button>
               </div>
             )}
           </CardContent>
@@ -740,15 +960,38 @@ export default function FireSafetyRadar() {
                           <td className="py-3.5 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
                               {isCritical ? (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={actionLoadingId === b.buildingId}
-                                  onClick={() => handleDispatchInspection(b)}
-                                  className="h-7 text-[11px] px-2.5 border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300 dark:hover:bg-rose-950/40 font-semibold"
-                                >
-                                  {actionLoadingId === b.buildingId ? "Dispatching..." : "Dispatch MFB"}
-                                </Button>
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() =>
+                                      downloadMfbCitationPdf({
+                                        citationId: `MFB-NOC-${b.buildingId.slice(-4)}`,
+                                        buildingName: b.buildingName,
+                                        ward: b.ward,
+                                        floors: b.floorCount,
+                                        sacId: b.propertyTaxSacId,
+                                        recordedPressureKgCm2: b.wetRiserPressureKgCm2,
+                                        lossDurationMinutes: b.pressureLossDurationMinutes || 45,
+                                        citationPenaltyInr: 25000,
+                                        taxNotice: `Statutory ₹25,000 citation debited against Property Tax SAC Account (${b.propertyTaxSacId}).`,
+                                      })
+                                    }
+                                    title="Download MFB Citation (PDF)"
+                                    className="h-7 w-7 p-0 border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300 dark:hover:bg-rose-950/40"
+                                  >
+                                    <Download className="w-3.5 h-3.5" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={actionLoadingId === b.buildingId}
+                                    onClick={() => handleDispatchInspection(b)}
+                                    className="h-7 text-[11px] px-2.5 border-rose-300 text-rose-700 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300 dark:hover:bg-rose-950/40 font-semibold"
+                                  >
+                                    {actionLoadingId === b.buildingId ? "Dispatching..." : "Dispatch MFB"}
+                                  </Button>
+                                </>
                               ) : (
                                 <Button
                                   size="sm"

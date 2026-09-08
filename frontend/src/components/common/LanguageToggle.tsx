@@ -3,7 +3,7 @@ import { Globe } from "lucide-react"
 
 export function LanguageToggle() {
   const { i18n } = useTranslation()
-  const currentLang = i18n.language || "en"
+  const currentLang = i18n.language ? i18n.language.slice(0, 2) : "en"
 
   const setLanguage = (lang: string) => {
     i18n.changeLanguage(lang)
@@ -14,44 +14,34 @@ export function LanguageToggle() {
     }
   }
 
+  const languages = [
+    { code: "en", label: "EN" },
+    { code: "mr", label: "मराठी" },
+    { code: "hi", label: "हिंदी" },
+  ]
+
   return (
-    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs font-mono font-bold">
-      <Globe className="w-3.5 h-3.5 text-slate-400 ml-1 mr-0.5" />
-      <button
-        type="button"
-        onClick={() => setLanguage("en")}
-        className={`px-2 py-0.5 rounded-lg transition-all ${
-          currentLang.startsWith("en")
-            ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200/60 dark:border-slate-700"
-            : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-        }`}
-      >
-        EN
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setLanguage("mr")}
-        className={`px-2 py-0.5 rounded-lg transition-all ${
-          currentLang.startsWith("mr")
-            ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/60 dark:border-slate-700 font-sans font-bold"
-            : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-sans"
-        }`}
-      >
-        मराठी
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setLanguage("hi")}
-        className={`px-2 py-0.5 rounded-lg transition-all ${
-          currentLang.startsWith("hi")
-            ? "bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-sm border border-slate-200/60 dark:border-slate-700 font-sans font-bold"
-            : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-sans"
-        }`}
-      >
-        हिंदी
-      </button>
+    <div className="inline-flex items-center gap-0.5 p-0.5 bg-zinc-100 dark:bg-zinc-800/80 rounded-lg border border-zinc-200/80 dark:border-zinc-700/80 shrink-0 text-xs">
+      <div className="px-1 text-zinc-400 dark:text-zinc-500 flex items-center justify-center">
+        <Globe className="w-3.5 h-3.5" />
+      </div>
+      {languages.map((lang) => {
+        const isActive = currentLang === lang.code
+        return (
+          <button
+            key={lang.code}
+            type="button"
+            onClick={() => setLanguage(lang.code)}
+            className={`px-2 py-0.5 text-[11px] font-medium rounded-md transition-all duration-150 cursor-pointer ${
+              isActive
+                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-xs font-semibold border border-zinc-200/50 dark:border-zinc-700/50"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50"
+            }`}
+          >
+            {lang.label}
+          </button>
+        )
+      })}
     </div>
   )
 }

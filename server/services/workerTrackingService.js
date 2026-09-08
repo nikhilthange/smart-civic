@@ -44,11 +44,11 @@ class WorkerTrackingService {
 
     return {
       ticketId,
-      crewName: workerInfo?.crewName || "BMC Ward Quick Response Unit",
-      crewLeader: workerInfo?.name || "Field Officer (Junior Engineer)",
-      phone: workerInfo?.phone || "+91 98200 44122",
-      vehicleType: "JETPATCHER_TRUCK",
-      vehiclePlate: "MH-02-BQ-9104",
+      crewName: workerInfo?.crewName || "Municipal Rapid Response Unit",
+      crewLeader: workerInfo?.name || "Assigned Field Supervisor",
+      phone: workerInfo?.phone || "",
+      vehicleType: "SERVICE_VEHICLE",
+      vehiclePlate: "CIVIC-FIELD-DISPATCH",
       workerLocation: [workerLng, workerLat],
       incidentLocation: [targetLng, targetLat],
       speedKmph: 24,

@@ -196,7 +196,17 @@ async function sendVerificationEmail({ email, name, verificationToken, clientUrl
   const supportEmail = process.env.SUPPORT_EMAIL || "support@smartcivic.mumbai.gov.in";
   const fromAddress = process.env.SMTP_FROM || `"Smart Civic AI Portal" <${process.env.SMTP_USER || process.env.EMAIL_USER || "noreply@smartcivic.mumbai.gov.in"}>`;
 
-  const mailer = getTransporter();
+  // 0. Skip real SMTP dispatch for mock test domains to prevent bounces
+  const isMockTestEmail = /(@mumbai\.gov\.in|@example\.com|@test\.com|test\.citizen\.)/i.test(email || "");
+  if (isMockTestEmail) {
+    console.log(`ℹ️ [EmailService] Mock test address detected (${email}). Skipping external SMTP dispatch.`);
+    return {
+      success: true,
+      sent: false,
+      isMock: true,
+      verificationUrl,
+    };
+  }
 
   // 1. Production / Live SMTP Dispatch
   if (mailer && isSmtpConfigured) {

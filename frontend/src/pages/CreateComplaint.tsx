@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
   CheckCircle2, Loader2, Bot, Info, Camera, QrCode, ShieldCheck,
@@ -31,6 +32,7 @@ const PRIORITY_OPTIONS = [
 ]
 
 export default function CreateComplaint() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isCameraOpen, setIsCameraOpen] = useState(false)
@@ -289,27 +291,35 @@ export default function CreateComplaint() {
               <div className="h-14 w-14 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
                 <CheckCircle2 className="h-7 w-7" />
               </div>
-              <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Grievance Registered Successfully</h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">Your ticket has been ingested and routed into the municipal triage engine.</p>
+              <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                {t("createComplaint.successTitle", "Grievance Registered Successfully")}
+              </h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                {t("createComplaint.successDesc", "Your ticket has been ingested and routed into the municipal triage engine.")}
+              </p>
 
               <div className="bg-zinc-50 dark:bg-zinc-900/90 rounded-xl px-6 py-3.5 w-full border border-zinc-200/60 dark:border-zinc-800/60">
-                <p className="text-[11px] font-mono uppercase text-zinc-400 mb-0.5">Tracking Ticket ID</p>
+                <p className="text-[11px] font-mono uppercase text-zinc-400 mb-0.5">
+                  {t("createComplaint.trackingTicketId", "Tracking Ticket ID")}
+                </p>
                 <p className="text-base font-mono font-bold text-zinc-900 dark:text-zinc-100">{success.complaintId}</p>
               </div>
 
               {success.aiVerified && (
                 <div className="flex items-center gap-2.5 text-zinc-700 dark:text-zinc-300 bg-zinc-100/70 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60 rounded-xl px-4 py-2.5 w-full text-left">
                   <Bot className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                  <p className="text-xs font-medium">AI Verified — Priority score evaluated and ward supervisor notified.</p>
+                  <p className="text-xs font-medium">
+                    {t("createComplaint.aiVerifiedBadge", "AI Verified — Priority score evaluated and ward supervisor notified.")}
+                  </p>
                 </div>
               )}
 
               <div className="flex gap-2.5 w-full pt-2">
                 <Button variant="outline" className="flex-1 text-xs" onClick={() => navigate("/complaints")}>
-                  View Ledger
+                  {t("createComplaint.viewLedger", "View Ledger")}
                 </Button>
                 <Button className="flex-1 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold shadow-sm" onClick={() => navigate(`/complaint/${success.rawId || success.complaintId}/track`)}>
-                  Track Ticket
+                  {t("createComplaint.trackTicket", "Track Ticket")}
                 </Button>
               </div>
             </CardContent>
@@ -333,13 +343,17 @@ export default function CreateComplaint() {
             <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">Submit Civic Grievance</h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">Report neighborhood defects directly to the BMC ward triage mesh</p>
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+              {t("createComplaint.pageTitle", "Submit Civic Grievance")}
+            </h1>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {t("createComplaint.pageSubtitle", "Report neighborhood defects directly to the BMC ward triage mesh")}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            AUTO-SLA ROUTING ACTIVE
+            {t("createComplaint.autoSlaActive", "AUTO-SLA ROUTING ACTIVE")}
           </span>
         </div>
       </div>
@@ -351,8 +365,12 @@ export default function CreateComplaint() {
           <div className="flex items-start gap-3 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/50 px-4 py-3">
             <Bot className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Automated AI Triage & Verification</p>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Complaints with 50+ characters and clear photo evidence are classified by our neural model and expedited to ward field workers.</p>
+              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                {t("createComplaint.aiTriageTitle", "Automated AI Triage & Verification")}
+              </p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                {t("createComplaint.aiTriageDesc", "Complaints with 50+ characters and clear photo evidence are classified by our neural model and expedited to ward field workers.")}
+              </p>
             </div>
           </div>
 
@@ -370,11 +388,15 @@ export default function CreateComplaint() {
           <Card className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 p-4 sm:p-6 shadow-sm">
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
               <span className="flex h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold items-center justify-center shrink-0">1</span>
-              <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">Issue Category & Details</h2>
+              <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
+                {t("createComplaint.step1Title", "Issue Category & Details")}
+              </h2>
             </div>
             <div className="space-y-4 pt-4">
               <div className="space-y-1.5">
-                <Label htmlFor="category" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">Category <span className="text-rose-500">*</span></Label>
+                <Label htmlFor="category" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  {t("createComplaint.categoryLabel", "Category")} <span className="text-rose-500">*</span>
+                </Label>
                 <select
                   id="category"
                   name="category"
@@ -383,19 +405,21 @@ export default function CreateComplaint() {
                   className="flex h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-2 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   required
                 >
-                  <option value="">Select an infrastructure category...</option>
+                  <option value="">{t("createComplaint.categoryPlaceholder", "Select an infrastructure category...")}</option>
                   {CATEGORIES.map(([val, label]) => (
-                    <option key={val} value={val}>{label}</option>
+                    <option key={val} value={val}>{t(`categories.${val}`, label)}</option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="title" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">Issue Title <span className="text-rose-500">*</span></Label>
+                <Label htmlFor="title" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  {t("createComplaint.titleLabel", "Issue Title")} <span className="text-rose-500">*</span>
+                </Label>
                 <Input
                   id="title"
                   name="title"
-                  placeholder="e.g. Severe road surface pothole near junction"
+                  placeholder={t("createComplaint.titlePlaceholder", "e.g. Severe road surface pothole near junction")}
                   value={form.title}
                   onChange={handleChange}
                   required
@@ -409,7 +433,7 @@ export default function CreateComplaint() {
               <div className="space-y-1.5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1.5">
                   <Label htmlFor="description" className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    Detailed Description <span className="text-rose-500">*</span>
+                    {t("createComplaint.descriptionLabel", "Detailed Description")} <span className="text-rose-500">*</span>
                   </Label>
                   <div className="flex items-center gap-2 self-start sm:self-auto w-full sm:w-auto overflow-x-auto touch-pan-x min-w-0">
                     <VoiceInput
@@ -443,7 +467,7 @@ export default function CreateComplaint() {
                   value={form.description}
                   onChange={handleChange}
                   className="flex min-h-[110px] w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-2 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Describe the defect, hazards, traffic impact, and location markers..."
+                  placeholder={t("createComplaint.descriptionPlaceholder", "Describe the defect, hazards, traffic impact, and location markers...")}
                   required
                   minLength={20}
                   maxLength={2000}
@@ -452,7 +476,9 @@ export default function CreateComplaint() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">Priority Level</Label>
+                <Label className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  {t("createComplaint.priorityLabel", "Priority Level")}
+                </Label>
                 <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full">
                   {PRIORITY_OPTIONS.map(opt => (
                     <button
@@ -465,7 +491,7 @@ export default function CreateComplaint() {
                           : "border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/60"
                       }`}
                     >
-                      {opt.label}
+                      {t(`priority.${opt.value}`, opt.label)}
                     </button>
                   ))}
                 </div>
@@ -478,7 +504,9 @@ export default function CreateComplaint() {
             <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
               <div className="flex items-center gap-2">
                 <span className="flex h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold items-center justify-center shrink-0">2</span>
-                <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">Municipal Location</h2>
+                <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
+                  {t("createComplaint.step2Title", "Municipal Location")}
+                </h2>
               </div>
               {form.lat && form.lng && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20">
@@ -489,11 +517,13 @@ export default function CreateComplaint() {
             </div>
             <div className="space-y-4 pt-4">
               <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">Street Address / Landmark <span className="text-rose-500">*</span></Label>
+                <Label className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                  {t("createComplaint.addressLabel", "Street Address / Landmark")} <span className="text-rose-500">*</span>
+                </Label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     name="locationAddress"
-                    placeholder="Enter street address or landmark"
+                    placeholder={t("createComplaint.addressPlaceholder", "Enter street address or landmark")}
                     value={form.locationAddress}
                     onChange={handleChange}
                     required
@@ -501,25 +531,33 @@ export default function CreateComplaint() {
                   />
                   <Button type="button" variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm h-10 min-h-[44px] rounded-xl touch-manipulation gap-1.5" onClick={handleGetLocation} disabled={geoLoading}>
                     {geoLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MapPin className="h-3.5 w-3.5 text-emerald-600" />}
-                    <span>{geoLoading ? "Detecting GPS..." : "Detect GPS"}</span>
+                    <span>{geoLoading ? t("createComplaint.detectingGps", "Detecting GPS...") : t("createComplaint.detectGps", "Detect GPS")}</span>
                   </Button>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Administrative Ward</Label>
+                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                    {t("createComplaint.wardLabel", "Administrative Ward")}
+                  </Label>
                   <Input name="ward" placeholder="e.g. Ward A" value={form.ward || ""} onChange={handleChange} className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 font-mono" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">City</Label>
+                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                    {t("createComplaint.cityLabel", "City")}
+                  </Label>
                   <Input name="locationCity" placeholder="City" value={form.locationCity} onChange={handleChange} className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">State</Label>
+                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                    {t("createComplaint.stateLabel", "State")}
+                  </Label>
                   <Input name="locationState" placeholder="State" value={form.locationState} onChange={handleChange} className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Pincode</Label>
+                  <Label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                    {t("createComplaint.pincodeLabel", "Pincode")}
+                  </Label>
                   <Input name="locationPincode" placeholder="6-digit" value={form.locationPincode} onChange={handleChange} maxLength={6} className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 font-mono" />
                 </div>
               </div>
@@ -532,13 +570,17 @@ export default function CreateComplaint() {
               <div className="flex items-center gap-2">
                 <span className="flex h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold items-center justify-center shrink-0">3</span>
                 <div>
-                  <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">Photo / Video Evidence</h2>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">Upload images or videos (max 10MB each)</p>
+                  <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
+                    {t("createComplaint.step3Title", "Photo / Video Evidence")}
+                  </h2>
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                    {t("createComplaint.step3Subtitle", "Upload images or videos (max 10MB each)")}
+                  </p>
                 </div>
               </div>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 <ShieldCheck className="w-3 h-3" />
-                <span>EXIF Sanitized</span>
+                <span>{t("createComplaint.exifSanitized", "EXIF Sanitized")}</span>
               </span>
             </div>
             <div className="space-y-4 pt-4">
@@ -549,13 +591,21 @@ export default function CreateComplaint() {
                   onDragLeave={() => setDragOver(false)}
                   onDrop={onDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`flex-1 border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
-                    dragOver ? "border-primary bg-primary/5" : "border-slate-200 hover:border-primary/50 hover:bg-slate-50"
+                  className={`relative flex-1 border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 overflow-hidden ${
+                    dragOver
+                      ? "border-emerald-500 bg-emerald-500/5 shadow-sm"
+                      : "border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/50 hover:bg-emerald-50/20 dark:hover:bg-zinc-800/40"
                   }`}
                 >
-                  <UploadCloud className={`h-8 w-8 mb-2 ${dragOver ? "text-primary" : "text-slate-400"}`} />
-                  <p className="text-sm font-medium text-slate-700">Drop files here or click to browse</p>
-                  <p className="text-xs text-slate-400 mt-1">JPEG, PNG, WEBP, MP4, PDF — max 10MB</p>
+                  <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-2">
+                    <UploadCloud className="h-6 w-6" />
+                  </div>
+                  <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200">
+                    {t("createComplaint.dropZoneText", "Drop files here or click to browse")}
+                  </p>
+                  <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1 font-mono">
+                    {t("createComplaint.dropZoneHint", "JPEG, PNG, WEBP, MP4, PDF — max 10MB")}
+                  </p>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -567,25 +617,25 @@ export default function CreateComplaint() {
                   />
                 </div>
 
-                <div className="flex flex-row sm:flex-col gap-2 min-w-[140px]">
+                <div className="flex flex-row sm:flex-col gap-2.5 min-w-[150px]">
                   <button
                     type="button"
                     onClick={() => setIsCameraOpen(true)}
-                    className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 border-2 border-dashed border-emerald-300 bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-800 rounded-xl transition-colors min-h-[44px]"
+                    className="group flex-1 flex flex-col items-center justify-center p-3 sm:p-4 border border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20 hover:bg-emerald-100/60 dark:hover:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 rounded-2xl transition-all shadow-xs hover:shadow-md min-h-[44px]"
                   >
-                    <Camera className="h-5 sm:h-6 w-5 sm:w-6 mb-1 text-emerald-600" />
-                    <span className="text-xs font-bold">Live Camera</span>
-                    <span className="text-[10px] text-emerald-700 hidden sm:inline">Snap photo</span>
+                    <Camera className="h-5 sm:h-6 w-5 sm:w-6 mb-1 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold">{t("createComplaint.liveCamera", "Live Camera")}</span>
+                    <span className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 hidden sm:inline">{t("createComplaint.snapPhoto", "Snap photo")}</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setIsQrScannerOpen(true)}
-                    className="flex-1 flex flex-col items-center justify-center p-3 sm:p-4 border-2 border-dashed border-indigo-300 bg-indigo-50/60 hover:bg-indigo-100/70 text-indigo-800 rounded-xl transition-colors min-h-[44px]"
+                    className="group flex-1 flex flex-col items-center justify-center p-3 sm:p-4 border border-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-950/20 hover:bg-indigo-100/60 dark:hover:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 rounded-2xl transition-all shadow-xs hover:shadow-md min-h-[44px]"
                   >
-                    <QrCode className="h-5 sm:h-6 w-5 sm:w-6 mb-1 text-indigo-600" />
-                    <span className="text-xs font-bold">Scan Asset QR</span>
-                    <span className="text-[10px] text-indigo-700 hidden sm:inline">Auto-fill defect</span>
+                    <QrCode className="h-5 sm:h-6 w-5 sm:w-6 mb-1 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
+                    <span className="text-xs font-bold">{t("createComplaint.scanQr", "Scan Asset QR")}</span>
+                    <span className="text-[10px] text-indigo-600/80 dark:text-indigo-400/80 hidden sm:inline">{t("createComplaint.scanQrHint", "Auto-fill defect")}</span>
                   </button>
                 </div>
               </div>
@@ -646,19 +696,21 @@ export default function CreateComplaint() {
               onChange={handleChange}
               className="h-4 w-4 rounded border-slate-300 text-primary"
             />
-            <Label htmlFor="isAnonymous" className="cursor-pointer font-normal text-slate-600">
-              Submit anonymously (your name won't be shown publicly)
+            <Label htmlFor="isAnonymous" className="cursor-pointer font-normal text-slate-600 dark:text-zinc-400">
+              {t("createComplaint.anonymous", "Submit anonymously (your name won't be shown publicly)")}
             </Label>
           </div>
 
           {/* Actions */}
           <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 pt-2">
-            <Button variant="outline" type="button" onClick={() => navigate(-1)} className="min-h-[44px]">Cancel</Button>
+            <Button variant="outline" type="button" onClick={() => navigate(-1)} className="min-h-[44px]">
+              {t("createComplaint.cancel", "Cancel")}
+            </Button>
             <Button type="submit" disabled={isSubmitting} className="min-w-36 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md">
               {isSubmitting ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Submitting...</>
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("createComplaint.submitting", "Submitting...")}</>
               ) : (
-                "Submit Complaint"
+                t("createComplaint.submitGrievance", "Submit Complaint")
               )}
             </Button>
           </div>
@@ -672,23 +724,29 @@ export default function CreateComplaint() {
       <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm p-4 space-y-3">
         <h3 className="text-xs font-bold font-display uppercase tracking-wider text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
           <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          BMC Citizen Charter SLA Matrix
+          {t("createComplaint.slaCharterTitle", "BMC Citizen Charter SLA Matrix")}
         </h3>
         <div className="space-y-2 text-xs">
           <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800">
-            <span className="font-semibold text-rose-600 dark:text-rose-400">Open Manhole / Cave-in</span>
+            <span className="font-semibold text-rose-600 dark:text-rose-400">
+              {t("createComplaint.manholeSla", "Open Manhole / Cave-in")}
+            </span>
             <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 text-[10px] font-mono font-bold">
               2–4h SLA
             </Badge>
           </div>
           <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800">
-            <span className="font-semibold text-amber-600 dark:text-amber-400">Major Arterial Pothole</span>
+            <span className="font-semibold text-amber-600 dark:text-amber-400">
+              {t("createComplaint.potholeSla", "Major Arterial Pothole")}
+            </span>
             <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 text-[10px] font-mono font-bold">
               12–24h SLA
             </Badge>
           </div>
           <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800">
-            <span className="font-semibold text-blue-600 dark:text-blue-400">SWM Garbage Overflow</span>
+            <span className="font-semibold text-blue-600 dark:text-blue-400">
+              {t("createComplaint.garbageSla", "SWM Garbage Overflow")}
+            </span>
             <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 text-[10px] font-mono font-bold">
               24–48h SLA
             </Badge>
@@ -700,10 +758,10 @@ export default function CreateComplaint() {
       <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm p-4 space-y-2 text-xs">
         <h3 className="font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
           <ShieldAlert className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          DPDP Act 2023 Privacy Shield
+          {t("createComplaint.dpdpTitle", "DPDP Act 2023 Privacy Shield")}
         </h3>
         <p className="text-slate-500 dark:text-zinc-400 text-[11px] leading-relaxed">
-          Your personal data is protected under statutory privacy safeguards. Contact numbers and personal identifiers are dynamically redacted before reaching public dashboards or contractor field views.
+          {t("createComplaint.dpdpDesc", "Your personal data is protected under statutory privacy safeguards. Contact numbers and personal identifiers are dynamically redacted before reaching public dashboards or contractor field views.")}
         </p>
       </Card>
 
@@ -711,10 +769,10 @@ export default function CreateComplaint() {
       <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm p-4 space-y-2 text-xs">
         <h3 className="font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
           <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          MMC Act Section 354
+          {t("createComplaint.mmcTitle", "MMC Act Section 354")}
         </h3>
         <p className="text-slate-500 dark:text-zinc-400 text-[11px] leading-relaxed">
-          Unresolved critical hazards past SLA triggers invoke automated ₹5,000 contractor escrow deductions and statutory debarment proceedings.
+          {t("createComplaint.mmcDesc", "Unresolved critical hazards past SLA triggers invoke automated ₹5,000 contractor escrow deductions and statutory debarment proceedings.")}
         </p>
       </Card>
     </div>

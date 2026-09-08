@@ -80,6 +80,7 @@ function StatusBadge({ status }: { status: ComplaintStatus | string }) {
 }
 
 function StatusBadgeLg({ status }: { status: ComplaintStatus | string }) {
+  const { t } = useTranslation()
   const cfg = STATUS_CONFIG[status as ComplaintStatus] || {
     label: status,
     color: "text-gray-700",
@@ -88,7 +89,7 @@ function StatusBadgeLg({ status }: { status: ComplaintStatus | string }) {
   }
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold border ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-      {cfg.label}
+      {t(`status.${status}`, cfg.label)}
     </span>
   )
 }
@@ -115,32 +116,34 @@ interface SlaStepperProps {
 export const SlaStepper = React.memo(function SlaStepper({ status }: SlaStepperProps) {
   const { t } = useTranslation()
   const stepperStages = useMemo(() => [
-    { id: 1, key: "submitted",            label: `1. Filed`,                 desc: "Citizen submitted the issue" },
-    { id: 2, key: "ai_verified",          label: `2. AI Verified`,           desc: "AI processed the complaint" },
-    { id: 3, key: "ward_assigned",        label: `3. Ward Assigned`,         desc: "Mapped to local ward" },
-    { id: 4, key: "officer_assigned",     label: `4. Officer Assigned`,      desc: "Supervising officer attached" },
-    { id: 5, key: "worker_assigned",      label: `5. Worker Assigned`,       desc: "Field worker dispatched" },
-    { id: 6, key: "in_progress",          label: `6. In Progress`,           desc: "Work started on the ground" },
-    { id: 7, key: "resolution_submitted", label: `7. Resolution Submitted`,  desc: "Worker uploaded proof" },
-    { id: 8, key: "resolved",             label: `8. Resolved`,              desc: "Officer approved resolution" },
-  ], [])
+    { id: 1, key: "submitted",            label: `1. ${t("tracking.filed", "Filed")}`,                            desc: t("tracking.filedDesc", "Citizen submitted the issue") },
+    { id: 2, key: "ai_verified",          label: `2. ${t("tracking.aiClassified", "AI Verified")}`,              desc: t("tracking.aiClassifiedDesc", "AI processed the complaint") },
+    { id: 3, key: "ward_assigned",        label: `3. ${t("tracking.wardAssigned", "Ward Assigned")}`,            desc: t("tracking.wardAssignedDesc", "Mapped to local ward") },
+    { id: 4, key: "officer_assigned",     label: `4. ${t("status.officer_assigned", "Officer Assigned")}`,       desc: t("tracking.supervisingOfficer", "Supervising officer attached") },
+    { id: 5, key: "worker_assigned",      label: `5. ${t("status.worker_assigned", "Worker Assigned")}`,         desc: t("tracking.assignedFieldWorker", "Field worker dispatched") },
+    { id: 6, key: "in_progress",          label: `6. ${t("tracking.fieldWork", "In Progress")}`,                  desc: t("tracking.fieldWorkDesc", "Work started on the ground") },
+    { id: 7, key: "resolution_submitted", label: `7. ${t("status.resolution_submitted", "Resolution Submitted")}`, desc: t("tracking.verifiedProofUploaded", "Worker uploaded proof") },
+    { id: 8, key: "resolved",             label: `8. ${t("tracking.closedWithProof", "Resolved")}`,               desc: t("tracking.closedWithProofDesc", "Officer approved resolution") },
+  ], [t])
 
   const activeStage = getActiveStageIndex(status)
 
   return (
-    <Card className="shadow-sm border-indigo-100 dark:border-slate-800 bg-gradient-to-r from-indigo-50/50 via-slate-50 to-blue-50/50 dark:from-slate-900 dark:to-slate-800/80">
-      <CardContent className="pt-5 pb-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Clock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-            {t("tracking.stepperTitle")}
-          </h3>
-          <span className="text-xs font-semibold text-slate-500 font-mono">
-            {t("tracking.stage")} {activeStage} {t("tracking.of")} 8
+    <Card className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      <CardContent className="p-5 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+          <div>
+            <h3 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
+              {t("tracking.stepperTitle", "Resolution Workflow Progress")}
+            </h3>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Automated stage verification & supervisor audit pipeline</p>
+          </div>
+          <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
+            {t("tracking.stage", "Stage")} {activeStage} {t("tracking.of", "of")} 8
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-2 relative">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-2 relative">
           {stepperStages.map((stage) => {
             const isPassed = stage.id < activeStage
             const isCurrent = stage.id === activeStage
@@ -149,29 +152,29 @@ export const SlaStepper = React.memo(function SlaStepper({ status }: SlaStepperP
             return (
               <div key={stage.id} className="flex flex-col items-center text-center relative z-10">
                 <div
-                  className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-extrabold text-xs transition-all ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all ${
                     isCurrent
-                      ? "bg-indigo-600 text-white ring-4 ring-indigo-200 shadow-md shadow-indigo-500/20 scale-110"
+                      ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-sm ring-4 ring-zinc-200 dark:ring-zinc-800"
                       : isPassed
-                      ? "bg-emerald-600 text-white shadow-sm"
-                      : "bg-slate-200 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700"
+                      ? "bg-emerald-600 text-white"
+                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 border border-zinc-200 dark:border-zinc-700"
                   }`}
                 >
-                  {isPassed ? <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[3]" /> : stage.id}
+                  {isPassed ? <Check className="h-3.5 w-3.5 stroke-[2.5]" /> : stage.id}
                 </div>
 
                 <span
-                  className={`text-[11px] sm:text-xs font-bold mt-2 line-clamp-1 ${
+                  className={`text-xs font-medium mt-2 line-clamp-1 ${
                     isCurrent
-                      ? "text-indigo-700 dark:text-indigo-400 font-extrabold"
+                      ? "text-zinc-900 dark:text-zinc-100 font-bold"
                       : isCompleted
-                      ? "text-slate-900 dark:text-white font-semibold"
-                      : "text-slate-400"
+                      ? "text-zinc-800 dark:text-zinc-200 font-medium"
+                      : "text-zinc-400 dark:text-zinc-500"
                   }`}
                 >
                   {stage.label}
                 </span>
-                <span className="text-[10px] text-slate-500 hidden md:block mt-0.5 max-w-[120px] leading-tight">
+                <span className="text-[10px] text-zinc-400 hidden md:block mt-0.5 max-w-[110px] leading-tight">
                   {stage.desc}
                 </span>
               </div>
@@ -205,10 +208,10 @@ export const CitizenEvidenceShowcase = React.memo(function CitizenEvidenceShowca
   const activeUrl = activeAttachment ? getImageUrl(activeAttachment) : null
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 sm:p-6 border border-zinc-200/80 dark:border-zinc-800 shadow-sm space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-          <Camera className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <h3 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+          <Camera className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           {t("tracking.citizenEvidence")}
         </h3>
         {hasAttachments && (
@@ -222,28 +225,28 @@ export const CitizenEvidenceShowcase = React.memo(function CitizenEvidenceShowca
       {hasAttachments && activeUrl ? (
         <div className="space-y-3">
           {/* Main Hero Photo Container */}
-          <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 shadow-md group max-h-[420px] flex items-center justify-center">
+          <div className="relative rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-950 shadow-sm group max-h-[420px] flex items-center justify-center">
             <img
               src={activeUrl}
               onError={handleImageError}
               alt={title || "Citizen Uploaded Issue Evidence"}
-              className="w-full h-72 sm:h-96 object-cover object-center group-hover:scale-102 transition-transform duration-300 cursor-pointer"
+              className="w-full h-72 sm:h-96 object-cover object-center group-hover:scale-[1.01] transition-transform duration-300 cursor-pointer"
               onClick={() => onZoom(activeUrl)}
             />
 
             {/* Hover Fullscreen Button */}
             <button
               onClick={() => onZoom(activeUrl)}
-              className="absolute bottom-3.5 right-3.5 bg-slate-900/85 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs font-semibold backdrop-blur-md flex items-center gap-1.5 shadow-xl transition-all border border-white/10"
+              className="absolute bottom-3.5 right-3.5 bg-zinc-900/90 hover:bg-zinc-900 text-white px-3 py-1.5 rounded-xl text-xs font-medium backdrop-blur-md flex items-center gap-1.5 shadow-md transition-all border border-zinc-700 cursor-pointer"
               title="View Fullscreen Photo"
             >
-              <ZoomIn className="w-4 h-4" />
+              <ZoomIn className="w-3.5 h-3.5" />
               {t("tracking.viewFullscreen")}
             </button>
 
             {/* Bottom Left Timestamp Tag */}
-            <div className="absolute bottom-3.5 left-3.5 bg-slate-900/85 text-slate-200 px-3 py-1.5 rounded-xl text-[11px] font-mono backdrop-blur-md flex items-center gap-1.5 border border-white/10">
-              <Calendar className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="absolute bottom-3.5 left-3.5 bg-zinc-900/90 text-zinc-300 px-3 py-1.5 rounded-xl text-[11px] font-mono backdrop-blur-md flex items-center gap-1.5 border border-zinc-700">
+              <Calendar className="w-3.5 h-3.5 text-zinc-400" />
               <span>{formatDateTime(createdAt)}</span>
             </div>
           </div>
@@ -251,7 +254,7 @@ export const CitizenEvidenceShowcase = React.memo(function CitizenEvidenceShowca
           {/* Multi-Photo Thumbnail Strip (if multiple photos) */}
           {attachments.length > 1 && (
             <div className="space-y-1.5 pt-1">
-              <p className="text-xs font-semibold text-slate-500">
+              <p className="text-xs font-semibold text-zinc-500">
                 Uploaded Evidence Files ({attachments.length}) — Click to preview
               </p>
               <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 pt-0.5">
@@ -264,8 +267,8 @@ export const CitizenEvidenceShowcase = React.memo(function CitizenEvidenceShowca
                       onClick={() => setSelectedIdx(idx)}
                       className={`relative rounded-xl overflow-hidden h-16 w-20 shrink-0 border-2 transition-all cursor-pointer ${
                         isSelected
-                          ? "border-indigo-600 ring-2 ring-indigo-200 dark:ring-indigo-900 scale-105"
-                          : "border-slate-200 dark:border-slate-700 opacity-70 hover:opacity-100"
+                          ? "border-emerald-600 ring-2 ring-emerald-200 dark:ring-emerald-950 scale-105"
+                          : "border-zinc-200 dark:border-zinc-700 opacity-70 hover:opacity-100"
                       }`}
                     >
                       <img
@@ -274,7 +277,7 @@ export const CitizenEvidenceShowcase = React.memo(function CitizenEvidenceShowca
                         alt={`Evidence ${idx + 1}`}
                         className="w-full h-full object-cover"
                       />
-                      <span className="absolute bottom-0 inset-x-0 bg-slate-900/80 text-[10px] text-white font-mono py-0.5 text-center">
+                      <span className="absolute bottom-0 inset-x-0 bg-zinc-900/80 text-[10px] text-white font-mono py-0.5 text-center">
                         #{idx + 1}
                       </span>
                     </button>

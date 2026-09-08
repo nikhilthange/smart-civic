@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   Award,
   Gift,
-  Sparkles,
   Check,
   Copy,
   Loader2,
@@ -377,80 +376,67 @@ export default function KarmaRewards() {
       className="max-w-6xl mx-auto space-y-8 pb-16 w-full"
     >
       {/* ─── Hero Banner with Glassmorphic Ambient Aura ─── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950 text-white p-6 sm:p-10 shadow-2xl border border-emerald-500/20">
-        {/* Ambient Gradient Blobs */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+      <div className="relative overflow-hidden rounded-2xl bg-zinc-900 text-white p-6 sm:p-8 shadow-sm border border-zinc-800">
+        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-400/30 text-emerald-300 text-xs font-semibold backdrop-blur-md">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin-slow" />
-              <span>Official BMC Civic Citizen Rewards</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+              <span>Municipal Civic Citizen Recognition</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-200 bg-clip-text text-transparent">
-              Civic Hero Badges & Karma Perks
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-100">
+              Civic Badges & Karma Recognition
             </h1>
-            <p className="text-emerald-100/80 text-sm sm:text-base leading-relaxed">
+            <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">
               Earn Civic Karma by resolving neighborhood issues and verifying ground resolutions. Redeem points for authentic Mumbai municipal benefits.
             </p>
 
             {/* Next Milestone Progress Bar */}
             <div className="pt-2">
-              <div className="flex items-center justify-between text-xs text-emerald-200/90 font-medium mb-1.5">
+              <div className="flex items-center justify-between text-xs text-zinc-300 font-medium mb-1.5">
                 <span className="flex items-center gap-1.5">
-                  <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
                   {nextMilestone.remaining > 0 ? (
                     <>
                       Next Milestone: <strong className="text-white">{nextMilestone.name}</strong>
                     </>
                   ) : (
-                    <strong className="text-amber-300">Highest Civic Recognition Achieved! 🏆</strong>
+                    <strong className="text-emerald-400">Highest Civic Recognition Achieved</strong>
                   )}
                 </span>
                 {nextMilestone.remaining > 0 && (
-                  <span className="font-mono text-amber-300">{nextMilestone.remaining} pts needed</span>
+                  <span className="font-mono text-emerald-400">{nextMilestone.remaining} pts needed</span>
                 )}
               </div>
-              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden border border-white/10 backdrop-blur-sm">
+              <div className="w-full h-2 rounded-full bg-zinc-800 overflow-hidden border border-zinc-700/60">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${nextMilestone.progress}%` }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 rounded-full"
+                  className="h-full bg-emerald-500 rounded-full"
                 />
               </div>
             </div>
           </div>
 
-          {/* Karma Points Floating Display Card */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="relative group bg-white/[0.07] backdrop-blur-xl rounded-2xl p-6 sm:p-7 border border-white/20 text-center w-full lg:w-auto lg:min-w-[240px] shadow-2xl overflow-hidden"
+          {/* Karma Points Display Card */}
+          <div
+            className="bg-zinc-950/70 rounded-xl p-5 sm:p-6 border border-zinc-800 text-center w-full lg:w-auto lg:min-w-[220px] shadow-sm"
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 via-transparent to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10">
-              <span className="text-[11px] uppercase tracking-widest text-emerald-300/90 font-bold block mb-1">
-                Your Civic Karma Balance
+            <div>
+              <span className="text-[11px] uppercase tracking-wider text-zinc-400 font-semibold block mb-1">
+                Civic Karma Balance
               </span>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-4xl sm:text-6xl font-black text-amber-300 font-mono tracking-tight drop-shadow-[0_4px_12px_rgba(251,191,36,0.3)]">
+                <span className="text-4xl sm:text-5xl font-bold text-zinc-100 font-mono tracking-tight tabular-nums">
                   {karmaPoints}
                 </span>
-                <span className="text-base font-bold text-slate-200 tracking-wide">PTS</span>
               </div>
-              <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-center gap-3 text-[11px] text-emerald-200/90">
-                <span className="flex items-center gap-1 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" /> +10 / ticket
-                </span>
-                <span className="flex items-center gap-1 font-medium">
-                  <span className="w-2 h-2 rounded-full bg-amber-400" /> +5 / upvote
-                </span>
-              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">
+                Top {karmaPoints > 500 ? "5%" : "15%"} active contributor
+              </p>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
 
@@ -846,7 +832,7 @@ export default function KarmaRewards() {
                   {activeVoucherModal.voucherCode}
                 </div>
 
-                {/* Barcode Mockup */}
+                {/* Dynamic Barcode Graphic */}
                 <div className="flex justify-center items-center gap-1 pt-1 opacity-70">
                   {[4, 2, 6, 2, 8, 3, 5, 2, 7, 3, 5, 2, 6, 4, 3, 6, 2, 5, 8, 3].map((h, idx) => (
                     <div

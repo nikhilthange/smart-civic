@@ -37,31 +37,25 @@ export function LiveWorkerTrackingModal({
 }: LiveWorkerTrackingModalProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
-  const [telemetry, setTelemetry] = useState<any>({
-    crewName: "BMC Ward H-West Quick Response Crew #3",
-    crewLeader: "Suresh Gaikwad (Junior Road Inspector)",
-    phone: "+91 98200 44122",
-    vehicleType: "JETPATCHER_TRUCK",
-    vehiclePlate: "MH-02-BQ-9104",
-    workerLocation: [72.8315, 19.0540],
-    incidentLocation: [72.8347, 19.0596],
-    distanceKm: "0.85",
-    etaMinutes: 4,
-    etaText: "Arriving in ~4 mins (0.8 km away)",
-    speedKmph: 26,
-    status: "EN_ROUTE",
-  })
+  const [telemetry, setTelemetry] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (isOpen) {
-      api.get(`/worker/track/${ticketId}`).then((res) => {
-        if (res.data.data) setTelemetry(res.data.data)
-      }).catch(() => {})
+    if (isOpen && ticketId) {
+      setIsLoading(true)
+      api.get(`/worker/track/${ticketId}`)
+        .then((res) => {
+          if (res.data?.data) {
+            setTelemetry(res.data.data)
+          }
+        })
+        .catch(() => {})
+        .finally(() => setIsLoading(false))
     }
   }, [isOpen, ticketId])
 
   useEffect(() => {
-    if (!isOpen || !mapContainerRef.current) return
+    if (!isOpen || !mapContainerRef.current || !telemetry?.workerLocation || !telemetry?.incidentLocation) return
 
     const workerPos: [number, number] = [telemetry.workerLocation[1], telemetry.workerLocation[0]]
     const incidentPos: [number, number] = [telemetry.incidentLocation[1], telemetry.incidentLocation[0]]
@@ -78,7 +72,7 @@ export function LiveWorkerTrackingModal({
       }).addTo(map)
 
       L.marker(workerPos, { icon: workerIcon })
-        .bindPopup(`<strong>${telemetry.crewName}</strong><br/>Vehicle: ${telemetry.vehiclePlate}`)
+        .bindPopup(`<strong>${telemetry.crewName || "Field Crew"}</strong><br/>Vehicle: ${telemetry.vehiclePlate || "Service Unit"}`)
         .addTo(map)
 
       L.marker(incidentPos, { icon: incidentIcon })
@@ -129,53 +123,64 @@ export function LiveWorkerTrackingModal({
           </Button>
         </div>
 
-        {/* Live ETA Stats Banner */}
-        <div className="p-4 bg-slate-950 text-white flex flex-wrap items-center justify-between gap-4 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400">
-              <Clock className="w-5 h-5 animate-pulse" />
-            </div>
-            <div>
-              <span className="text-[10px] font-mono text-cyan-300 uppercase block font-bold">Estimated Arrival</span>
-              <div className="text-lg font-black font-mono text-white">
-                {telemetry.etaMinutes} MINS <span className="text-xs text-slate-400">({telemetry.distanceKm} km)</span>
+        {isLoading || !telemetry ? (
+          <div className="h-96 flex flex-col items-center justify-center gap-3 p-6 text-slate-500">
+            <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-xs font-mono">Connecting to civic GPS satellite dispatch telemetry...</p>
+          </div>
+        ) : (
+          <>
+            {/* Live ETA Stats Banner */}
+            <div className="p-4 bg-slate-950 text-white flex flex-wrap items-center justify-between gap-4 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400">
+                  <Clock className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-mono text-cyan-300 uppercase block font-bold">Estimated Arrival</span>
+                  <div className="text-lg font-black font-mono text-white">
+                    {telemetry.etaMinutes} MINS <span className="text-xs text-slate-400">({telemetry.distanceKm} km)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Badge className="bg-emerald-600 text-white font-mono text-xs px-2.5 py-1">
+                  SPEED: {telemetry.speedKmph || 24} KM/H
+                </Badge>
+                <Badge className="bg-sky-600 text-white font-mono text-xs px-2.5 py-1">
+                  {telemetry.vehiclePlate || "SERVICE UNIT"}
+                </Badge>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <Badge className="bg-emerald-600 text-white font-mono text-xs px-2.5 py-1">
-              SPEED: {telemetry.speedKmph} KM/H
-            </Badge>
-            <Badge className="bg-sky-600 text-white font-mono text-xs px-2.5 py-1">
-              {telemetry.vehiclePlate}
-            </Badge>
-          </div>
-        </div>
+            {/* Leaflet Live Map */}
+            <div ref={mapContainerRef} className="h-72 w-full relative z-0" />
 
-        {/* Leaflet Live Map */}
-        <div ref={mapContainerRef} className="h-72 w-full relative z-0" />
+            {/* Crew Footer */}
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div>
+                <div className="font-bold text-slate-900 dark:text-white">{telemetry.crewLeader || "Field Operations Leader"}</div>
+                <div className="text-slate-500 dark:text-slate-400 text-[11px]">{telemetry.crewName || "Municipal Response Unit"}</div>
+              </div>
 
-        {/* Crew Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div>
-            <div className="font-bold text-slate-900 dark:text-white">{telemetry.crewLeader}</div>
-            <div className="text-slate-500 dark:text-slate-400 text-[11px]">{telemetry.crewName}</div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <a
-              href={`tel:${telemetry.phone}`}
-              className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-semibold text-xs flex items-center gap-1.5"
-            >
-              <Phone className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Call Crew</span>
-            </a>
-            <Button size="sm" onClick={onClose} className="rounded-xl text-xs">
-              Done
-            </Button>
-          </div>
-        </div>
+              <div className="flex items-center gap-2">
+                {telemetry.phone && (
+                  <a
+                    href={`tel:${telemetry.phone}`}
+                    className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-semibold text-xs flex items-center gap-1.5"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Call Crew</span>
+                  </a>
+                )}
+                <Button size="sm" onClick={onClose} className="rounded-xl text-xs">
+                  Done
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

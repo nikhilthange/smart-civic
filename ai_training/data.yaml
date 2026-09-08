@@ -1,0 +1,27 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# BMC Smart Civic OS (CityOS) — Multi-Class Object Detection Dataset Config
+# Framework: Ultralytics YOLOv8 / YOLO11
+# ══════════════════════════════════════════════════════════════════════════════
+
+path: ./dataset # dataset root dir
+train: images/train
+val: images/val
+test: images/test # optional
+
+# Number of Municipal Civic Classes
+nc: 12
+
+# Class names mapped to BMC statutory departments
+names:
+  0: pothole
+  1: garbage_overflow
+  2: open_manhole
+  3: broken_streetlight
+  4: waterlogging
+  5: fallen_tree
+  6: sewage_overflow
+  7: road_crack
+  8: exposed_wire
+  9: broken_pavement
+  10: abandoned_vehicle
+  11: animal_carcass

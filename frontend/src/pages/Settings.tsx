@@ -27,8 +27,8 @@ export default function Settings() {
   const { i18n } = useTranslation()
 
   // Profile Form State
-  const [profileName, setProfileName] = useState(user?.name || "Citizen User")
-  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "+91 98200 12345")
+  const [profileName, setProfileName] = useState(user?.name || "")
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "")
   const currentLangCode = i18n.language ? i18n.language.slice(0, 2) : "en"
   const [language, setLanguage] = useState(currentLangCode)
   const [themePreference, setThemePreference] = useState("system")
@@ -142,7 +142,7 @@ export default function Settings() {
                       id="name"
                       value={profileName}
                       onChange={(e) => setProfileName(e.target.value)}
-                      placeholder="e.g. Rahul Sharma"
+                      placeholder="Enter your full name"
                       required
                     />
                   </div>
@@ -151,7 +151,7 @@ export default function Settings() {
                     <Input
                       id="email"
                       type="email"
-                      value={user?.email || "citizen@mumbai.gov.in"}
+                      value={user?.email || ""}
                       disabled
                       className="bg-slate-100 dark:bg-slate-900/50 cursor-not-allowed opacity-80"
                     />
@@ -162,7 +162,7 @@ export default function Settings() {
                       id="phone"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="+91 98200 00000"
+                      placeholder="+91 98000 00000"
                     />
                   </div>
                   <div className="space-y-2">

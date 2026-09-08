@@ -27,35 +27,29 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-8 sm:p-12 text-center shadow-sm flex flex-col items-center justify-center ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 p-8 sm:p-12 text-center shadow-xs flex flex-col items-center justify-center ${className}`}
     >
-      {/* Soft Emerald Glow Backdrop */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
-
       <div className="relative mb-4">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner">
-          <Icon className="w-8 h-8" />
-        </div>
-        <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-white dark:border-slate-900 flex items-center justify-center">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+        <div className="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700/60 flex items-center justify-center">
+          <Icon className="w-7 h-7" />
         </div>
       </div>
 
-      <h3 className="text-base sm:text-lg font-bold font-display text-slate-900 dark:text-white max-w-sm">
+      <h3 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 max-w-sm">
         {title}
       </h3>
-      <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md font-sans leading-relaxed">
+      <p className="mt-1.5 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 max-w-md leading-relaxed">
         {description}
       </p>
 
       {children && <div className="mt-4 w-full max-w-md">{children}</div>}
 
       {(actionLabel || secondaryActionLabel) && (
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
           {actionLabel && onAction && (
             <Button
               onClick={onAction}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-4 py-2 shadow-sm shadow-emerald-600/20 active:scale-[0.98] transition-all gap-1.5"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-4 py-2 shadow-xs active:scale-[0.98] transition-all gap-1.5 cursor-pointer"
             >
               <span>{actionLabel}</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -65,7 +59,7 @@ export function EmptyState({
             <Button
               variant="outline"
               onClick={onSecondaryAction}
-              className="border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              className="border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-medium px-4 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
             >
               {secondaryActionLabel}
             </Button>

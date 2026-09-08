@@ -58,11 +58,12 @@ const staggerItem: Variants = {
 }
 
 function StatusBadge({ status }: { status: ComplaintStatus }) {
+  const { t } = useTranslation()
   if (status === "pending" || status === "submitted" || status === "ai_verified") {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 shadow-2xs">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-        {status === "ai_verified" ? "AI Verified" : "Pending"}
+        {status === "ai_verified" ? t("status.ai_verified", "AI Verified") : t("status.pending", "Pending")}
       </span>
     )
   }
@@ -76,8 +77,8 @@ function StatusBadge({ status }: { status: ComplaintStatus }) {
   ) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20 shadow-2xs">
-        <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping" />
-        {status === "in_progress" ? "In Progress" : "Dispatched"}
+        <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+        {status === "in_progress" ? t("status.in_progress", "In Progress") : t("status.dispatched", "Dispatched")}
       </span>
     )
   }
@@ -86,7 +87,7 @@ function StatusBadge({ status }: { status: ComplaintStatus }) {
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 shadow-2xs">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-        Resolved
+        {t("status.resolved", "Resolved")}
       </span>
     )
   }
@@ -94,7 +95,7 @@ function StatusBadge({ status }: { status: ComplaintStatus }) {
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20">
       <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-      {status}
+      {t(`status.${status}`, status)}
     </span>
   )
 }
@@ -158,32 +159,42 @@ export default function Dashboard() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-      className="max-w-7xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4"
+      transition={{ duration: 0.2 }}
+      className="max-w-7xl mx-auto space-y-6 pt-1 pb-12 px-2 sm:px-4"
     >
-      {/* Header with Title & Primary Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-slate-900 dark:text-white">
-            {greeting}, {user?.name?.split(" ")[0] || "Citizen"} 👋
+      {/* 1. Header with Breadcrumb-Style Context & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200/80 dark:border-zinc-800/80">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+            <span>Municipal Grievance Portal</span>
+            <span>/</span>
+            <span className="text-zinc-900 dark:text-zinc-200 font-semibold">{user?.ward || "Mumbai Central Hub"}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            {greeting}, {user?.name?.split(" ")[0] || "Citizen"}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans">
-            {t("dashPage.subtitle", "Track your active municipal grievances, ward SLA metrics, and civic karma.")}
-          </p>
         </div>
-        {user?.role === "citizen" && (
-          <Link to="/complaint/create">
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm shadow-emerald-600/20 text-xs font-semibold px-4 py-2 gap-2 hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] transition-all">
-              <Plus className="h-4 w-4" />
-              <span>{t("dashPage.newComplaint", "Report New Issue")}</span>
+
+        <div className="flex items-center gap-2.5">
+          <Link to="/quick-report">
+            <Button variant="outline" className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold px-3.5 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800">
+              Quick Snap
             </Button>
           </Link>
-        )}
+          {user?.role === "citizen" && (
+            <Link to="/complaint/create">
+              <Button className="bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl text-xs font-semibold px-4 py-2 gap-1.5 shadow-sm">
+                <Plus className="h-4 w-4" />
+                <span>{t("dashPage.newComplaint", "Report New Issue")}</span>
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
-      {/* 1. Minimalist KPI Stats Cards */}
+      {/* 2. Refined Handcrafted KPI Cards */}
       {isLoading ? (
         <SkeletonKpiCard count={4} />
       ) : (
@@ -191,136 +202,164 @@ export default function Dashboard() {
           variants={staggerContainer}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4.5"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3.5"
         >
           {/* Total Submissions */}
           <motion.div
             variants={staggerItem}
-            className="bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col justify-between"
+            className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-mono">
+              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {t("dashPage.totalSubmissions", "Total Reports")}
               </span>
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                 <Activity className="h-4 w-4" />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums tracking-tight text-slate-900 dark:text-white">
+            <div className="mt-4">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
                 {stats?.total ?? 0}
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">All-time municipal filings</p>
+              <p className="text-[11px] text-zinc-400 mt-1">All-time submitted grievances</p>
             </div>
           </motion.div>
 
-          {/* Pending / In-Triage */}
+          {/* Pending */}
           <motion.div
             variants={staggerItem}
-            className="bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-amber-500/40 dark:hover:border-amber-500/30 transition-all duration-200 flex flex-col justify-between"
+            className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-mono">
+              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {t("dashPage.pending", "Pending Triage")}
               </span>
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
                 <Clock className="h-4 w-4" />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums tracking-tight text-amber-600 dark:text-amber-400">
+            <div className="mt-4">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
                 {pending}
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">Awaiting ward assignment</p>
+              <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80 mt-1 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                Awaiting ward assignment
+              </p>
             </div>
           </motion.div>
 
           {/* In Progress */}
           <motion.div
             variants={staggerItem}
-            className="bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-sky-500/40 dark:hover:border-sky-500/30 transition-all duration-200 flex flex-col justify-between"
+            className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-mono">
+              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {t("dashPage.inProgress", "Field In-Progress")}
               </span>
-              <div className="p-2 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400">
+              <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400">
                 <AlertTriangle className="h-4 w-4" />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums tracking-tight text-sky-600 dark:text-sky-400">
+            <div className="mt-4">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
                 {inProgress}
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">Dispatched to field teams</p>
+              <p className="text-[11px] text-sky-600/80 dark:text-sky-400/80 mt-1 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+                Dispatched to field teams
+              </p>
             </div>
           </motion.div>
 
           {/* Resolved */}
           <motion.div
             variants={staggerItem}
-            className="bg-white/95 dark:bg-zinc-900/90 backdrop-blur-md border border-slate-200/60 dark:border-zinc-800/60 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:border-emerald-500/40 dark:hover:border-emerald-500/30 transition-all duration-200 flex flex-col justify-between"
+            className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider font-mono">
+              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                 {t("dashPage.resolved", "Resolved")}
               </span>
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 className="h-4 w-4" />
               </div>
             </div>
-            <div className="mt-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums tracking-tight text-emerald-600 dark:text-emerald-400">
+            <div className="mt-4">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
                 {resolved}
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">Verified & closed tickets</p>
+              <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Verified & closed tickets
+              </p>
             </div>
           </motion.div>
         </motion.div>
       )}
 
-      {/* 2. Sleek Civic Karma Widget (Citizen Only) */}
+      {/* 3. Refined Civic Karma Progress Banner (Citizen Only) */}
       {user?.role === "citizen" &&
         (() => {
           const karmaPoints = user?.karmaPoints ?? 0
           const tierBadge =
             karmaPoints >= 150
-              ? "Top 5% Contributor"
+              ? "Ward Guardian (Tier 3)"
               : karmaPoints >= 50
-              ? "Ward Guardian"
+              ? "Active Contributor (Tier 2)"
               : karmaPoints > 0
-              ? "Active Citizen"
-              : "Citizen Contributor"
+              ? "Verified Citizen (Tier 1)"
+              : "Citizen Member"
+
+          const progressPercent = Math.min(100, Math.round((karmaPoints / 200) * 100))
 
           return (
-            <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50/40 dark:from-emerald-950/30 dark:via-teal-950/20 dark:to-emerald-950/10 border border-emerald-200/80 dark:border-emerald-500/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shadow-emerald-600/30 shrink-0">
-                  <Award className="w-5 h-5" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-bold text-emerald-950 dark:text-emerald-200 font-mono text-sm sm:text-base">
-                      Civic Karma: {karmaPoints} Pts
-                    </span>
-                    <span className="inline-flex px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
-                      {tierBadge}
-                    </span>
+            <div className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center shrink-0">
+                    <Award className="w-5 h-5" />
                   </div>
-                  <p className="text-xs text-emerald-700/80 dark:text-emerald-400 mt-0.5 truncate">
-                    Top contributor in {user?.ward || "Ward H-West"} • Earn municipal tax rebates & transit passes
-                  </p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm sm:text-base">
+                        Civic Karma: {karmaPoints} Points
+                      </span>
+                      <span className="px-2 py-0.5 text-[10px] font-mono font-medium rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                        {tierBadge}
+                      </span>
+                    </div>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                      Earn municipal tax incentives & priority response times by participating in ward upkeep.
+                    </p>
+                  </div>
+                </div>
+                <Link to="/rewards" className="shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto text-xs font-semibold rounded-xl border-zinc-200 dark:border-zinc-700"
+                  >
+                    <span>View Benefits</span>
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Progress bar */}
+              <div className="space-y-1 pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
+                <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono">
+                  <span>{karmaPoints} / 200 pts to next tier</span>
+                  <span>{progressPercent}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                  <div
+                    className="h-full bg-zinc-900 dark:bg-zinc-100 rounded-full transition-all duration-300"
+                    style={{ width: `${progressPercent}%` }}
+                  />
                 </div>
               </div>
-              <Link to="/rewards" className="shrink-0 w-full sm:w-auto">
-                <Button
-                  size="sm"
-                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-4 py-2 shadow-sm shadow-emerald-600/20 gap-1.5 transition-all min-h-[40px]"
-                >
-                  <span>Redeem Rewards</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Button>
-              </Link>
             </div>
           )
         })()}
@@ -329,13 +368,13 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 8 Cols: Polished Recent Complaints Table */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-2xl shadow-sm overflow-hidden">
-            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
               <div>
-                <h2 className="text-base font-bold font-display text-slate-900 dark:text-white">
+                <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
                   {t("dashPage.recentComplaints", "Recent Grievances")}
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                   {t("dashPage.recentSubtitle", "Live tracking of recently reported issues in your ward")}
                 </p>
               </div>
@@ -343,7 +382,7 @@ export default function Dashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg h-8"
+                  className="gap-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white rounded-lg h-8"
                 >
                   <span>{t("dashPage.viewAll", "View All")}</span>
                   <ArrowRight className="h-3 w-3" />
@@ -369,25 +408,25 @@ export default function Dashboard() {
               ) : (
                 <>
                   {/* Desktop Table View */}
-                  <div className="hidden md:block w-full overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-zinc-800/60 bg-white/90 dark:bg-zinc-900/90 shadow-[0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-md">
-                    <Table className="w-full min-w-[500px]">
+                  <div className="hidden md:block w-full overflow-x-auto">
+                    <Table className="w-full">
                       <TableHeader>
-                        <TableRow className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200/60 dark:border-zinc-800/60">
-                          <TableHead className="w-14 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-mono">Photo</TableHead>
-                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 font-mono">ID</TableHead>
-                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Issue Details</TableHead>
-                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 hidden md:table-cell font-mono">Date</TableHead>
-                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400 text-right">Status</TableHead>
+                        <TableRow className="bg-zinc-50/70 dark:bg-zinc-800/40 border-b border-zinc-200/80 dark:border-zinc-800">
+                          <TableHead className="w-12 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 font-mono">Photo</TableHead>
+                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 font-mono">ID</TableHead>
+                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Issue Details</TableHead>
+                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 hidden md:table-cell font-mono">Date</TableHead>
+                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 text-right">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {recent.map((c) => (
                           <TableRow
                             key={c._id}
-                            className="hover:bg-slate-50/80 dark:hover:bg-zinc-800/50 even:bg-slate-50/30 dark:even:bg-zinc-900/30 transition-colors border-b border-slate-100 dark:border-zinc-800/40"
+                            className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors border-b border-zinc-100 dark:border-zinc-800/60"
                           >
                             <TableCell>
-                              <div className="h-9 w-9 rounded-xl overflow-hidden border border-slate-200/80 dark:border-zinc-700 bg-slate-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
+                              <div className="h-8 w-8 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
                                 {c.attachments && c.attachments[0] ? (
                                   <img
                                     src={getImageUrl(c.attachments[0])}
@@ -396,28 +435,28 @@ export default function Dashboard() {
                                     className="h-full w-full object-cover"
                                   />
                                 ) : (
-                                  <Building2 className="w-4 h-4 text-slate-400" />
+                                  <Building2 className="w-4 h-4 text-zinc-400" />
                                 )}
                               </div>
                             </TableCell>
-                            <TableCell className="font-mono text-xs font-semibold tabular-nums">
+                            <TableCell className="font-mono text-xs font-semibold">
                               <Link
                                 to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                                className="text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                                className="text-zinc-900 dark:text-zinc-100 hover:underline inline-flex items-center gap-1"
                               >
                                 <span>{c.complaintId || c._id?.slice(-6).toUpperCase()}</span>
-                                <ExternalLink className="w-3 h-3 opacity-60" />
+                                <ExternalLink className="w-3 h-3 opacity-50" />
                               </Link>
                             </TableCell>
                             <TableCell>
-                              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1 max-w-[220px]">
+                              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-1 max-w-[240px]">
                                 {c.title}
                               </p>
-                              <p className="text-[11px] text-slate-400 dark:text-zinc-500 line-clamp-1">
+                              <p className="text-[11px] text-zinc-400 line-clamp-1">
                                 {CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}
                               </p>
                             </TableCell>
-                            <TableCell className="text-xs text-slate-500 font-mono tabular-nums hidden md:table-cell">
+                            <TableCell className="text-xs text-zinc-500 font-mono tabular-nums hidden md:table-cell">
                               {new Date(c.createdAt).toLocaleDateString("en-IN", {
                                 day: "2-digit",
                                 month: "short",
@@ -430,7 +469,7 @@ export default function Dashboard() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="text-[11px] text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30 hover:bg-amber-50 dark:hover:bg-amber-950/30 h-7 px-2 rounded-lg"
+                                    className="text-[11px] h-7 px-2 rounded-lg"
                                     onClick={async () => {
                                       const reason = prompt(
                                         "State reason for reopening issue:",
@@ -469,11 +508,11 @@ export default function Dashboard() {
                     {recent.map((c) => (
                       <div
                         key={c._id}
-                        className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2.5"
+                        className="p-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-2.5"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="h-10 w-10 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
+                            <div className="h-9 w-9 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
                               {c.attachments && c.attachments[0] ? (
                                 <img
                                   src={getImageUrl(c.attachments[0])}
@@ -482,17 +521,17 @@ export default function Dashboard() {
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <Building2 className="w-4 h-4 text-slate-400" />
+                                <Building2 className="w-4 h-4 text-zinc-400" />
                               )}
                             </div>
                             <div className="min-w-0">
                               <Link
                                 to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                                className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                                className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100 hover:underline"
                               >
                                 {c.complaintId || c._id?.slice(-6).toUpperCase()}
                               </Link>
-                              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                              <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate mt-0.5">
                                 {c.title}
                               </p>
                             </div>
@@ -500,11 +539,11 @@ export default function Dashboard() {
                           <StatusBadge status={c.status} />
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                        <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-1 border-t border-zinc-200/50 dark:border-zinc-700/50">
                           <span>{CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}</span>
                           <Link
                             to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                            className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1"
+                            className="font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1"
                           >
                             <span>Track</span>
                             <ArrowRight className="w-3 h-3" />
@@ -519,12 +558,12 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Right 4 Cols: Quick Actions (2x2) & Live Feed */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Quick Action Triggers 2x2 Grid */}
-          <Card className="border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-4">
+        {/* Right 4 Cols: Quick Actions & Live Feed */}
+        <div className="lg:col-span-4 space-y-5">
+          {/* Quick Action Triggers Grid */}
+          <Card className="border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] p-4 sm:p-5">
             <CardHeader className="p-0 pb-3">
-              <CardTitle className="text-xs font-bold font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <CardTitle className="text-xs font-bold font-mono uppercase tracking-wider text-zinc-500">
                 {t("dashPage.quickActions", "Quick Actions")}
               </CardTitle>
             </CardHeader>
@@ -534,30 +573,30 @@ export default function Dashboard() {
                 const actions =
                   role === "worker"
                     ? [
-                        { to: "/worker-queue", label: "Worker Queue", sub: "Active & Pool", icon: Wrench, iconColor: "text-amber-600 dark:text-amber-400 bg-amber-500/10", borderHover: "hover:border-amber-500/50 hover:bg-amber-50/50 dark:hover:bg-amber-950/20" },
-                        { to: "/map", label: "Ward Map", sub: "24-Ward GIS", icon: MapPin, iconColor: "text-sky-600 dark:text-sky-400 bg-sky-500/10", borderHover: "hover:border-sky-500/50 hover:bg-sky-50/50 dark:hover:bg-sky-950/20" },
-                        { to: "/complaints", label: "View Ledger", sub: "Task history", icon: BarChart3, iconColor: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10", borderHover: "hover:border-indigo-500/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20" },
-                        { to: "/quick-report", label: "Field Snap", sub: "Instant report", icon: Plus, iconColor: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10", borderHover: "hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20" },
+                        { to: "/worker-queue", label: "Worker Queue", sub: "Active & Pool", icon: Wrench },
+                        { to: "/map", label: "Ward Map", sub: "24-Ward GIS", icon: MapPin },
+                        { to: "/complaints", label: "View Ledger", sub: "Task history", icon: BarChart3 },
+                        { to: "/quick-report", label: "Field Snap", sub: "Instant report", icon: Plus },
                       ]
                     : role === "officer"
                     ? [
-                        { to: "/officer-portal", label: "Officer Triage", sub: "Ward desk", icon: Shield, iconColor: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10", borderHover: "hover:border-indigo-500/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20" },
-                        { to: "/monsoon-radar", label: "Monsoon Radar", sub: "Flood telemetry", icon: Waves, iconColor: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10", borderHover: "hover:border-cyan-500/50 hover:bg-cyan-50/50 dark:hover:bg-cyan-950/20" },
-                        { to: "/map", label: "Ward Map", sub: "24-Ward GIS", icon: MapPin, iconColor: "text-sky-600 dark:text-sky-400 bg-sky-500/10", borderHover: "hover:border-sky-500/50 hover:bg-sky-50/50 dark:hover:bg-sky-950/20" },
-                        { to: "/complaints", label: "All Complaints", sub: "Triage ledger", icon: BarChart3, iconColor: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10", borderHover: "hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20" },
+                        { to: "/officer-portal", label: "Officer Triage", sub: "Ward desk", icon: Shield },
+                        { to: "/monsoon-radar", label: "Monsoon Radar", sub: "Flood telemetry", icon: Waves },
+                        { to: "/map", label: "Ward Map", sub: "24-Ward GIS", icon: MapPin },
+                        { to: "/complaints", label: "All Complaints", sub: "Triage ledger", icon: BarChart3 },
                       ]
                     : role === "admin"
                     ? [
-                        { to: "/admin", label: "Admin Command", sub: "Operations", icon: ShieldAlert, iconColor: "text-rose-600 dark:text-rose-400 bg-rose-500/10", borderHover: "hover:border-rose-500/50 hover:bg-rose-50/50 dark:hover:bg-rose-950/20" },
-                        { to: "/admin/data-studio", label: "Data Studio", sub: "Analytics", icon: Database, iconColor: "text-purple-600 dark:text-purple-400 bg-purple-500/10", borderHover: "hover:border-purple-500/50 hover:bg-purple-50/50 dark:hover:bg-purple-950/20" },
-                        { to: "/admin/analytics", label: "Analytics", sub: "KPI metrics", icon: BarChart3, iconColor: "text-blue-600 dark:text-blue-400 bg-blue-500/10", borderHover: "hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/20" },
-                        { to: "/map", label: "City GIS Map", sub: "Mumbai live", icon: MapPin, iconColor: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10", borderHover: "hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20" },
+                        { to: "/admin", label: "Admin Command", sub: "Operations", icon: ShieldAlert },
+                        { to: "/admin/data-studio", label: "Data Studio", sub: "Analytics", icon: Database },
+                        { to: "/admin/analytics", label: "Analytics", sub: "KPI metrics", icon: BarChart3 },
+                        { to: "/map", label: "City GIS Map", sub: "Mumbai live", icon: MapPin },
                       ]
                     : [
-                        { to: "/complaint/create", label: "File Grievance", sub: "AI Vision upload", icon: Plus, iconColor: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10", borderHover: "hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20" },
-                        { to: "/map", label: "Ward Map", sub: "24-Ward GIS", icon: MapPin, iconColor: "text-sky-600 dark:text-sky-400 bg-sky-500/10", borderHover: "hover:border-sky-500/50 hover:bg-sky-50/50 dark:hover:bg-sky-950/20" },
-                        { to: "/complaints", label: "View Ledger", sub: "Status history", icon: BarChart3, iconColor: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10", borderHover: "hover:border-indigo-500/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20" },
-                        { to: "/rewards", label: "Rewards", sub: "Redeem vouchers", icon: Gift, iconColor: "text-amber-600 dark:text-amber-400 bg-amber-500/10", borderHover: "hover:border-amber-500/50 hover:bg-amber-50/50 dark:hover:bg-amber-950/20" },
+                        { to: "/complaint/create", label: "File Grievance", sub: "Photo & details", icon: Plus },
+                        { to: "/map", label: "Ward Map", sub: "24-Ward GIS", icon: MapPin },
+                        { to: "/complaints", label: "View Ledger", sub: "Status history", icon: BarChart3 },
+                        { to: "/rewards", label: "Rewards", sub: "Redeem perks", icon: Gift },
                       ]
 
                 return actions.map((act) => {
@@ -566,13 +605,13 @@ export default function Dashboard() {
                     <Link
                       key={act.to}
                       to={act.to}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 ${act.borderHover} transition-all text-center group`}
+                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all text-center group"
                     >
-                      <div className={`p-2 rounded-lg ${act.iconColor} group-hover:scale-110 transition-transform mb-1.5`}>
+                      <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 group-hover:scale-105 transition-transform mb-1.5">
                         <Icon className="w-4 h-4" />
                       </div>
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{act.label}</span>
-                      <span className="text-[10px] text-slate-400">{act.sub}</span>
+                      <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">{act.label}</span>
+                      <span className="text-[10px] text-zinc-400">{act.sub}</span>
                     </Link>
                   )
                 })
@@ -580,53 +619,29 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Live Ward Activity & SLA Summary Widget */}
-          <Card className="border border-slate-200/80 dark:border-white/[0.08] bg-white dark:bg-slate-900 rounded-2xl shadow-sm p-4">
-            <CardHeader className="p-0 pb-3 flex flex-row items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-emerald-600" />
-                <CardTitle className="text-xs font-bold font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Ward SLA & Field Readiness
-                </CardTitle>
-              </div>
-              <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                Ward H-West
+          {/* Live Ward Activity Widget */}
+          <Card className="border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-500">Ward Readiness</span>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                98.4% SLA Compliance
               </span>
-            </CardHeader>
-            <CardContent className="p-0 space-y-3 pt-1">
-              <div className="p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
-                <div>
-                  <p className="text-[11px] text-slate-400 font-mono">Avg Resolution Velocity</p>
-                  <p className="text-sm font-bold font-mono text-slate-900 dark:text-white mt-0.5">
-                    18.4 Hours <span className="text-[10px] font-medium text-emerald-600 font-sans">(94.2% on-time)</span>
-                  </p>
-                </div>
-                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
-                  <Clock className="w-4 h-4" />
-                </div>
+            </div>
+            <div className="space-y-2 text-xs text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center justify-between">
+                <span>Active Field Crews</span>
+                <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">14 Teams On-Duty</span>
               </div>
-
-              <div className="p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
-                <div>
-                  <p className="text-[11px] text-slate-400 font-mono">Field Crew Deployment</p>
-                  <p className="text-sm font-bold font-mono text-slate-900 dark:text-white mt-0.5 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-                    14 Active Crews
-                  </p>
-                </div>
-                <div className="p-2 rounded-lg bg-sky-500/10 text-sky-600">
-                  <Activity className="w-4 h-4" />
-                </div>
+              <div className="flex items-center justify-between">
+                <span>Avg Resolution Time</span>
+                <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">4.8 Hours</span>
               </div>
-
-              <Link
-                to="/map"
-                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 rounded-xl transition-colors group"
-              >
-                <span>View 24-Ward GIS Radar</span>
-                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </CardContent>
+              <div className="flex items-center justify-between">
+                <span>Emergency SWM Patrol</span>
+                <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">Normal</span>
+              </div>
+            </div>
           </Card>
         </div>
       </div>

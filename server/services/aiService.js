@@ -5,18 +5,30 @@ const path = require("path");
 const nvidiaService = require("./nvidiaService");
 const geminiService = require("./geminiService");
 const localVisionService = require("./localVisionService");
-
-const PYTHON_AI_URL = process.env.PYTHON_AI_URL || "http://localhost:8000/analyze";
+const customAiEngine = require("./customAiEngine");
+const PYTHON_AI_URL = process.env.PYTHON_AI_URL || "http://localhost:8000/analyze-complaint";
 
 /**
  * Primary AI Analysis entry point:
- * 1. In-Process Node.js ONNX Vision Engine (`localVisionService.js`)
- * 2. Python FastAPI YOLOv8 + OpenCV microservice (`localhost:8000/analyze`)
- * 3. NVIDIA NIM Enterprise API (`meta/llama-3.1-70b-instruct`)
- * 4. Multi-modal Gemini LLM (`gemini-2.5-flash`)
- * 5. Local BMC Taxonomy Rule Heuristic fallback
+ * 1. Custom High-Precision Hybrid AI & Deterministic Engine (`customAiEngine.js`)
+ * 2. In-Process Node.js ONNX Vision Engine (`localVisionService.js`)
+ * 3. Python FastAPI YOLOv8 + OpenCV microservice (`localhost:8000/analyze`)
+ * 4. NVIDIA NIM Enterprise API (`meta/llama-3.1-70b-instruct`)
+ * 5. Multi-modal Gemini LLM (`gemini-2.5-flash`)
+ * 6. Local BMC Taxonomy Rule Heuristic fallback
  */
 const analyzeComplaintAI = async (description, attachments = []) => {
+  // Step 1: Run Custom Hybrid AI Engine (Deterministic Rules + Microservice + Active Guard)
+  try {
+    const customResult = await customAiEngine.processCivicComplaint(description, attachments);
+    if (customResult && customResult.verified && customResult.confidence >= 0.70) {
+      console.log(`✅ Custom AI Engine matched: ${customResult.category} (${(customResult.confidence * 100).toFixed(0)}%) [Source: ${customResult.source}]`);
+      return customResult;
+    }
+  } catch (err) {
+    console.warn(`⚠️ Custom AI Engine check skipped (${err.message})`);
+  }
+
   let localVisionResult = null;
   let pythonResult = null;
   let imageBuffer = null;

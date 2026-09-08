@@ -24,7 +24,7 @@ export function SkeletonMap({ height = "400px" }: { height?: string }) {
       style={{ height }}
       className="w-full relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-slate-900/90 shadow-inner flex flex-col items-center justify-center p-6 animate-pulse"
     >
-      {/* Mock Radar Grid Lines */}
+      {/* Radar Grid Lines */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:32px_32px]" />
       <div className="absolute h-48 w-48 rounded-full border border-emerald-500/20 animate-ping opacity-30" />
       <div className="absolute h-24 w-24 rounded-full border border-teal-500/30" />

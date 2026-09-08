@@ -35,11 +35,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useAuth } from "@/context/AuthContext"
 import { NotificationBell } from "@/components/ui/NotificationBell"
+import { LanguageToggle } from "@/components/common/LanguageToggle"
 import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
 import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { useTranslation } from "react-i18next"
+import { useAuth } from "@/context/AuthContext"
 import { triggerHapticFeedback } from "@/utils/haptics"
 
 import SmartCivicLogo from "@/components/common/SmartCivicLogo"
@@ -62,12 +63,14 @@ interface NavItem {
 }
 
 interface NavGroup {
+  groupKey: string
   label: string
   items: NavItem[]
 }
 
 const navGroups: NavGroup[] = [
   {
+    groupKey: "navGroup.citizenPortal",
     label: "CITIZEN PORTAL",
     items: [
       { key: "nav.dashboard", defaultName: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -81,6 +84,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    groupKey: "navGroup.governanceField",
     label: "GOVERNANCE & FIELD",
     items: [
       { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true },
@@ -124,7 +128,7 @@ export default function DashboardLayout() {
 
   // Get initials for avatar fallback
   const initials = user?.name
-    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
     : "U"
 
   const roleBadgeColor: Record<string, string> = {
@@ -139,40 +143,40 @@ export default function DashboardLayout() {
     const role = user?.role || "citizen"
     if (role === "worker") {
       return [
-        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { name: "My Queue", href: "/worker-queue", icon: Wrench, isPrimaryAction: true },
-        { name: "GIS Map", href: "/map", icon: MapPin },
-        { name: "Ledger", href: "/complaints", icon: History },
-        { name: "Settings", href: "/settings", icon: SettingsIcon },
+        { name: t("nav.dashboard", "Dashboard"), href: "/dashboard", icon: LayoutDashboard },
+        { name: t("nav.myQueue", "My Queue"), href: "/worker-queue", icon: Wrench, isPrimaryAction: true },
+        { name: t("nav.gisMap", "GIS Map"), href: "/map", icon: MapPin },
+        { name: t("nav.ledger", "Ledger"), href: "/complaints", icon: History },
+        { name: t("nav.settings", "Settings"), href: "/settings", icon: SettingsIcon },
       ]
     }
     if (role === "officer") {
       return [
-        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { name: "Control", href: "/officer-portal", icon: Shield, isPrimaryAction: true },
-        { name: "GIS Map", href: "/map", icon: MapPin },
-        { name: "Monsoon", href: "/monsoon-radar", icon: Waves },
-        { name: "Ledger", href: "/complaints", icon: History },
+        { name: t("nav.dashboard", "Dashboard"), href: "/dashboard", icon: LayoutDashboard },
+        { name: t("nav.control", "Control"), href: "/officer-portal", icon: Shield, isPrimaryAction: true },
+        { name: t("nav.gisMap", "GIS Map"), href: "/map", icon: MapPin },
+        { name: t("nav.monsoon", "Monsoon"), href: "/monsoon-radar", icon: Waves },
+        { name: t("nav.ledger", "Ledger"), href: "/complaints", icon: History },
       ]
     }
     if (role === "admin") {
       return [
-        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { name: "Command", href: "/admin", icon: BarChart3, isPrimaryAction: true },
-        { name: "GIS Map", href: "/map", icon: MapPin },
-        { name: "Data Studio", href: "/admin/data-studio", icon: Database },
-        { name: "Ledger", href: "/complaints", icon: History },
+        { name: t("nav.dashboard", "Dashboard"), href: "/dashboard", icon: LayoutDashboard },
+        { name: t("nav.command", "Command"), href: "/admin", icon: BarChart3, isPrimaryAction: true },
+        { name: t("nav.gisMap", "GIS Map"), href: "/map", icon: MapPin },
+        { name: t("nav.dataStudio", "Data Studio"), href: "/admin/data-studio", icon: Database },
+        { name: t("nav.ledger", "Ledger"), href: "/complaints", icon: History },
       ]
     }
     // Default Citizen Role
     return [
-      { name: "Home", href: "/dashboard", icon: LayoutDashboard },
-      { name: "GIS Map", href: "/map", icon: MapPin },
-      { name: "Report", href: "/quick-report", icon: Sparkles, isPrimaryAction: true },
-      { name: "Ledger", href: "/complaints", icon: History },
-      { name: "Rewards", href: "/rewards", icon: Trophy },
+      { name: t("nav.home", "Home"), href: "/dashboard", icon: LayoutDashboard },
+      { name: t("nav.gisMap", "GIS Map"), href: "/map", icon: MapPin },
+      { name: t("nav.report", "Report"), href: "/quick-report", icon: Sparkles, isPrimaryAction: true },
+      { name: t("nav.ledger", "Ledger"), href: "/complaints", icon: History },
+      { name: t("nav.rewards", "Rewards"), href: "/rewards", icon: Trophy },
     ]
-  }, [user?.role])
+  }, [user?.role, t])
 
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex h-full flex-col bg-white dark:bg-[#090A0F]">
@@ -255,7 +259,7 @@ export default function DashboardLayout() {
             return (
               <div key={group.label} className="space-y-0.5">
                 <p className="px-3 text-[10px] font-semibold font-mono tracking-wider uppercase text-zinc-400 dark:text-zinc-500">
-                  {group.label}
+                  {t(group.groupKey, group.label)}
                 </p>
                 <nav className="space-y-0.5">
                   {visibleItems.map((item) => {
@@ -385,7 +389,7 @@ export default function DashboardLayout() {
             >
               <span className="flex items-center gap-2.5">
                 <Search className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors" />
-                <span className="truncate">Search tickets by ID, keyword, or ward...</span>
+                <span className="truncate">{t("nav.searchPlaceholder", "Search tickets by ID, keyword, or ward...")}</span>
               </span>
               <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 text-[11px] font-mono font-medium rounded-md bg-white dark:bg-zinc-900 text-zinc-500 border border-zinc-200 dark:border-zinc-700 shadow-2xs">
                 <Command className="w-3 h-3" /> K
@@ -405,6 +409,7 @@ export default function DashboardLayout() {
           </Button>
 
           <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+            <LanguageToggle />
             <NotificationBell />
 
             <DropdownMenu>
@@ -430,19 +435,19 @@ export default function DashboardLayout() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setIsCommandPaletteOpen(true)}>
                   <Command className="mr-2 h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-                  Command Palette (⌘K)
+                  {t("nav.commandPalette", "Command Palette (⌘K)")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setIsCopilotOpen(true)}>
                   <Sparkles className="mr-2 h-4 w-4 text-violet-600" />
-                  Municipal AI Copilot
+                  {t("nav.municipalCopilot", "Municipal AI Copilot")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
                   <SettingsIcon className="mr-2 h-4 w-4 text-slate-500" />
-                  Settings & Preferences
+                  {t("nav.settingsPreferences", "Settings & Preferences")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/support")} className="cursor-pointer">
                   <LifeBuoy className="mr-2 h-4 w-4 text-blue-500" />
-                  Civic Helpdesk & Support
+                  {t("nav.civicSupport", "Civic Helpdesk & Support")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -450,7 +455,7 @@ export default function DashboardLayout() {
                   onClick={handleLogout}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                  {t("nav.logout", "Logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode"
-import { QrCode, X, Sparkles, AlertCircle } from "lucide-react"
+import { QrCode, X, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import toast from "react-hot-toast"
 
@@ -86,43 +86,16 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
 
   if (!isOpen) return null
 
-  // Demo asset presets for quick instant testing
-  const handleSimulateScan = (presetType: "streetlight" | "pothole" | "waterpipe") => {
-    let mockAsset: ScannedAssetData
-    if (presetType === "streetlight") {
-      mockAsset = {
-        assetId: "ELD-POLE-104",
-        dept: "ELD",
-        category: "street_lighting",
-        ward: "Ward H-West",
-        lat: 19.0596,
-        lng: 72.8347,
-        address: "Hill Road, Bandra West, Mumbai 400050",
-      }
-    } else if (presetType === "pothole") {
-      mockAsset = {
-        assetId: "PWD-ROAD-882",
-        dept: "PWD",
-        category: "roads_and_infrastructure",
-        ward: "Ward A",
-        lat: 18.9322,
-        lng: 72.8277,
-        address: "MG Road, Fort, Mumbai 400001",
-      }
-    } else {
-      mockAsset = {
-        assetId: "WSD-MAIN-401",
-        dept: "WSD",
-        category: "water_and_sanitation",
-        ward: "Ward G-South",
-        lat: 19.0178,
-        lng: 72.8427,
-        address: "Dr Annie Besant Rd, Worli, Mumbai 400018",
-      }
-    }
+  const [manualAssetId, setManualAssetId] = useState("")
 
-    toast.success(`⚡ Simulated Asset QR Scan: ${mockAsset.assetId}`)
-    onScan(mockAsset)
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!manualAssetId.trim()) return
+    const assetData: ScannedAssetData = {
+      assetId: manualAssetId.trim().toUpperCase(),
+    }
+    toast.success(`Asset Tag Attached: ${assetData.assetId}`)
+    onScan(assetData)
     onClose()
   }
 
@@ -160,42 +133,29 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
           </div>
         )}
 
-        {/* Test Simulator Buttons */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-amber-500" />
-            Quick Test Simulator (Click to Test Asset):
-          </p>
-          <div className="grid grid-cols-3 gap-2">
+        {/* Manual Asset ID Option */}
+        <form onSubmit={handleManualSubmit} className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+          <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
+            Or Enter Asset Tag ID Manually:
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="e.g. ELD-POLE-104 or BMC-ASSET-ID"
+              value={manualAssetId}
+              onChange={(e) => setManualAssetId(e.target.value)}
+              className="flex-1 px-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
             <Button
-              type="button"
-              variant="outline"
+              type="submit"
               size="sm"
-              onClick={() => handleSimulateScan("streetlight")}
-              className="text-[11px] h-8"
+              disabled={!manualAssetId.trim()}
+              className="text-xs font-semibold rounded-xl h-8 px-4"
             >
-              💡 Streetlight Pole
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => handleSimulateScan("pothole")}
-              className="text-[11px] h-8"
-            >
-              🛣️ PWD Asphalt
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => handleSimulateScan("waterpipe")}
-              className="text-[11px] h-8"
-            >
-              🚰 Water Pipeline
+              Attach Tag
             </Button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   )

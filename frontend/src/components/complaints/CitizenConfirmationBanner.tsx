@@ -56,10 +56,10 @@ export function CitizenConfirmationBanner({
 
   return (
     <>
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 text-white border border-emerald-500/30 shadow-xl space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 dark:bg-slate-950 text-white border border-emerald-500/40 shadow-lg space-y-3 civic-dot-grid">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Badge className="bg-emerald-500 text-slate-950 font-mono text-[10px] font-bold px-2">
+            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-mono text-[10px] font-bold px-2">
               48-HOUR CONFIRMATION WINDOW
             </Badge>
             <span className="text-xs text-emerald-300 font-mono flex items-center gap-1">

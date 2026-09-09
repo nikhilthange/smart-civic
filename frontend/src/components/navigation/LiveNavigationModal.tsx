@@ -406,7 +406,7 @@ export const LiveNavigationModal: React.FC<LiveNavigationModalProps> = ({
                   onClose()
                   if (onArrived) onArrived()
                 }}
-                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 gap-2 h-11 px-6 rounded-xl animate-bounce"
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-semibold text-xs shadow-md shadow-emerald-950/40 gap-2 h-11 px-6 rounded-xl transition-all"
               >
                 <Wrench className="w-4 h-4" />
                 Arrived On-Site: Submit Resolution Proof

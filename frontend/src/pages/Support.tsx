@@ -219,10 +219,10 @@ export default function Support() {
         {/* Right Column: Instant Assistance Hubs */}
         <div className="space-y-6">
           {/* AI Copilot & Bot Assistance */}
-          <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-sm bg-gradient-to-br from-violet-500/5 via-primary/5 to-transparent">
+          <Card className="civic-card bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/80 dark:border-slate-800/80 shadow-sm">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400">
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   <Bot className="h-5 w-5" />
                 </div>
                 <div>

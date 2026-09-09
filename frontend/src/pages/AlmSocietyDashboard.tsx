@@ -75,15 +75,20 @@ export default function AlmSocietyDashboard() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-teal-950 via-slate-900 to-indigo-950 text-white border border-teal-500/20 shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-slate-900 dark:bg-slate-950 text-white border border-slate-800 shadow-md civic-dot-grid">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="p-2.5 rounded-2xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
-              <Building className="w-6 h-6" />
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+              <Building className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold font-display">ALM & Housing Society (CHS) Governance Portal</h1>
-              <p className="text-xs text-teal-300">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-teal-400 bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded">
+                  [CHS-GOV-OS]
+                </span>
+                <h1 className="text-xl sm:text-2xl font-bold font-display">ALM & Housing Society Portal</h1>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
                 5% Property Tax Rebate qualification, SWM compactor dispatch, and compost pit certification
               </p>
             </div>

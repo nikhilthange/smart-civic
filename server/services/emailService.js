@@ -209,6 +209,7 @@ async function sendVerificationEmail({ email, name, verificationToken, clientUrl
   }
 
   // 1. Production / Live SMTP Dispatch
+  const mailer = getTransporter();
   if (mailer && isSmtpConfigured) {
     try {
       const info = await mailer.sendMail({

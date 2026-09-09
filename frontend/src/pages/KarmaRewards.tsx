@@ -467,11 +467,10 @@ export default function KarmaRewards() {
               transition={{ duration: 0.25, delay: idx * 0.08 }}
             >
               <Card
-                className={`transition-all duration-300 h-full relative overflow-hidden ${
-                  badge.unlocked
+                className={`transition-all duration-300 h-full relative overflow-hidden ${badge.unlocked
                     ? "bg-white dark:bg-slate-900 border-amber-300/80 dark:border-amber-500/40 shadow-md hover:shadow-xl hover:shadow-amber-500/10"
                     : "bg-slate-50/70 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 opacity-60 grayscale-[40%]"
-                }`}
+                  }`}
               >
                 {badge.unlocked && (
                   <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden pointer-events-none">
@@ -549,11 +548,10 @@ export default function KarmaRewards() {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`relative px-4 py-2 text-xs font-semibold rounded-xl transition-colors shrink-0 ${
-                  isActive
+                className={`relative px-4 py-2 text-xs font-semibold rounded-xl transition-colors shrink-0 ${isActive
                     ? "text-emerald-950 dark:text-emerald-200 font-bold"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
+                  }`}
               >
                 {isActive && (
                   <motion.div
@@ -620,11 +618,10 @@ export default function KarmaRewards() {
                     className="h-full"
                   >
                     <Card
-                      className={`flex flex-col justify-between h-full border rounded-3xl transition-all duration-300 relative overflow-hidden group ${
-                        canAfford
+                      className={`flex flex-col justify-between h-full border rounded-3xl transition-all duration-300 relative overflow-hidden group ${canAfford
                           ? "border-emerald-400/80 dark:border-emerald-600/60 bg-white dark:bg-slate-900 shadow-md shadow-emerald-500/5 hover:shadow-2xl hover:shadow-emerald-500/20 hover:border-emerald-500"
                           : "border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-lg"
-                      }`}
+                        }`}
                     >
                       {/* Top glowing accent on unlockable card */}
                       {canAfford && (
@@ -636,11 +633,10 @@ export default function KarmaRewards() {
                           <Logo />
                           <div className="flex flex-col items-end gap-1.5">
                             <Badge
-                              className={`font-mono font-bold text-xs px-2.5 py-1 rounded-xl shadow-xs transition-colors ${
-                                canAfford
+                              className={`font-mono font-bold text-xs px-2.5 py-1 rounded-xl shadow-xs transition-colors ${canAfford
                                   ? "bg-emerald-600 text-white"
                                   : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                              }`}
+                                }`}
                             >
                               {perk.pointsCost} PTS
                             </Badge>
@@ -687,11 +683,10 @@ export default function KarmaRewards() {
                           </div>
                           <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                             <motion.div
-                              className={`h-full rounded-full ${
-                                canAfford
+                              className={`h-full rounded-full ${canAfford
                                   ? "bg-gradient-to-r from-emerald-500 to-teal-400"
                                   : "bg-slate-300 dark:bg-slate-600"
-                              }`}
+                                }`}
                               initial={{ width: 0 }}
                               animate={{ width: `${progressPct}%` }}
                               transition={{ duration: 0.6, ease: "easeOut" }}
@@ -702,11 +697,10 @@ export default function KarmaRewards() {
                         <Button
                           onClick={() => handleRedeem(perk)}
                           disabled={!canAfford || isRedeeming === perk.id}
-                          className={`w-full font-bold text-xs gap-1.5 min-h-[44px] rounded-xl transition-all duration-200 shadow-sm ${
-                            canAfford
+                          className={`w-full font-bold text-xs gap-1.5 min-h-[44px] rounded-xl transition-all duration-200 shadow-sm ${canAfford
                               ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-[0.98] text-white shadow-emerald-600/20 cursor-pointer"
                               : "bg-slate-100 dark:bg-slate-800/90 text-slate-400 border border-slate-200 dark:border-slate-700/80 cursor-not-allowed"
-                          }`}
+                            }`}
                         >
                           {isRedeeming === perk.id ? (
                             <>

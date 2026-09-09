@@ -1062,16 +1062,16 @@ export default function ComplaintTracking() {
           ]}
         />
         {/* Hero Search Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 text-white p-6 sm:p-10 shadow-2xl border border-emerald-700/40 text-center">
+        <div className="relative overflow-hidden rounded-2xl bg-slate-900 dark:bg-slate-950 text-white p-6 sm:p-10 shadow-lg border border-slate-800 text-center civic-dot-grid">
           <div className="relative z-10 max-w-2xl mx-auto space-y-3">
-            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-400/30 gap-1.5 py-1 px-3">
+            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 gap-1.5 py-1 px-3 font-mono text-[11px]">
               <Sparkles className="w-3.5 h-3.5" />
-              Real-time Municipal SLA Radar
+              MUNICIPAL SLA RADAR · LIVE
             </Badge>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
               Track Grievance Resolution
             </h1>
-            <p className="text-emerald-100/80 text-xs sm:text-sm leading-relaxed">
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
               Enter your tracking ticket number to inspect live 8-stage progress, supervising officer assignments, and timestamped field proof.
             </p>
 
@@ -1327,14 +1327,14 @@ export default function ComplaintTracking() {
         {/* Right Column (5 cols on desktop): Live Navigation Matrix, Map, AI Verification, Resolution Proof, Ward Team */}
         <div className="lg:col-span-5 space-y-6 w-full">
           {/* ─── Live GPS Distance & Navigation Matrix Card ────────────── */}
-          <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white p-5 rounded-2xl shadow-xl space-y-4 border border-indigo-500/20">
+          <div className="civic-card bg-slate-900 dark:bg-slate-950 text-white p-5 rounded-2xl shadow-md space-y-4 border border-slate-800">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
-                <Navigation className="w-5 h-5 text-cyan-400 animate-pulse" />
+                <Navigation className="w-4 h-4 text-cyan-400" />
                 <h3 className="font-bold text-sm text-white">Live Geolocation & Distance Matrix</h3>
               </div>
               {travel?.isRealTimeRoute && (
-                <span className="text-[10px] font-mono bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+                <span className="text-[10px] font-mono bg-cyan-500/10 text-cyan-400 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
                   Real-time OSRM Routing
                 </span>
               )}

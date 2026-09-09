@@ -261,15 +261,15 @@ export default function Settings() {
         {/* Right Column: Preferences & Privacy */}
         <div className="space-y-6">
           {/* Language & Regional Settings */}
-          <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+          <Card className="civic-card border-slate-200/80 dark:border-slate-800/80 shadow-sm">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   <Globe className="h-5 w-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Language & Locale</CardTitle>
-                  <CardDescription>Trilingual municipal portal preferences</CardDescription>
+                  <CardTitle className="text-lg">Language & Regional Locale</CardTitle>
+                  <CardDescription>Trilingual municipal portal preferences (English, मराठी, हिन्दी)</CardDescription>
                 </div>
               </div>
             </CardHeader>

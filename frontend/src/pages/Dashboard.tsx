@@ -159,35 +159,36 @@ export default function Dashboard() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.25 }}
       className="max-w-7xl mx-auto space-y-6 pt-1 pb-12 px-2 sm:px-4"
     >
-      {/* 1. Header with Breadcrumb-Style Context & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200/80 dark:border-zinc-800/80">
+      {/* 1. Header with Municipal Telemetry Context & Quick Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
-            <span>Municipal Grievance Portal</span>
-            <span>/</span>
-            <span className="text-zinc-900 dark:text-zinc-200 font-semibold">{user?.ward || "Mumbai Central Hub"}</span>
+          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse shrink-0" />
+            <span className="font-semibold text-slate-800 dark:text-slate-200">CityOS Municipal Hub</span>
+            <span className="text-slate-400">•</span>
+            <span className="font-mono text-slate-600 dark:text-slate-400">{user?.ward || "Mumbai Central Zone"}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
             {greeting}, {user?.name?.split(" ")[0] || "Citizen"}
           </h1>
         </div>
 
         <div className="flex items-center gap-2.5">
           <Link to="/quick-report">
-            <Button variant="outline" className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold px-3.5 py-2 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800">
-              Quick Snap
+            <Button variant="outline" className="rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold px-3.5 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs">
+              ⚡ Quick Snap
             </Button>
           </Link>
           {user?.role === "citizen" && (
             <Link to="/complaint/create">
-              <Button className="bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl text-xs font-semibold px-4 py-2 gap-1.5 shadow-sm">
+              <Button className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-bold px-4 py-2 gap-1.5 shadow-sm">
                 <Plus className="h-4 w-4" />
-                <span>{t("dashPage.newComplaint", "Report New Issue")}</span>
+                <span>{t("dashPage.newComplaint", "Report Grievance")}</span>
               </Button>
             </Link>
           )}

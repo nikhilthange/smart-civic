@@ -139,21 +139,21 @@ export function PaymentCard({
   onSuccess?: (paymentId: string) => void
 }) {
   return (
-    <div className="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-purple-50 p-4 space-y-3">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center">
-            <IndianRupee className="h-4 w-4 text-indigo-600" />
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 flex items-center justify-center">
+            <IndianRupee className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-800">{title}</p>
-            {description && <p className="text-xs text-slate-500">{description}</p>}
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">{title}</p>
+            {description && <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>}
           </div>
         </div>
-        <p className="text-xl font-bold text-indigo-700">₹{(amount / 100).toFixed(2)}</p>
+        <p className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">₹{(amount / 100).toFixed(2)}</p>
       </div>
-      <div className="flex items-center gap-1 text-[10px] text-slate-400">
-        <Lock className="h-3 w-3" />
+      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+        <Lock className="h-3 w-3 text-emerald-500" />
         Secured by Razorpay · 256-bit SSL encrypted
       </div>
       <RazorpayButton

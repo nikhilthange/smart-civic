@@ -607,17 +607,17 @@ export default function Home() {
         {/* Statistics Section Banner */}
         <section className="container px-4 md:px-6 mx-auto my-12" aria-labelledby="stats-heading">
           <h2 id="stats-heading" className="sr-only">Platform Statistics & Municipal Impact</h2>
-          <div className="bg-gradient-to-br from-emerald-900 to-teal-950 text-white rounded-3xl p-10 shadow-xl max-w-7xl mx-auto border border-emerald-800/40">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-2xl p-8 sm:p-10 shadow-lg max-w-7xl mx-auto border border-slate-800 civic-dot-grid">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-800">
               {[
-                { number: "25k+", label: "Issues Resolved" },
-                { number: "40%", label: "Faster Response Time" },
-                { number: "150+", label: "Cities Integrated" },
-                { number: "100k+", label: "Active Citizens" },
+                { number: "25k+", label: "Grievances Resolved" },
+                { number: "40%", label: "Faster Resolution Time" },
+                { number: "24/24", label: "Mumbai Wards Active" },
+                { number: "100k+", label: "Verified Citizens" },
               ].map((stat, i) => (
-                <div key={i} className="flex flex-col items-center justify-center">
-                  <p className="text-4xl lg:text-5xl font-extrabold text-emerald-400 mb-2 tracking-tight">{stat.number}</p>
-                  <p className="text-emerald-100/80 text-sm font-medium uppercase tracking-wider">{stat.label}</p>
+                <div key={i} className="flex flex-col items-center justify-center pt-4 sm:pt-0 sm:px-4">
+                  <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-mono text-emerald-400 mb-1 tracking-tight">{stat.number}</p>
+                  <p className="text-slate-400 text-xs font-mono uppercase tracking-wider">{stat.label}</p>
                 </div>
               ))}
             </div>

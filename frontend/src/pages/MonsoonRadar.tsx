@@ -129,7 +129,7 @@ export default function MonsoonRadar() {
     try {
       const resp = await complaintApi.getAll({ limit: 100 })
       const allComplaints: Complaint[] = resp.complaints || []
-      
+
       // Filter for waterlogging, drainage, and flooding complaints
       const waterComplaints = allComplaints.filter((c) => {
         const cat = (c.category || "").toLowerCase()
@@ -225,8 +225,8 @@ export default function MonsoonRadar() {
       const alertLevel: "GREEN_NORMAL" | "AMBER_WARNING" | "RED_EMERGENCY" = isRed
         ? "RED_EMERGENCY"
         : isAmber
-        ? "AMBER_WARNING"
-        : "GREEN_NORMAL"
+          ? "AMBER_WARNING"
+          : "GREEN_NORMAL"
 
       return {
         ...spot,
@@ -293,22 +293,20 @@ export default function MonsoonRadar() {
             <button
               type="button"
               onClick={() => setTelemetryMode("live")}
-              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${
-                telemetryMode === "live"
+              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${telemetryMode === "live"
                   ? "bg-white dark:bg-zinc-900 text-emerald-600 dark:text-emerald-400 shadow-sm border border-zinc-200 dark:border-zinc-700"
                   : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-              }`}
+                }`}
             >
               📡 Live Satellite
             </button>
             <button
               type="button"
               onClick={() => setTelemetryMode("simulated")}
-              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${
-                telemetryMode === "simulated"
+              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${telemetryMode === "simulated"
                   ? "bg-white dark:bg-zinc-900 text-amber-600 dark:text-amber-400 shadow-sm border border-zinc-200 dark:border-zinc-700"
                   : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-              }`}
+                }`}
             >
               🧪 Cloudburst Sim
             </button>
@@ -468,24 +466,22 @@ export default function MonsoonRadar() {
             return (
               <div
                 key={spot.id}
-                className={`p-4 rounded-xl border transition-all ${
-                  isRed
+                className={`p-4 rounded-xl border transition-all ${isRed
                     ? "bg-rose-50/40 dark:bg-rose-950/20 border-rose-300 dark:border-rose-500/30"
                     : isAmber
-                    ? "bg-amber-50/30 dark:bg-amber-950/20 border-amber-300 dark:border-amber-500/30"
-                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
-                }`}
+                      ? "bg-amber-50/30 dark:bg-amber-950/20 border-amber-300 dark:border-amber-500/30"
+                      : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+                  }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-mono font-bold text-zinc-500">{spot.id}</span>
                   <Badge
-                    className={`text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-full ${
-                      isRed
+                    className={`text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-full ${isRed
                         ? "bg-rose-600 text-white animate-pulse"
                         : isAmber
-                        ? "bg-amber-500 text-white"
-                        : "bg-emerald-600 text-white"
-                    }`}
+                          ? "bg-amber-500 text-white"
+                          : "bg-emerald-600 text-white"
+                      }`}
                   >
                     {isRed ? "RED FLOOD ALERT" : isAmber ? "AMBER WATCH" : "ALL CLEAR"}
                   </Badge>

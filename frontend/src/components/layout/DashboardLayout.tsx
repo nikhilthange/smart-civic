@@ -36,7 +36,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { NotificationBell } from "@/components/ui/NotificationBell"
-import { LanguageToggle } from "@/components/common/LanguageToggle"
 import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
 import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { useTranslation } from "react-i18next"
@@ -44,6 +43,7 @@ import { useAuth } from "@/context/AuthContext"
 import { triggerHapticFeedback } from "@/utils/haptics"
 
 import SmartCivicLogo from "@/components/common/SmartCivicLogo"
+import LanguageSelector from "@/components/common/LanguageSelector"
 
 const CommandPalette = lazy(() => import("@/components/common/CommandPalette").then(m => ({ default: m.CommandPalette })))
 const MunicipalCopilotModal = lazy(() => import("@/components/admin/MunicipalCopilotModal"))
@@ -283,11 +283,10 @@ export default function DashboardLayout() {
                       <Link
                         key={item.key}
                         to={item.href}
-                        className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 sm:py-2 text-sm sm:text-xs font-medium transition-colors min-h-[44px] sm:min-h-[36px] ${
-                          isActive
+                        className={`relative flex items-center gap-2.5 rounded-lg px-3 py-2.5 sm:py-2 text-sm sm:text-xs font-medium transition-colors min-h-[44px] sm:min-h-[36px] ${isActive
                             ? "text-zinc-900 dark:text-zinc-100 font-semibold"
                             : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100/60 dark:hover:bg-zinc-900/60"
-                        }`}
+                          }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {isActive && (
@@ -298,20 +297,18 @@ export default function DashboardLayout() {
                           />
                         )}
                         <item.icon
-                          className={`h-4 w-4 shrink-0 transition-colors ${
-                            isActive
+                          className={`h-4 w-4 shrink-0 transition-colors ${isActive
                               ? "text-zinc-900 dark:text-zinc-100"
                               : "text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-300"
-                          }`}
+                            }`}
                         />
                         <span className="truncate flex-1">{t(item.key, item.defaultName)}</span>
                         {item.badge && (
                           <span
-                            className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded border transition-colors ${
-                              isActive
+                            className={`text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded border transition-colors ${isActive
                                 ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-600"
                                 : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200/80 dark:border-zinc-700/80"
-                            }`}
+                              }`}
                           >
                             {item.badge}
                           </span>
@@ -409,7 +406,9 @@ export default function DashboardLayout() {
           </Button>
 
           <div className="flex items-center gap-2 sm:gap-3 ml-auto">
-            <LanguageToggle />
+            <div className="hidden sm:block">
+              <LanguageSelector />
+            </div>
             <NotificationBell />
 
             <DropdownMenu>
@@ -511,11 +510,10 @@ export default function DashboardLayout() {
                   key={item.href}
                   to={item.href}
                   onClick={() => triggerHapticFeedback("light")}
-                  className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl min-w-[52px] min-h-[44px] transition-all relative touch-manipulation focus:outline-hidden ${
-                    isActive
+                  className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl min-w-[52px] min-h-[44px] transition-all relative touch-manipulation focus:outline-hidden ${isActive
                       ? "text-emerald-600 dark:text-emerald-400 font-bold"
                       : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
-                  }`}
+                    }`}
                 >
                   {isActive && (
                     <motion.div

@@ -12,6 +12,8 @@ Allow: /participatory-budget
 Allow: /llms.txt
 Allow: /llms-full.txt
 Allow: /geo.json
+Allow: /openapi.json
+Allow: /api/seo/ai-summary
 
 # Restrict private administrative dashboards
 Disallow: /admin

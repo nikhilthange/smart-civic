@@ -3,17 +3,19 @@ import React from "react";
 interface SmartCivicLogoProps {
   className?: string;
   size?: number;
+  animated?: boolean;
 }
 
 /**
  * Smart Civic AI — Interlocking S-C Precision Ribbon
  * Continuous mathematical 3D ribbon weaving 'S' & 'C' with
  * luminous emerald, cyan, and indigo gradient sweeps, glass sheen highlights,
- * and ambient lighting depth.
+ * interactive hover shimmer, and breathing AI spark core.
  */
 export const SmartCivicLogo: React.FC<SmartCivicLogoProps> = ({
   className = "w-7 h-7",
   size = 28,
+  animated = true,
 }) => {
   return (
     <svg
@@ -21,7 +23,9 @@ export const SmartCivicLogo: React.FC<SmartCivicLogoProps> = ({
       viewBox="0 0 100 100"
       width={size}
       height={size}
-      className={`shrink-0 select-none ${className}`}
+      className={`shrink-0 select-none transition-all duration-300 ${
+        animated ? "hover:scale-105 hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.45)]" : ""
+      } ${className}`}
       aria-label="Smart Civic Logo"
     >
       <defs>
@@ -49,16 +53,36 @@ export const SmartCivicLogo: React.FC<SmartCivicLogoProps> = ({
 
         {/* Specular Glass Sheen Gradient */}
         <linearGradient id="scGlassSheen" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.75" />
-          <stop offset="60%" stopColor="#ffffff" stopOpacity="0.15" />
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.85" />
+          <stop offset="60%" stopColor="#ffffff" stopOpacity="0.2" />
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
         </linearGradient>
 
         {/* Ambient Soft Glow Filter */}
         <filter id="scRibbonGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#059669" floodOpacity="0.3" />
-          <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#0284c7" floodOpacity="0.22" />
+          <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#059669" floodOpacity="0.32" />
+          <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#0284c7" floodOpacity="0.25" />
         </filter>
+
+        <style>
+          {`
+            @keyframes scCoreBreathe {
+              0%, 100% { transform: scale(1); opacity: 0.95; }
+              50% { transform: scale(1.3); opacity: 1; filter: drop-shadow(0 0 3px #38bdf8); }
+            }
+            @keyframes scGlassPulse {
+              0%, 100% { opacity: 0.35; }
+              50% { opacity: 0.75; }
+            }
+            .sc-core-spark {
+              transform-origin: 50px 50px;
+              animation: ${animated ? "scCoreBreathe 3s ease-in-out infinite" : "none"};
+            }
+            .sc-glass-sheen {
+              animation: ${animated ? "scGlassPulse 4s ease-in-out infinite" : "none"};
+            }
+          `}
+        </style>
       </defs>
 
       <g filter="url(#scRibbonGlow)">
@@ -111,6 +135,7 @@ export const SmartCivicLogo: React.FC<SmartCivicLogoProps> = ({
 
         {/* Layer 4: Glass Specular Highlights */}
         <path
+          className="sc-glass-sheen"
           d="M 48 18
              C 32 18, 18 31, 16 46
              C 21 37, 33 28, 48 28
@@ -122,6 +147,7 @@ export const SmartCivicLogo: React.FC<SmartCivicLogoProps> = ({
 
         {/* Layer 5: Glass Edge Highlight on Center Ribbon */}
         <path
+          className="sc-glass-sheen"
           d="M 70 34
              C 63 42, 51 50, 38 56
              C 26 61, 17 68, 16 76
@@ -129,15 +155,17 @@ export const SmartCivicLogo: React.FC<SmartCivicLogoProps> = ({
              C 54 51, 65 43, 72 36
              Z"
           fill="#ffffff"
-          opacity="0.4"
+          opacity="0.45"
         />
 
         {/* Layer 6: Center Precision Civic Spark Diamond */}
-        <polygon
-          points="50,45 55,50 50,55 45,50"
-          fill="#ffffff"
-        />
-        <circle cx="50" cy="50" r="1.6" fill="#06b6d4" />
+        <g className="sc-core-spark">
+          <polygon
+            points="50,44 56,50 50,56 44,50"
+            fill="#ffffff"
+          />
+          <circle cx="50" cy="50" r="1.8" fill="#06b6d4" />
+        </g>
       </g>
     </svg>
   );

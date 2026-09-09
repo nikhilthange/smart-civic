@@ -106,8 +106,12 @@ const analyzeComplaintAI = async (description, attachments = []) => {
     };
   }
 
-  // Step 3: NVIDIA NIM API Inference
-  if (nvidiaService.isConfigured) {
+  // Step 3: NVIDIA NIM API Inference (Llama 3.2 90B Vision)
+  const isNvidiaReady = typeof nvidiaService.isConfigured === "function"
+    ? nvidiaService.isConfigured()
+    : Boolean(nvidiaService.isConfigured);
+
+  if (isNvidiaReady) {
     const nvidiaResult = await nvidiaService.analyzeComplaintNvidia(description, attachments);
     if (nvidiaResult) {
       return nvidiaResult;

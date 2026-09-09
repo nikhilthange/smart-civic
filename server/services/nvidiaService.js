@@ -4,11 +4,14 @@ const path = require("path");
 
 const config = require("../config/config");
 
-const apiKey = config.nvidia.apiKey || process.env.NVIDIA_API_KEY;
-const baseURL = config.nvidia.baseUrl || process.env.NVIDIA_BASE_URL || "https://integrate.api.nvidia.com/v1";
-const model = config.nvidia.model || process.env.NVIDIA_MODEL || "meta/llama-3.1-70b-instruct";
+const getApiKey = () => process.env.NVIDIA_API_KEY || config.nvidia?.apiKey || "";
+const getBaseUrl = () => process.env.NVIDIA_BASE_URL || config.nvidia?.baseUrl || "https://integrate.api.nvidia.com/v1";
+const getModel = () => process.env.NVIDIA_MODEL || config.nvidia?.model || "meta/llama-3.2-90b-vision-instruct";
 
-const isConfigured = Boolean(apiKey && apiKey.startsWith("nvapi-"));
+const isConfigured = () => {
+  const key = getApiKey();
+  return Boolean(key && key.startsWith("nvapi-"));
+};
 
 /**
  * Supported BMC Municipal Categories
@@ -31,85 +34,100 @@ const CATEGORIES = [
 
 const DEPARTMENTS = ["PWD", "SWM", "SWD", "WSD", "PRD", "ELD", "PHD", "LIC", "PSD", "GEN"];
 
+const sharp = require("sharp");
+
 /**
- * Convert attachment to base64 if needed for multimodal analysis
+ * Convert attachment to optimized base64 data URL for NVIDIA NIM Multimodal Vision
  */
-const attachmentToBase64 = async (attachment) => {
+const attachmentToDataUrl = async (attachment) => {
   try {
     if (attachment.url && attachment.url.startsWith("http")) {
-      const response = await axios.get(attachment.url, { responseType: "arraybuffer", timeout: 4000 });
-      return Buffer.from(response.data).toString("base64");
-    } else if (attachment.url) {
-      const localPath = path.join(__dirname, "..", attachment.url);
-      if (fs.existsSync(localPath)) {
-        return fs.readFileSync(localPath).toString("base64");
+      return attachment.url;
+    } else if (attachment.url || attachment.path) {
+      const targetPath = attachment.path || path.join(__dirname, "..", attachment.url);
+      if (fs.existsSync(targetPath)) {
+        // Resize to 800px max and compress to JPEG for sub-second NIM upload
+        const optimizedBuffer = await sharp(targetPath)
+          .resize(800, 800, { fit: "inside", withoutEnlargement: true })
+          .jpeg({ quality: 80 })
+          .toBuffer();
+
+        return `data:image/jpeg;base64,${optimizedBuffer.toString("base64")}`;
       }
     }
   } catch (err) {
-    console.warn("Could not read attachment for NVIDIA NIM:", err.message);
+    console.warn("Could not process attachment for NVIDIA NIM Vision:", err.message);
   }
   return null;
 };
 
 /**
- * Analyze civic complaint using NVIDIA NIM OpenAI-compatible API
+ * Analyze civic complaint using NVIDIA NIM Multimodal Vision API (Llama 3.2 90B Vision)
  *
  * @param {string} description Complaint text
  * @param {Array} attachments Evidence files
  * @returns {Promise<Object>} Structured classification result
  */
 const analyzeComplaintNvidia = async (description, attachments = []) => {
-  if (!isConfigured) {
+  if (!isConfigured()) {
     console.warn("⚠️ NVIDIA NIM API Key not configured.");
     return null;
   }
 
+  const apiKey = getApiKey();
+  const baseURL = getBaseUrl();
+  const model = getModel();
+
   try {
-    let imageInfo = "";
-    if (attachments && attachments.length > 0) {
-      imageInfo = ` [Attachments: ${attachments.length} image(s) attached - ${attachments.map(a => a.originalname || a.filename || "evidence.jpg").join(", ")}]`;
+    const userContent = [];
+
+    // Add attached images as image_url content items for Llama 3.2 Vision
+    if (attachments && Array.isArray(attachments)) {
+      for (const att of attachments.slice(0, 3)) {
+        const dataUrl = await attachmentToDataUrl(att);
+        if (dataUrl) {
+          userContent.push({
+            type: "image_url",
+            image_url: { url: dataUrl },
+          });
+        }
+      }
     }
 
-    const systemPrompt = `You are the Smart Civic Enterprise AI Agent for Brihanmumbai Municipal Corporation (BMC).
-Analyze the incoming citizen civic grievance and return a JSON object with:
-1. "category": Must be one of ${JSON.stringify(CATEGORIES)}
-2. "confidence": Float between 0.0 and 1.0 (e.g. 0.94)
-3. "severity": One of ["low", "medium", "high", "critical"]
-4. "department": One of ${JSON.stringify(DEPARTMENTS)}
-   - PWD: Roads, Potholes, Footpaths, Bridges
-   - SWM: Solid Waste, Overflowing Garbage, Debris
-   - SWD: Storm Water Drains, Waterlogging, Flooding
-   - WSD: Water Supply, Pipeline Leaks, Sewage
-   - PRD: Parks & Trees, Fallen Branches
-   - ELD: Electricity, Broken Streetlights
-   - PHD: Public Health, Dengue/Mosquito, Dead Animals, Sanitation
-   - LIC: Licensing, Illegal Hawkers, Encroachment
-   - PSD: Public Safety, Open Manholes, Structural Hazards
-   - GEN: General Municipal Issues
-5. "explanation": 1-2 sentence concise executive synthesis of the issue and required remedial dispatch.
+    const fullInstruction = `You are the Smart Civic Enterprise AI Agent for Brihanmumbai Municipal Corporation (BMC).
+Analyze this citizen civic grievance (including attached images and text).
+You MUST respond with ONLY a valid JSON object matching this exact schema:
+{
+  "category": (one of ${JSON.stringify(CATEGORIES)}),
+  "confidence": (float between 0.0 and 1.0, e.g. 0.95),
+  "severity": (one of ["low", "medium", "high", "critical"]),
+  "department": (one of ["PWD", "SWM", "SWD", "WSD", "PRD", "ELD", "PHD", "LIC", "PSD", "GEN"]),
+  "explanation": "1-2 sentence concise summary of the defect and required action."
+}
+Citizen Grievance Description: "${description || "Civic defect inspection requested"}"
+Do not output markdown fences or other commentary. Respond strictly with the JSON object.`;
 
-Return ONLY a valid JSON object without markdown fences or additional commentary.`;
-
-    const userPrompt = `Citizen Complaint: "${description}"${imageInfo}`;
+    userContent.push({
+      type: "text",
+      text: fullInstruction,
+    });
 
     const response = await axios.post(
       `${baseURL}/chat/completions`,
       {
         model: model,
         messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
+          { role: "user", content: userContent },
         ],
         temperature: 0.1,
-        max_tokens: 500,
-        response_format: { type: "json_object" },
+        max_tokens: 512,
       },
       {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
         },
-        timeout: 15000,
+        timeout: 25000,
       }
     );
 

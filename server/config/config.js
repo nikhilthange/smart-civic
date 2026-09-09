@@ -10,6 +10,6 @@ module.exports = {
   nvidia: {
     apiKey: process.env.NVIDIA_API_KEY || "",
     baseUrl: process.env.NVIDIA_BASE_URL || "https://integrate.api.nvidia.com/v1",
-    model: process.env.NVIDIA_MODEL || "meta/llama-3.1-70b-instruct",
+    model: process.env.NVIDIA_MODEL || "meta/llama-3.2-90b-vision-instruct",
   },
 };

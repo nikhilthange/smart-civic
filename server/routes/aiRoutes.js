@@ -15,4 +15,8 @@ router.post("/train", protect, authorize("admin", "officer"), aiTrainingControll
 // Export Fine-Tuning Training Dataset in JSONL format (Admin)
 router.get("/export-dataset", protect, authorize("admin"), aiTrainingController.exportTrainingDataset);
 
+// AI Before/After Resolution Verification Audit
+router.post("/verify-resolution", protect, aiTrainingController.verifyResolutionAudit);
+
 module.exports = router;
+

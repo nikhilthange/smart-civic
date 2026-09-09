@@ -1,16 +1,14 @@
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useCallback } from "react"
+
 import { useTranslation } from "react-i18next"
 import {
   Camera,
   Upload,
-  Mic,
-  MicOff,
   MapPin,
   Send,
   Loader2,
   Sparkles,
   AlertTriangle,
-  Volume2,
   Trash2,
   ChevronDown,
   ChevronUp,
@@ -19,6 +17,7 @@ import {
   Award,
   Zap,
 } from "lucide-react"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import toast from "react-hot-toast"
@@ -27,6 +26,9 @@ import api from "@/lib/axios"
 import { compressFieldImage } from "@/utils/imageCompressor"
 import { extractExifCoordinates } from "@/utils/exifExtractor"
 import { detectWardByCoordinates } from "@/utils/mumbaiWardBoundaries"
+import { VisionBoundingBoxCanvas } from "@/components/common/VisionBoundingBoxCanvas"
+import { VoiceGrievanceRecorder } from "@/components/common/VoiceGrievanceRecorder"
+
 
 // ─── Supported BMC Categories ──────────────────────────────────────────────────
 const CIVIC_CATEGORIES = [
@@ -93,13 +95,12 @@ export default function QuickReport() {
   const [severity, setSeverity] = useState<"low" | "medium" | "high" | "critical">("high")
   const [analysisNote, setAnalysisNote] = useState<string>("")
   const [gpsSource, setGpsSource] = useState<"exif" | "browser" | "default">("default")
+  const [detectedBoundingBoxes, setDetectedBoundingBoxes] = useState<any[]>([])
+
 
   // ─── Voice Note Intake State ──────────────────────────────────────────────
-  const [isRecording, setIsRecording] = useState(false)
-  const [speechLang, setSpeechLang] = useState<SpeechLang>("en-IN")
+  const [speechLang] = useState<SpeechLang>("en-IN")
   const [voiceTranscript, setVoiceTranscript] = useState("")
-  const [recognitionInstance, setRecognitionInstance] = useState<any>(null)
-  const [audioLevel, setAudioLevel] = useState<number[]>([15, 30, 60, 45, 80, 50, 25])
 
   // ─── Manual Override & UI State ───────────────────────────────────────────
   const [showOverrides, setShowOverrides] = useState(false)
@@ -111,26 +112,6 @@ export default function QuickReport() {
   } | null>(null)
   const [submittedReward, setSubmittedReward] = useState<boolean>(false)
 
-  // ─── Audio Waveform Simulation ─────────────────────────────────────────────
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>
-    if (isRecording) {
-      interval = setInterval(() => {
-        setAudioLevel([
-          Math.floor(Math.random() * 60) + 20,
-          Math.floor(Math.random() * 90) + 30,
-          Math.floor(Math.random() * 100) + 40,
-          Math.floor(Math.random() * 85) + 35,
-          Math.floor(Math.random() * 95) + 45,
-          Math.floor(Math.random() * 70) + 25,
-          Math.floor(Math.random() * 40) + 15,
-        ])
-      }, 120)
-    }
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [isRecording])
 
   // ─── Reverse Geocoding & Ward Resolver ────────────────────────────────────
   const resolveWardAndAddressFromCoordinates = useCallback(async (lat: number, lng: number) => {
@@ -288,6 +269,13 @@ export default function QuickReport() {
           setDetectedIssue(res.detectedIssue || "Severe Road Pothole & Surface Deterioration")
           setConfidenceScore(res.confidenceScore || 95)
           setSeverity(res.severity || "high")
+          if (res.boundingBoxes && Array.isArray(res.boundingBoxes)) {
+            setDetectedBoundingBoxes(res.boundingBoxes)
+          } else {
+            setDetectedBoundingBoxes([
+              { label: res.category || "pothole", confidence: (res.confidenceScore || 95) / 100, box: [0.15, 0.35, 0.85, 0.75] }
+            ])
+          }
           if (res.ward) setDetectedWard(res.ward)
           if (res.address) setDetectedAddress(res.address)
           setAnalysisNote(res.analysisNote || `Computer Vision classified ${res.category}`)
@@ -302,9 +290,13 @@ export default function QuickReport() {
         setDetectedIssue(local.issue)
         setConfidenceScore(local.confidence)
         setSeverity(local.severity)
+        setDetectedBoundingBoxes([
+          { label: local.category || "pothole", confidence: local.confidence / 100, box: [0.15, 0.35, 0.85, 0.75] }
+        ])
         setAnalysisNote("AI Vision: Classified via local browser heuristic pipeline.")
         toast.success(`AI Vision: ${local.issue}`, { icon: "📸" })
       }
+
     } catch (err: any) {
       console.error("Image processing error:", err)
       const reader = new FileReader()
@@ -333,72 +325,7 @@ export default function QuickReport() {
     }
   }
 
-  // ─── Voice Note Recognition ───────────────────────────────────────────────
-  const startVoiceRecognition = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-
-    if (!SpeechRecognition) {
-      toast.error("Speech recognition is not supported in this browser. Please type defect details.")
-      return
-    }
-
-    try {
-      const recognition = new SpeechRecognition()
-      recognition.lang = speechLang
-      recognition.continuous = false
-      recognition.interimResults = true
-
-      recognition.onstart = () => {
-        setIsRecording(true)
-        setPermissionAlert(null)
-        toast("Listening to civic grievance...", { icon: "🎙️" })
-      }
-
-      recognition.onresult = (event: any) => {
-        let currentTranscript = ""
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          currentTranscript += event.results[i][0].transcript
-        }
-        setVoiceTranscript(currentTranscript)
-
-        // Classify from speech
-        analyzeSpokenText(currentTranscript)
-      }
-
-      recognition.onerror = (event: any) => {
-        console.warn("Speech recognition error:", event.error)
-        setIsRecording(false)
-        if (event.error === "not-allowed") {
-          setPermissionAlert({
-            type: "mic",
-            message: "Microphone permission was denied. Please allow microphone access or type details.",
-          })
-        }
-      }
-
-      recognition.onend = () => {
-        setIsRecording(false)
-        if (voiceTranscript) {
-          toast.success("Voice grievance transcribed!", { icon: "✅" })
-        }
-      }
-
-      recognition.start()
-      setRecognitionInstance(recognition)
-    } catch (err: any) {
-      console.warn("Failed to start SpeechRecognition:", err)
-      toast.error("Microphone access failed. Please type defect description.")
-    }
-  }
-
-  const stopVoiceRecognition = () => {
-    if (recognitionInstance) {
-      recognitionInstance.stop()
-    }
-    setIsRecording(false)
-  }
-
+  // ─── Voice Note Analysis Helper ──────────────────────────────────────────
   const analyzeSpokenText = (text: string) => {
     const lower = text.toLowerCase()
     if (
@@ -442,13 +369,6 @@ export default function QuickReport() {
     }
   }
 
-  const handleVoiceToggle = () => {
-    if (isRecording) {
-      stopVoiceRecognition()
-    } else {
-      startVoiceRecognition()
-    }
-  }
 
   // ─── 1-Click Submission & Instant Dispatch ─────────────────────────────────
   const handleOneClickSubmit = async () => {
@@ -588,18 +508,14 @@ export default function QuickReport() {
           {photoPreview ? (
             /* ─── State 1: Photo Preview & AI Triage Display ──────────────── */
             <div className="space-y-4 animate-in fade-in duration-150">
-              {/* Photo Box */}
-              <div className="relative rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-950 aspect-video max-h-80 flex items-center justify-center">
-                <img
-                  src={photoPreview}
-                  alt="Captured civic issue"
-                  className={`w-full h-full object-cover transition-opacity duration-200 ${
-                    isAnalyzing ? "opacity-30" : "opacity-100"
-                  }`}
-                />
-
-                {/* Analysis Overlay */}
-                {isAnalyzing && (
+              {/* Photo Box with YOLO Bounding Box Overlay */}
+              {isAnalyzing ? (
+                <div className="relative rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-950 aspect-video max-h-80 flex items-center justify-center">
+                  <img
+                    src={photoPreview}
+                    alt="Captured civic issue"
+                    className="w-full h-full object-cover opacity-30"
+                  />
                   <div className="absolute inset-0 bg-zinc-950/70 backdrop-blur-xs flex flex-col items-center justify-center text-white p-6 space-y-3">
                     <Loader2 className="w-8 h-8 text-zinc-300 animate-spin" />
                     <div className="text-center space-y-0.5">
@@ -609,23 +525,30 @@ export default function QuickReport() {
                       <p className="text-[11px] font-mono text-zinc-400">{analysisStep}</p>
                     </div>
                   </div>
-                )}
-
-                {/* Live GPS Tag on Image */}
-                {!isAnalyzing && (
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs text-white bg-zinc-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10">
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <VisionBoundingBoxCanvas
+                    imageUrl={photoPreview}
+                    boundingBoxes={detectedBoundingBoxes}
+                    primaryCategory={detectedCategory}
+                    overallConfidence={confidenceScore / 100}
+                    className="max-h-96 shadow-md"
+                  />
+                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-1.5 truncate font-mono">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <MapPin className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                       <span className="truncate">
                         {coordinates[1].toFixed(4)}° N, {coordinates[0].toFixed(4)}° E
                       </span>
                     </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium uppercase bg-white/10 text-zinc-200 border border-white/10">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium uppercase bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600">
                       {gpsSource === "exif" ? "EXIF GPS" : "Device GPS"}
                     </span>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+
 
               {/* AI Vision Insights Strip */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -769,105 +692,19 @@ export default function QuickReport() {
                 </div>
               </div>
 
-              {/* Voice Note Intake Section */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700/60 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                  <div className="flex items-center gap-2">
-                    <Volume2 className="w-4 h-4 text-emerald-500" />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
-                      {t("quickReport.voiceIntake", "Voice Grievance Intake")}
-                    </span>
-                  </div>
-
-                  {/* Regional Language Selectors */}
-                  <div className="inline-flex rounded-xl p-1 bg-zinc-200/80 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-xs overflow-x-auto touch-pan-x no-scrollbar self-start sm:self-auto min-w-0">
-                    <button
-                      type="button"
-                      onClick={() => setSpeechLang("en-IN")}
-                      className={`px-3.5 py-2 rounded-lg font-medium transition min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer ${
-                        speechLang === "en-IN"
-                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-semibold"
-                          : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                      }`}
-                    >
-                      English
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSpeechLang("mr-IN")}
-                      className={`px-3.5 py-2 rounded-lg font-medium transition min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer ${
-                        speechLang === "mr-IN"
-                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-semibold"
-                          : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                      }`}
-                    >
-                      मराठी
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSpeechLang("hi-IN")}
-                      className={`px-3.5 py-2 rounded-lg font-medium transition min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation cursor-pointer ${
-                        speechLang === "hi-IN"
-                          ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 shadow-sm font-semibold"
-                          : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
-                      }`}
-                    >
-                      हिंदी
-                    </button>
-                  </div>
-                </div>
-
-                {/* Microphone Button & Waveform Display */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-                  <Button
-                    type="button"
-                    onClick={handleVoiceToggle}
-                    className={`w-full sm:w-auto min-h-[48px] px-5 rounded-xl font-semibold text-xs sm:text-sm gap-2.5 transition-all shadow-md touch-manipulation ${
-                      isRecording
-                        ? "bg-red-600 hover:bg-red-700 text-white animate-pulse"
-                        : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    }`}
-                  >
-                    {isRecording ? (
-                      <>
-                        <MicOff className="w-4 h-4" />
-                        <span>{t("quickReport.stopRecording", "Stop Recording...")}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="w-4 h-4" />
-                        <span>{t("quickReport.speakGrievance", "Or Speak Grievance")} ({speechLang === "mr-IN" ? "मराठीत बोला" : speechLang === "hi-IN" ? "हिंदी में बोलें" : "Speak in English"})</span>
-                      </>
-                    )}
-                  </Button>
-
-                  {/* Pulsing Audio Waveform visualizer */}
-                  {isRecording && (
-                    <div className="flex items-center gap-1.5 px-3 py-2 bg-red-500/10 rounded-xl border border-red-500/20">
-                      {audioLevel.map((height, i) => (
-                        <div
-                          key={i}
-                          style={{ height: `${Math.max(8, height / 3)}px` }}
-                          className="w-1.5 bg-red-500 rounded-full transition-all duration-100"
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Voice Transcript Preview */}
-                {voiceTranscript && (
-                  <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-emerald-500/30 text-xs space-y-1 animate-in fade-in">
-                    <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
-                      <span>{t("quickReport.transcribedNote", "Transcribed Voice Note:")}</span>
-                      <span className="text-[10px] uppercase font-mono">{speechLang}</span>
-                    </div>
-                    <p className="text-zinc-800 dark:text-zinc-200 italic">"{voiceTranscript}"</p>
-                  </div>
-                )}
+              {/* Voice Note Intake Section with Modular VoiceGrievanceRecorder */}
+              <div className="space-y-3">
+                <VoiceGrievanceRecorder
+                  onTranscript={(text) => {
+                    setVoiceTranscript(text)
+                    analyzeSpokenText(text)
+                  }}
+                  initialLanguage={speechLang}
+                />
               </div>
             </div>
           )}
+
 
           {/* Hidden HTML5 Camera / File Intake */}
           <input

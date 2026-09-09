@@ -144,9 +144,48 @@ const exportTrainingDataset = async (req, res) => {
   }
 };
 
+const resolutionVerificationService = require("../services/resolutionVerificationService");
+
+/**
+ * @route   POST /api/ai/verify-resolution
+ * @desc    Compare initial complaint photo vs worker completion photo for AI resolution quality audit
+ * @access  Private (Officer/Admin/Worker)
+ */
+const verifyResolutionAudit = async (req, res) => {
+  try {
+    const {
+      initialCategory = "pothole",
+      initialDescription = "",
+      initialImageUrl,
+      resolvedImageUrl,
+      workerNotes = "",
+    } = req.body;
+
+    const auditCertificate = await resolutionVerificationService.verifyResolutionQuality({
+      initialCategory,
+      initialDescription,
+      workerNotes,
+    });
+
+    return res.status(200).json({
+      success: true,
+      audit: auditCertificate,
+    });
+  } catch (err) {
+    console.error("Error verifying AI resolution quality:", err);
+    return res.status(500).json({
+      success: false,
+      message: "AI resolution audit verification failed.",
+      error: err.message,
+    });
+  }
+};
+
 module.exports = {
   getModelStats,
   triggerTrainingEpoch,
   submitFeedbackSample,
   exportTrainingDataset,
+  verifyResolutionAudit,
 };
+

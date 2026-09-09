@@ -7,11 +7,20 @@ cd /d "%~dp0"
 set PYTHON_EXE=..\..\.venv311\Scripts\python.exe
 
 if not exist "%PYTHON_EXE%" (
-    echo [ERROR] Python 3.11 environment not found at %PYTHON_EXE%
-    pause
-    exit /b 1
+    set PYTHON_EXE=..\..\.venv\Scripts\python.exe
+)
+if not exist "%PYTHON_EXE%" (
+    set PYTHON_EXE=..\server\ai_service\venv\Scripts\python.exe
+)
+if not exist "%PYTHON_EXE%" (
+    set PYTHON_EXE=%LOCALAPPDATA%\Programs\Python\Python311\python.exe
+)
+if not exist "%PYTHON_EXE%" (
+    set PYTHON_EXE=python
 )
 
-echo Starting AI Server on http://localhost:8000 ...
+echo Using Python: %PYTHON_EXE%
+echo Starting AI Vision Server on http://localhost:8000 ...
 "%PYTHON_EXE%" inference_server.py
 pause
+

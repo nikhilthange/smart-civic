@@ -5,12 +5,27 @@ Write-Host "===================================================" -ForegroundColo
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $scriptDir
 
-$pythonExe = Resolve-Path "$scriptDir\..\..\.venv311\Scripts\python.exe" -ErrorAction SilentlyContinue
+$candidates = @(
+    "$scriptDir\..\..\.venv311\Scripts\python.exe",
+    "$scriptDir\..\..\.venv\Scripts\python.exe",
+    "$scriptDir\..\server\ai_service\venv\Scripts\python.exe",
+    "$env:LOCALAPPDATA\Programs\Python\Python311\python.exe",
+    "python"
+)
 
-if (-not $pythonExe -or -not (Test-Path $pythonExe)) {
-    Write-Error "Python 3.11 environment not found at .venv311"
-    exit 1
+$pythonExe = $null
+foreach ($c in $candidates) {
+    if (Test-Path $c) {
+        $pythonExe = $c
+        break
+    }
 }
 
-Write-Host "Starting AI Server on http://localhost:8000 ..." -ForegroundColor Yellow
+if (-not $pythonExe) {
+    $pythonExe = "python"
+}
+
+Write-Host "Using Python: $pythonExe" -ForegroundColor Cyan
+Write-Host "Starting AI Vision Server on http://localhost:8000 ..." -ForegroundColor Yellow
 & $pythonExe inference_server.py
+

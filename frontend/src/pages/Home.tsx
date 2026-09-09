@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -13,8 +13,12 @@ import {
   Sparkles,
   Camera,
   Award,
-  ChevronDown
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Quote
 } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import AiPipelineHeroVisual from "@/components/common/AiPipelineHeroVisual"
@@ -138,6 +142,18 @@ const HOME_FAQS = [
 export default function Home() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
   const [currentTestimonialIdx, setCurrentTestimonialIdx] = useState(0)
+  const [isTestimonialPaused, setIsTestimonialPaused] = useState(false)
+
+  // Automatic carousel rotation every 5 seconds (pauses on user hover)
+  useEffect(() => {
+    if (isTestimonialPaused) return
+
+    const timer = setInterval(() => {
+      setCurrentTestimonialIdx((prev) => (prev + 1) % TESTIMONIALS_DATA.length)
+    }, 5000)
+
+    return () => clearInterval(timer)
+  }, [isTestimonialPaused])
 
   const nextTestimonial = () => {
     setCurrentTestimonialIdx((prev) => (prev + 1) % TESTIMONIALS_DATA.length)
@@ -146,6 +162,7 @@ export default function Home() {
   const prevTestimonial = () => {
     setCurrentTestimonialIdx((prev) => (prev - 1 + TESTIMONIALS_DATA.length) % TESTIMONIALS_DATA.length)
   }
+
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex((prev) => (prev === index ? null : index))
@@ -625,11 +642,22 @@ export default function Home() {
         </section>
 
         {/* ═══ EDITORIAL SPOTLIGHT TESTIMONIAL CAROUSEL (FOOD TAILOR STYLE) ═══════════════ */}
-        <section className="w-full py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-[#faf8f5] dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800 relative overflow-hidden text-slate-900 dark:text-slate-100">
+        <section 
+          onMouseEnter={() => setIsTestimonialPaused(true)}
+          onMouseLeave={() => setIsTestimonialPaused(false)}
+          className="w-full py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-[#faf8f5] dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800 relative overflow-hidden text-slate-900 dark:text-slate-100"
+        >
           <div className="container px-4 md:px-6 mx-auto max-w-5xl">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-center mb-8 text-slate-900 dark:text-white">
-              Voices of Mumbai Citizens &amp; Municipal Officers
-            </h2>
+            <div className="text-center mb-10 space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                <Quote className="w-3.5 h-3.5" />
+                <span>COMMUNITY CITIZEN TRUST</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Voices of Mumbai Citizens &amp; Municipal Officers
+              </h2>
+            </div>
+
             {/* Top Center Flourished Avatar with Laurel Wings */}
             <div className="flex flex-col items-center justify-center text-center">
               <div className="relative inline-flex items-center justify-center mb-8 sm:mb-10">
@@ -675,16 +703,16 @@ export default function Home() {
                 </svg>
               </div>
 
-              {/* Main Content Row: <.. Button + Central Quote + ..> Button */}
-              <div className="relative w-full flex items-center justify-between gap-2 sm:gap-6 min-h-[220px]">
-                {/* Left Navigation Arrow */}
+              {/* Main Content Row: Modern Chevron Button + Central Quote + Modern Chevron Button */}
+              <div className="relative w-full flex items-center justify-between gap-3 sm:gap-6 min-h-[220px]">
+                {/* Left Navigation Button */}
                 <button
                   type="button"
                   onClick={prevTestimonial}
-                  className="group px-2 sm:px-4 py-2 font-serif text-2xl sm:text-4xl text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 font-bold transition-all hover:-translate-x-1 cursor-pointer shrink-0 select-none"
+                  className="p-3 sm:p-3.5 rounded-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-md hover:shadow-lg border border-slate-200 dark:border-slate-800 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                   aria-label="Previous testimonial"
                 >
-                  &lt;..
+                  <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
 
                 {/* Centered Animated Quote */}
@@ -725,18 +753,18 @@ export default function Home() {
                   </AnimatePresence>
                 </div>
 
-                {/* Right Navigation Arrow */}
+                {/* Right Navigation Button */}
                 <button
                   type="button"
                   onClick={nextTestimonial}
-                  className="group px-2 sm:px-4 py-2 font-serif text-2xl sm:text-4xl text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 font-bold transition-all hover:translate-x-1 cursor-pointer shrink-0 select-none"
+                  className="p-3 sm:p-3.5 rounded-full bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-md hover:shadow-lg border border-slate-200 dark:border-slate-800 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                   aria-label="Next testimonial"
                 >
-                  ..&gt;
+                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               </div>
 
-              {/* Bottom Carousel Indicator Dots */}
+              {/* Bottom Carousel Indicator Dots with subtle pulse & auto-rotate timer */}
               <div className="flex items-center justify-center gap-2.5 mt-10">
                 {TESTIMONIALS_DATA.map((_, dotIdx) => (
                   <button
@@ -745,7 +773,7 @@ export default function Home() {
                     onClick={() => setCurrentTestimonialIdx(dotIdx)}
                     className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
                       dotIdx === currentTestimonialIdx
-                        ? "w-8 bg-emerald-600 dark:bg-emerald-400"
+                        ? "w-8 bg-emerald-600 dark:bg-emerald-400 shadow-xs shadow-emerald-500/30"
                         : "w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400"
                     }`}
                     aria-label={`Go to slide ${dotIdx + 1}`}
@@ -755,6 +783,7 @@ export default function Home() {
             </div>
           </div>
         </section>
+
 
         {/* ═══ AEO & GEO MUNICIPAL COMPARISON TABLE (DECISION SUPPORT) ═══════════ */}
         <section className="w-full py-16 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800">

@@ -5,15 +5,23 @@
   <!-- Homepage & Report Portal -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/</loc>
-    <lastmod>2026-09-01T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
     <changefreq>always</changefreq>
     <priority>1.0</priority>
+  </url>
+
+  <!-- Create Grievance (Voice & AI Vision) -->
+  <url>
+    <loc>https://smart-civic-pi.vercel.app/complaint/create</loc>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
+    <changefreq>always</changefreq>
+    <priority>0.95</priority>
   </url>
 
   <!-- Ticket Tracking & Resolution Status -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/track</loc>
-    <lastmod>2026-09-01T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
     <changefreq>always</changefreq>
     <priority>0.9</priority>
   </url>
@@ -21,7 +29,7 @@
   <!-- Live Municipal GIS MapView -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/map</loc>
-    <lastmod>2026-09-01T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -29,15 +37,23 @@
   <!-- Monsoon Subway & Waterlogging Radar -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/monsoon-radar</loc>
-    <lastmod>2026-09-01T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
     <changefreq>hourly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- WhatsApp Zero-Friction Sandbox -->
+  <url>
+    <loc>https://smart-civic-pi.vercel.app/whatsapp-sandbox</loc>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- CCTV Surveillance & Encroachment Radar -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/cctv-radar</loc>
-    <lastmod>2026-09-01T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
@@ -45,7 +61,7 @@
   <!-- AQI & Environmental Enforcement -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/aqi-enforcement</loc>
-    <lastmod>2026-09-01T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -53,7 +69,7 @@
   <!-- Citizen Civic Karma Rewards & Vouchers -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/karma-rewards</loc>
-    <lastmod>2026-09-01T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -61,15 +77,21 @@
   <!-- 24-Ward Participatory Budgeting -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/participatory-budget</loc>
-    <lastmod>2026-09-01T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
-  <!-- AI Manifest & System Summary -->
+  <!-- AI Manifest & System Summary (AEO / GEO Feeds) -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/llms.txt</loc>
-    <lastmod>2026-09-01T00:00:00+00:00</lastmod>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://smart-civic-pi.vercel.app/llms-full.txt</loc>
+    <lastmod>2026-09-09T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

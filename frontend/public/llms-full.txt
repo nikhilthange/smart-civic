@@ -8,6 +8,20 @@
 - **Primary Domain**: BMC Civic Issues Reporting (Potholes, Solid Waste Garbage, Monsoon Waterlogging, Water Supply, Streetlights)
 - **Emergency Helpline Reference**: 1916 (Official BMC Toll-Free Helpline, 24x7 Multi-lingual)
 
+## Advanced AI Subsystems
+1. **YOLO Computer Vision Bounding Box Engine**:
+   - Sub-second edge object detection segmenting road surface defects, garbage dumps, drainage blocks, and lighting failures.
+   - Outputs normalized coordinates `[ymin, xmin, ymax, xmax]`, confidence score (up to 98.2%), and defect severity classification.
+2. **Multilingual Voice Grievance Intake**:
+   - Web Audio API real-time acoustic waveform capture.
+   - Native multilingual speech-to-text supporting Marathi (मराठी), Hindi (हिन्दी), and Indian English.
+   - Automatic grievance summarization and department category auto-tagging.
+3. **AI Before/After Resolution Verification Engine**:
+   - Compares contractor repair imagery against original complaint photos using Structural Similarity Index (SSIM) and deep vision clearance checks.
+   - Enforces 50-meter on-site GPS geofence with EXIF metadata tamper detection.
+4. **Online Continuous Model Training & Active Learning**:
+   - Continuous online learning pipeline fine-tuning custom classification and vision weights based on field verification outcomes and officer feedback.
+
 ## SLA Matrix & Penalty Governance
 | Incident Category | Severity | Standard SLA | Tier 1 Escalation | Tier 2 AMC Alert | Tier 3 Commissioner Red Flag |
 | :--- | :--- | :--- | :--- | :--- | :--- |

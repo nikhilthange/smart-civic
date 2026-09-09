@@ -1,11 +1,11 @@
 {
-  "name": "Smart Civic - Mumbai Civic Issues & CityOS",
+  "name": "Smart Civic - Mumbai Civic Issues & AI CityOS",
   "short_name": "SmartCivic",
-  "description": "Smart Civics AI - Independent Mumbai Municipal Civic Grievance & Issue Resolution Platform",
+  "description": "Smart Civics AI - Independent Mumbai Municipal Civic Grievance, Multilingual Voice Intake & Issue Resolution Platform",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
-  "theme_color": "#10b981",
+  "theme_color": "#059669",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -21,6 +21,29 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["utilities", "productivity", "social"],
-  "lang": "en"
+  "shortcuts": [
+    {
+      "name": "Report Issue",
+      "short_name": "Report",
+      "description": "File a civic defect with AI vision or voice",
+      "url": "/complaint/create",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Track Status",
+      "short_name": "Track",
+      "description": "Track municipal ticket resolution",
+      "url": "/track",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Live Map",
+      "short_name": "Map",
+      "description": "24-Ward GIS defect heatmap",
+      "url": "/map",
+      "icons": [{ "src": "/favicon.svg", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["government", "utilities", "productivity", "social"],
+  "lang": "en-IN"
 }

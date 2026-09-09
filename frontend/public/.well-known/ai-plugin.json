@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "smart_civic_mumbai",
+  "name_for_human": "Smart Civic AI",
+  "description_for_model": "AI engine and citizen platform for Mumbai BMC municipal issues. Supports checking complaint status, reporting civic defects (potholes, garbage, water leaks, streetlights), querying 24-ward contacts, monitoring monsoon subway flood levels, and checking defect liability periods.",
+  "description_for_human": "Track BMC municipal issues, subway flood levels, and civic defect resolution across Greater Mumbai.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://smart-civic-pi.vercel.app/openapi.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://smart-civic-pi.vercel.app/favicon.svg",
+  "contact_email": "support@smart-civic-pi.vercel.app",
+  "legal_info_url": "https://smart-civic-pi.vercel.app/terms"
+}

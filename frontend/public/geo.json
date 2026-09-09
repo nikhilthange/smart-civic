@@ -1,0 +1,331 @@
+{
+  "type": "FeatureCollection",
+  "name": "Mumbai_BMC_24_Wards_and_Flood_Hotspots",
+  "crs": {
+    "type": "name",
+    "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "A",
+        "name": "Ward A (Colaba / Fort / Nariman Point)",
+        "zone": "Island City",
+        "office_location": "134-E, S.B.S. Road, Fort, Mumbai 400001",
+        "emergency_phone": "022-22607000",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8347, 18.9220] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "B",
+        "name": "Ward B (Sandhurst Road / Dongri / Masjid)",
+        "zone": "Island City",
+        "office_location": "121, Ramchandra Bhatt Marg, Babula Tank, Mumbai 400009",
+        "emergency_phone": "022-23736622",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8406, 18.9558] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "C",
+        "name": "Ward C (Marine Lines / Pydhonie / Bhuleshwar)",
+        "zone": "Island City",
+        "office_location": "76, Shrikant Palekar Marg, Chandanwadi, Mumbai 400002",
+        "emergency_phone": "022-22014022",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8280, 18.9500] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "D",
+        "name": "Ward D (Malabar Hill / Walkeshwar / Girgaon)",
+        "zone": "Island City",
+        "office_location": "Jobanputra Compound, Nana Chowk, Grant Road, Mumbai 400007",
+        "emergency_phone": "022-23861426",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8056, 18.9667] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "E",
+        "name": "Ward E (Byculla / Mazgaon / Mumbai Central)",
+        "zone": "Island City",
+        "office_location": "10, Ramchandra Bhatt Marg, Byculla, Mumbai 400008",
+        "emergency_phone": "022-23081471",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8333, 18.9750] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "F-South",
+        "name": "Ward F-South (Parel / Sewri / Lalbaug)",
+        "zone": "Island City",
+        "office_location": "Junction of Jagannath Bhatankar Marg, Parel, Mumbai 400012",
+        "emergency_phone": "022-24134560",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8400, 18.9950] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "F-North",
+        "name": "Ward F-North (Matunga / Sion / Wadala)",
+        "zone": "Island City",
+        "office_location": "96, Bhau Daji Road, Matunga, Mumbai 400019",
+        "emergency_phone": "022-24024353",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8600, 19.0300] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "G-South",
+        "name": "Ward G-South (Worli / Lower Parel / Mahalaxmi)",
+        "zone": "Island City",
+        "office_location": "N.M. Joshi Marg, Elphinstone West, Mumbai 400013",
+        "emergency_phone": "022-24305031",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8250, 19.0100] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "G-North",
+        "name": "Ward G-North (Dharavi / Dadar / Mahim)",
+        "zone": "Island City",
+        "office_location": "Harishchandra Yelve Marg, Dadar West, Mumbai 400028",
+        "emergency_phone": "022-24397888",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8450, 19.0400] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "H-East",
+        "name": "Ward H-East (Santacruz East / Kalina / Bandra East)",
+        "zone": "Western Suburbs",
+        "office_location": "Prabhat Colony, Santacruz East, Mumbai 400055",
+        "emergency_phone": "022-26182217",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8550, 19.0800] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "H-West",
+        "name": "Ward H-West (Bandra West / Khar / Santacruz West)",
+        "zone": "Western Suburbs",
+        "office_location": "St. Martin Road, Bandra West, Mumbai 400050",
+        "emergency_phone": "022-26422311",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8300, 19.0600] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "K-East",
+        "name": "Ward K-East (Andheri East / Jogeshwari East)",
+        "zone": "Western Suburbs",
+        "office_location": "Azad Road, Gundavali, Andheri East, Mumbai 400069",
+        "emergency_phone": "022-26840103",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8700, 19.1200] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "K-West",
+        "name": "Ward K-West (Andheri West / Juhu / Versova)",
+        "zone": "Western Suburbs",
+        "office_location": "Paliram Road, Near Andheri Station, Mumbai 400058",
+        "emergency_phone": "022-26239131",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8300, 19.1300] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "P-South",
+        "name": "Ward P-South (Goregaon West / Goregaon East)",
+        "zone": "Western Suburbs",
+        "office_location": "S.V. Road, Goregaon West, Mumbai 400104",
+        "emergency_phone": "022-28721186",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8500, 19.1650] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "P-North",
+        "name": "Ward P-North (Malad West / Malad East / Marve)",
+        "zone": "Western Suburbs",
+        "office_location": "Liberty Garden, Mamletdarwadi, Malad West, Mumbai 400064",
+        "emergency_phone": "022-28823555",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8450, 19.1850] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "R-South",
+        "name": "Ward R-South (Kandivali West / East / Charkop)",
+        "zone": "Western Suburbs",
+        "office_location": "M.G. Cross Road No.2, Kandivali West, Mumbai 400067",
+        "emergency_phone": "022-28056000",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8500, 19.2050] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "R-Central",
+        "name": "Ward R-Central (Borivali West / East / Gorai)",
+        "zone": "Western Suburbs",
+        "office_location": "Chandavarkar Road, Borivali West, Mumbai 400092",
+        "emergency_phone": "022-28946000",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8550, 19.2300] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "R-North",
+        "name": "Ward R-North (Dahisar West / East)",
+        "zone": "Western Suburbs",
+        "office_location": "Rangaswar, S.N. Dube Marg, Dahisar East, Mumbai 400068",
+        "emergency_phone": "022-28936000",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8600, 19.2550] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "L",
+        "name": "Ward L (Kurla / Chunabhatti / Sakinaka)",
+        "zone": "Eastern Suburbs",
+        "office_location": "L.B.S. Marg, Kurla West, Mumbai 400070",
+        "emergency_phone": "022-26505103",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8800, 19.0700] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "M-East",
+        "name": "Ward M-East (Govandi / Mankhurd / Shivaji Nagar)",
+        "zone": "Eastern Suburbs",
+        "office_location": "Deonar Colony, Govandi, Mumbai 400043",
+        "emergency_phone": "022-25558789",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.9150, 19.0550] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "M-West",
+        "name": "Ward M-West (Chembur / Tilak Nagar / Mahul)",
+        "zone": "Eastern Suburbs",
+        "office_location": "1st Road, Chembur, Mumbai 400071",
+        "emergency_phone": "022-25225000",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8950, 19.0600] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "N",
+        "name": "Ward N (Ghatkopar / Vikhroli West / Pant Nagar)",
+        "zone": "Eastern Suburbs",
+        "office_location": "Jawahar Road, Ghatkopar East, Mumbai 400077",
+        "emergency_phone": "022-25010161",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.9100, 19.0850] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "S",
+        "name": "Ward S (Bhandup / Kanjurmarg / Powai)",
+        "zone": "Eastern Suburbs",
+        "office_location": "L.B.S. Marg, Bhandup West, Mumbai 400078",
+        "emergency_phone": "022-25947570",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.9350, 19.1450] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ward_id": "T",
+        "name": "Ward T (Mulund / Nahur)",
+        "zone": "Eastern Suburbs",
+        "office_location": "Lala Lajpatrai Marg, Mulund West, Mumbai 400080",
+        "emergency_phone": "022-25645289",
+        "departments": ["PWD", "SWM", "SWD", "WSD", "ELD"]
+      },
+      "geometry": { "type": "Point", "coordinates": [72.9550, 19.1750] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "monsoon_flood_hotspot",
+        "name": "Andheri Subway Flooding Sensor",
+        "ward": "K-West",
+        "critical_depth_cm": 60,
+        "auto_pump_installed": true
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8465, 19.1197] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "monsoon_flood_hotspot",
+        "name": "Milan Subway Flooding Sensor",
+        "ward": "H-East",
+        "critical_depth_cm": 75,
+        "auto_pump_installed": true
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8425, 19.0883] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "type": "monsoon_flood_hotspot",
+        "name": "Khar Subway Flooding Sensor",
+        "ward": "H-West",
+        "critical_depth_cm": 50,
+        "auto_pump_installed": true
+      },
+      "geometry": { "type": "Point", "coordinates": [72.8385, 19.0722] }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Smart Civic AI & Mumbai CityOS API",
+    "description": "Public API specification for Mumbai municipal defect lookup, 24-ward geometry, and subway flood telemetry.",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://smart-civic-pi.vercel.app"
+    }
+  ],
+  "paths": {
+    "/api/complaints/track/{ticketId}": {
+      "get": {
+        "operationId": "trackComplaint",
+        "summary": "Track BMC complaint status by Ticket ID",
+        "parameters": [
+          {
+            "name": "ticketId",
+            "in": "path",
+            "required": true,
+            "description": "Ticket tracking ID (e.g. SC-2026-XXXXXXXX)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Complaint status, department assignment, SLA countdown, and resolution photo verification",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ticketId": { "type": "string" },
+                    "status": { "type": "string" },
+                    "ward": { "type": "string" },
+                    "category": { "type": "string" },
+                    "slaHoursRemaining": { "type": "number" },
+                    "isVerified": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/geo.json": {
+      "get": {
+        "operationId": "getMumbaiWardsGeoJson",
+        "summary": "Retrieve GeoJSON coordinates for all 24 Mumbai BMC wards and flood hotspots",
+        "responses": {
+          "200": {
+            "description": "GeoJSON FeatureCollection",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ import { AuthProvider } from "./context/AuthContext"
 import { SocketProvider } from "./context/SocketContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
 import ErrorBoundary from "./components/common/ErrorBoundary"
+import RouteSeo from "./components/common/RouteSeo"
 
 // ─── Chunk Mismatch & Dynamic Import Resilience Helper ────────────────────────
 export function lazyRetry<T extends React.ComponentType<any>>(
@@ -101,6 +102,7 @@ function App() {
       <AuthProvider>
         <SocketProvider>
           <Router>
+            <RouteSeo />
             <Suspense fallback={<RouteLoadingFallback />}>
                 <Routes>
                   {/* Public Routes */}

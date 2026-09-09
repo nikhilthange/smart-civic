@@ -21,7 +21,7 @@ import {
 } from "firebase/auth"
 
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCXwkjyqoMg_i-baAqu05Gk6y-fQr2Jj6k",
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY || "",
   authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "smart-civic-277e9.firebaseapp.com",
   projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID || "smart-civic-277e9",
   storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "smart-civic-277e9.firebasestorage.app",

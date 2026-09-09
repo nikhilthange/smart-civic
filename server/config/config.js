@@ -8,7 +8,7 @@ module.exports = {
   jwtExpire: process.env.JWT_EXPIRE || "7d",
   geminiApiKey: process.env.GEMINI_API_KEY,
   nvidia: {
-    apiKey: process.env.NVIDIA_API_KEY || "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",
+    apiKey: process.env.NVIDIA_API_KEY || "",
     baseUrl: process.env.NVIDIA_BASE_URL || "https://integrate.api.nvidia.com/v1",
     model: process.env.NVIDIA_MODEL || "meta/llama-3.1-70b-instruct",
   },

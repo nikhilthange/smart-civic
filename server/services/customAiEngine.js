@@ -3,6 +3,7 @@ const FormData = require("form-data");
 const fs = require("fs");
 const path = require("path");
 const localVisionService = require("./localVisionService");
+const modelTrainingService = require("./modelTrainingService");
 
 const PYTHON_AI_URL = process.env.PYTHON_AI_URL || "http://localhost:8000/analyze-complaint";
 const CONFIDENCE_AUTO_DISPATCH_THRESHOLD = 0.80;
@@ -262,6 +263,23 @@ function evaluateKnowledgeGraph(rawDescription) {
   let bestMatch = null;
   let highestScore = 0;
   let matchedKeyword = "";
+
+  // 0. Check Online Active Learning Keywords (Learned from User Feedback)
+  const learnedKws = modelTrainingService.getLearnedKeywords();
+  for (const word of words) {
+    if (learnedKws[word]) {
+      const learned = learnedKws[word];
+      const targetNode = BMC_KNOWLEDGE_GRAPH.find((n) => n.department === learned.department || n.category === learned.category);
+      if (targetNode) {
+        const learnedBoost = 15.0 * (learned.weight || 1.0);
+        if (learnedBoost > highestScore) {
+          highestScore = learnedBoost;
+          bestMatch = targetNode;
+          matchedKeyword = `${word} (Active Learned Weight: ${learned.weight.toFixed(2)})`;
+        }
+      }
+    }
+  }
 
   for (const node of BMC_KNOWLEDGE_GRAPH) {
     let score = 0;

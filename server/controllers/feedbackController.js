@@ -1,6 +1,7 @@
 const Feedback = require("../models/Feedback");
 const Complaint = require("../models/Complaint");
 const Officer = require("../models/Officer");
+const modelTrainingService = require("../services/modelTrainingService");
 
 // ─── @desc    Submit feedback for a resolved/closed complaint
 // ─── @route   POST /api/feedback
@@ -46,6 +47,30 @@ const submitFeedback = async (req, res) => {
     // Mark complaint as having feedback
     complaint.feedbackSubmitted = true;
     await complaint.save();
+
+    // ── Feed into Continuous Active Learning Training Pipeline ──
+    try {
+      const numRating = Number(rating);
+      const isPositive = numRating >= 4;
+      await modelTrainingService.recordFeedbackSample({
+        inputText: `${complaint.title} ${complaint.description || ""}`,
+        imageUrl: complaint.attachments?.[0]?.url || complaint.imageUrl || null,
+        predictedCategory: complaint.category,
+        correctedCategory: complaint.category,
+        predictedDepartment: complaint.departmentCode || "GEN",
+        correctedDepartment: complaint.departmentCode || "GEN",
+        predictedSeverity: complaint.priority || "medium",
+        correctedSeverity: complaint.priority || "medium",
+        source: "citizen_rating",
+        contributorRole: "citizen",
+        contributorId: req.user.id,
+        complaintId: complaint._id,
+        ward: complaint.ward || "Ward H-West",
+        weight: isPositive ? 1.2 : 0.8,
+      });
+    } catch (trainErr) {
+      console.warn("Active learning sample record warning:", trainErr.message);
+    }
 
     return res.status(201).json({ success: true, feedback });
   } catch (error) {

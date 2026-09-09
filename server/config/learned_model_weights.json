@@ -1,99 +1,99 @@
 {
   "version": "2.4.0-online",
-  "totalEpochs": 18,
-  "lastTrainedAt": "2026-09-09T05:51:40.670Z",
+  "totalEpochs": 19,
+  "lastTrainedAt": "2026-09-09T05:54:33.400Z",
   "learnedKeywords": {
     "ped": {
       "category": "parks_and_recreation",
       "department": "PRD",
-      "weight": 3.0750000000000006,
-      "frequency": 8
+      "weight": 3.5,
+      "frequency": 10
     },
     "gir": {
       "category": "parks_and_recreation",
       "department": "PRD",
-      "weight": 3.0750000000000006,
-      "frequency": 8
+      "weight": 3.5,
+      "frequency": 10
     },
     "gaya": {
       "category": "parks_and_recreation",
       "department": "PRD",
       "weight": 3.5,
-      "frequency": 16
+      "frequency": 20
     },
     "raste": {
       "category": "parks_and_recreation",
       "department": "PRD",
-      "weight": 3.0750000000000006,
-      "frequency": 8
+      "weight": 3.5,
+      "frequency": 10
     },
     "traffic": {
       "category": "parks_and_recreation",
       "department": "PRD",
-      "weight": 3.0750000000000006,
-      "frequency": 8
+      "weight": 3.5,
+      "frequency": 10
     },
     "block": {
       "category": "parks_and_recreation",
       "department": "PRD",
-      "weight": 3.0750000000000006,
-      "frequency": 8
+      "weight": 3.5,
+      "frequency": 10
     },
     "hai": {
       "category": "parks_and_recreation",
       "department": "PRD",
-      "weight": 3.0750000000000006,
-      "frequency": 8
+      "weight": 3.5,
+      "frequency": 10
     },
     "transformer": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 2.8200000000000003,
+      "frequency": 10
     },
     "box": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 2.8200000000000003,
+      "frequency": 10
     },
     "blast": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 2.8200000000000003,
+      "frequency": 10
     },
     "dhakkan": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 2.8200000000000003,
+      "frequency": 10
     },
     "gayab": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 2.8200000000000003,
+      "frequency": 10
     },
     "short": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 2.8200000000000003,
+      "frequency": 10
     },
     "circuit": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 2.8200000000000003,
+      "frequency": 10
     }
   },
   "transitionPriors": {
-    "PWD->PRD": 1.8000000000000007,
-    "PWD->PSD": 1.8000000000000007
+    "PWD->PRD": 2.000000000000001,
+    "PWD->PSD": 2.000000000000001
   },
-  "totalTrainingSamples": 1428,
-  "averageAccuracy": 0.9808,
+  "totalTrainingSamples": 1430,
+  "averageAccuracy": 0.9831,
   "trainingLossHistory": [
     {
       "epoch": 10,
@@ -152,6 +152,13 @@
       "accuracy": 0.9808,
       "samplesTrained": 2,
       "timestamp": "2026-09-09T05:51:40.670Z"
+    },
+    {
+      "epoch": 19,
+      "loss": 0.0401,
+      "accuracy": 0.9831,
+      "samplesTrained": 2,
+      "timestamp": "2026-09-09T05:54:33.400Z"
     }
   ]
 }

@@ -4,10 +4,11 @@ import { useTranslation } from "react-i18next"
 import {
   ArrowLeft, Clock, CheckCircle2, UserCheck, Wrench, Star,
   XCircle, Bot, MapPin, Calendar, Tag, Phone,
-  AlertCircle, Loader2, Paperclip, ExternalLink, Check, Building,
-  Image as ImageIcon, HardHat, FileCheck, Search, ArrowRight,
+  AlertCircle, Loader2, Paperclip, ExternalLink, Check, Building, Building2,
+  Image as ImageIcon, HardHat, FileCheck, Search,
   History, Sparkles, Plus, ZoomIn, X, Copy, ShieldCheck, Camera,
-  Navigation
+  Navigation, Trash2, Droplets, Lightbulb, CloudRain, Zap, HeartPulse,
+  Trees, Bus, Volume2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -1077,8 +1078,21 @@ export default function ComplaintTracking() {
 
   // ─── 1. Search Interface & Empty State Fallback ──────────────────────────────
   if (!targetId || !complaint) {
+    const CATEGORY_ICON_MAP: Record<string, React.ElementType> = {
+      roads_and_infrastructure: Building2,
+      garbage_and_sanitation: Trash2,
+      water_supply: Droplets,
+      street_lighting: Lightbulb,
+      drainage_and_sewage: CloudRain,
+      electricity_and_power: Zap,
+      public_health: HeartPulse,
+      parks_and_recreation: Trees,
+      public_transport: Bus,
+      noise_pollution: Volume2,
+    }
+
     return (
-      <div className="w-full max-w-5xl mx-auto space-y-8 pb-12">
+      <div className="w-full max-w-5xl mx-auto space-y-6 pb-12">
         <SeoHead
           title="Track Grievance Resolution & SLA Progress | Smart Civic"
           description="Enter your complaint ID to view real-time 8-stage progress, assigned ward engineer, 48-hour SLA countdown, and GPS geofenced resolution proof."
@@ -1095,110 +1109,112 @@ export default function ComplaintTracking() {
             },
           ]}
         />
-        {/* Hero Search Banner */}
-        <div className="relative overflow-hidden rounded-2xl bg-slate-900 dark:bg-slate-950 text-white p-6 sm:p-10 shadow-lg border border-slate-800 text-center civic-dot-grid">
-          <div className="relative z-10 max-w-2xl mx-auto space-y-3">
-            <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 gap-1.5 py-1 px-3 font-mono text-[11px]">
-              <Sparkles className="w-3.5 h-3.5" />
-              MUNICIPAL SLA RADAR · LIVE
-            </Badge>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
-              Track Grievance Resolution
-            </h1>
-            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-              Enter your tracking ticket number to inspect live 8-stage progress, supervising officer assignments, and timestamped field proof.
-            </p>
 
-            {/* Search Input Box */}
-            <form onSubmit={handleSearchSubmit} className="pt-3 flex flex-col sm:flex-row items-center gap-2.5 max-w-xl mx-auto">
-              <div className="relative flex-1 w-full">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  type="text"
-                  placeholder="Enter Complaint / Tracking ID (e.g. SC-2026-XXXX)..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="pl-10 h-12 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 text-sm font-medium border-0 focus-visible:ring-2 focus-visible:ring-emerald-400 shadow-md w-full"
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={!searchInput.trim() || isSearching}
-                className="w-full sm:w-auto h-12 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shrink-0 gap-2 text-sm min-h-[48px]"
-              >
-                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+        {/* Clean Header & Search Card */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-xs">
+              <Search className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 Track Grievance
-              </Button>
-            </form>
+              </h1>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Inspect real-time resolution timeline, assigned officer, and field proof
+              </p>
+            </div>
           </div>
+
+          {/* Search Form */}
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full md:w-auto md:min-w-[380px]">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Input
+                type="text"
+                placeholder="Enter Ticket ID (e.g. SC-2026-XXXX)..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="pl-9 h-10 rounded-xl bg-zinc-50/70 dark:bg-zinc-900/70 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 text-xs border border-zinc-200 dark:border-zinc-800 focus-visible:ring-1 focus-visible:ring-emerald-500"
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={!searchInput.trim() || isSearching}
+              className="h-10 px-4 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-semibold rounded-xl shadow-xs text-xs shrink-0 cursor-pointer"
+            >
+              {isSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Track"}
+            </Button>
+          </form>
         </div>
 
         {/* Error notification if ID was not found */}
         {error && (
-          <div className="flex items-start gap-3 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-900 dark:text-rose-200 text-sm shadow-sm">
-            <AlertCircle className="w-5 h-5 shrink-0 text-rose-600 mt-0.5" />
-            <div className="flex-1 min-w-0 space-y-1">
-              <p className="font-semibold text-rose-800 dark:text-rose-300">{error}</p>
-              <p className="text-xs text-rose-600 dark:text-rose-400">
+          <div className="flex items-start gap-3 p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-900 dark:text-rose-200 text-sm shadow-xs">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+            <div className="flex-1 min-w-0 space-y-0.5">
+              <p className="font-semibold text-xs text-rose-800 dark:text-rose-300">{error}</p>
+              <p className="text-[11px] text-rose-600 dark:text-rose-400">
                 You can try searching again with a different ID or select one of your recently filed complaints below.
               </p>
             </div>
           </div>
         )}
 
-        {/* Recent Complaints Quick-Access List */}
-        <div className="space-y-4">
+        {/* Recent Complaints Section */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <History className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                Your Recent Civic Reports
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+              <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                Recent Civic Reports
               </h2>
-              <p className="text-xs text-slate-500">Click any grievance to inspect its live status and SLA timeline</p>
             </div>
             {user?.role === "citizen" && (
               <Link to="/complaint/create">
-                <Button size="sm" variant="outline" className="gap-1 text-xs min-h-[36px] rounded-xl">
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8 rounded-lg">
                   <Plus className="w-3.5 h-3.5" />
-                  New Complaint
+                  New Grievance
                 </Button>
               </Link>
             )}
           </div>
 
           {isLoadingRecent ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="h-28 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 animate-pulse" />
+                <div key={n} className="h-24 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 animate-pulse" />
               ))}
             </div>
           ) : recentComplaints.length === 0 ? (
-            <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-3">
-              <Clock className="w-10 h-10 text-slate-400 mx-auto" />
-              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">No Recent Complaints Found</h3>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 space-y-2">
+              <Clock className="w-8 h-8 text-zinc-400 mx-auto" />
+              <h3 className="font-bold text-zinc-800 dark:text-zinc-200 text-sm">No Recent Complaints</h3>
+              <p className="text-xs text-zinc-500 max-w-sm mx-auto">
                 You haven't filed any municipal complaints yet. File a report to track its resolution timeline.
               </p>
               {user?.role === "citizen" && (
                 <Link to="/complaint/create">
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 mt-1 min-h-[40px] rounded-xl">
-                    <Plus className="w-4 h-4" />
-                    File a New Grievance
+                  <Button size="sm" className="bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 gap-1.5 mt-2 h-8 text-xs rounded-lg">
+                    <Plus className="w-3.5 h-3.5" />
+                    File Grievance
                   </Button>
                 </Link>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {recentComplaints.map((c) => (
-                <Card
-                  key={c._id}
-                  onClick={() => navigate(`/track/${c.complaintId || c._id}`)}
-                  className="cursor-pointer hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition-all border-slate-200 dark:border-slate-800 group"
-                >
-                  <CardContent className="p-4 sm:p-5 flex items-start gap-3.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {recentComplaints.map((c) => {
+                const CategoryIcon = CATEGORY_ICON_MAP[c.category] || Building2
+
+                return (
+                  <div
+                    key={c._id}
+                    onClick={() => navigate(`/track/${c.complaintId || c._id}`)}
+                    className="p-4 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xs transition-all cursor-pointer flex items-start gap-3.5 group"
+                  >
                     {c.attachments && c.attachments[0] ? (
-                      <div className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 shrink-0">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 shrink-0">
                         <img
                           src={getImageUrl(c.attachments[0])}
                           onError={handleImageError}
@@ -1207,33 +1223,33 @@ export default function ComplaintTracking() {
                         />
                       </div>
                     ) : (
-                      <div className="w-16 h-16 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/60 flex items-center justify-center text-emerald-600 shrink-0">
-                        <Clock className="w-7 h-7" />
+                      <div className="w-14 h-14 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center shrink-0">
+                        <CategoryIcon className="w-6 h-6" />
                       </div>
                     )}
 
-                    <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                        <span className="font-mono text-[11px] font-bold text-zinc-900 dark:text-zinc-100">
                           {c.complaintId || c._id.substring(0, 10)}
                         </span>
                         <StatusBadge status={c.status} />
                       </div>
 
-                      <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate group-hover:text-emerald-600 transition-colors">
+                      <h4 className="font-semibold text-xs text-zinc-900 dark:text-zinc-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                         {c.title}
                       </h4>
 
-                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
-                        <span>{CATEGORY_LABELS[c.category] || c.category}</span>
-                        <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
-                          Track Live SLA <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-0.5">
+                        <span className="truncate">{CATEGORY_LABELS[c.category] || c.category}</span>
+                        <span className="text-[10px] font-mono shrink-0">
+                          {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ""}
                         </span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

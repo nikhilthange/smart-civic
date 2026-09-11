@@ -1,10 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
   CheckCircle2, Loader2, Bot, Info, Camera, QrCode, ShieldCheck,
-  Clock, ShieldAlert, Building2
+  Clock, ShieldAlert, Building2, Trash2, Droplets, Lightbulb,
+  CloudRain, Zap, HeartPulse, Trees, Bus, Volume2
 } from "lucide-react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,19 @@ import toast from "react-hot-toast"
 
 const CATEGORIES = Object.entries(CATEGORY_LABELS) as [ComplaintCategory, string][]
 
+const CATEGORY_ICON_MAP: Record<string, React.ElementType> = {
+  roads_and_infrastructure: Building2,
+  garbage_and_sanitation: Trash2,
+  water_supply: Droplets,
+  street_lighting: Lightbulb,
+  drainage_and_sewage: CloudRain,
+  electricity_and_power: Zap,
+  public_health: HeartPulse,
+  parks_and_recreation: Trees,
+  public_transport: Bus,
+  noise_pollution: Volume2,
+}
+
 const PRIORITY_OPTIONS = [
   { value: "low",      label: "Low",      color: "text-slate-600" },
   { value: "medium",   label: "Medium",   color: "text-amber-600" },
@@ -34,10 +48,18 @@ const PRIORITY_OPTIONS = [
 export default function CreateComplaint() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    const urlCategory = searchParams.get("category")
+    if (urlCategory && Object.keys(CATEGORY_LABELS).includes(urlCategory)) {
+      setForm((prev) => ({ ...prev, category: urlCategory as ComplaintCategory }))
+    }
+  }, [searchParams])
 
   const handleQrScan = (asset: ScannedAssetData) => {
     setForm((prev) => ({
@@ -393,10 +415,34 @@ export default function CreateComplaint() {
               </h2>
             </div>
             <div className="space-y-4 pt-4">
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="category" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                   {t("createComplaint.categoryLabel", "Category")} <span className="text-rose-500">*</span>
                 </Label>
+
+                {/* Quick Visual Category Chips */}
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pb-1">
+                  {CATEGORIES.slice(0, 10).map(([val, label]) => {
+                    const IconComponent = CATEGORY_ICON_MAP[val] || Building2
+                    const isSelected = form.category === val
+                    return (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, category: val }))}
+                        className={`flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-emerald-500/10 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-xs"
+                            : "bg-zinc-50/70 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700"
+                        }`}
+                      >
+                        <IconComponent className={`h-4 w-4 mb-1 ${isSelected ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-500"}`} />
+                        <span className="text-[11px] font-medium leading-tight line-clamp-1">{label}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+
                 <select
                   id="category"
                   name="category"
@@ -405,7 +451,7 @@ export default function CreateComplaint() {
                   className="flex h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-2 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   required
                 >
-                  <option value="">{t("createComplaint.categoryPlaceholder", "Select an infrastructure category...")}</option>
+                  <option value="">{t("createComplaint.categoryPlaceholder", "Or select from full category list...")}</option>
                   {CATEGORIES.map(([val, label]) => (
                     <option key={val} value={val}>{t(`categories.${val}`, label)}</option>
                   ))}

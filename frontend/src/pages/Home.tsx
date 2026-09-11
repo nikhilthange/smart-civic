@@ -16,7 +16,8 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Quote
+  Quote,
+  Zap
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -281,8 +282,8 @@ export default function Home() {
               <h2 className="sr-only">Key Governance Capabilities</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left">
                 <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base">
-                    ⚡
+                  <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <Zap className="h-5 w-5" />
                   </div>
                   <h3 className="font-bold text-sm text-slate-900 dark:text-white">Instant AI Vision Triage</h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -291,8 +292,8 @@ export default function Home() {
                 </div>
 
                 <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
-                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-base">
-                    ⏱️
+                  <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                    <Clock className="h-5 w-5" />
                   </div>
                   <h3 className="font-bold text-sm text-slate-900 dark:text-white">Guaranteed 48-Hour SLA</h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -301,8 +302,8 @@ export default function Home() {
                 </div>
 
                 <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
-                  <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-base">
-                    🛡️
+                  <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                    <ShieldCheck className="h-5 w-5" />
                   </div>
                   <h3 className="font-bold text-sm text-slate-900 dark:text-white">100m GPS Geofenced Proof</h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">

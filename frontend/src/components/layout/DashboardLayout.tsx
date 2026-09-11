@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import {
   Database,
   LayoutDashboard,
-  FileEdit,
+  PlusCircle,
   History,
   LogOut,
   Menu,
@@ -14,10 +14,11 @@ import {
   Wrench,
   MapPin,
   Command,
-  Waves,
+  CloudRain,
   MessageSquare,
-  Lock,
-  Sparkles,
+  ShieldCheck,
+  Camera,
+  Bot,
   Trophy,
   Settings as SettingsIcon,
   LifeBuoy,
@@ -74,7 +75,7 @@ const navGroups: NavGroup[] = [
     label: "CITIZEN PORTAL",
     items: [
       { key: "nav.dashboard", defaultName: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
-      { key: "nav.createComplaint", defaultName: "File Grievance", href: "/complaint/create", icon: FileEdit, citizenOnly: true },
+      { key: "nav.createComplaint", defaultName: "File Grievance", href: "/complaint/create", icon: PlusCircle, citizenOnly: true },
       { key: "nav.trackComplaint", defaultName: "Track Grievance", href: "/track", icon: Search },
       { key: "nav.complaintHistory", defaultName: "Grievance Records", href: "/complaints", icon: History },
       { key: "nav.mapView", defaultName: "Live Ward GIS Map", href: "/map", icon: MapPin },
@@ -90,8 +91,8 @@ const navGroups: NavGroup[] = [
       { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true },
       { key: "nav.officerPortal", defaultName: "Ward Officer Portal", href: "/officer-portal", icon: Shield, officerOnly: true },
       { key: "nav.adminDashboard", defaultName: "Executive Command", href: "/admin", icon: BarChart3, adminOnly: true },
-      { key: "nav.monsoon", defaultName: "Monsoon Flood Radar", href: "/monsoon-radar", icon: Waves },
-      { key: "nav.auditLedger", defaultName: "Compliance Ledger", href: "/audit-ledger", icon: Lock, adminOnly: true },
+      { key: "nav.monsoon", defaultName: "Monsoon Flood Radar", href: "/monsoon-radar", icon: CloudRain },
+      { key: "nav.auditLedger", defaultName: "Compliance Ledger", href: "/audit-ledger", icon: ShieldCheck, adminOnly: true },
     ],
   },
 ]
@@ -155,7 +156,7 @@ export default function DashboardLayout() {
         { name: t("nav.dashboard", "Dashboard"), href: "/dashboard", icon: LayoutDashboard },
         { name: t("nav.control", "Control"), href: "/officer-portal", icon: Shield, isPrimaryAction: true },
         { name: t("nav.gisMap", "GIS Map"), href: "/map", icon: MapPin },
-        { name: t("nav.monsoon", "Monsoon"), href: "/monsoon-radar", icon: Waves },
+        { name: t("nav.monsoon", "Monsoon"), href: "/monsoon-radar", icon: CloudRain },
         { name: t("nav.ledger", "Ledger"), href: "/complaints", icon: History },
       ]
     }
@@ -172,7 +173,7 @@ export default function DashboardLayout() {
     return [
       { name: t("nav.home", "Home"), href: "/dashboard", icon: LayoutDashboard },
       { name: t("nav.gisMap", "GIS Map"), href: "/map", icon: MapPin },
-      { name: t("nav.report", "Report"), href: "/quick-report", icon: Sparkles, isPrimaryAction: true },
+      { name: t("nav.report", "Report"), href: "/quick-report", icon: Camera, isPrimaryAction: true },
       { name: t("nav.ledger", "Ledger"), href: "/complaints", icon: History },
       { name: t("nav.rewards", "Rewards"), href: "/rewards", icon: Trophy },
     ]
@@ -437,8 +438,8 @@ export default function DashboardLayout() {
                   {t("nav.commandPalette", "Command Palette (⌘K)")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setIsCopilotOpen(true)}>
-                  <Sparkles className="mr-2 h-4 w-4 text-violet-600" />
-                  {t("nav.municipalCopilot", "Municipal AI Copilot")}
+                  <Bot className="mr-2 h-4 w-4 text-emerald-600" />
+                  {t("nav.copilot", "Municipal AI Copilot")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
                   <SettingsIcon className="mr-2 h-4 w-4 text-slate-500" />

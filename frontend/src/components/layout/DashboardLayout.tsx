@@ -264,8 +264,8 @@ export default function DashboardLayout() {
             return (
               // #7: key on stable groupKey (not label) prevents duplication artifacts
               <div key={group.groupKey} className="space-y-0.5">
-                {/* #3: normal-case label with tracking-wide for visual hierarchy without all-caps readability penalty */}
-                <p className="px-3 text-xs font-semibold tracking-widest uppercase text-slate-400 dark:text-slate-500 mb-1 select-none">
+                {/* #3: sentence/title-case label with tracking-wide for visual hierarchy without all-caps readability penalty */}
+                <p className="px-3 text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400 mb-1 select-none">
                   {t(group.groupKey, group.label)}
                 </p>
                 <nav className="space-y-0.5">

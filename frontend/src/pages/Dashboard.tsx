@@ -210,32 +210,31 @@ export default function Dashboard() {
           {/* Total Submissions */}
           <motion.div
             variants={staggerItem}
-            className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
+            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {t("dashPage.totalSubmissions", "Total Reports")}
               </span>
-              <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                 <Activity className="h-4 w-4" />
               </div>
             </div>
             <div className="mt-4">
-              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100 tracking-tight">
                 {stats?.total ?? 0}
               </div>
-              {/* #5: min body-text size is 12px (text-xs); text-[11px] is below the accessible floor */}
-              <p className="text-xs text-zinc-400 mt-1">All-time submitted grievances</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">All-time submitted grievances</p>
             </div>
           </motion.div>
 
           {/* Pending */}
           <motion.div
             variants={staggerItem}
-            className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
+            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {t("dashPage.pending", "Pending Triage")}
               </span>
               <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
@@ -243,10 +242,10 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4">
-              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100 tracking-tight">
                 {pending}
               </div>
-              <p className="text-xs text-amber-600/80 dark:text-amber-400/80 mt-1 flex items-center gap-1.5">
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Awaiting ward assignment
               </p>
@@ -256,10 +255,10 @@ export default function Dashboard() {
           {/* In Progress */}
           <motion.div
             variants={staggerItem}
-            className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
+            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {t("dashPage.inProgress", "Field In-Progress")}
               </span>
               <div className="p-2 rounded-lg bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400">
@@ -267,10 +266,10 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4">
-              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100 tracking-tight">
                 {inProgress}
               </div>
-              <p className="text-xs text-sky-600/80 dark:text-sky-400/80 mt-1 flex items-center gap-1.5">
+              <p className="text-xs text-sky-600 dark:text-sky-400 mt-1 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
                 Dispatched to field teams
               </p>
@@ -280,10 +279,10 @@ export default function Dashboard() {
           {/* Resolved */}
           <motion.div
             variants={staggerItem}
-            className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
+            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                 {t("dashPage.resolved", "Resolved")}
               </span>
               <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
@@ -291,10 +290,10 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4">
-              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-slate-900 dark:text-slate-100 tracking-tight">
                 {resolved}
               </div>
-              <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-1 flex items-center gap-1.5">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 Verified &amp; closed tickets
               </p>
@@ -346,7 +345,7 @@ export default function Dashboard() {
                     className="w-full sm:w-auto text-xs font-semibold rounded-xl border-slate-200 dark:border-slate-700"
                   >
                     <span>View Benefits</span>
-                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
                   </Button>
                 </Link>
               </div>
@@ -386,10 +385,10 @@ export default function Dashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg h-8"
+                  className="gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg h-8"
                 >
                   <span>{t("dashPage.viewAll", "View All")}</span>
-                  <ArrowRight className="h-3 w-3" />
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </div>
@@ -415,12 +414,12 @@ export default function Dashboard() {
                   <div className="hidden md:block w-full overflow-x-auto">
                     <Table className="w-full">
                       <TableHeader>
-                        <TableRow className="bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800">
-                          <TableHead className="w-12 text-xs font-semibold text-slate-500 font-mono">Photo</TableHead>
-                          <TableHead className="text-xs font-semibold text-slate-500 font-mono">ID</TableHead>
-                          <TableHead className="text-xs font-semibold text-slate-500">Issue Details</TableHead>
-                          <TableHead className="text-xs font-semibold text-slate-500 hidden md:table-cell font-mono">Date</TableHead>
-                          <TableHead className="text-xs font-semibold text-slate-500 text-right">Status</TableHead>
+                        <TableRow className="bg-slate-100/75 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
+                          <TableHead scope="col" className="w-14 text-xs font-bold text-slate-800 dark:text-slate-200">Photo</TableHead>
+                          <TableHead scope="col" className="text-xs font-bold text-slate-800 dark:text-slate-200 font-mono">ID</TableHead>
+                          <TableHead scope="col" className="text-xs font-bold text-slate-800 dark:text-slate-200">Issue Details</TableHead>
+                          <TableHead scope="col" className="text-xs font-bold text-slate-800 dark:text-slate-200 hidden md:table-cell font-mono">Date</TableHead>
+                          <TableHead scope="col" className="text-xs font-bold text-slate-800 dark:text-slate-200 text-right">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -430,28 +429,27 @@ export default function Dashboard() {
                             className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/60"
                           >
                             <TableCell>
-                              <div className="h-8 w-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
+                              <div className="group/thumb relative h-11 w-11 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center shadow-2xs">
                                 {c.attachments && c.attachments[0] ? (
                                   <img
                                     src={getImageUrl(c.attachments[0])}
                                     onError={handleImageError}
-                                    alt="Evidence"
-                                    className="h-full w-full object-cover"
+                                    alt={`Evidence photo for grievance: ${c.title}`}
+                                    className="h-full w-full object-cover transition-transform duration-200 group-hover/thumb:scale-110"
+                                    loading="lazy"
                                   />
                                 ) : (
-                                  <Building2 className="w-4 h-4 text-slate-400" />
+                                  <Building2 className="w-5 h-5 text-slate-400" aria-hidden="true" />
                                 )}
                               </div>
                             </TableCell>
-                            {/* #6: ticket IDs rendered without forced all-caps — they're already
-                                 uppercase hex by construction; no text-transform needed */}
                             <TableCell className="font-mono text-xs">
                               <Link
                                 to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors normal-case"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-medium hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                                 aria-label={`Ticket ${c.complaintId || c._id?.slice(-8)}`}
                               >
-                                <span className="lowercase">{c.complaintId || `#${c._id?.slice(-8)}`}</span>
+                                <span className="font-mono font-semibold tracking-tight">{c.complaintId || `#${c._id?.slice(-8)}`}</span>
                                 <ExternalLink className="w-3 h-3 opacity-60" aria-hidden="true" />
                               </Link>
                             </TableCell>
@@ -459,7 +457,7 @@ export default function Dashboard() {
                               <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 line-clamp-1 max-w-[240px]">
                                 {c.title}
                               </p>
-                              <p className="text-xs text-slate-400 line-clamp-1">
+                              <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
                                 {CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}
                               </p>
                             </TableCell>
@@ -469,8 +467,7 @@ export default function Dashboard() {
                                 month: "short",
                               })}
                             </TableCell>
-                            {/* #8: status badge and Reopen are in a tight inline group
-                                 so the action is visually adjacent to the state it acts on */}
+                            {/* status badge and Reopen in tight inline group */}
                             <TableCell className="text-right">
                               <div className="inline-flex items-center justify-end gap-1.5">
                                 <StatusBadge status={c.status} />
@@ -520,17 +517,18 @@ export default function Dashboard() {
                         className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2.5"
                       >
                         <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className="h-9 w-9 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="h-11 w-11 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
                               {c.attachments && c.attachments[0] ? (
                                 <img
                                   src={getImageUrl(c.attachments[0])}
                                   onError={handleImageError}
-                                  alt="Evidence"
+                                  alt={`Evidence photo for grievance: ${c.title}`}
                                   className="h-full w-full object-cover"
+                                  loading="lazy"
                                 />
                               ) : (
-                                <Building2 className="w-4 h-4 text-slate-400" />
+                                <Building2 className="w-5 h-5 text-slate-400" aria-hidden="true" />
                               )}
                             </div>
                             <div className="min-w-0">
@@ -548,14 +546,14 @@ export default function Dashboard() {
                           <StatusBadge status={c.status} />
                         </div>
 
-                        <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
                           <span>{CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}</span>
                           <Link
                             to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                            className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1"
+                            className="font-medium text-slate-700 dark:text-slate-300 hover:text-emerald-600 flex items-center gap-1"
                           >
                             <span>Track</span>
-                            <ArrowRight className="w-3 h-3" />
+                            <ArrowRight className="w-3.5 h-3.5" />
                           </Link>
                         </div>
                       </div>
@@ -637,18 +635,21 @@ export default function Dashboard() {
                 98.4% SLA Compliance
               </span>
             </div>
-            <div className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
-              <div className="flex items-center justify-between">
-                <span>Active Field Crews</span>
-                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">14 Teams On-Duty</span>
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-slate-600 dark:text-slate-400 shrink-0">Active Field Crews</span>
+                <span className="flex-1 border-b border-dotted border-slate-300 dark:border-slate-700 mx-1.5" aria-hidden="true" />
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200 shrink-0">14 Teams On-Duty</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span>Avg Resolution Time</span>
-                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">4.8 Hours</span>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-slate-600 dark:text-slate-400 shrink-0">Avg Resolution Time</span>
+                <span className="flex-1 border-b border-dotted border-slate-300 dark:border-slate-700 mx-1.5" aria-hidden="true" />
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200 shrink-0">4.8 Hours</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span>Emergency SWM Patrol</span>
-                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">Normal</span>
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-slate-600 dark:text-slate-400 shrink-0">Emergency SWM Patrol</span>
+                <span className="flex-1 border-b border-dotted border-slate-300 dark:border-slate-700 mx-1.5" aria-hidden="true" />
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200 shrink-0">Normal</span>
               </div>
             </div>
           </Card>

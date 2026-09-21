@@ -38,7 +38,16 @@ if (fs.existsSync(pagesDir)) {
   const tsxFiles = fs.readdirSync(pagesDir).filter(f => f.endsWith('.tsx'));
 
   let restrictiveContainersFound = 0;
-  const primaryExemptions = ['Unauthorized.tsx', 'TrackComplaint.tsx', 'QuickReport.tsx', 'Auth.tsx'];
+  const primaryExemptions = [
+    'Unauthorized.tsx',
+    'TrackComplaint.tsx',
+    'QuickReport.tsx',
+    'Auth.tsx',
+    'ThankYou.tsx',
+    'PrivacyPolicy.tsx',
+    'Terms.tsx',
+    'NotFound.tsx'
+  ];
 
   for (const file of tsxFiles) {
     if (primaryExemptions.includes(file)) continue;

@@ -8,7 +8,7 @@ export default function Terms() {
     <div className="min-h-[100dvh] flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-emerald-500 selection:text-white">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
             <SmartCivicLogo className="w-8 h-8" />
             <span className="font-bold text-lg tracking-tight">Smart Civic <span className="text-emerald-600">AI</span></span>
@@ -24,7 +24,7 @@ export default function Terms() {
 
       {/* Hero */}
       <section className="py-12 sm:py-16 px-6 bg-gradient-to-b from-white via-slate-50 to-slate-100/50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 border-b border-slate-200/80 dark:border-slate-800/80">
-        <div className="max-w-4xl mx-auto text-center space-y-4">
+        <div className="max-w-5xl mx-auto text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 text-xs font-semibold">
             <Scale className="w-3.5 h-3.5" />
             <span>Civic Platform Terms & Conditions of Use</span>
@@ -32,7 +32,7 @@ export default function Terms() {
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
             Terms of Service & Citizen Charter
           </h1>
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
             Clear, transparent guidelines governing the use of Smart Civic AI, citizen responsibilities, municipal grievance routing, and civic accountability.
           </p>
           <p className="text-xs font-mono text-slate-400 dark:text-slate-500">
@@ -43,7 +43,7 @@ export default function Terms() {
 
       {/* Content */}
       <main className="flex-1 py-12 px-6">
-        <div className="max-w-4xl mx-auto space-y-10 text-sm sm:text-base leading-relaxed text-slate-700 dark:text-slate-300">
+        <div className="max-w-5xl mx-auto space-y-10 text-sm sm:text-base leading-relaxed text-slate-700 dark:text-slate-300">
           {/* Section 1 */}
           <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
             <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">

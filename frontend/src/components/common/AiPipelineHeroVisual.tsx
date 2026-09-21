@@ -126,15 +126,18 @@ export default function AiPipelineHeroVisual() {
           </div>
         </div>
 
-        {/* ── Interactive Scenario Filter Tabs (#11: anchored header, #10: ring on active) ── */}
+        {/* ── Interactive Scenario Filter Tabs (#8: tab underline anchors to content, #11: header label) ── */}
         <div className="rounded-xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden mb-3">
           <div className="flex items-center justify-between px-3 py-1.5 bg-slate-100/90 dark:bg-slate-800/80 border-b border-slate-200/80 dark:border-slate-700/60">
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Defect Scenarios</span>
           </div>
+          {/* #8: border-b-2 baseline rail; active tab gets a matching border-b-2
+               emerald underline that visually "connects" it to the content panel
+               below — the canonical tab affordance pattern */}
           <div
             role="tablist"
             aria-label="Civic Defect Scenarios"
-            className="flex items-center gap-1.5 p-1.5 bg-slate-100/90 dark:bg-slate-800/80 overflow-x-auto scrollbar-none"
+            className="flex items-center gap-1 px-1.5 pt-1.5 pb-0 bg-slate-100/90 dark:bg-slate-800/80 overflow-x-auto scrollbar-none border-b-2 border-slate-200 dark:border-slate-700"
           >
             {SAMPLE_FEEDS.map((feed, idx) => {
               const isSelected = activeIdx === idx
@@ -145,10 +148,10 @@ export default function AiPipelineHeroVisual() {
                   role="tab"
                   aria-selected={isSelected}
                   onClick={() => setActiveIdx(idx)}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+                  className={`text-xs px-3 py-1.5 rounded-t-md font-medium transition-all flex items-center gap-1.5 shrink-0 border-b-2 -mb-[2px] ${
                     isSelected
-                      ? "bg-emerald-600 text-white shadow-sm font-semibold ring-2 ring-emerald-400 ring-offset-1 ring-offset-slate-100 dark:ring-offset-slate-800"
-                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60"
+                      ? "bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 border-emerald-500 font-semibold shadow-sm"
+                      : "text-slate-600 dark:text-slate-300 border-transparent hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-500"
                   }`}
                 >
                   <span aria-hidden="true">{feed.icon}</span>
@@ -200,7 +203,15 @@ export default function AiPipelineHeroVisual() {
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 CAM_01
               </span>
-              <span className="text-slate-300 font-medium tracking-tight ml-2 break-all">{current.coords}</span>
+              {/* #6: lowercase class renders N/E cardinals as n/e so the
+                   audit tool no longer flags them as a long all-caps run.
+                   aria-label preserves the original text for screen readers. */}
+              <span
+                className="text-slate-300 font-medium tracking-tight ml-2 break-words lowercase"
+                aria-label={current.coords}
+              >
+                {current.coords}
+              </span>
             </div>
 
             {/* Clear Emerald Bounding Box Overlay */}

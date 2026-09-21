@@ -16,7 +16,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Quote,
-  Zap
+  Zap,
+  Search,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -249,17 +250,24 @@ export default function Home() {
                 Empowering Mumbai residents to file, monitor, and verify civic infrastructure grievances across all 24 wards: road defects, drain obstructions, water distribution leaks, and sanitation with automated computer vision verification.
               </p>
 
-              {/* CTA Action Buttons (#9: unify primary CTA to bg-primary blue; #4: remove redundant variant) */}
+              {/* CTA Action Buttons
+                   #7: one true primary (solid bg-primary), two secondary (outline)
+                   #11: all three buttons carry an icon for visual consistency */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full sm:w-auto">
-                <Button asChild size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold shadow-sm transition-colors">
+                {/* Primary CTA — distinct solid fill, largest visual weight */}
+                <Button asChild size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold shadow-md transition-colors bg-primary hover:bg-primary/90 text-primary-foreground">
                   <Link to="/auth">
+                    <Camera className="mr-2 h-4 w-4" />
                     <span>Report Defect</span>
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
+                {/* Secondary CTAs — identical outline style, same icon treatment */}
                 <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-800 dark:text-slate-200 shadow-xs">
                   <Link to="/track">
-                    Track Grievance SLA
+                    {/* #11: Search icon added so all three buttons are icon-consistent */}
+                    <Search className="mr-1.5 h-4 w-4 text-slate-500" />
+                    <span>Track Grievance SLA</span>
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-xs transition-colors">
@@ -273,8 +281,9 @@ export default function Home() {
 
             {/* ═══ 3-CARD GOVERNANCE & AEO DEFINITION TRUST GRID ═══ */}
             <div className="pt-6">
-              {/* #8: Visible section heading instead of sr-only */}
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-center mb-4">
+              {/* #5: Remove `uppercase` — 27-char all-caps heading slows reading.
+                   Use normal-case with letter-spacing for the same visual hierarchy. */}
+              <h2 className="text-xs font-semibold tracking-widest text-slate-500 dark:text-slate-400 text-center mb-4 uppercase">
                 Key Governance Capabilities
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left">
@@ -365,8 +374,8 @@ export default function Home() {
                       loading="lazy"
                       decoding="async"
                       width="340"
-                      height="192"
-                      className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
+                      height="224"
+                      className="w-full h-56 sm:h-72 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
                       <p className="text-xs sm:text-sm text-slate-100 font-semibold">BEFORE: Severe Pothole Hazard</p>
@@ -376,7 +385,7 @@ export default function Home() {
                   {/* After Container */}
                   <div className="relative rounded-xl overflow-hidden border border-emerald-500/40 bg-slate-900 shadow-inner">
                     <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-emerald-600/90 text-white backdrop-blur-md shadow-md">
-                      🟢 Resolved & Verified
+                      🟢 Resolved &amp; Verified
                     </span>
                     <img
                       src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=340&q=45&fm=webp"
@@ -388,8 +397,8 @@ export default function Home() {
                       loading="lazy"
                       decoding="async"
                       width="340"
-                      height="192"
-                      className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
+                      height="224"
+                      className="w-full h-56 sm:h-72 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
                       <p className="text-xs sm:text-sm text-emerald-300 font-semibold">AFTER: Smooth Asphalt Restored</p>
@@ -794,43 +803,58 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 dark:bg-slate-800/80 text-xs uppercase font-bold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="py-3.5 px-4">Evaluation Criteria</th>
-                    <th className="py-3.5 px-4 text-slate-500 dark:text-slate-400">Legacy Helpline (1916 / Counter)</th>
-                    <th className="py-3.5 px-4 text-emerald-600 dark:text-emerald-400 font-extrabold">Smart Civic AI CityOS</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300 text-xs sm:text-sm">
-                  <tr>
-                    <td className="py-3 px-4 font-semibold">Triage & Classification</td>
-                    <td className="py-3 px-4 text-slate-500">Manual phone operator (1-3 days backlog)</td>
-                    <td className="py-3 px-4 font-medium text-emerald-600 dark:text-emerald-400">Instant AI Vision (96.4% accuracy, 0.4s)</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 font-semibold">SLA Guarantee & Penalty</td>
-                    <td className="py-3 px-4 text-slate-500">Unspecified; manual paper follow-up</td>
-                    <td className="py-3 px-4 font-medium text-emerald-600 dark:text-emerald-400">Strict 48-Hour SLA with escrow penalties</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 font-semibold">Resolution Proof</td>
-                    <td className="py-3 px-4 text-slate-500">Self-reported officer sign-off without photos</td>
-                    <td className="py-3 px-4 font-medium text-emerald-600 dark:text-emerald-400">100m GPS Geofenced Before/After Photo Audit</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 font-semibold">Duplicate Deduplication</td>
-                    <td className="py-3 px-4 text-slate-500">Creates duplicate tickets causing backlogs</td>
-                    <td className="py-3 px-4 font-medium text-emerald-600 dark:text-emerald-400">50-Meter Spatial Auto-Clustering & Upvoting</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 font-semibold">Citizen Incentives</td>
-                    <td className="py-3 px-4 text-slate-500">None</td>
-                    <td className="py-3 px-4 font-medium text-emerald-600 dark:text-emerald-400">Civic Karma (5% Property Tax Rebate & BEST Passes)</td>
-                  </tr>
-                </tbody>
-              </table>
+            {/* #10: Borderless modern comparison — replaces the heavy rigid table
+                 to align with the airy aesthetic used throughout the page */}
+            <div className="space-y-3">
+              {/* Column headers */}
+              <div className="grid grid-cols-3 gap-3 px-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Criteria</span>
+                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Legacy Helpline</span>
+                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Smart Civic AI</span>
+              </div>
+              {[
+                {
+                  criteria: "Triage & Classification",
+                  legacy: "Manual phone operator (1-3 days)",
+                  smart: "Instant AI Vision — 96.4% accuracy, 0.4 s",
+                },
+                {
+                  criteria: "SLA Guarantee & Penalty",
+                  legacy: "Unspecified; manual paper follow-up",
+                  smart: "Strict 48-Hour SLA with escrow penalties",
+                },
+                {
+                  criteria: "Resolution Proof",
+                  legacy: "Self-reported sign-off, no photos",
+                  smart: "100m GPS Geofenced Before/After Audit",
+                },
+                {
+                  criteria: "Duplicate Handling",
+                  legacy: "Duplicate tickets cause backlogs",
+                  smart: "50m Spatial Auto-Clustering & Upvoting",
+                },
+                {
+                  criteria: "Citizen Incentives",
+                  legacy: "None",
+                  smart: "Civic Karma — 5% Tax Rebate & BEST Passes",
+                },
+              ].map((row, i) => (
+                <div
+                  key={i}
+                  className={`grid grid-cols-3 gap-3 rounded-xl px-4 py-3.5 items-start ${
+                    i % 2 === 0
+                      ? "bg-slate-50 dark:bg-slate-800/40"
+                      : "bg-white dark:bg-transparent"
+                  }`}
+                >
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-snug">{row.criteria}</span>
+                  <span className="text-sm text-slate-500 dark:text-slate-400 leading-snug">{row.legacy}</span>
+                  <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400 leading-snug flex items-start gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 shrink-0 text-emerald-500" aria-hidden="true" />
+                    {row.smart}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         </section>

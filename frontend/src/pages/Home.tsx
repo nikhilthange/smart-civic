@@ -249,9 +249,9 @@ export default function Home() {
                 Empowering Mumbai residents to file, monitor, and verify civic infrastructure grievances across all 24 wards: road defects, drain obstructions, water distribution leaks, and sanitation with automated computer vision verification.
               </p>
 
-              {/* CTA Action Buttons */}
+              {/* CTA Action Buttons (#9: unify primary CTA to bg-primary blue; #4: remove redundant variant) */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full sm:w-auto">
-                <Button asChild size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+                <Button asChild size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold shadow-sm transition-colors">
                   <Link to="/auth">
                     <span>Report Defect</span>
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -264,7 +264,7 @@ export default function Home() {
                 </Button>
                 <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-xs transition-colors">
                   <Link to="/map">
-                    <MapPin className="mr-1.5 h-4 w-4 text-emerald-600" />
+                    <MapPin className="mr-1.5 h-4 w-4 text-primary" />
                     <span>Ward GIS Map</span>
                   </Link>
                 </Button>
@@ -273,7 +273,10 @@ export default function Home() {
 
             {/* ═══ 3-CARD GOVERNANCE & AEO DEFINITION TRUST GRID ═══ */}
             <div className="pt-6">
-              <h2 className="sr-only">Key Governance Capabilities</h2>
+              {/* #8: Visible section heading instead of sr-only */}
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-center mb-4">
+                Key Governance Capabilities
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left">
                 <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2 hover:border-emerald-500/40 transition-colors">
                   <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
@@ -901,7 +904,8 @@ export default function Home() {
                   OpenStreetMap Mumbai GIS ↗
                 </a>
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+              {/* #7: disclaimer text raised from text-[11px] (11px) to text-xs (12px) */}
+              <p className="text-xs text-slate-400 dark:text-slate-500 pt-1">
                 * Smart Civic AI is an independent community civic intelligence initiative created to help citizens report and monitor municipal issues in Mumbai. Not an official BMC government property.
               </p>
             </div>
@@ -932,33 +936,34 @@ export default function Home() {
 
             <div>
               <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Civic Platform</h3>
-              <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-                <li><Link to="/complaint/create" className="hover:text-emerald-600 transition-colors">Report Defect</Link></li>
-                <li><Link to="/track" className="hover:text-emerald-600 transition-colors">Track 48h SLA</Link></li>
-                <li><Link to="/nagarsevak" className="hover:text-emerald-600 transition-colors font-medium text-emerald-600 dark:text-emerald-400">Find My Nagarsevak</Link></li>
-                <li><Link to="/map" className="hover:text-emerald-600 transition-colors">24-Ward GIS Map</Link></li>
-                <li><Link to="/monsoon-radar" className="hover:text-emerald-600 transition-colors">Monsoon Radar</Link></li>
-                <li><Link to="/rewards" className="hover:text-emerald-600 transition-colors">Civic Karma Rewards</Link></li>
+              {/* #13: py-1.5 on each li for comfortable vertical spacing */}
+              <ul className="space-y-0 text-sm text-slate-500 dark:text-slate-400">
+                <li className="py-1.5"><Link to="/complaint/create" className="hover:text-emerald-600 transition-colors">Report Defect</Link></li>
+                <li className="py-1.5"><Link to="/track" className="hover:text-emerald-600 transition-colors">Track 48h SLA</Link></li>
+                <li className="py-1.5"><Link to="/nagarsevak" className="hover:text-emerald-600 transition-colors font-medium text-emerald-600 dark:text-emerald-400">Find My Nagarsevak</Link></li>
+                <li className="py-1.5"><Link to="/map" className="hover:text-emerald-600 transition-colors">24-Ward GIS Map</Link></li>
+                <li className="py-1.5"><Link to="/monsoon-radar" className="hover:text-emerald-600 transition-colors">Monsoon Radar</Link></li>
+                <li className="py-1.5"><Link to="/rewards" className="hover:text-emerald-600 transition-colors">Civic Karma Rewards</Link></li>
               </ul>
             </div>
 
             <div>
               <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Resources</h3>
-              <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-                <li><Link to="/support" className="hover:text-emerald-600 transition-colors">Help & FAQ Center</Link></li>
-                <li><Link to="/dlp-registry" className="hover:text-emerald-600 transition-colors">DLP Road Registry</Link></li>
-                <li><Link to="/whatsapp-sandbox" className="hover:text-emerald-600 transition-colors">WhatsApp Bot Demo</Link></li>
-                <li><a href="https://www.mcgm.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 transition-colors">Official BMC Portal ↗</a></li>
+              <ul className="space-y-0 text-sm text-slate-500 dark:text-slate-400">
+                <li className="py-1.5"><Link to="/support" className="hover:text-emerald-600 transition-colors">Help &amp; FAQ Center</Link></li>
+                <li className="py-1.5"><Link to="/dlp-registry" className="hover:text-emerald-600 transition-colors">DLP Road Registry</Link></li>
+                <li className="py-1.5"><Link to="/whatsapp-sandbox" className="hover:text-emerald-600 transition-colors">WhatsApp Bot Demo</Link></li>
+                <li className="py-1.5"><a href="https://www.mcgm.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 transition-colors">Official BMC Portal ↗</a></li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Legal & Trust</h3>
-              <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-                <li><Link to="/privacy" className="hover:text-emerald-600 transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-emerald-600 transition-colors">Terms of Service</Link></li>
-                <li><Link to="/privacy#exif" className="hover:text-emerald-600 transition-colors">EXIF & Media Ethics</Link></li>
-                <li><Link to="/terms#sla" className="hover:text-emerald-600 transition-colors">SLA Disclaimers</Link></li>
+              <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Legal &amp; Trust</h3>
+              <ul className="space-y-0 text-sm text-slate-500 dark:text-slate-400">
+                <li className="py-1.5"><Link to="/privacy" className="hover:text-emerald-600 transition-colors">Privacy Policy</Link></li>
+                <li className="py-1.5"><Link to="/terms" className="hover:text-emerald-600 transition-colors">Terms of Service</Link></li>
+                <li className="py-1.5"><Link to="/privacy#exif" className="hover:text-emerald-600 transition-colors">EXIF &amp; Media Ethics</Link></li>
+                <li className="py-1.5"><Link to="/terms#sla" className="hover:text-emerald-600 transition-colors">SLA Disclaimers</Link></li>
               </ul>
             </div>
           </div>

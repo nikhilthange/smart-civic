@@ -126,34 +126,37 @@ export default function AiPipelineHeroVisual() {
           </div>
         </div>
 
-        {/* ── Interactive Scenario Filter Tabs ── */}
-        <div 
-          role="tablist"
-          aria-label="Civic Defect Scenarios"
-          className="flex items-center gap-1.5 p-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 overflow-x-auto scrollbar-none mb-3"
-        >
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-2 shrink-0">
-            Scenarios:
-          </span>
-          {SAMPLE_FEEDS.map((feed, idx) => {
-            const isSelected = activeIdx === idx
-            return (
-              <button
-                key={feed.id}
-                type="button"
-                role="tab"
-                aria-selected={isSelected}
-                onClick={() => setActiveIdx(idx)}
-                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 shrink-0 ${isSelected
-                    ? "bg-emerald-600 text-white shadow-sm font-semibold"
-                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60"
+        {/* ── Interactive Scenario Filter Tabs (#11: anchored header, #10: ring on active) ── */}
+        <div className="rounded-xl border border-slate-200/80 dark:border-slate-700/60 overflow-hidden mb-3">
+          <div className="flex items-center justify-between px-3 py-1.5 bg-slate-100/90 dark:bg-slate-800/80 border-b border-slate-200/80 dark:border-slate-700/60">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Defect Scenarios</span>
+          </div>
+          <div
+            role="tablist"
+            aria-label="Civic Defect Scenarios"
+            className="flex items-center gap-1.5 p-1.5 bg-slate-100/90 dark:bg-slate-800/80 overflow-x-auto scrollbar-none"
+          >
+            {SAMPLE_FEEDS.map((feed, idx) => {
+              const isSelected = activeIdx === idx
+              return (
+                <button
+                  key={feed.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  onClick={() => setActiveIdx(idx)}
+                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+                    isSelected
+                      ? "bg-emerald-600 text-white shadow-sm font-semibold ring-2 ring-emerald-400 ring-offset-1 ring-offset-slate-100 dark:ring-offset-slate-800"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60"
                   }`}
-              >
-                <span aria-hidden="true">{feed.icon}</span>
-                <span className="whitespace-nowrap">{feed.label}</span>
-              </button>
-            )
-          })}
+                >
+                  <span aria-hidden="true">{feed.icon}</span>
+                  <span className="whitespace-nowrap">{feed.label}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {/* ── Main Split Viewport: Defect Scanner + Model Ledger ── */}
@@ -191,13 +194,13 @@ export default function AiPipelineHeroVisual() {
               />
             )}
 
-            {/* Viewport Top Monospace Stamp */}
+            {/* Viewport Top Monospace Stamp (#5: remove truncate from coords) */}
             <div className="relative z-10 p-2.5 flex items-center justify-between text-xs font-mono text-slate-200 bg-slate-950/85 backdrop-blur-sm border-b border-white/10">
-              <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+              <span className="flex items-center gap-1.5 text-emerald-400 font-semibold shrink-0">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 CAM_01
               </span>
-              <span className="text-slate-300 font-medium tracking-tight truncate">{current.coords}</span>
+              <span className="text-slate-300 font-medium tracking-tight ml-2 break-all">{current.coords}</span>
             </div>
 
             {/* Clear Emerald Bounding Box Overlay */}
@@ -218,16 +221,18 @@ export default function AiPipelineHeroVisual() {
               </motion.div>
             </div>
 
-            {/* Bottom Feed Label */}
-            <div className="relative z-10 p-2.5 bg-slate-950/90 backdrop-blur-sm border-t border-white/10 flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-200 truncate">{current.label}</span>
+            {/* Bottom Feed Label (#12: Next button meets 36×60px touch target) */}
+            <div className="relative z-10 p-2.5 bg-slate-950/90 backdrop-blur-sm border-t border-white/10 flex items-center justify-between text-xs gap-2">
+              <span className="font-semibold text-slate-200 min-w-0 flex-1">{current.label}</span>
               <button
                 type="button"
                 onClick={() => setActiveIdx((prev) => (prev + 1) % SAMPLE_FEEDS.length)}
-                className="text-xs font-medium text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors shrink-0"
+                className="min-h-[36px] min-w-[60px] px-3 py-1 text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:bg-white/10 flex items-center justify-center gap-1.5 rounded-md transition-colors shrink-0 border border-emerald-700/40"
                 title="Cycle sample image"
+                aria-label="Show next sample image"
               >
-                <RefreshCw className="w-3 h-3" /> Next
+                <RefreshCw className="w-3 h-3" />
+                <span>Next</span>
               </button>
             </div>
           </div>
@@ -235,11 +240,11 @@ export default function AiPipelineHeroVisual() {
           {/* Right Side: Live Model Inference Ledger (7 cols) */}
           <div className="md:col-span-7 flex flex-col justify-between space-y-3 bg-slate-50 dark:bg-slate-900/60 p-3.5 sm:p-4 rounded-xl border border-slate-200/80 dark:border-slate-800 overflow-hidden">
 
-            {/* Model Spec */}
+            {/* Model Spec (#6: remove truncate so 'Vision Classifier' never clips) */}
             <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-200/60 dark:border-slate-800 gap-2">
               <div className="flex items-center gap-1.5 min-w-0">
                 <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span className="text-slate-600 dark:text-slate-400 font-medium text-xs truncate">Vision Classifier</span>
+                <span className="text-slate-600 dark:text-slate-400 font-medium text-xs whitespace-normal">Vision Classifier</span>
               </div>
               <span className="font-mono text-xs text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 font-medium shrink-0">
                 ONNX DenseNet-121
@@ -296,7 +301,7 @@ export default function AiPipelineHeroVisual() {
           </div>
         </div>
 
-        {/* ── Pipeline Execution Footer Breadcrumb ── */}
+        {/* ── Pipeline Execution Footer Breadcrumb (#14: simplified — telemetry collapsed) ── */}
         <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
 
@@ -319,16 +324,13 @@ export default function AiPipelineHeroVisual() {
             </div>
           </div>
 
-          {/* Telemetry Footer */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500 dark:text-slate-400 pt-1 gap-1">
+          {/* Telemetry summary (#14: single line instead of two competing rows) */}
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-1">
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>50m Deduplication: <strong className="text-emerald-700 dark:text-emerald-400">CLEAR</strong></span>
+              <span>50m dedup <strong className="text-emerald-700 dark:text-emerald-400">CLEAR</strong> · Escrow <strong className="text-emerald-700 dark:text-emerald-400">ACTIVE</strong></span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>Escrow Penalty Lock: <strong className="text-emerald-700 dark:text-emerald-400">ACTIVE</strong></span>
-            </div>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
           </div>
         </div>
 

@@ -224,7 +224,8 @@ export default function Dashboard() {
               <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
                 {stats?.total ?? 0}
               </div>
-              <p className="text-[11px] text-zinc-400 mt-1">All-time submitted grievances</p>
+              {/* #5: min body-text size is 12px (text-xs); text-[11px] is below the accessible floor */}
+              <p className="text-xs text-zinc-400 mt-1">All-time submitted grievances</p>
             </div>
           </motion.div>
 
@@ -245,7 +246,7 @@ export default function Dashboard() {
               <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
                 {pending}
               </div>
-              <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80 mt-1 flex items-center gap-1.5">
+              <p className="text-xs text-amber-600/80 dark:text-amber-400/80 mt-1 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 Awaiting ward assignment
               </p>
@@ -269,7 +270,7 @@ export default function Dashboard() {
               <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
                 {inProgress}
               </div>
-              <p className="text-[11px] text-sky-600/80 dark:text-sky-400/80 mt-1 flex items-center gap-1.5">
+              <p className="text-xs text-sky-600/80 dark:text-sky-400/80 mt-1 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
                 Dispatched to field teams
               </p>
@@ -293,9 +294,9 @@ export default function Dashboard() {
               <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-zinc-900 dark:text-zinc-100 tracking-tight">
                 {resolved}
               </div>
-              <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 flex items-center gap-1.5">
+              <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-1 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Verified & closed tickets
+                Verified &amp; closed tickets
               </p>
             </div>
           </motion.div>
@@ -442,13 +443,15 @@ export default function Dashboard() {
                                 )}
                               </div>
                             </TableCell>
+                            {/* #6: ticket IDs rendered without forced all-caps — they're already
+                                 uppercase hex by construction; no text-transform needed */}
                             <TableCell className="font-mono text-xs">
                               <Link
                                 to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors normal-case"
                                 aria-label={`Ticket ${c.complaintId || c._id?.slice(-8)}`}
                               >
-                                <span>{c.complaintId || `#${c._id?.slice(-8)}`}</span>
+                                <span className="lowercase">{c.complaintId || `#${c._id?.slice(-8)}`}</span>
                                 <ExternalLink className="w-3 h-3 opacity-60" aria-hidden="true" />
                               </Link>
                             </TableCell>
@@ -466,8 +469,10 @@ export default function Dashboard() {
                                 month: "short",
                               })}
                             </TableCell>
+                            {/* #8: status badge and Reopen are in a tight inline group
+                                 so the action is visually adjacent to the state it acts on */}
                             <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-3 sm:gap-4">
+                              <div className="inline-flex items-center justify-end gap-1.5">
                                 <StatusBadge status={c.status} />
                                 {c.status === "resolved" && (
                                   <Button

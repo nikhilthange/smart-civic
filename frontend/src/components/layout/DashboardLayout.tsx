@@ -73,7 +73,8 @@ interface NavGroup {
 const navGroups: NavGroup[] = [
   {
     groupKey: "navGroup.citizenPortal",
-    label: "CITIZEN PORTAL",
+    // #3: sentence-case label — long all-caps runs slow reading; use letter-spacing instead
+    label: "Citizen Portal",
     items: [
       { key: "nav.dashboard", defaultName: "Dashboard Overview", href: "/dashboard", icon: LayoutDashboard },
       { key: "nav.createComplaint", defaultName: "File Grievance", href: "/complaint/create", icon: PlusCircle, citizenOnly: true },
@@ -88,7 +89,8 @@ const navGroups: NavGroup[] = [
   },
   {
     groupKey: "navGroup.governanceField",
-    label: "GOVERNANCE & FIELD",
+    // #3: sentence-case — matches the fix above
+    label: "Governance & Field",
     items: [
       { key: "nav.fieldWorker", defaultName: "Field Worker Queue", href: "/worker-queue", icon: Wrench, workerOnly: true },
       { key: "nav.officerPortal", defaultName: "Ward Officer Portal", href: "/officer-portal", icon: Shield, officerOnly: true },
@@ -260,8 +262,10 @@ export default function DashboardLayout() {
             if (visibleItems.length === 0) return null
 
             return (
-              <div key={group.label} className="space-y-0.5">
-                <p className="px-3 text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400 mb-1">
+              // #7: key on stable groupKey (not label) prevents duplication artifacts
+              <div key={group.groupKey} className="space-y-0.5">
+                {/* #3: normal-case label with tracking-wide for visual hierarchy without all-caps readability penalty */}
+                <p className="px-3 text-xs font-semibold tracking-widest uppercase text-slate-400 dark:text-slate-500 mb-1 select-none">
                   {t(group.groupKey, group.label)}
                 </p>
                 <nav className="space-y-0.5">
@@ -326,11 +330,13 @@ export default function DashboardLayout() {
         </div>
       </div>
 
-      <div className="mt-auto px-4 py-3 border-t border-slate-200/80 dark:border-slate-800/80 shrink-0">
-        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 inline-block animate-pulse" />
-          <span className="text-xs font-mono text-slate-500 dark:text-slate-400 truncate">
-            BMC System Online • Ward H-West
+      {/* #9: distinct footer with generous padding and clear border separation
+           #4: remove `truncate` so the status text never clips */}
+      <div className="mt-auto px-4 pt-4 pb-4 border-t-2 border-slate-200/80 dark:border-slate-800/80 shrink-0">
+        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 inline-block animate-pulse" aria-hidden="true" />
+          <span className="text-xs font-mono text-slate-500 dark:text-slate-400 whitespace-normal leading-tight">
+            BMC System Online · Ward H-West
           </span>
         </div>
       </div>

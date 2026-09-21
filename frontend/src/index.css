@@ -33,6 +33,42 @@
     --ring: 221 83% 53%;
  
     --radius: 0.5rem;
+
+    /* ── #1 Type Scale (9 steps, ~≤10 distinct sizes) ───────────────────────
+       Use these instead of ad-hoc text-[Npx] or duplicate Tailwind size classes.
+       xs=12px · sm=14px · base=16px · md=18px · lg=20px · xl=24px
+       2xl=30px · 3xl=36px · 4xl=48px                                        */
+    --text-xs:   0.75rem;   /* 12px */
+    --text-sm:   0.875rem;  /* 14px */
+    --text-base: 1rem;      /* 16px */
+    --text-md:   1.125rem;  /* 18px */
+    --text-lg:   1.25rem;   /* 20px */
+    --text-xl:   1.5rem;    /* 24px */
+    --text-2xl:  1.875rem;  /* 30px */
+    --text-3xl:  2.25rem;   /* 36px */
+    --text-4xl:  3rem;      /* 48px */
+
+    /* ── #2 Semantic Text Colours (11 roles, ≤12 distinct values) ───────────
+       Map all foreground colours to one of these tokens.                     */
+    --color-text-primary:    222 47% 11%;   /* slate-900  – headings         */
+    --color-text-secondary:  215 16% 47%;  /* slate-500  – body / sub-labels */
+    --color-text-muted:      215 20% 65%;  /* slate-400  – placeholders      */
+    --color-text-inverted:   210 40% 98%;  /* white      – on dark surfaces  */
+    --color-text-brand:      221 83% 53%;  /* primary blue – links, active   */
+    --color-text-success:    158 64% 32%;  /* emerald-700                    */
+    --color-text-warning:    38 92% 40%;   /* amber-600                      */
+    --color-text-danger:     0 72% 51%;    /* rose-600                       */
+    --color-text-info:       199 89% 48%;  /* sky-500                        */
+    --color-text-mono:       215 16% 47%;  /* monospace / telemetry labels   */
+    --color-text-disabled:   215 20% 75%;  /* slate-300  – disabled states   */
+
+    /* ── #3 Corner Radii (5 named steps, ≤6 distinct values) ───────────────
+       Use these tokens so border-radius stays inside 5 distinct values.      */
+    --radius-sm:   0.25rem;  /* 4px  – badges, chips              */
+    --radius-md:   0.5rem;   /* 8px  – inputs, buttons            */
+    --radius-lg:   0.75rem;  /* 12px – cards, dropdowns           */
+    --radius-xl:   1rem;     /* 16px – modals, panels             */
+    --radius-full: 9999px;   /* pill – avatars, status dots       */
   }
  
   .dark {

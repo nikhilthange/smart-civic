@@ -251,21 +251,21 @@ export default function Home() {
 
               {/* CTA Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full sm:w-auto">
-                <Button asChild size="lg" className="w-full sm:w-auto rounded-md h-11 px-6 text-sm font-semibold shadow-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
+                <Button asChild size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
                   <Link to="/auth">
                     <span>Report Defect</span>
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-md h-11 px-6 text-sm font-semibold bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-800 dark:text-slate-200 shadow-xs">
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-800 dark:text-slate-200 shadow-xs">
                   <Link to="/track">
                     Track Grievance SLA
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto rounded-md h-11 px-4 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-lg h-11 px-6 text-sm font-semibold bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-xs transition-colors">
                   <Link to="/map">
                     <MapPin className="mr-1.5 h-4 w-4 text-emerald-600" />
-                    Ward GIS Map
+                    <span>Ward GIS Map</span>
                   </Link>
                 </Button>
               </div>
@@ -366,7 +366,7 @@ export default function Home() {
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
-                      <p className="text-[11px] text-slate-300 font-medium">BEFORE: Severe Pothole Hazard</p>
+                      <p className="text-xs sm:text-sm text-slate-100 font-semibold">BEFORE: Severe Pothole Hazard</p>
                     </div>
                   </div>
 
@@ -389,7 +389,7 @@ export default function Home() {
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
-                      <p className="text-[11px] text-emerald-300 font-medium">AFTER: Smooth Asphalt Restored</p>
+                      <p className="text-xs sm:text-sm text-emerald-300 font-semibold">AFTER: Smooth Asphalt Restored</p>
                     </div>
                   </div>
                 </div>
@@ -448,7 +448,7 @@ export default function Home() {
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
-                      <p className="text-[11px] text-slate-300 font-medium">BEFORE: Overflowing Waste Pile</p>
+                      <p className="text-xs sm:text-sm text-slate-100 font-semibold">BEFORE: Overflowing Waste Pile</p>
                     </div>
                   </div>
 
@@ -471,7 +471,7 @@ export default function Home() {
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-105 transition-all duration-500"
                     />
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent p-3">
-                      <p className="text-[11px] text-emerald-300 font-medium">AFTER: Fully Cleaned Boulevard</p>
+                      <p className="text-xs sm:text-sm text-emerald-300 font-semibold">AFTER: Fully Cleaned Boulevard</p>
                     </div>
                   </div>
                 </div>
@@ -490,23 +490,23 @@ export default function Home() {
         </section>
 
         {/* AI Powered Section */}
-        <section id="ai" className="w-full py-20 md:py-28 bg-white dark:bg-slate-900 border-y border-slate-200/80 dark:border-slate-800 overflow-hidden">
-          <div className="container px-4 md:px-6 mx-auto max-w-7xl">
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-16 items-center">
+        <section id="ai" className="w-full py-20 md:py-28 lg:py-32 bg-white dark:bg-slate-900 border-y border-slate-200/80 dark:border-slate-800 overflow-hidden">
+          <div className="container px-4 md:px-6 lg:px-8 mx-auto max-w-7xl">
+            <div className="grid gap-12 lg:grid-cols-2 lg:gap-20 xl:gap-24 items-center">
               <motion.div
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={fadeUpVariant}
-                className="space-y-4 sm:space-y-6 min-w-0"
+                className="space-y-5 sm:space-y-6 lg:pr-6 min-w-0"
               >
-                <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-xs sm:text-sm text-primary font-medium">
+                <div className="inline-block rounded-lg bg-emerald-500/10 px-3 py-1 text-xs sm:text-sm text-emerald-700 dark:text-emerald-300 font-medium">
                   Smart AI Routing
                 </div>
-                <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
                   Zero delays. <br className="hidden sm:inline" /> Infinite efficiency.
                 </h2>
-                <p className="text-sm sm:text-base md:text-lg text-slate-500 dark:text-slate-400">
+                <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
                   Our platform uses advanced Machine Learning models to automatically categorize and prioritize complaints as soon as they are submitted.
                 </p>
                 <ul className="space-y-3 sm:space-y-4 text-xs sm:text-base">
@@ -529,7 +529,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
-                className="w-full min-w-0 max-w-full overflow-hidden"
+                className="w-full min-w-0 max-w-full overflow-hidden lg:pl-2"
               >
                 <AiPipelineHeroVisual />
               </motion.div>
@@ -615,7 +615,7 @@ export default function Home() {
         {/* Statistics Section Banner */}
         <section className="container px-4 md:px-6 mx-auto my-12" aria-labelledby="stats-heading">
           <h2 id="stats-heading" className="sr-only">Platform Statistics &amp; Municipal Impact</h2>
-          <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-lg p-6 sm:p-8 max-w-7xl mx-auto border border-slate-800">
+          <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-xl p-6 sm:p-8 max-w-7xl mx-auto border border-slate-800 shadow-sm">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-800">
               {[
                 { number: "25k+", label: "Grievances Resolved" },
@@ -625,7 +625,7 @@ export default function Home() {
               ].map((stat, i) => (
                 <div key={i} className="flex flex-col items-center justify-center pt-3 sm:pt-0 sm:px-4">
                   <p className="text-2xl sm:text-3xl lg:text-4xl font-bold font-mono text-emerald-400 mb-1 tracking-tight">{stat.number}</p>
-                  <p className="text-slate-400 text-xs font-mono uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-slate-400 text-xs sm:text-sm font-medium">{stat.label}</p>
                 </div>
               ))}
             </div>

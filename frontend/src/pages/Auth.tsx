@@ -265,12 +265,12 @@ export default function Auth() {
             <div className="p-3.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 text-white space-y-1">
               <p className="text-xs text-slate-300 font-mono uppercase tracking-wider">{t("auth.coverageLabel", "Coverage")}</p>
               <p className="text-base font-bold text-white">{t("auth.coverageTitle", "24 Mumbai Wards")}</p>
-              <p className="text-[11px] text-slate-300">{t("auth.coverageSubtitle", "Colaba to Dahisar & Mulund")}</p>
+              <p className="text-xs text-slate-200 font-medium">{t("auth.coverageSubtitle", "Colaba to Dahisar & Mulund")}</p>
             </div>
             <div className="p-3.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 text-white space-y-1">
               <p className="text-xs text-slate-300 font-mono uppercase tracking-wider">{t("auth.mandateLabel", "Rapid Mandate")}</p>
               <p className="text-base font-bold text-white">{t("auth.mandateTitle", "48-Hour SLA")}</p>
-              <p className="text-[11px] text-slate-300">{t("auth.mandateSubtitle", "Pothole & Solid Waste protocol")}</p>
+              <p className="text-xs text-slate-200 font-medium">{t("auth.mandateSubtitle", "Pothole & Solid Waste protocol")}</p>
             </div>
           </div>
         </div>
@@ -281,7 +281,7 @@ export default function Auth() {
             <Phone className="w-3.5 h-3.5 text-emerald-400" />
             <span>{t("auth.helpline", "24x7 BMC Helpline: 1916")}</span>
           </div>
-          <p className="text-slate-400 text-[11px]">
+          <p className="text-slate-400 text-xs">
             © 2026 {t("auth.corporationName", "Brihanmumbai Municipal Corporation")}
           </p>
         </div>
@@ -652,7 +652,7 @@ export default function Auth() {
                   )}
 
                   <Button
-                    className="w-full min-h-[44px] h-10 text-xs sm:text-sm font-semibold rounded-xl mt-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                    className="w-full min-h-[44px] h-11 text-xs sm:text-sm font-semibold rounded-xl mt-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
                     type="submit"
                     disabled={isLoading}
                   >
@@ -667,17 +667,23 @@ export default function Auth() {
                       portalType === "staff" ? t("auth.staffRegisterBtn", "Register Municipal Staff") : t("auth.createAccountBtn", "Create Account")
                     )}
                   </Button>
+
+                  {/* Contextual Security Assurance directly under form submit */}
+                  <div className="pt-1 flex items-center justify-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
+                    <span>256-Bit TLS Municipal Encryption • RBAC</span>
+                  </div>
                 </form>
 
                 {/* Google OAuth (Offered primarily for Citizens) */}
                 {portalType === "citizen" && (
                   <>
-                    <div className="relative my-4">
+                    <div className="relative my-6">
                       <div className="absolute inset-0 flex items-center">
                         <span className="w-full border-t border-slate-200 dark:border-slate-800" />
                       </div>
-                      <div className="relative flex justify-center text-[11px] uppercase">
-                        <span className="bg-white dark:bg-slate-900 px-2 text-slate-400 font-medium">
+                      <div className="relative flex justify-center text-xs">
+                        <span className="bg-white dark:bg-slate-900 px-3 text-slate-500 dark:text-slate-400 font-medium">
                           {t("auth.orContinueWith", "Or continue with")}
                         </span>
                       </div>
@@ -686,7 +692,7 @@ export default function Auth() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full min-h-[44px] h-10 flex items-center justify-center gap-2 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs sm:text-sm font-medium cursor-pointer"
+                      className="w-full min-h-[44px] h-11 flex items-center justify-center gap-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-xs sm:text-sm font-medium cursor-pointer"
                       onClick={async () => {
                         try {
                           setIsGoogleLoading(true)
@@ -737,12 +743,6 @@ export default function Auth() {
                     </Button>
                   </>
                 )}
-
-                {/* Security Trust Indicator */}
-                <div className="pt-2 flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-mono">
-                  <Lock className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                  <span>256-Bit TLS Municipal Encryption • RBAC</span>
-                </div>
               </CardContent>
 
               <CardFooter className="pt-2 pb-6 border-t border-slate-100 dark:border-slate-800">
@@ -773,8 +773,8 @@ export default function Auth() {
               </Link>
               .
             </p>
-            <p className="text-[11px] text-slate-400">
-              Official Grievance Desk: <a href="mailto:grievance@smartcivic.mumbai" className="underline hover:text-emerald-600">grievance@smartcivic.mumbai</a>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Official Grievance Desk: <a href="mailto:grievance@smartcivic.mumbai" className="underline hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">grievance@smartcivic.mumbai</a>
             </p>
           </div>
         </div>

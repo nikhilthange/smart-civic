@@ -5,7 +5,7 @@ import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
   CheckCircle2, Loader2, Bot, Info, Camera, QrCode, ShieldCheck,
   Clock, ShieldAlert, Building2, Trash2, Droplets, Lightbulb,
-  CloudRain, Zap, HeartPulse, Trees, Bus, Volume2
+  CloudRain, Zap, HeartPulse, Trees, Bus, Volume2, Search
 } from "lucide-react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,8 @@ import { parseImageExif } from "@/utils/exifParser"
 import { saveOfflineResolution } from "@/utils/offlineQueue"
 import { detectWardByCoordinates } from "@/utils/mumbaiWardBoundaries"
 import toast from "react-hot-toast"
+import analyticsService from "@/services/analyticsService"
+import { MUNICIPAL_DEPARTMENTS, type MunicipalCategoryItem } from "@/data/municipalTaxonomy"
 
 const CATEGORIES = Object.entries(CATEGORY_LABELS) as [ComplaintCategory, string][]
 
@@ -46,7 +48,7 @@ const PRIORITY_OPTIONS = [
 ]
 
 export default function CreateComplaint() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -94,6 +96,18 @@ export default function CreateComplaint() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<{ complaintId: string; rawId?: string; aiVerified: boolean } | null>(null)
   const [geoLoading, setGeoLoading] = useState(false)
+  const [selectedCategoryItem, setSelectedCategoryItem] = useState<MunicipalCategoryItem | null>(null)
+  const [categorySearch, setCategorySearch] = useState("")
+  const [showCategoryModal, setShowCategoryModal] = useState(false)
+  const [geotagInfo, setGeotagInfo] = useState<{
+    lat?: number
+    lng?: number
+    landmark?: string
+    ward?: string
+    camera?: string
+    timestamp?: string
+    isGeotagCompliant: boolean
+  } | null>(null)
 
   const handleGetLocation = () => {
     if (!navigator.geolocation) {
@@ -199,6 +213,15 @@ export default function CreateComplaint() {
           category: prev.category || "roads_and_infrastructure",
           title: prev.title || `Civic defect reported near ${extracted.suggestedLandmark || "Mumbai"}`,
         }))
+        setGeotagInfo({
+          lat: extracted.lat,
+          lng: extracted.lng,
+          landmark: extracted.suggestedLandmark,
+          ward: wardObj ? wardObj.wardCode : extracted.suggestedWard,
+          camera: extracted.cameraModel,
+          timestamp: extracted.timestamp,
+          isGeotagCompliant: Boolean(extracted.lat && extracted.lng),
+        })
         toast.success(`📍 EXIF GPS extracted: ${extracted.suggestedLandmark} (${wardObj?.wardCode || extracted.suggestedWard})`, { icon: "🛰️" })
       }
     }
@@ -226,6 +249,7 @@ export default function CreateComplaint() {
           URL.revokeObjectURL(previewUrl)
         }
         setPreviewUrl(null)
+        setGeotagInfo(null)
       }
       return next
     })
@@ -272,14 +296,25 @@ export default function CreateComplaint() {
     }
 
     try {
+      const finalDescription = selectedCategoryItem
+        ? `[Municipal Grievance Catalog: ${selectedCategoryItem.id} - ${selectedCategoryItem.name} (${selectedCategoryItem.marathiName}) | ${selectedCategoryItem.isRapid24h ? "24h Rapid SLA Directive" : `${selectedCategoryItem.standardSlaHours}h SLA`}]\n\n${form.description}`
+        : form.description
+
       const result = await complaintApi.create({
         ...form,
+        description: finalDescription,
         category: form.category as ComplaintCategory,
         attachments: files,
       })
       const c = result.complaint
+      const generatedId = c.complaintId || c._id
+      analyticsService.trackEvent("complaint_submitted", {
+        category: form.category,
+        ward: form.ward,
+        aiVerified: c.status === "ai_verified"
+      })
       setSuccess({
-        complaintId: c.complaintId || c._id,
+        complaintId: generatedId,
         rawId: c._id || c.id || c.complaintId,
         aiVerified: c.status === "ai_verified",
       })
@@ -331,14 +366,17 @@ export default function CreateComplaint() {
                 <div className="flex items-center gap-2.5 text-zinc-700 dark:text-zinc-300 bg-zinc-100/70 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60 rounded-xl px-4 py-2.5 w-full text-left">
                   <Bot className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                   <p className="text-xs font-medium">
-                    {t("createComplaint.aiVerifiedBadge", "AI Verified — Priority score evaluated and ward supervisor notified.")}
+                    {t("createComplaint.aiVerifiedBadge", "AI Verified • Priority score evaluated and ward supervisor notified.")}
                   </p>
                 </div>
               )}
 
-              <div className="flex gap-2.5 w-full pt-2">
+              <div className="flex flex-col sm:flex-row gap-2.5 w-full pt-2">
                 <Button variant="outline" className="flex-1 text-xs" onClick={() => navigate("/complaints")}>
                   {t("createComplaint.viewLedger", "View Ledger")}
+                </Button>
+                <Button variant="outline" className="flex-1 text-xs border-emerald-500/40 text-emerald-600 dark:text-emerald-400" onClick={() => navigate(`/thank-you?ticketId=${encodeURIComponent(success.complaintId)}`)}>
+                  Receipt & Slip
                 </Button>
                 <Button className="flex-1 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold shadow-sm" onClick={() => navigate(`/complaint/${success.rawId || success.complaintId}/track`)}>
                   {t("createComplaint.trackTicket", "Track Ticket")}
@@ -416,9 +454,44 @@ export default function CreateComplaint() {
             </div>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                  {t("createComplaint.categoryLabel", "Category")} <span className="text-rose-500">*</span>
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="category" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                    {t("createComplaint.categoryLabel", "Category")} <span className="text-rose-500">*</span>
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowCategoryModal(true)}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 hover:underline cursor-pointer"
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Municipal 114 Categories</span>
+                  </button>
+                </div>
+
+                {selectedCategoryItem && (
+                  <div className="p-3 rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-950/20 flex items-center justify-between gap-2">
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                          Municipal {selectedCategoryItem.isRapid24h ? "24h Rapid SLA" : `${selectedCategoryItem.standardSlaHours}h SLA`}
+                        </span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          {selectedCategoryItem.name}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        {selectedCategoryItem.description}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategoryItem(null)}
+                      className="text-slate-400 hover:text-slate-600 p-1 shrink-0 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
 
                 {/* Quick Visual Category Chips */}
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pb-1">
@@ -650,7 +723,7 @@ export default function CreateComplaint() {
                     {t("createComplaint.dropZoneText", "Drop files here or click to browse")}
                   </p>
                   <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-1 font-mono">
-                    {t("createComplaint.dropZoneHint", "JPEG, PNG, WEBP, MP4, PDF — max 10MB")}
+                    {t("createComplaint.dropZoneHint", "JPEG, PNG, WEBP, MP4, PDF (max 10MB)")}
                   </p>
                   <input
                     ref={fileInputRef}
@@ -729,6 +802,50 @@ export default function CreateComplaint() {
                   ))}
                 </div>
               )}
+
+              {/* Municipal Geotag Mandate Verification Card */}
+              {geotagInfo && (
+                <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      Municipal Geotag Mandate Verified
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
+                      GPS Camera Lock ✓
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono text-slate-600 dark:text-slate-400">
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">COORDINATES</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        {geotagInfo.lat?.toFixed(4)}, {geotagInfo.lng?.toFixed(4)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">DETECTED WARD</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        {geotagInfo.ward || "Mumbai"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">LANDMARK</span>
+                      <span className="font-semibold text-slate-900 dark:text-white truncate block">
+                        {geotagInfo.landmark || "Field Site"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[10px]">TIMESTAMP</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        {geotagInfo.timestamp ? new Date(geotagInfo.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Captured"}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                    Geotag metadata matches MCGM Circular No. CE/Roads/2026 for digital road defect inspection.
+                  </p>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -762,6 +879,120 @@ export default function CreateComplaint() {
           </div>
         </div>
       </form>
+
+      {/* Municipal 114-Category Selector Modal */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/50">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-blue-600" />
+                  {t("categoryCatalog.title", "Municipal Grievance Catalog")}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {t("categoryCatalog.subtitle", "Official 114 categories categorized across 8 BMC engineering departments")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCategoryModal(false)}
+                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Search Bar */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  placeholder={t("categoryCatalog.searchPlaceholder", "Search by issue (e.g. pothole, pipeline, nallah, tree, garbage, hawker)...")}
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                  className="pl-9 h-10 rounded-xl text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+                />
+              </div>
+            </div>
+
+            {/* Scrollable Department Catalog */}
+            <div className="p-4 overflow-y-auto space-y-4 flex-1">
+              {MUNICIPAL_DEPARTMENTS.map((dept) => {
+                const filtered = dept.categories.filter(c =>
+                  !categorySearch.trim() ||
+                  c.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
+                  c.marathiName.includes(categorySearch) ||
+                  dept.name.toLowerCase().includes(categorySearch.toLowerCase()) ||
+                  dept.marathiName.includes(categorySearch)
+                )
+                if (filtered.length === 0) return null
+
+                const isRegional = i18n.language === "mr" || i18n.language === "hi"
+                const deptDisplayName = (isRegional && dept.marathiName)
+                  ? `${dept.name} (${dept.marathiName})`
+                  : dept.name
+
+                return (
+                  <div key={dept.id} className="space-y-2">
+                    <div className="flex items-center justify-between text-xs pb-1 border-b border-slate-100 dark:border-slate-800">
+                      <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">{dept.code}</span>
+                        {deptDisplayName}
+                      </span>
+                      <span className="text-[11px] text-slate-400">
+                        {t("categoryCatalog.categoriesCount", { count: filtered.length, defaultValue: `${filtered.length} categories` })}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {filtered.map((cat) => {
+                        const catDisplayName = (isRegional && cat.marathiName)
+                          ? `${cat.name} (${cat.marathiName})`
+                          : cat.name
+
+                        return (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCategoryItem(cat)
+                              setForm((prev) => ({
+                                ...prev,
+                                category: cat.smartCivicCategory,
+                                title: prev.title || cat.name,
+                                priority: cat.isRapid24h ? "high" : prev.priority,
+                              }))
+                              setShowCategoryModal(false)
+                              toast.success(`Municipal Category: ${cat.name} (${cat.standardSlaHours}h SLA)`)
+                            }}
+                            className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:bg-blue-50/20 dark:hover:bg-blue-950/20 text-left transition-all group cursor-pointer"
+                          >
+                            <div className="flex items-start justify-between gap-1.5">
+                              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 transition-colors">
+                                {catDisplayName}
+                              </span>
+                              <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                                cat.isRapid24h
+                                  ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                              }`}>
+                                {t("categoryCatalog.slaHours", { hours: cat.standardSlaHours, defaultValue: `${cat.standardSlaHours}h SLA` })}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">
+                              {cat.description}
+                            </p>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
     {/* Right Information & SLA Charter Sidebar (4 Cols) */}

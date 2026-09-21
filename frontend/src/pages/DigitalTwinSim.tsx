@@ -185,7 +185,7 @@ export default function DigitalTwinSim() {
               >
                 {MUMBAI_HOTSPOTS.map((h) => (
                   <option key={h.id} value={h.id}>
-                    {h.name} ({h.ward}) — {h.elevationMslMeters}m MSL
+                    {h.name} ({h.ward}) • {h.elevationMslMeters}m MSL
                   </option>
                 ))}
               </select>

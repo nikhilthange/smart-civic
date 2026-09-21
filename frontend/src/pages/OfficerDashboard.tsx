@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Building2, Filter, Loader2, AlertCircle, MapPin, Users, CheckCircle2, FileCheck, X, Camera, LayoutGrid, Kanban } from "lucide-react";
 import { complaintApi, type Complaint, CATEGORY_LABELS } from "../services/complaintApi";
 import { getImageUrl, handleImageError } from "@/utils/imageUrl";
@@ -11,20 +12,26 @@ import { ComplaintsKanbanBoard } from "@/components/admin/ComplaintsKanbanBoard"
 import { BulkOperationsToolbar } from "@/components/admin/BulkOperationsToolbar";
 
 function OfficerStatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
   const s = String(status).toLowerCase();
   if (s === "resolved" || s === "closed") {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-        Resolved
+        {t("officerDashboard.statusResolved", "Resolved")}
       </span>
     );
   }
   if (["officer_assigned", "worker_assigned", "in_progress", "ward_assigned"].includes(s)) {
+    const label = s === "worker_assigned"
+      ? t("officerDashboard.statusWorkerAssigned", "Worker Assigned")
+      : s === "in_progress"
+      ? t("officerDashboard.statusInProgress", "In Progress")
+      : t("officerDashboard.statusOfficerAssigned", "Officer Assigned");
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
         <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
-        {s === "worker_assigned" ? "Worker Assigned" : s === "in_progress" ? "In Progress" : "Officer Assigned"}
+        {label}
       </span>
     );
   }
@@ -32,7 +39,7 @@ function OfficerStatusBadge({ status }: { status: string }) {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
         <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
-        Proof Uploaded
+        {t("officerDashboard.statusProofUploaded", "Proof Uploaded")}
       </span>
     );
   }
@@ -40,19 +47,20 @@ function OfficerStatusBadge({ status }: { status: string }) {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-        AI Verified
+        {t("officerDashboard.statusAiVerified", "AI Verified")}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
       <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
-      Filed
+      {t("officerDashboard.statusFiled", "Filed")}
     </span>
   );
 }
 
 export default function OfficerDashboard() {
+  const { t } = useTranslation();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -299,10 +307,12 @@ export default function OfficerDashboard() {
             <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-200/80 dark:border-zinc-700/80">
               <Building2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Ward Officer Governance Portal</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+              {t("officerDashboard.headerTitle", "Ward Officer Governance Portal")}
+            </h1>
           </div>
           <p className="text-slate-500 dark:text-zinc-400 text-xs sm:text-sm mt-1">
-            SLA breach monitoring, field worker dispatch, and proof verification across BMC wards.
+            {t("officerDashboard.headerSubtitle", "SLA breach monitoring, field worker dispatch, and proof verification across BMC wards.")}
           </p>
         </div>
 
@@ -314,7 +324,7 @@ export default function OfficerDashboard() {
               onChange={(e) => setWardFilter(e.target.value)}
               className="bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
             >
-              <option value="all">All BMC Wards</option>
+              <option value="all">{t("officerDashboard.allWards", "All BMC Wards")}</option>
               <option value="Ward A">Ward A (Colaba/Fort)</option>
               <option value="Ward C">Ward C (Chandanwadi)</option>
               <option value="Ward D">Ward D (Grant Road)</option>
@@ -332,12 +342,12 @@ export default function OfficerDashboard() {
             onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-200 text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
           >
-            <option value="all">All Statuses</option>
-            <option value="officer_assigned">Officer Assigned</option>
-            <option value="worker_assigned">Worker Assigned</option>
-            <option value="in_progress">In Progress</option>
-            <option value="resolution_submitted">Proof Uploaded</option>
-            <option value="resolved">Resolved</option>
+            <option value="all">{t("officerDashboard.allStatuses", "All Statuses")}</option>
+            <option value="officer_assigned">{t("officerDashboard.statusOfficerAssigned", "Officer Assigned")}</option>
+            <option value="worker_assigned">{t("officerDashboard.statusWorkerAssigned", "Worker Assigned")}</option>
+            <option value="in_progress">{t("officerDashboard.statusInProgress", "In Progress")}</option>
+            <option value="resolution_submitted">{t("officerDashboard.statusProofUploaded", "Proof Uploaded")}</option>
+            <option value="resolved">{t("officerDashboard.statusResolved", "Resolved")}</option>
           </select>
 
           {/* Grid vs Kanban View Mode Switcher */}
@@ -352,19 +362,19 @@ export default function OfficerDashboard() {
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Grid</span>
+              <span>{t("officerDashboard.viewGrid", "Grid")}</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode("kanban")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all cursor-pointer ${
                 viewMode === "kanban"
-                  ? "bg-emerald-600 text-white shadow-xs"
+                  ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-zinc-700"
                   : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               <Kanban className="w-3.5 h-3.5" />
-              <span>Kanban</span>
+              <span>{t("officerDashboard.viewKanban", "Kanban")}</span>
             </button>
           </div>
         </div>
@@ -542,14 +552,41 @@ export default function OfficerDashboard() {
 
                   {c.status === "resolution_submitted" && (
                     <div className="flex flex-col gap-2">
-                      <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs mb-1">
-                        <p className="font-semibold text-slate-700 dark:text-zinc-300 text-[10px] uppercase mb-0.5">Worker Note</p>
-                        <p className="text-slate-600 dark:text-zinc-300 text-xs mb-1">{c.resolutionNotes || "No notes provided."}</p>
-                        {c.resolutionImage && c.resolutionImage.url && (
-                          <div className="mt-1 rounded-md overflow-hidden border border-slate-200 dark:border-zinc-700 h-20 bg-slate-100 dark:bg-zinc-800">
-                             <img src={getImageUrl(c.resolutionImage)} onError={handleImageError} alt="Resolution" className="w-full h-full object-cover" />
+                      <div className="p-2.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs mb-1 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <p className="font-semibold text-slate-700 dark:text-zinc-300 text-[10px] uppercase">Civic Field Proof</p>
+                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
+                            c.executionChannel === "dlp_contractor"
+                              ? "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300"
+                              : "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-300"
+                          }`}>
+                            {c.executionChannel === "dlp_contractor" ? "DLP Contractor" : "BMC Rapid Squad"}
+                          </span>
+                        </div>
+                        <p className="text-slate-600 dark:text-zinc-300 text-xs">{c.resolutionNotes || "Work completed and site restored."}</p>
+                        {c.defectDimensions && (
+                          <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-white dark:bg-zinc-900 p-1.5 rounded border border-slate-200 dark:border-zinc-700">
+                            Repaired: {c.defectDimensions.lengthM || 1.5}m × {c.defectDimensions.widthM || 1.2}m • Area: {(c.defectDimensions.areaSqM || 1.8).toFixed(1)}m²
                           </div>
                         )}
+                        {c.resolutionImage && c.resolutionImage.url && (
+                          <div
+                            onClick={() => setDetailModalComplaint(c)}
+                            className="mt-1 rounded-md overflow-hidden border border-slate-200 dark:border-zinc-700 h-24 bg-slate-100 dark:bg-zinc-800 relative group cursor-pointer"
+                          >
+                             <img src={getImageUrl(c.resolutionImage)} onError={handleImageError} alt="Resolution" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[11px] font-semibold transition-opacity">
+                                Inspect Full Voucher ↗
+                             </div>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setDetailModalComplaint(c)}
+                          className="w-full text-center text-[10px] text-blue-600 dark:text-blue-400 hover:underline pt-0.5 cursor-pointer font-medium"
+                        >
+                          View Municipal Material & Engineering Voucher ↗
+                        </button>
                       </div>
                       <div className="flex gap-2">
                         <button

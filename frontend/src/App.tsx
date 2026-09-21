@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react"
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 import { SocketProvider } from "./context/SocketContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
@@ -80,6 +80,12 @@ const AdminDataStudio = lazyRetry(() => import("./pages/AdminDataStudio"))
 const MapView = lazyRetry(() => import("./pages/MapView"))
 const Settings = lazyRetry(() => import("./pages/Settings"))
 const Support = lazyRetry(() => import("./pages/Support"))
+const PrivacyPolicy = lazyRetry(() => import("./pages/PrivacyPolicy"))
+const Terms = lazyRetry(() => import("./pages/Terms"))
+const ThankYou = lazyRetry(() => import("./pages/ThankYou"))
+const NotFound = lazyRetry(() => import("./pages/NotFound"))
+const NagarsevakDirectory = lazyRetry(() => import("./pages/NagarsevakDirectory"))
+import CookieConsentBanner from "./components/common/CookieConsentBanner"
 
 // ─── Loading Fallback Component ───────────────────────────────────────────────
 const RouteLoadingFallback = () => (
@@ -113,6 +119,15 @@ function App() {
                   <Route path="/verify-email" element={<VerifyEmail />} />
                   <Route path="/unauthorized" element={<Unauthorized />} />
                   <Route path="/public-map" element={<MapView />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/terms-of-service" element={<Terms />} />
+                  <Route path="/thank-you" element={<ThankYou />} />
+                  <Route path="/complaint/success" element={<ThankYou />} />
+                  <Route path="/nagarsevak" element={<NagarsevakDirectory />} />
+                  <Route path="/corporators" element={<NagarsevakDirectory />} />
+                  <Route path="/find-nagarsevak" element={<NagarsevakDirectory />} />
 
                   {/* Citizen-only Routes — Create Complaint & Rewards */}
                   <Route element={<ProtectedRoute allowedRoles={["citizen"]} />}>
@@ -214,9 +229,10 @@ function App() {
                   </Route>
 
                   {/* Catch-all Wildcard Route */}
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+              <CookieConsentBanner />
             </Router>
         </SocketProvider>
       </AuthProvider>

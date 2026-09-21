@@ -23,6 +23,7 @@ import {
   Settings as SettingsIcon,
   LifeBuoy,
   X,
+  Users,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -79,6 +80,7 @@ const navGroups: NavGroup[] = [
       { key: "nav.trackComplaint", defaultName: "Track Grievance", href: "/track", icon: Search },
       { key: "nav.complaintHistory", defaultName: "Grievance Records", href: "/complaints", icon: History },
       { key: "nav.mapView", defaultName: "Live Ward GIS Map", href: "/map", icon: MapPin },
+      { key: "nav.nagarsevak", defaultName: "Find My Nagarsevak", href: "/nagarsevak", icon: Users },
       { key: "nav.rewards", defaultName: "Civic Karma & Rewards", href: "/rewards", icon: Trophy, citizenOnly: true },
       { key: "nav.whatsappSandbox", defaultName: "WhatsApp Bot", href: "/whatsapp-sandbox", icon: MessageSquare, citizenOnly: true },
       { key: "nav.settings", defaultName: "Settings & Profile", href: "/settings", icon: SettingsIcon },

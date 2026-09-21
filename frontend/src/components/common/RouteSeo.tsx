@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import analyticsService from "@/services/analyticsService";
 
 export interface RouteSeoConfig {
   title?: string;
@@ -124,6 +125,75 @@ const ROUTE_CONFIGS: Record<string, RouteSeoConfig> = {
     description:
       "Sign in or register for Smart Civic to manage your reported civic issues, track karma points, and receive real-time SMS/WhatsApp updates.",
     canonical: "https://smart-civic-pi.vercel.app/auth"
+  },
+  "/privacy": {
+    title: "Privacy Policy & Data Governance | Smart Civic AI",
+    description:
+      "Learn how Smart Civic AI protects citizen privacy, strips EXIF camera metadata, and adheres to India's DPDP Act 2023 and GDPR guidelines.",
+    canonical: "https://smart-civic-pi.vercel.app/privacy",
+    keywords: "smart civic privacy policy, civic data protection mumbai, dpdp act 2023 municipal"
+  },
+  "/terms": {
+    title: "Terms of Service & Citizen Charter | Smart Civic AI",
+    description:
+      "Understand the platform terms, citizen guidelines, 48-hour SLA disclaimers, and civic accountability charter for Smart Civic AI Mumbai.",
+    canonical: "https://smart-civic-pi.vercel.app/terms",
+    keywords: "smart civic terms of service, bmc grievance charter, citizen responsibilities"
+  },
+  "/thank-you": {
+    title: "Grievance Lodged Successfully | Smart Civic AI",
+    description:
+      "Your civic defect has been registered with Mumbai ward triage. Track your 48-hour resolution SLA, download confirmation receipt, or share via WhatsApp.",
+    canonical: "https://smart-civic-pi.vercel.app/thank-you"
+  },
+  "/support": {
+    title: "Citizen Help Center & Municipal Support | Smart Civic",
+    description:
+      "Get help with reporting civic defects, contacting BMC ward offices, understanding 48h SLAs, or reaching the 24x7 helpline 1916.",
+    canonical: "https://smart-civic-pi.vercel.app/support"
+  },
+  "/nagarsevak": {
+    title: "Find Your Nagarsevak (Ward Corporator) Directory | Smart Civic",
+    description:
+      "Search elected municipal corporators across Mumbai (BMC), Thane (TMC), Navi Mumbai (NMMC), and KDMC. Track SLA performance and escalate via WhatsApp.",
+    canonical: "https://smart-civic-pi.vercel.app/nagarsevak",
+    keywords: "find my nagarsevak, mumbai ward corporator, bmc corporator list, thane corporators, nmmc nagarsevak"
+  },
+  "/help": {
+    title: "Citizen Help Center & Municipal Support | Smart Civic",
+    description:
+      "Get help with reporting civic defects, contacting BMC ward offices, understanding 48h SLAs, or reaching the 24x7 helpline 1916.",
+    canonical: "https://smart-civic-pi.vercel.app/help"
+  },
+  "/dashboard": {
+    title: "Citizen Civic Command Dashboard | Smart Civic AI",
+    description:
+      "Monitor your filed municipal grievances, live SLA countdowns, ward defect radar, and earned Civic Karma points.",
+    canonical: "https://smart-civic-pi.vercel.app/dashboard"
+  },
+  "/complaints": {
+    title: "Grievance Records & History Ledger | Smart Civic",
+    description:
+      "Review your submitted municipal defects, before/after repair photos, and verified geofenced resolution certificates.",
+    canonical: "https://smart-civic-pi.vercel.app/complaints"
+  },
+  "/notifications": {
+    title: "Civic Alerts & Ward Notifications | Smart Civic",
+    description:
+      "Stay updated with live repair alerts, monsoon flood warnings, and ward officer notifications across Mumbai.",
+    canonical: "https://smart-civic-pi.vercel.app/notifications"
+  },
+  "/settings": {
+    title: "Citizen Settings & Ward Preferences | Smart Civic",
+    description:
+      "Configure your home ward, language (English, Marathi, Hindi), alert preferences, and profile credentials.",
+    canonical: "https://smart-civic-pi.vercel.app/settings"
+  },
+  "/search": {
+    title: "Search Municipal Grievances & Tickets | Smart Civic",
+    description:
+      "Search across all 24 BMC wards for pothole reports, garbage tickets, drainage issues, and resolution proofs.",
+    canonical: "https://smart-civic-pi.vercel.app/search"
   }
 };
 
@@ -142,6 +212,9 @@ export const RouteSeo: React.FC<DynamicSeoProps> = ({ config }) => {
         "Independent AI-powered citizen civic platform for Greater Mumbai to report, verify, and track municipal issues across 24 wards.",
       canonical: `https://smart-civic-pi.vercel.app${pathname}`
     };
+
+    // Track pageview via analytics telemetry
+    analyticsService.trackPageView(pathname, activeConfig.title);
 
     // 1. Update Title
     if (activeConfig.title) {

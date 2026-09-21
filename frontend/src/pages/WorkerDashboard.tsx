@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { motion } from "framer-motion"
+import { useTranslation } from "react-i18next"
 import {
   Wrench, MapPin, CheckCircle2, Camera, X, Loader2, Navigation, WifiOff, CloudUpload, Route,
-  Radio
+  Radio, Building2, Calculator, Layers, Plus, Minus, Landmark, Lightbulb
 } from "lucide-react"
 import { complaintApi, type Complaint, CATEGORY_LABELS } from "@/services/complaintApi"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
@@ -21,6 +22,7 @@ import { ResolutionDiffSlider } from "@/components/worker/ResolutionDiffSlider"
 import { compressFieldImage } from "@/utils/imageCompressor"
 
 export default function WorkerDashboard() {
+  const { t } = useTranslation()
   const { lastEvent } = useSocket()
   const [claimedTasks, setClaimedTasks] = useState<Complaint[]>([])
   const [openPoolTasks, setOpenPoolTasks] = useState<Complaint[]>([])
@@ -44,6 +46,47 @@ export default function WorkerDashboard() {
   const [notes, setNotes] = useState("")
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Municipal Worker Standards State
+  const [defectLength, setDefectLength] = useState<string>("")
+  const [defectWidth, setDefectWidth] = useState<string>("")
+  const [defectDepth, setDefectDepth] = useState<string>("")
+  const [executionChannel, setExecutionChannel] = useState<"bmc_squad" | "dlp_contractor">("bmc_squad")
+  const [contractorName, setContractorName] = useState<string>("M/s RPS Infraprojects Ltd.")
+  const [materialQuantities, setMaterialQuantities] = useState<Record<string, number>>({
+    cold_mix_25kg: 2,
+    mastic_cake_20kg: 0,
+    tack_coat_liters: 1,
+    manhole_di_40t: 0,
+    precast_swd_grating: 0,
+    paver_blocks_80mm: 0,
+  })
+
+  const calcArea = useMemo(() => {
+    const l = parseFloat(defectLength) || 0
+    const w = parseFloat(defectWidth) || 0
+    return l > 0 && w > 0 ? Number((l * w).toFixed(2)) : null
+  }, [defectLength, defectWidth])
+
+  const suggestedBags = useMemo(() => {
+    const l = parseFloat(defectLength) || 0
+    const w = parseFloat(defectWidth) || 0
+    const d = (parseFloat(defectDepth) || 0) / 100
+    if (l > 0 && w > 0 && d > 0) {
+      const volumeM3 = l * w * d
+      const metricTonnes = volumeM3 * 2.2
+      return Math.max(1, Math.ceil(metricTonnes / 0.025))
+    }
+    return null
+  }, [defectLength, defectWidth, defectDepth])
+
+  const updateMaterialQty = (key: string, delta: number) => {
+    setMaterialQuantities((prev) => {
+      const cur = prev[key] || 0
+      const next = Math.max(0, cur + delta)
+      return { ...prev, [key]: next }
+    })
+  }
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -258,7 +301,25 @@ export default function WorkerDashboard() {
         }
       }
 
-      if (selectedMaterials.length > 0) {
+      if (defectLength && defectWidth) {
+        formData.append("defectDimensions", JSON.stringify({
+          lengthM: parseFloat(defectLength),
+          widthM: parseFloat(defectWidth),
+          depthCm: parseFloat(defectDepth) || 0,
+          areaSqM: calcArea || 0,
+        }))
+      }
+      formData.append("executionChannel", executionChannel)
+      if (executionChannel === "dlp_contractor") {
+        formData.append("dlpContractorName", contractorName)
+      }
+
+      const activeMaterials = Object.entries(materialQuantities)
+        .filter(([_, q]) => q > 0)
+        .map(([code, qty]) => ({ itemCode: code, quantity: qty }))
+      if (activeMaterials.length > 0) {
+        formData.append("materialsUsed", JSON.stringify(activeMaterials))
+      } else if (selectedMaterials.length > 0) {
         const matObjects = selectedMaterials.map((code) => ({ itemCode: code, quantity: 1 }))
         formData.append("materialsUsed", JSON.stringify(matObjects))
       }
@@ -273,6 +334,9 @@ export default function WorkerDashboard() {
       handleRemoveFile()
       setNotes("")
       setSelectedMaterials([])
+      setDefectLength("")
+      setDefectWidth("")
+      setDefectDepth("")
       fetchWorkerTasks()
     } catch (err: any) {
       // If network error, fallback to offline queue
@@ -315,11 +379,11 @@ export default function WorkerDashboard() {
         <div className="flex items-center justify-between p-4 bg-amber-500 text-white rounded-2xl shadow-md animate-pulse">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <WifiOff className="w-5 h-5 shrink-0" />
-            Offline Mode: Working without internet. Task proofs will be stored locally and synced automatically when online.
+            {t("workerDashboard.offlineBanner", "Offline Mode: Working without internet. Task proofs will be stored locally and synced automatically when online.")}
           </div>
           {offlineCount > 0 && (
             <span className="text-xs bg-amber-700 px-3 py-1 rounded-full font-bold shrink-0">
-              {offlineCount} Queued Actions
+              {t("workerDashboard.queuedActions", { count: offlineCount, defaultValue: `${offlineCount} Queued Actions` })}
             </span>
           )}
         </div>
@@ -333,7 +397,9 @@ export default function WorkerDashboard() {
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Field Dispatch & Repair Queue</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                {t("workerDashboard.headerTitle", "Field Dispatch & Repair Queue")}
+              </h1>
               {workerProfile?.wardName && (
                 <span className="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700">
                   {workerProfile.wardName}
@@ -341,7 +407,7 @@ export default function WorkerDashboard() {
               )}
             </div>
             <p className="text-slate-500 dark:text-zinc-400 text-xs sm:text-sm mt-0.5">
-              Active repair assignments, open ward pool dispatch, and geofenced resolution verification.
+              {t("workerDashboard.headerSubtitle", "Active repair assignments, open ward pool dispatch, and geofenced resolution verification.")}
             </p>
           </div>
         </div>
@@ -358,7 +424,7 @@ export default function WorkerDashboard() {
             ) : (
               <Route className="w-4 h-4" />
             )}
-            {isOptimizing ? "Optimizing Route..." : "Optimize Driving Route (TSP)"}
+            {isOptimizing ? t("workerDashboard.optimizing", "Optimizing Route...") : t("workerDashboard.optimizeRoute", "Optimize Driving Route (TSP)")}
           </button>
 
           {offlineCount > 0 && (
@@ -370,7 +436,7 @@ export default function WorkerDashboard() {
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors cursor-pointer"
             >
               <CloudUpload className="w-4 h-4" />
-              Sync {offlineCount}
+              {t("workerDashboard.syncBtn", { count: offlineCount, defaultValue: `Sync ${offlineCount}` })}
             </button>
           )}
         </div>
@@ -392,7 +458,7 @@ export default function WorkerDashboard() {
             }`}
           >
             <Wrench className="w-3.5 h-3.5 text-emerald-600" />
-            <span>My Assigned Tasks</span>
+            <span>{t("workerDashboard.assignedTab", "My Assigned Tasks")}</span>
             <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
               activeTab === "claimed" ? "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300" : "bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
             }`}>
@@ -413,7 +479,7 @@ export default function WorkerDashboard() {
             }`}
           >
             <Radio className="w-3.5 h-3.5 text-blue-600" />
-            <span>Ward Open Pool</span>
+            <span>{t("workerDashboard.openPoolTab", "Ward Open Pool")}</span>
             <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
               activeTab === "pool" ? "bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300" : "bg-slate-200 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
             }`}>
@@ -424,7 +490,7 @@ export default function WorkerDashboard() {
 
         <div className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium px-2 hidden sm:flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span>Real-time dispatch stream active</span>
+          <span>{t("workerDashboard.realtimeStream", "Real-time dispatch stream active")}</span>
         </div>
       </div>
 
@@ -530,6 +596,9 @@ export default function WorkerDashboard() {
                       }`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${isCritical ? "bg-rose-500" : "bg-slate-400"}`} />
                         {isCritical ? "P1 • Critical" : "P2 • Medium"}
+                      </span>
+                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        CIVIC {task.ward ? task.ward.replace("Ward ", "").replace("-", "") : "HW"}_2026_{task._id.slice(-4).toUpperCase()}
                       </span>
                     </div>
 
@@ -719,6 +788,182 @@ export default function WorkerDashboard() {
                   capture="environment"
                   className="hidden"
                 />
+              </div>
+
+              {/* Field Execution Channel */}
+              <div className="space-y-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                    Field Execution Channel
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold">
+                    MCGM Audit
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setExecutionChannel("bmc_squad")}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      executionChannel === "bmc_squad"
+                        ? "bg-emerald-600 text-white border-emerald-500 shadow-xs"
+                        : "bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700"
+                    }`}
+                  >
+                    <Landmark className="w-3.5 h-3.5" />
+                    <span>BMC Rapid Squad</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExecutionChannel("dlp_contractor")}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                      executionChannel === "dlp_contractor"
+                        ? "bg-amber-600 text-white border-amber-500 shadow-xs"
+                        : "bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border-slate-200 dark:border-zinc-700"
+                    }`}
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>DLP Contractor</span>
+                  </button>
+                </div>
+                {executionChannel === "dlp_contractor" && (
+                  <div className="pt-2">
+                    <label className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 block mb-1">
+                      Assigned Road Contractor Name
+                    </label>
+                    <input
+                      type="text"
+                      value={contractorName}
+                      onChange={(e) => setContractorName(e.target.value)}
+                      className="w-full h-8 px-2.5 rounded-lg text-xs bg-white dark:bg-zinc-800 border border-amber-300 dark:border-amber-700 text-slate-900 dark:text-white"
+                      placeholder="Enter registered contractor name..."
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Field Defect Dimensions & Measurement Log */}
+              <div className="space-y-2 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
+                    <Calculator className="w-3.5 h-3.5 text-emerald-600" />
+                    Defect Dimensions (JE Site Log)
+                  </span>
+                  {calcArea && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold">
+                      Area: {calcArea} m²
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Length (m)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={defectLength}
+                      onChange={(e) => setDefectLength(e.target.value)}
+                      placeholder="e.g. 1.5"
+                      className="w-full h-8 px-2.5 rounded-lg text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Width (m)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={defectWidth}
+                      onChange={(e) => setDefectWidth(e.target.value)}
+                      placeholder="e.g. 0.8"
+                      className="w-full h-8 px-2.5 rounded-lg text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-slate-400 block mb-0.5">Depth (cm)</label>
+                    <input
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={defectDepth}
+                      onChange={(e) => setDefectDepth(e.target.value)}
+                      placeholder="e.g. 6"
+                      className="w-full h-8 px-2.5 rounded-lg text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+                {suggestedBags && (
+                  <div className="flex items-center justify-between text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                    <span className="flex items-center gap-1">
+                      <Lightbulb className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span>Suggested Cold-Mix requirement: ~{suggestedBags} bag(s) (25kg each).</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setMaterialQuantities((prev) => ({ ...prev, cold_mix_25kg: suggestedBags }))}
+                      className="underline font-bold hover:text-emerald-500 cursor-pointer"
+                    >
+                      Apply to Register
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Municipal Material Consumption Register */}
+              <div className="space-y-2 p-3 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                    BMC Material Consumption Register
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    Audit Voucher
+                  </span>
+                </div>
+                <div className="space-y-1.5 pt-1">
+                  {[
+                    { id: "cold_mix_25kg", name: "Cold-Mix Asphalt (25kg Bag)" },
+                    { id: "mastic_cake_20kg", name: "Mastic Asphalt Block (20kg)" },
+                    { id: "tack_coat_liters", name: "Bitumen Emulsion Tack Coat (L)" },
+                    { id: "manhole_di_40t", name: "Ductile Iron 40T Manhole Frame" },
+                    { id: "precast_swd_grating", name: "Precast Stormwater Grating (1m)" },
+                    { id: "paver_blocks_80mm", name: "Interlocking Paver Blocks" },
+                  ].map((item) => {
+                    const qty = materialQuantities[item.id] || 0
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700/80 text-xs"
+                      >
+                        <span className="text-slate-700 dark:text-zinc-300 font-medium truncate mr-2">
+                          {item.name}
+                        </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => updateMaterialQty(item.id, -1)}
+                            disabled={qty === 0}
+                            className="w-6 h-6 rounded-md bg-slate-100 dark:bg-zinc-700 text-slate-600 dark:text-zinc-300 flex items-center justify-center hover:bg-slate-200 disabled:opacity-30 cursor-pointer"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-7 text-center font-mono font-bold text-slate-900 dark:text-white">
+                            {qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateMaterialQty(item.id, 1)}
+                            className="w-6 h-6 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center hover:bg-emerald-200 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
 
               <div>

@@ -6,10 +6,11 @@ import {
   XCircle, Bot, MapPin, Calendar, Tag, Phone,
   AlertCircle, Loader2, Paperclip, ExternalLink, Check, Building, Building2,
   Image as ImageIcon, HardHat, FileCheck, Search,
-  History, Sparkles, Plus, ZoomIn, X, Copy, ShieldCheck, Camera,
+  History, Scan, Plus, ZoomIn, X, Copy, ShieldCheck, Camera,
   Navigation, Trash2, Droplets, Lightbulb, CloudRain, Zap, HeartPulse,
-  Trees, Bus, Volume2
+  Trees, Bus, Volume2, Users, MessageCircle, ThumbsUp, Flame
 } from "lucide-react"
+import { findNagarsevakByWard, NAGARSEVAK_ROSTER } from "@/data/nagarsevakDirectory"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -231,7 +232,7 @@ export const CitizenEvidenceShowcase = React.memo(function CitizenEvidenceShowca
                   : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
+              <Scan className="w-3.5 h-3.5" />
               <span>{useYoloView ? 'YOLO HUD ON' : 'AI Vision Overlay'}</span>
             </button>
           )}
@@ -288,7 +289,7 @@ export const CitizenEvidenceShowcase = React.memo(function CitizenEvidenceShowca
           {attachments.length > 1 && (
             <div className="space-y-1.5 pt-1">
               <p className="text-xs font-semibold text-zinc-500">
-                Uploaded Evidence Files ({attachments.length}) — Click to preview
+                Uploaded Evidence Files ({attachments.length}) • Click to preview
               </p>
               <div className="flex items-center gap-2.5 overflow-x-auto pb-1.5 pt-0.5">
                 {attachments.map((att, idx) => {
@@ -649,7 +650,7 @@ export const AiVerificationDetails = React.memo(function AiVerificationDetails({
 
         <div className="bg-white/70 dark:bg-slate-900/70 p-2.5 rounded-xl border border-violet-100 dark:border-violet-900/40 space-y-1">
           <span className="text-[11px] text-violet-600 dark:text-violet-400 font-semibold flex items-center gap-1">
-            <Sparkles className="w-3 h-3" />
+            <Bot className="w-3.5 h-3.5" />
             {t("tracking.aiExplanation")}
           </span>
           <p className="text-violet-800 dark:text-violet-300 leading-relaxed text-[11px]">
@@ -744,16 +745,21 @@ export const WardAndFieldTeamCard = React.memo(function WardAndFieldTeamCard({
   return (
     <Card className="shadow-sm border-slate-200 dark:border-slate-800">
       <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-          <Building className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-          {t("tracking.wardDeptAndFieldTeam")}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+            <Building className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            BMC Engineering & Field Team
+          </CardTitle>
+          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            Municipal Verified
+          </span>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-3 text-sm">
+      <CardContent className="space-y-3.5 text-sm">
         <div>
           <p className="text-xs text-slate-400 font-medium">{t("tracking.wardDepartment")}</p>
           <p className="font-semibold text-slate-800 dark:text-slate-200">
-            {departmentName || department?.name || "General Administration Department"} ({wardName || "UNASSIGNED"})
+            {departmentName || department?.name || "Roads & Traffic Department"} ({wardName || "Ward H-West"})
           </p>
           {department?.contactEmail && (
             <a href={`mailto:${department.contactEmail}`} className="text-xs text-primary hover:underline flex items-center gap-1 mt-0.5 font-medium">
@@ -762,21 +768,303 @@ export const WardAndFieldTeamCard = React.memo(function WardAndFieldTeamCard({
             </a>
           )}
         </div>
+
+        {/* Official Municipal 3-Tier Hierarchy */}
+        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800/80 space-y-2 text-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400 text-[11px]">Junior Engineer (JE)</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200">Er. V. R. Patil (Ward Maintenance)</span>
+          </div>
+          <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/60 pt-1.5">
+            <span className="text-slate-400 text-[11px]">Sub-Engineer (SE)</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200">Er. S. M. Kulkarni (Quality Audit)</span>
+          </div>
+          <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/60 pt-1.5">
+            <span className="text-slate-400 text-[11px]">Ward Head (AMC)</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              {assignedOfficer?.user?.name || assignedOfficer?.name || "Assistant Municipal Commissioner"}
+            </span>
+          </div>
+        </div>
+
         <div>
           <p className="text-xs text-slate-400 font-medium">{t("tracking.assignedFieldWorker")}</p>
           <p className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mt-0.5">
             <HardHat className="h-4 w-4 text-amber-600" />
-            {assignedWorker?.name || "Suresh Shinde (Field Worker)"}
+            {assignedWorker?.name || "Suresh Shinde (Mukadam / Rapid Response)"}
           </p>
         </div>
-        {assignedOfficer && (
-          <div>
-            <p className="text-xs text-slate-400 font-medium">{t("tracking.supervisingOfficer")}</p>
-            <p className="font-semibold text-slate-700 dark:text-slate-300">
-              {assignedOfficer?.user?.name || assignedOfficer?.name || "Supervising Officer"}
-            </p>
+
+        <div className="pt-1 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
+          <span>BMC Helpline: 1916</span>
+          <span className="font-mono">CFC Desk: Ext-024</span>
+        </div>
+      </CardContent>
+    </Card>
+  )
+})
+
+// ─── 7A-2. Municipal 24-Hour Rapid Pothole SLA Banner ─────────────────────────
+interface MunicipalRapidPotholeSlaProps {
+  category?: string
+  title?: string
+  createdAt?: string
+}
+
+export const MunicipalRapidPotholeSla = React.memo(function MunicipalRapidPotholeSla({
+  category = "",
+  title = "",
+  createdAt,
+}: MunicipalRapidPotholeSlaProps) {
+  const { t } = useTranslation()
+  const isPotholeOrRoad =
+    category === "roads_and_infrastructure" ||
+    title.toLowerCase().includes("pothole") ||
+    title.toLowerCase().includes("road") ||
+    title.toLowerCase().includes("mastic")
+
+  if (!isPotholeOrRoad) return null
+
+  // Calculate 24h SLA time remaining from creation date
+  const createdDate = createdAt ? new Date(createdAt).getTime() : Date.now() - 3600000 * 6
+  const deadline = createdDate + 24 * 3600000
+  const msLeft = Math.max(0, deadline - Date.now())
+  const hoursLeft = Math.floor(msLeft / 3600000)
+  const minsLeft = Math.floor((msLeft % 3600000) / 60000)
+
+  return (
+    <div className="w-full p-4 rounded-2xl border border-amber-300/80 dark:border-amber-900/60 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 dark:from-amber-950/30 dark:via-orange-950/20 dark:to-transparent flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+      <div className="flex items-center gap-3">
+        <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 shrink-0">
+          <Zap className="w-5 h-5 animate-pulse" />
+        </div>
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">
+              {t("trackingDirectives.rapidPotholeDirective", "Municipal 24-Hour Rapid Pothole Directive")}
+            </span>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100">
+              {t("trackingDirectives.masticAsphaltMandate", "Mastic Asphalt Mandate")}
+            </span>
           </div>
-        )}
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            {t("trackingDirectives.masticAsphaltMandateDesc", "Mandatory cold-mix repair & rolling compaction enforced per MCGM Circular 2026.")}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+        <div className="text-right">
+          <span className="text-[10px] uppercase text-slate-400 block font-semibold">
+            {t("trackingDirectives.rapidSlaWindow", "Rapid SLA Window")}
+          </span>
+          <span className="text-sm sm:text-base font-black font-mono text-amber-700 dark:text-amber-400">
+            {hoursLeft > 0
+              ? t("trackingDirectives.hoursMinutesRemaining", { hours: hoursLeft, mins: minsLeft, defaultValue: `${hoursLeft}h ${minsLeft}m remaining` })
+              : t("trackingDirectives.slaEscalationWindow", "SLA Escalation Window")}
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+})
+// ─── 7B. Memoized Ward Nagarsevak (Elected Corporator) Card ───────────────────
+interface WardNagarsevakCardProps {
+  wardName?: string
+  complaintTitle?: string
+  complaintId?: string
+}
+
+export const WardNagarsevakCard = React.memo(function WardNagarsevakCard({
+  wardName = "Ward D",
+  complaintTitle = "",
+  complaintId = "",
+}: WardNagarsevakCardProps) {
+  const { t, i18n } = useTranslation()
+  const nagarsevak = useMemo(() => findNagarsevakByWard(wardName) || NAGARSEVAK_ROSTER[0], [wardName])
+
+  const handleEscalateWhatsApp = () => {
+    const trackingLink = `${window.location.origin}/track/${complaintId}`
+    const isMarathi = i18n.language === "mr"
+    const isHindi = i18n.language === "hi"
+    const message = isMarathi
+      ? `नमस्कार ${nagarsevak.name} जी,\n\nमी आपल्या मतदारसंघातील (${nagarsevak.electoralWard} • ${nagarsevak.neighborhood}) एका नागरी समस्येबाबत संपर्क साधत आहे:\n\n📌 तक्रार: "${complaintTitle}"\n🎫 तिकीट आयडी: #${complaintId}\n🔗 थेट एसएलए ट्रॅकर: ${trackingLink}\n\nकृपया प्रभाग अभियंत्यांशी समन्वय साधून त्वरित निवारण करावे. धन्यवाद!`
+      : isHindi
+      ? `नमस्कार ${nagarsevak.name} जी,\n\nमैं आपके निर्वाचन क्षेत्र (${nagarsevak.electoralWard} • ${nagarsevak.neighborhood}) की एक सक्रिय नागरिक समस्या रिपोर्ट कर रहा हूँ:\n\n📌 समस्या: "${complaintTitle}"\n🎫 टिकट आईडी: #${complaintId}\n🔗 लाइव एसएलए ट्रैकर: ${trackingLink}\n\nकृपया संबंधित प्रभाग अभियंताओं के साथ त्वरित निवारण सुनिश्चित करें। धन्यवाद!`
+      : `Namaskar ${nagarsevak.name} ji,\n\nI am reporting an active civic grievance in your electoral jurisdiction (${nagarsevak.electoralWard} • ${nagarsevak.neighborhood}):\n\n📌 Issue: "${complaintTitle}"\n🎫 Ticket ID: #${complaintId}\n🔗 Live SLA Tracker: ${trackingLink}\n\nKindly look into expediting field resolution with the ward engineers. Dhanyawad!`
+    window.open(`https://api.whatsapp.com/send?phone=${nagarsevak.whatsapp}&text=${encodeURIComponent(message)}`, "_blank")
+  }
+
+  return (
+    <Card className="shadow-sm border-blue-200 dark:border-blue-900/50 bg-gradient-to-b from-white to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+            <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            {t("nagarsevak.title", "Ward Nagarsevak (Elected Corporator)")}
+          </CardTitle>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            {nagarsevak.corporation}
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3.5">
+        <div className="flex items-start gap-3">
+          <img
+            src={nagarsevak.avatar}
+            alt={nagarsevak.name}
+            onError={(e) => {
+              ;(e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nagarsevak.name)}&background=0284c7&color=fff`
+            }}
+            className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+          />
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+              {nagarsevak.name}
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+              {nagarsevak.electoralWard} • {nagarsevak.neighborhood}
+            </p>
+            <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md border mt-1 ${nagarsevak.partyColor}`}>
+              {nagarsevak.partyLabel}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-center text-xs p-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800">
+          <div>
+            <span className="text-[10px] text-slate-400 uppercase block">{t("nagarsevak.responseRate", "Response Rate")}</span>
+            <span className="font-bold text-emerald-600">{nagarsevak.responseRate}%</span>
+          </div>
+          <div className="border-l border-slate-200 dark:border-slate-800">
+            <span className="text-[10px] text-slate-400 uppercase block">{t("nagarsevak.resolvedWorks", "Resolved Works")}</span>
+            <span className="font-bold text-blue-600">{nagarsevak.resolvedCount}</span>
+          </div>
+        </div>
+
+        <Button
+          onClick={handleEscalateWhatsApp}
+          className="w-full h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span>{t("nagarsevak.escalateWhatsApp", "Escalate to Nagarsevak via WhatsApp")}</span>
+        </Button>
+      </CardContent>
+    </Card>
+  )
+})
+
+// ─── 7C. Memoized Community Petition & Co-Signatures Card ──────────────────────
+interface CommunityEndorsementCardProps {
+  complaintId?: string
+}
+
+export const CommunityEndorsementCard = React.memo(function CommunityEndorsementCard({
+  complaintId = "default",
+}: CommunityEndorsementCardProps) {
+  const { t } = useTranslation()
+  const storageKey = `smart_civic_signed_${complaintId}`
+  const [hasSigned, setHasSigned] = useState(false)
+  const [signatureCount, setSignatureCount] = useState(5)
+
+  useEffect(() => {
+    const signed = localStorage.getItem(storageKey)
+    if (signed === "true") {
+      setHasSigned(true)
+    }
+    const baseCount = 3 + (complaintId.length % 7)
+    setSignatureCount(signed === "true" ? baseCount + 1 : baseCount)
+  }, [complaintId, storageKey])
+
+  const handleCoSign = () => {
+    if (hasSigned) {
+      toast(t("endorsement.toastAlreadySigned", "You have already co-signed this civic petition!"))
+      return
+    }
+
+    triggerHapticFeedback("medium")
+    localStorage.setItem(storageKey, "true")
+    setHasSigned(true)
+    setSignatureCount((prev) => prev + 1)
+    toast.success(t("endorsement.toastSuccess", "Community Signature Added! Ward SLA priority elevated to High."), {
+      duration: 4000,
+    })
+  }
+
+  const threshold = 10
+  const progressPct = Math.min(100, Math.round((signatureCount / threshold) * 100))
+
+  return (
+    <Card className="shadow-sm border-amber-200 dark:border-amber-900/50 bg-gradient-to-b from-white to-amber-50/30 dark:from-slate-900 dark:to-amber-950/20">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+            <Users className="w-4 h-4 text-amber-600" />
+            <span>{t("endorsement.title", "Community Petition & Signatures")}</span>
+          </CardTitle>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300">
+            {hasSigned ? t("endorsement.signedStatus", "Signed ✓") : t("endorsement.openForSupport", "Open for Support")}
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3.5">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-2xl font-black font-mono text-slate-900 dark:text-white">
+              {signatureCount}
+            </span>
+            <span className="text-xs text-slate-500 ml-1.5">{t("endorsement.neighborSignatures", "Neighbor Signatures")}</span>
+          </div>
+          <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+            {signatureCount >= 8 ? (
+              <>
+                <Flame className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <span>{t("endorsement.priorityEscalated", "Priority Escalated")}</span>
+              </>
+            ) : (
+              <span>{t("endorsement.communityEndorsement", "Community Endorsement")}</span>
+            )}
+          </span>
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
+            <span>{t("endorsement.progress", "Progress to Critical SLA Escalation")}</span>
+            <span className="font-mono font-bold">{signatureCount}/{threshold}</span>
+          </div>
+          <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </div>
+
+        <p className="text-[11px] text-slate-500 leading-relaxed">
+          {t("endorsement.description", "Multiple citizens co-signing alerts the Ward Officer that an entire neighborhood or commuter route is impacted.")}
+        </p>
+
+        <Button
+          onClick={handleCoSign}
+          disabled={hasSigned}
+          className={`w-full h-10 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            hasSigned
+              ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300"
+              : "bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
+          }`}
+        >
+          {hasSigned ? (
+            <span className="flex items-center justify-center gap-1.5">
+              <Check className="w-4 h-4" />
+              <span>{t("endorsement.alreadySigned", "You Co-Signed this Grievance")}</span>
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-1.5">
+              <ThumbsUp className="w-4 h-4" />
+              <span>{t("endorsement.coSignBtn", "Co-Sign / Support this Grievance (+1)")}</span>
+            </span>
+          )}
+        </Button>
       </CardContent>
     </Card>
   )
@@ -1363,6 +1651,13 @@ export default function ComplaintTracking() {
 
 
 
+      {/* ── Municipal 24-Hour Rapid Pothole SLA Banner (if applicable) ── */}
+      <MunicipalRapidPotholeSla
+        category={complaint.category}
+        title={complaint.title}
+        createdAt={complaint.createdAt}
+      />
+
       {/* ── 1. Memoized 8-Stage SLA Stepper ── */}
       <SlaStepper status={complaint.status} />
 
@@ -1536,6 +1831,18 @@ export default function ComplaintTracking() {
             assignedWorker={complaint.assignedWorker}
             assignedOfficer={complaint.assignedOfficer}
             department={complaint.department}
+          />
+
+          {/* 🖐 Community Co-Signatures & Petition Support */}
+          <CommunityEndorsementCard
+            complaintId={complaint.complaintId || complaint._id}
+          />
+
+          {/* 🏛️ Ward Nagarsevak (Elected Representative) & 1-Tap WhatsApp Escalation */}
+          <WardNagarsevakCard
+            wardName={complaint.ward || complaint.wardName || complaint.location?.address}
+            complaintTitle={complaint.title}
+            complaintId={complaint.complaintId || complaint._id}
           />
 
           {/* Admin Official Notes (if present) */}

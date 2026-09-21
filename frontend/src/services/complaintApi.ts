@@ -104,6 +104,24 @@ export interface Complaint {
   slaStatus?: "on_time" | "escalated" | "breached"
   contractorPenalty?: number
   affectedCitizensCount?: number
+  // Municipal Engineering & Materials Audit Fields
+  executionChannel?: "squad" | "dlp_contractor"
+  dlpContractorName?: string
+  defectDimensions?: {
+    lengthM?: number
+    widthM?: number
+    depthCm?: number
+    areaSqM?: number
+    volumeCuM?: number
+  }
+  materialsUsed?: Array<{
+    id: string
+    name: string
+    quantity: number
+    unit: string
+  }>
+  auditDocketId?: string
+  margDocketId?: string
   createdAt: string
   updatedAt: string
 }

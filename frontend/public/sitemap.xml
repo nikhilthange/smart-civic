@@ -82,6 +82,46 @@
     <priority>0.7</priority>
   </url>
 
+  <!-- Privacy Policy & DPDP Data Governance -->
+  <url>
+    <loc>https://smart-civic-pi.vercel.app/privacy</loc>
+    <lastmod>2026-09-21T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Terms of Service & Citizen Charter -->
+  <url>
+    <loc>https://smart-civic-pi.vercel.app/terms</loc>
+    <lastmod>2026-09-21T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Citizen Help & Municipal Support -->
+  <url>
+    <loc>https://smart-civic-pi.vercel.app/support</loc>
+    <lastmod>2026-09-21T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Find My Nagarsevak (Ward Corporator Directory) -->
+  <url>
+    <loc>https://smart-civic-pi.vercel.app/nagarsevak</loc>
+    <lastmod>2026-09-21T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- Grievance Thank You & Acknowledgement -->
+  <url>
+    <loc>https://smart-civic-pi.vercel.app/thank-you</loc>
+    <lastmod>2026-09-21T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
   <!-- AI Manifest & System Summary (AEO / GEO Feeds) -->
   <url>
     <loc>https://smart-civic-pi.vercel.app/llms.txt</loc>

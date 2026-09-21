@@ -9,6 +9,12 @@ Allow: /cctv-radar
 Allow: /aqi-enforcement
 Allow: /karma-rewards
 Allow: /participatory-budget
+Allow: /privacy
+Allow: /terms
+Allow: /support
+Allow: /thank-you
+Allow: /nagarsevak
+Allow: /corporators
 Allow: /llms.txt
 Allow: /llms-full.txt
 Allow: /geo.json

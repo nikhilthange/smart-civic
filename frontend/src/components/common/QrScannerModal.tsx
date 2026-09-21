@@ -26,6 +26,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   onScan,
 }) => {
   const [scanError, setScanError] = useState<string | null>(null)
+  const [manualAssetId, setManualAssetId] = useState("")
   const scannerRef = useRef<Html5QrcodeScanner | null>(null)
 
   useEffect(() => {
@@ -85,8 +86,6 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   }, [isOpen, onScan, onClose])
 
   if (!isOpen) return null
-
-  const [manualAssetId, setManualAssetId] = useState("")
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault()

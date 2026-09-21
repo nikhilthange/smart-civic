@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Users,
   MessageSquare,
-  Sparkles,
   Camera,
   Award,
   ChevronDown,
@@ -21,10 +20,11 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import AiPipelineHeroVisual from "@/components/common/AiPipelineHeroVisual"
 import SeoHead from "@/components/common/SeoHead"
 import SmartCivicLogo from "@/components/common/SmartCivicLogo"
+import StickyMobileCta from "@/components/common/StickyMobileCta"
 
 const TESTIMONIALS_DATA = [
   {
@@ -32,13 +32,13 @@ const TESTIMONIALS_DATA = [
     role: "Resident & Commuter",
     ward: "Ward H-West (Bandra West)",
     category: "citizen",
-    tag: "⚡ Pothole Repaired in 14h",
+    tag: "Pothole Repaired in 14h",
     tagColor: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
     highlight: "Repaired in less than 14 hours!",
     text: "I reported a severe pothole crater near Hill Road on my morning commute. The AI auto-detected the ward and dispatched the PWD asphalt crew. By evening, it was completely recarpeted with timestamped before-and-after photos!",
     stat: "Fix Time: 13.8 Hours",
     avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
-    badge: "Verified Citizen ✓",
+    badge: "Verified Citizen",
     badgeClass: "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/60",
   },
   {
@@ -46,13 +46,13 @@ const TESTIMONIALS_DATA = [
     role: "Senior Executive Ward Officer",
     ward: "Ward K-East (Andheri East)",
     category: "officer",
-    tag: "🚀 42% Triage Time Saved",
+    tag: "42% Triage Time Saved",
     tagColor: "bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border-blue-200 dark:border-blue-800",
     highlight: "Saves hours of manual triage daily.",
     text: "The AI auto-categorization and spatial 50m deduplication are game-changers for BMC ward operations. Instead of 20 duplicates for the same waterlogging spot, we get one unified ticket with verified severity scoring.",
     stat: "Triage: 0.4s Ingestion",
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
-    badge: "Municipal Officer ✓",
+    badge: "Municipal Officer",
     badgeClass: "bg-blue-100/80 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300/60 dark:border-blue-700/60",
   },
   {
@@ -60,13 +60,13 @@ const TESTIMONIALS_DATA = [
     role: "ALM Federation President",
     ward: "Ward G-South (Worli Seaface)",
     category: "alm",
-    tag: "🏆 5% Tax Rebate Earned",
+    tag: "5% Tax Rebate Earned",
     tagColor: "bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border-amber-200 dark:border-amber-800",
-    highlight: "Brought true municipal accountability.",
-    text: "Our residential society actively logs waste and drainage blockages before monsoon. The Civic Karma reward vouchers gave our society a 5% property tax concession, which we reinvested in local rainwater harvesting!",
-    stat: "Karma: 1,450 Points",
-    avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
-    badge: "ALM Leader ✓",
+    highlight: "Neighbourhood cleanliness up by 85%.",
+    text: "Our Advanced Locality Management (ALM) society tracked 40+ dry-waste composting tickets through the municipal dashboard. Reaching zero-waste status qualified our building cluster for BMC's 5% property tax rebate!",
+    stat: "Rebate: Active 5%",
+    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
+    badge: "ALM Leader",
     badgeClass: "bg-amber-100/80 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60",
   },
   {
@@ -74,13 +74,13 @@ const TESTIMONIALS_DATA = [
     role: "Ground Operations Supervisor",
     ward: "PWD Roads Division (Zone 3)",
     category: "worker",
-    tag: "🛡️ 100m GPS Geofenced Sign-off",
+    tag: "100m GPS Geofenced Sign-off",
     tagColor: "bg-teal-50 text-teal-700 dark:bg-teal-950/80 dark:text-teal-300 border-teal-200 dark:border-teal-800",
     highlight: "Transparent task routing & zero paperwork.",
     text: "The worker interface gives our road crew the exact GPS pin, routing map, and material specifications. The 100m geofence ensures our repair quality is digitally audited and approved by ward engineers instantly.",
     stat: "Repairs: 180+ Completed",
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
-    badge: "Field Crew Supervisor ✓",
+    badge: "Field Crew Supervisor",
     badgeClass: "bg-teal-100/80 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border border-teal-300/60 dark:border-teal-700/60",
   },
   {
@@ -88,13 +88,13 @@ const TESTIMONIALS_DATA = [
     role: "Citizen & Community Volunteer",
     ward: "Ward A (Colaba Causeway)",
     category: "citizen",
-    tag: "💡 18 Streetlights Restored",
+    tag: "18 Streetlights Restored",
     tagColor: "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800",
     highlight: "Pedestrian safety significantly improved.",
     text: "Reported multiple flickering streetlights along Colaba Causeway. The SLA countdown was visible in real time, and the electrical team completed replacement in under 24 hours. The transparency is unmatched.",
     stat: "SLA Met: 100% On-Time",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
-    badge: "Verified Citizen ✓",
+    badge: "Verified Citizen",
     badgeClass: "bg-indigo-100/80 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-700/60",
   },
   {
@@ -102,13 +102,13 @@ const TESTIMONIALS_DATA = [
     role: "Assistant Municipal Commissioner",
     ward: "Ward P-South (Goregaon)",
     category: "officer",
-    tag: "📊 Escrow Penalties Automated",
+    tag: "Escrow Penalties Automated",
     tagColor: "bg-purple-50 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border-purple-200 dark:border-purple-800",
     highlight: "Contractor SLA compliance rose to 94%.",
     text: "The automated contractor escrow penalty system ensures that road contractors meet their 48-hour warranty commitments. Unresolved tickets automatically trigger SLA breach deductions without red tape.",
     stat: "Compliance: 94.2%",
     avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=80&h=80&q=50&fm=webp",
-    badge: "AMC Officer ✓",
+    badge: "AMC Officer",
     badgeClass: "bg-purple-100/80 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300/60 dark:border-purple-700/60",
   },
 ];
@@ -116,7 +116,7 @@ const TESTIMONIALS_DATA = [
 const HOME_FAQS = [
   {
     question: "What is Smart Civics (Smart Civic AI) and how does it help with BMC issues?",
-    answer: "Smart Civics (Smart Civic AI) is an independent AI-powered citizen civic platform for Greater Mumbai. It empowers residents across all 24 administrative wards to report and track BMC issues—such as potholes, overflowing garbage, drainage blocks, and broken streetlights—with instant AI computer-vision classification, automatic GPS tagging, and real-time tracking.",
+    answer: "Smart Civics (Smart Civic AI) is an independent AI-powered citizen civic platform for Greater Mumbai. It empowers residents across all 24 administrative wards to report and track BMC issues including potholes, overflowing garbage, drainage blocks, and broken streetlights with instant AI computer-vision classification, automatic GPS tagging, and real-time tracking.",
   },
   {
     question: "How do I report BMC issues and civic complaints online in 3 easy steps?",
@@ -208,6 +208,7 @@ export default function Home() {
           <nav className="hidden md:flex gap-6 items-center">
             <a href="#features" className="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">Features</a>
             <a href="#how-it-works" className="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">How it Works</a>
+            <Link to="/nagarsevak" className="text-sm font-medium text-slate-600 hover:text-emerald-600 dark:text-slate-300 transition-colors">Find Nagarsevak</Link>
             <a href="#ai" className="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 transition-colors">AI Engine</a>
           </nav>
 
@@ -229,49 +230,42 @@ export default function Home() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative w-full pt-16 pb-20 md:pt-24 md:pb-28 overflow-hidden bg-gradient-to-b from-white via-slate-50/50 to-slate-100/60 dark:from-slate-950 dark:via-slate-900/60 dark:to-slate-950">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent opacity-70"></div>
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-          <div className="absolute left-1/2 top-0 -z-10 -translate-x-1/2 h-[450px] w-[900px] rounded-full bg-emerald-500/15 opacity-40 blur-[130px]"></div>
-
-          <div className="container relative px-4 md:px-6 mx-auto text-center max-w-6xl space-y-10">
-            <div className="flex flex-col items-center gap-5">
-              {/* Live Status Pill */}
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50/90 dark:bg-emerald-950/60 px-4 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 shadow-sm backdrop-blur-sm">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Smart Civics • Independent Citizen Platform for Mumbai & BMC Issues • 24 Wards</span>
+        <section className="relative w-full pt-14 pb-16 md:pt-20 md:pb-24 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
+          <div className="container relative px-4 md:px-6 mx-auto text-center max-w-5xl space-y-8">
+            <div className="flex flex-col items-center gap-4">
+              {/* Institutional Live Status Pill */}
+              <div className="inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                <span>Smart Civic AI • 24 Mumbai Administrative Wards • Live SLA Governance</span>
               </div>
 
               {/* Main Headline */}
-              <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl text-slate-900 dark:text-white leading-[1.12]">
-                Report & Track BMC Issues with <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-600">
-                  AI-Powered 48h SLA Tracking
-                </span>
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight max-w-4xl text-slate-900 dark:text-white leading-[1.15]">
+                Municipal Defect Intelligence &amp; 48-Hour Resolution Governance
               </h1>
 
               {/* Subtitle */}
-              <p className="mx-auto max-w-2xl text-slate-600 dark:text-slate-300 text-sm sm:text-base md:text-lg leading-relaxed">
-                Smart Civics (Smart Civic AI) is an independent civic intelligence platform for Mumbai residents. Report and track BMC municipal issues—potholes, garbage, water supply leaks, and drainage defects—with 96.4% AI vision verification and live 24-ward GIS tracking.
+              <p className="mx-auto max-w-2xl text-slate-600 dark:text-slate-400 text-sm sm:text-base md:text-lg leading-relaxed">
+                Empowering Mumbai residents to file, monitor, and verify civic infrastructure grievances across all 24 wards: road defects, drain obstructions, water distribution leaks, and sanitation with automated computer vision verification.
               </p>
 
               {/* CTA Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full sm:w-auto">
-                <Button asChild size="lg" className="w-full sm:w-auto rounded-full h-12 sm:h-13 px-7 text-sm sm:text-base font-bold shadow-lg shadow-emerald-600/25 transition-all hover:scale-105 bg-emerald-600 hover:bg-emerald-700 text-white">
+                <Button asChild size="lg" className="w-full sm:w-auto rounded-md h-11 px-6 text-sm font-semibold shadow-xs bg-emerald-600 hover:bg-emerald-700 text-white transition-colors">
                   <Link to="/auth">
-                    <span>Report an Issue Now</span>
+                    <span>Report Defect</span>
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-full h-12 sm:h-13 px-7 text-sm sm:text-base font-semibold bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all hover:scale-105 text-slate-800 dark:text-slate-100">
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto rounded-md h-11 px-6 text-sm font-semibold bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-800 dark:text-slate-200 shadow-xs">
                   <Link to="/track">
-                    Track Existing Grievance
+                    Track Grievance SLA
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto rounded-full h-12 sm:h-13 px-5 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300">
+                <Button asChild variant="ghost" size="lg" className="w-full sm:w-auto rounded-md h-11 px-4 text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors">
                   <Link to="/map">
                     <MapPin className="mr-1.5 h-4 w-4 text-emerald-600" />
-                    Live Ward Map
+                    Ward GIS Map
                   </Link>
                 </Button>
               </div>
@@ -320,7 +314,7 @@ export default function Home() {
           <div className="container px-4 md:px-6 mx-auto max-w-7xl">
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/50 px-4 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
                 <span>AI-Verified Field Resolution Proof</span>
               </div>
               <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl text-slate-900 dark:text-white">
@@ -402,7 +396,7 @@ export default function Home() {
 
                 <div className="bg-slate-50 dark:bg-slate-800/60 p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 flex-wrap gap-2">
                   <span className="font-semibold text-slate-800 dark:text-slate-200">
-                    📍 Ward H-West (Bandra) — Resolved in 14 Hours — AI Confidence 98%
+                    Ward H-West (Bandra) • Resolved in 14 Hours • AI Confidence 98%
                   </span>
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     Verified by BMC AI Computer Vision ✓
@@ -484,7 +478,7 @@ export default function Home() {
 
                 <div className="bg-slate-50 dark:bg-slate-800/60 p-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 flex-wrap gap-2">
                   <span className="font-semibold text-slate-800 dark:text-slate-200">
-                    📍 Ward G-South (Worli) — Cleaned & Verified — Field Proof Logged
+                    Ward G-South (Worli) • Cleaned & Verified • Field Proof Logged
                   </span>
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                     Timestamped Officer Proof Logged ✓
@@ -568,55 +562,51 @@ export default function Home() {
                 { icon: Users, title: "Community Voting", desc: "Upvote community issues to increase visibility and priority." },
                 { icon: MessageSquare, title: "Direct Feedback", desc: "Communicate directly with city officials regarding your complaints." },
               ].map((feature, i) => (
-                <motion.div key={i} variants={fadeUpVariant}>
-                  <Card className="h-full border-slate-200/60 dark:border-slate-800/60 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 hover:border-primary/30">
-                    <CardHeader>
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center mb-4">
-                        <feature.icon className="h-7 w-7 text-primary" />
+                <div key={i}>
+                  <Card className="h-full border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-lg p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                    <div className="flex items-center gap-3 mb-2.5">
+                      <div className="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0">
+                        <feature.icon className="h-4 w-4" />
                       </div>
-                      <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-slate-500 dark:text-slate-400">{feature.desc}</p>
+                      <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">{feature.title}</CardTitle>
+                    </div>
+                    <CardContent className="p-0">
+                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{feature.desc}</p>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               ))}
             </motion.div>
           </div>
         </section>
 
         {/* How It Works Section */}
-        <section id="how-it-works" className="w-full py-20 md:py-28 bg-slate-50 dark:bg-slate-950 border-y border-slate-200/60 dark:border-slate-800">
+        <section id="how-it-works" className="w-full py-16 md:py-20 bg-slate-50 dark:bg-slate-950 border-y border-slate-200 dark:border-slate-800">
           <div className="container px-4 md:px-6 mx-auto max-w-7xl">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-slate-900 dark:text-white">How it works</h2>
-              <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-                From identifying a problem to fixing it, the process is seamless.
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Municipal Resolution Lifecycle</h2>
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                Transparent end-to-end processing from citizen report to verified field closure.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-6 relative">
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { step: "01", title: "Spot & Report", desc: "Take a photo and provide a brief description of the issue." },
-                { step: "02", title: "AI Analyzes", desc: "Our AI categorizes and routes the ticket to the correct department." },
-                { step: "03", title: "Authorities Act", desc: "Workers are dispatched with the exact location and details." },
-                { step: "04", title: "Issue Resolved", desc: "You receive a notification once the issue is permanently fixed." },
+                { step: "01", title: "Spot & Capture", desc: "Photograph the defect with automatic EXIF geolocation verification." },
+                { step: "02", title: "Automated Triage", desc: "Computer vision classifies defect severity and maps it to the ward division." },
+                { step: "03", title: "Field Dispatch", desc: "Municipal squads and DLP contractors are mobilized within strict SLA deadlines." },
+                { step: "04", title: "Verified Closure", desc: "Before and after photographic evidence is audited before official ticket sign-off." },
               ].map((item, i) => (
-                <motion.div
+                <div
                   key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15, duration: 0.5 }}
-                  className="flex flex-col items-center text-center p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-900/80 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+                  className="flex flex-col p-5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs"
                 >
-                  <div className="bg-emerald-600 text-white font-bold text-lg w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-600/20 mb-6 mx-auto group-hover:scale-110 transition-transform">
-                    {item.step}
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{item.title}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">{item.desc}</p>
-                </motion.div>
+                  <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400 mb-2">
+                    PHASE {item.step}
+                  </span>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1.5">{item.title}</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+                </div>
               ))}
             </div>
           </div>
@@ -624,17 +614,17 @@ export default function Home() {
 
         {/* Statistics Section Banner */}
         <section className="container px-4 md:px-6 mx-auto my-12" aria-labelledby="stats-heading">
-          <h2 id="stats-heading" className="sr-only">Platform Statistics & Municipal Impact</h2>
-          <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-2xl p-8 sm:p-10 shadow-lg max-w-7xl mx-auto border border-slate-800 civic-dot-grid">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-800">
+          <h2 id="stats-heading" className="sr-only">Platform Statistics &amp; Municipal Impact</h2>
+          <div className="bg-slate-900 dark:bg-slate-950 text-white rounded-lg p-6 sm:p-8 max-w-7xl mx-auto border border-slate-800">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y sm:divide-y-0 sm:divide-x divide-slate-800">
               {[
                 { number: "25k+", label: "Grievances Resolved" },
                 { number: "40%", label: "Faster Resolution Time" },
                 { number: "24/24", label: "Mumbai Wards Active" },
                 { number: "100k+", label: "Verified Citizens" },
               ].map((stat, i) => (
-                <div key={i} className="flex flex-col items-center justify-center pt-4 sm:pt-0 sm:px-4">
-                  <p className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-mono text-emerald-400 mb-1 tracking-tight">{stat.number}</p>
+                <div key={i} className="flex flex-col items-center justify-center pt-3 sm:pt-0 sm:px-4">
+                  <p className="text-2xl sm:text-3xl lg:text-4xl font-bold font-mono text-emerald-400 mb-1 tracking-tight">{stat.number}</p>
                   <p className="text-slate-400 text-xs font-mono uppercase tracking-wider">{stat.label}</p>
                 </div>
               ))}
@@ -920,55 +910,74 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-slate-900 border-t py-12 md:py-16">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pt-12 pb-24 sm:py-12 md:py-16">
         <div className="container px-4 md:px-6 mx-auto max-w-7xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
-            <div className="col-span-2 lg:col-span-2">
-              <Link className="flex items-center gap-2.5 mb-4" to="/">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+            <div className="lg:col-span-2 space-y-4">
+              <Link className="flex items-center gap-2.5" to="/">
                 <SmartCivicLogo className="w-8 h-8" />
                 <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Smart Civic AI</span>
               </Link>
-              <p className="text-slate-500 dark:text-slate-400 max-w-xs mb-6">
-                Making cities smarter, safer, and more responsive to citizen needs through AI-powered technology.
+              <p className="text-slate-500 dark:text-slate-400 text-sm max-w-sm">
+                Empowering Mumbai residents across all 24 administrative wards to report, verify, and resolve municipal defects with AI computer-vision and 48-hour SLA governance.
               </p>
+              {/* Real Civic Headquarters Contact Card */}
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/80 text-xs space-y-1 text-slate-600 dark:text-slate-400 max-w-sm">
+                <p className="font-semibold text-slate-800 dark:text-slate-200">Civic Operations & Grievance Hub</p>
+                <p>Municipal Technology Center, Fort, Mumbai, MH 400001</p>
+                <p>BMC Helpline: <strong className="text-emerald-600 dark:text-emerald-400">1916</strong> (24x7 Toll-Free)</p>
+                <p>Grievance Desk: <a href="mailto:grievance@smartcivic.mumbai" className="text-emerald-600 underline">grievance@smartcivic.mumbai</a></p>
+              </div>
             </div>
+
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Platform</h3>
+              <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Civic Platform</h3>
               <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-                <li><a href="#" className="hover:text-primary">How it works</a></li>
-                <li><a href="#" className="hover:text-primary">Features</a></li>
-                <li><a href="#" className="hover:text-primary">For Cities</a></li>
-                <li><a href="#" className="hover:text-primary">Pricing</a></li>
+                <li><Link to="/complaint/create" className="hover:text-emerald-600 transition-colors">Report Defect</Link></li>
+                <li><Link to="/track" className="hover:text-emerald-600 transition-colors">Track 48h SLA</Link></li>
+                <li><Link to="/nagarsevak" className="hover:text-emerald-600 transition-colors font-medium text-emerald-600 dark:text-emerald-400">Find My Nagarsevak</Link></li>
+                <li><Link to="/map" className="hover:text-emerald-600 transition-colors">24-Ward GIS Map</Link></li>
+                <li><Link to="/monsoon-radar" className="hover:text-emerald-600 transition-colors">Monsoon Radar</Link></li>
+                <li><Link to="/rewards" className="hover:text-emerald-600 transition-colors">Civic Karma Rewards</Link></li>
               </ul>
             </div>
+
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Resources</h3>
+              <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Resources</h3>
               <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-                <li><a href="#" className="hover:text-primary">Help Center</a></li>
-                <li><a href="#" className="hover:text-primary">Community Guidelines</a></li>
-                <li><a href="#" className="hover:text-primary">API Documentation</a></li>
-                <li><a href="#" className="hover:text-primary">Blog</a></li>
+                <li><Link to="/support" className="hover:text-emerald-600 transition-colors">Help & FAQ Center</Link></li>
+                <li><Link to="/dlp-registry" className="hover:text-emerald-600 transition-colors">DLP Road Registry</Link></li>
+                <li><Link to="/whatsapp-sandbox" className="hover:text-emerald-600 transition-colors">WhatsApp Bot Demo</Link></li>
+                <li><a href="https://www.mcgm.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 transition-colors">Official BMC Portal ↗</a></li>
               </ul>
             </div>
+
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">Legal</h3>
+              <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-4">Legal & Trust</h3>
               <ul className="space-y-2 text-sm text-slate-500 dark:text-slate-400">
-                <li><a href="#" className="hover:text-primary">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-primary">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-primary">Cookie Policy</a></li>
+                <li><Link to="/privacy" className="hover:text-emerald-600 transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-emerald-600 transition-colors">Terms of Service</Link></li>
+                <li><Link to="/privacy#exif" className="hover:text-emerald-600 transition-colors">EXIF & Media Ethics</Link></li>
+                <li><Link to="/terms#sla" className="hover:text-emerald-600 transition-colors">SLA Disclaimers</Link></li>
               </ul>
             </div>
           </div>
-          <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
-            <p>© 2026 Smart Civic AI Platform. All rights reserved.</p>
-            <div className="flex gap-4">
-              <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Twitter</a>
-              <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">LinkedIn</a>
-              <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">GitHub</a>
+
+          <div className="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+            <p>© 2026 Smart Civic AI Platform • Independent Mumbai Municipal Civic Technology Initiative.</p>
+            <div className="flex items-center gap-4">
+              <Link to="/privacy" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</Link>
+              <span>•</span>
+              <Link to="/terms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms</Link>
+              <span>•</span>
+              <Link to="/support" className="hover:text-slate-900 dark:hover:text-white transition-colors">Support</Link>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Sticky Mobile CTA for seamless conversion */}
+      <StickyMobileCta />
     </div>
   )
 }

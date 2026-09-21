@@ -397,23 +397,24 @@ export default function CreateComplaint() {
       className="w-full space-y-6"
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900/60 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900/60 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-sm">
+          <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-xs">
             <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
               {t("createComplaint.pageTitle", "Submit Civic Grievance")}
             </h1>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {t("createComplaint.pageSubtitle", "Report neighborhood defects directly to the BMC ward triage mesh")}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-            {t("createComplaint.autoSlaActive", "AUTO-SLA ROUTING ACTIVE")}
+          <span className="text-xs font-medium px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+            {t("createComplaint.autoSlaActive", "Auto-SLA Routing Active")}
           </span>
         </div>
       </div>
@@ -425,10 +426,10 @@ export default function CreateComplaint() {
           <div className="flex items-start gap-3 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/70 dark:bg-zinc-900/50 px-4 py-3">
             <Bot className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                 {t("createComplaint.aiTriageTitle", "Automated AI Triage & Verification")}
               </p>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 {t("createComplaint.aiTriageDesc", "Complaints with 50+ characters and clear photo evidence are classified by our neural model and expedited to ward field workers.")}
               </p>
             </div>
@@ -445,26 +446,27 @@ export default function CreateComplaint() {
               )}
 
           {/* Step 1: Category & Details */}
-          <Card className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 p-4 sm:p-6 shadow-sm">
+          <Card className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 p-4 sm:p-6 shadow-xs">
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-800/60">
-              <span className="flex h-6 w-6 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold items-center justify-center shrink-0">1</span>
-              <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="flex h-6 w-6 rounded-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-mono font-bold items-center justify-center shrink-0">1</span>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
                 {t("createComplaint.step1Title", "Issue Category & Details")}
               </h2>
             </div>
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="category" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <Label htmlFor="category" className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {t("createComplaint.categoryLabel", "Category")} <span className="text-rose-500">*</span>
                   </Label>
+                  <span className="text-slate-300 dark:text-slate-700 hidden sm:inline" aria-hidden="true">•</span>
                   <button
                     type="button"
                     onClick={() => setShowCategoryModal(true)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline cursor-pointer"
                   >
                     <Building2 className="w-3.5 h-3.5" />
-                    <span>Municipal 114 Categories</span>
+                    <span>Browse all 114 BMC Categories</span>
                   </button>
                 </div>
 
@@ -472,14 +474,14 @@ export default function CreateComplaint() {
                   <div className="p-3 rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-950/20 flex items-center justify-between gap-2">
                     <div className="space-y-0.5 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                        <span className="text-xs font-bold font-mono px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
                           Municipal {selectedCategoryItem.isRapid24h ? "24h Rapid SLA" : `${selectedCategoryItem.standardSlaHours}h SLA`}
                         </span>
                         <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {selectedCategoryItem.name}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 truncate">
+                      <p className="text-xs text-slate-500 truncate">
                         {selectedCategoryItem.description}
                       </p>
                     </div>
@@ -494,7 +496,7 @@ export default function CreateComplaint() {
                 )}
 
                 {/* Quick Visual Category Chips */}
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pb-1">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pb-1">
                   {CATEGORIES.slice(0, 10).map(([val, label]) => {
                     const IconComponent = CATEGORY_ICON_MAP[val] || Building2
                     const isSelected = form.category === val
@@ -503,36 +505,22 @@ export default function CreateComplaint() {
                         key={val}
                         type="button"
                         onClick={() => setForm((prev) => ({ ...prev, category: val }))}
-                        className={`flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                        className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-emerald-500/10 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-xs"
-                            : "bg-zinc-50/70 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700"
+                            ? "bg-emerald-500/10 border-emerald-500 text-emerald-700 dark:text-emerald-300 shadow-xs ring-1 ring-emerald-500"
+                            : "bg-slate-50/70 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700"
                         }`}
                       >
-                        <IconComponent className={`h-4 w-4 mb-1 ${isSelected ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-500"}`} />
-                        <span className="text-[11px] font-medium leading-tight line-clamp-1">{label}</span>
+                        <IconComponent className={`h-4 w-4 mb-1.5 ${isSelected ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"}`} />
+                        <span className="text-xs font-medium leading-tight line-clamp-1">{label}</span>
                       </button>
                     )
                   })}
                 </div>
-
-                <select
-                  id="category"
-                  name="category"
-                  value={form.category}
-                  onChange={handleChange}
-                  className="flex h-10 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-2 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  required
-                >
-                  <option value="">{t("createComplaint.categoryPlaceholder", "Or select from full category list...")}</option>
-                  {CATEGORIES.map(([val, label]) => (
-                    <option key={val} value={val}>{t(`categories.${val}`, label)}</option>
-                  ))}
-                </select>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="title" className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                <Label htmlFor="title" className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {t("createComplaint.titleLabel", "Issue Title")} <span className="text-rose-500">*</span>
                 </Label>
                 <Input
@@ -544,17 +532,17 @@ export default function CreateComplaint() {
                   required
                   minLength={10}
                   maxLength={150}
-                  className="h-10 text-xs sm:text-sm rounded-xl bg-zinc-50/60 dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800"
+                  className="h-11 text-xs sm:text-sm rounded-xl bg-slate-50/60 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800"
                 />
-                <p className="text-[10px] font-mono text-zinc-400">{form.title.length}/150</p>
+                <p className="text-xs font-mono text-slate-400 dark:text-slate-500">{form.title.length}/150</p>
               </div>
 
               <div className="space-y-1.5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-1.5">
-                  <Label htmlFor="description" className="text-xs sm:text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <Label htmlFor="description" className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">
                     {t("createComplaint.descriptionLabel", "Detailed Description")} <span className="text-rose-500">*</span>
                   </Label>
-                  <div className="flex items-center gap-2 self-start sm:self-auto w-full sm:w-auto overflow-x-auto touch-pan-x min-w-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <VoiceInput
                       onTranscript={(text) =>
                         setForm((prev) => ({
@@ -566,7 +554,7 @@ export default function CreateComplaint() {
                     {form.description.length > 0 && (
                       <Badge
                         variant="outline"
-                        className={`text-[10px] font-mono px-2 py-0.5 rounded shrink-0 ${aiWillVerify
+                        className={`text-xs font-mono px-2 py-0.5 rounded shrink-0 ${aiWillVerify
                           ? "border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
                           : "border-amber-500/20 text-amber-600 dark:text-amber-400 bg-amber-500/10"
                         }`}
@@ -585,17 +573,17 @@ export default function CreateComplaint() {
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  className="flex min-h-[110px] w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 px-3 py-2 text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="flex min-h-[110px] w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder={t("createComplaint.descriptionPlaceholder", "Describe the defect, hazards, traffic impact, and location markers...")}
                   required
                   minLength={20}
                   maxLength={2000}
                 />
-                <p className="text-[10px] font-mono text-zinc-400">{form.description.length}/2000</p>
+                <p className="text-xs font-mono text-slate-400 dark:text-slate-500">{form.description.length}/2000</p>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                <Label className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {t("createComplaint.priorityLabel", "Priority Level")}
                 </Label>
                 <div className="grid grid-cols-4 gap-1.5 sm:gap-2 w-full">
@@ -865,11 +853,11 @@ export default function CreateComplaint() {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 pt-2">
-            <Button variant="outline" type="button" onClick={() => navigate(-1)} className="min-h-[44px]">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <Button variant="outline" type="button" onClick={() => navigate(-1)} className="w-full sm:w-auto h-11 px-5 rounded-xl border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
               {t("createComplaint.cancel", "Cancel")}
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="min-w-36 min-h-[44px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md">
+            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto h-11 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-xs">
               {isSubmitting ? (
                 <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("createComplaint.submitting", "Submitting...")}</>
               ) : (
@@ -937,10 +925,10 @@ export default function CreateComplaint() {
                   <div key={dept.id} className="space-y-2">
                     <div className="flex items-center justify-between text-xs pb-1 border-b border-slate-100 dark:border-slate-800">
                       <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">{dept.code}</span>
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">{dept.code}</span>
                         {deptDisplayName}
                       </span>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-xs text-slate-400">
                         {t("categoryCatalog.categoriesCount", { count: filtered.length, defaultValue: `${filtered.length} categories` })}
                       </span>
                     </div>
@@ -971,7 +959,7 @@ export default function CreateComplaint() {
                               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 transition-colors">
                                 {catDisplayName}
                               </span>
-                              <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                              <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded shrink-0 ${
                                 cat.isRapid24h
                                   ? "bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300"
                                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
@@ -979,7 +967,7 @@ export default function CreateComplaint() {
                                 {t("categoryCatalog.slaHours", { hours: cat.standardSlaHours, defaultValue: `${cat.standardSlaHours}h SLA` })}
                               </span>
                             </div>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">
+                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 line-clamp-1">
                               {cat.description}
                             </p>
                           </button>
@@ -998,57 +986,57 @@ export default function CreateComplaint() {
     {/* Right Information & SLA Charter Sidebar (4 Cols) */}
     <div className="lg:col-span-4 space-y-4">
       {/* SLA Matrix Card */}
-      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm p-4 space-y-3">
-        <h3 className="text-xs font-bold font-display uppercase tracking-wider text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
+      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-xs p-4 space-y-3">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
           <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           {t("createComplaint.slaCharterTitle", "BMC Citizen Charter SLA Matrix")}
         </h3>
         <div className="space-y-2 text-xs">
-          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800">
-            <span className="font-semibold text-rose-600 dark:text-rose-400">
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/70 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
               {t("createComplaint.manholeSla", "Open Manhole / Cave-in")}
             </span>
-            <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 text-[10px] font-mono font-bold">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-200/60 dark:bg-zinc-700/50 px-2 py-0.5 rounded-md font-mono">
               2–4h SLA
-            </Badge>
+            </span>
           </div>
-          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800">
-            <span className="font-semibold text-amber-600 dark:text-amber-400">
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/70 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
               {t("createComplaint.potholeSla", "Major Arterial Pothole")}
             </span>
-            <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 text-[10px] font-mono font-bold">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-200/60 dark:bg-zinc-700/50 px-2 py-0.5 rounded-md font-mono">
               12–24h SLA
-            </Badge>
+            </span>
           </div>
-          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-zinc-800/70 border border-slate-100 dark:border-zinc-800">
-            <span className="font-semibold text-blue-600 dark:text-blue-400">
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/70 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
               {t("createComplaint.garbageSla", "SWM Garbage Overflow")}
             </span>
-            <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 text-[10px] font-mono font-bold">
+            <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-200/60 dark:bg-zinc-700/50 px-2 py-0.5 rounded-md font-mono">
               24–48h SLA
-            </Badge>
+            </span>
           </div>
         </div>
       </Card>
 
       {/* DPDP Act 2023 Privacy Card */}
-      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm p-4 space-y-2 text-xs">
-        <h3 className="font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
+      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-xs p-4 space-y-2 text-xs">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
           <ShieldAlert className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           {t("createComplaint.dpdpTitle", "DPDP Act 2023 Privacy Shield")}
         </h3>
-        <p className="text-slate-500 dark:text-zinc-400 text-[11px] leading-relaxed">
+        <p className="text-slate-500 dark:text-zinc-400 text-xs leading-relaxed">
           {t("createComplaint.dpdpDesc", "Your personal data is protected under statutory privacy safeguards. Contact numbers and personal identifiers are dynamically redacted before reaching public dashboards or contractor field views.")}
         </p>
       </Card>
 
       {/* Statutory Contractor Notice */}
-      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-sm p-4 space-y-2 text-xs">
-        <h3 className="font-bold text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
+      <Card className="border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/60 rounded-2xl shadow-xs p-4 space-y-2 text-xs">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
           <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           {t("createComplaint.mmcTitle", "MMC Act Section 354")}
         </h3>
-        <p className="text-slate-500 dark:text-zinc-400 text-[11px] leading-relaxed">
+        <p className="text-slate-500 dark:text-zinc-400 text-xs leading-relaxed">
           {t("createComplaint.mmcDesc", "Unresolved critical hazards past SLA triggers invoke automated ₹5,000 contractor escrow deductions and statutory debarment proceedings.")}
         </p>
       </Card>

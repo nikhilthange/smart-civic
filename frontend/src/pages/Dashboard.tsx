@@ -188,7 +188,7 @@ export default function Dashboard() {
           </Link>
           {user?.role === "citizen" && (
             <Link to="/complaint/create">
-              <Button className="bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs font-bold px-4 py-2 gap-1.5 shadow-sm">
+              <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold px-4 py-2 gap-1.5 shadow-sm transition-colors">
                 <Plus className="h-4 w-4" />
                 <span>{t("dashPage.newComplaint", "Report Grievance")}</span>
               </Button>
@@ -318,22 +318,22 @@ export default function Dashboard() {
           const progressPercent = Math.min(100, Math.round((karmaPoints / 200) * 100))
 
           return (
-            <div className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 sm:p-5 shadow-[0_1px_3px_rgba(0,0,0,0.02)] space-y-3">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-center shrink-0">
-                    <Award className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-center shrink-0">
+                    <Award className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm sm:text-base">
+                      <span className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
                         Civic Karma: {karmaPoints} Points
                       </span>
-                      <span className="px-2 py-0.5 text-[10px] font-mono font-medium rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                      <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                         {tierBadge}
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       Earn municipal tax incentives & priority response times by participating in ward upkeep.
                     </p>
                   </div>
@@ -342,7 +342,7 @@ export default function Dashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full sm:w-auto text-xs font-semibold rounded-xl border-zinc-200 dark:border-zinc-700"
+                    className="w-full sm:w-auto text-xs font-semibold rounded-xl border-slate-200 dark:border-slate-700"
                   >
                     <span>View Benefits</span>
                     <ArrowRight className="w-3.5 h-3.5 ml-1" />
@@ -351,14 +351,14 @@ export default function Dashboard() {
               </div>
 
               {/* Progress bar */}
-              <div className="space-y-1 pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
-                <div className="flex items-center justify-between text-[11px] text-zinc-400 font-mono">
-                  <span>{karmaPoints} / 200 pts to next tier</span>
-                  <span>{progressPercent}%</span>
+              <div className="space-y-1.5 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 font-medium">
+                  <span><strong className="font-bold text-slate-900 dark:text-slate-100">{karmaPoints}</strong> / 200 pts to next tier</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{progressPercent}%</span>
                 </div>
-                <div className="w-full h-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                   <div
-                    className="h-full bg-zinc-900 dark:bg-zinc-100 rounded-full transition-all duration-300"
+                    className="h-full bg-emerald-600 dark:bg-emerald-500 rounded-full transition-all duration-300"
                     style={{ width: `${progressPercent}%` }}
                   />
                 </div>
@@ -371,13 +371,13 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 8 Cols: Polished Recent Complaints Table */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
-            <div className="p-4 sm:p-5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <div>
-                <h2 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
                   {t("dashPage.recentComplaints", "Recent Grievances")}
                 </h2>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {t("dashPage.recentSubtitle", "Live tracking of recently reported issues in your ward")}
                 </p>
               </div>
@@ -385,7 +385,7 @@ export default function Dashboard() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="gap-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white rounded-lg h-8"
+                  className="gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg h-8"
                 >
                   <span>{t("dashPage.viewAll", "View All")}</span>
                   <ArrowRight className="h-3 w-3" />
@@ -414,22 +414,22 @@ export default function Dashboard() {
                   <div className="hidden md:block w-full overflow-x-auto">
                     <Table className="w-full">
                       <TableHeader>
-                        <TableRow className="bg-zinc-50/70 dark:bg-zinc-800/40 border-b border-zinc-200/80 dark:border-zinc-800">
-                          <TableHead className="w-12 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 font-mono">Photo</TableHead>
-                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 font-mono">ID</TableHead>
-                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Issue Details</TableHead>
-                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 hidden md:table-cell font-mono">Date</TableHead>
-                          <TableHead className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 text-right">Status</TableHead>
+                        <TableRow className="bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-200/80 dark:border-slate-800">
+                          <TableHead className="w-12 text-xs font-semibold text-slate-500 font-mono">Photo</TableHead>
+                          <TableHead className="text-xs font-semibold text-slate-500 font-mono">ID</TableHead>
+                          <TableHead className="text-xs font-semibold text-slate-500">Issue Details</TableHead>
+                          <TableHead className="text-xs font-semibold text-slate-500 hidden md:table-cell font-mono">Date</TableHead>
+                          <TableHead className="text-xs font-semibold text-slate-500 text-right">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {recent.map((c) => (
                           <TableRow
                             key={c._id}
-                            className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors border-b border-zinc-100 dark:border-zinc-800/60"
+                            className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors border-b border-slate-100 dark:border-slate-800/60"
                           >
                             <TableCell>
-                              <div className="h-8 w-8 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
+                              <div className="h-8 w-8 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
                                 {c.attachments && c.attachments[0] ? (
                                   <img
                                     src={getImageUrl(c.attachments[0])}
@@ -438,41 +438,42 @@ export default function Dashboard() {
                                     className="h-full w-full object-cover"
                                   />
                                 ) : (
-                                  <Building2 className="w-4 h-4 text-zinc-400" />
+                                  <Building2 className="w-4 h-4 text-slate-400" />
                                 )}
                               </div>
                             </TableCell>
-                            <TableCell className="font-mono text-xs font-semibold">
+                            <TableCell className="font-mono text-xs">
                               <Link
                                 to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                                className="text-zinc-900 dark:text-zinc-100 hover:underline inline-flex items-center gap-1"
+                                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                                aria-label={`Ticket ${c.complaintId || c._id?.slice(-8)}`}
                               >
-                                <span>{c.complaintId || c._id?.slice(-6).toUpperCase()}</span>
-                                <ExternalLink className="w-3 h-3 opacity-50" />
+                                <span>{c.complaintId || `#${c._id?.slice(-8)}`}</span>
+                                <ExternalLink className="w-3 h-3 opacity-60" aria-hidden="true" />
                               </Link>
                             </TableCell>
                             <TableCell>
-                              <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-1 max-w-[240px]">
+                              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 line-clamp-1 max-w-[240px]">
                                 {c.title}
                               </p>
-                              <p className="text-[11px] text-zinc-400 line-clamp-1">
+                              <p className="text-xs text-slate-400 line-clamp-1">
                                 {CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}
                               </p>
                             </TableCell>
-                            <TableCell className="text-xs text-zinc-500 font-mono tabular-nums hidden md:table-cell">
+                            <TableCell className="text-xs text-slate-500 font-mono tabular-nums hidden md:table-cell">
                               {new Date(c.createdAt).toLocaleDateString("en-IN", {
                                 day: "2-digit",
                                 month: "short",
                               })}
                             </TableCell>
                             <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
+                              <div className="flex items-center justify-end gap-3 sm:gap-4">
                                 <StatusBadge status={c.status} />
                                 {c.status === "resolved" && (
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="text-[11px] h-7 px-2 rounded-lg"
+                                    className="text-xs h-7 px-2.5 rounded-lg border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                                     onClick={async () => {
                                       const reason = prompt(
                                         "State reason for reopening issue:",
@@ -494,8 +495,8 @@ export default function Dashboard() {
                                       }
                                     }}
                                   >
-                                    <RotateCcw className="w-3 h-3 mr-1" />
-                                    {t("dashPage.reopen", "Reopen")}
+                                    <RotateCcw className="w-3.5 h-3.5 mr-1 text-slate-500" />
+                                    <span>{t("dashPage.reopen", "Reopen")}</span>
                                   </Button>
                                 )}
                               </div>
@@ -511,11 +512,11 @@ export default function Dashboard() {
                     {recent.map((c) => (
                       <div
                         key={c._id}
-                        className="p-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 space-y-2.5"
+                        className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 space-y-2.5"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="h-9 w-9 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
+                            <div className="h-9 w-9 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 flex items-center justify-center">
                               {c.attachments && c.attachments[0] ? (
                                 <img
                                   src={getImageUrl(c.attachments[0])}
@@ -524,17 +525,17 @@ export default function Dashboard() {
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <Building2 className="w-4 h-4 text-zinc-400" />
+                                <Building2 className="w-4 h-4 text-slate-400" />
                               )}
                             </div>
                             <div className="min-w-0">
                               <Link
                                 to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                                className="font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100 hover:underline"
+                                className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100 hover:underline"
                               >
-                                {c.complaintId || c._id?.slice(-6).toUpperCase()}
+                                {c.complaintId || c._id?.slice(-8)}
                               </Link>
-                              <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate mt-0.5">
+                              <p className="text-xs font-medium text-slate-800 dark:text-slate-200 truncate mt-0.5">
                                 {c.title}
                               </p>
                             </div>
@@ -542,11 +543,11 @@ export default function Dashboard() {
                           <StatusBadge status={c.status} />
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-1 border-t border-zinc-200/50 dark:border-zinc-700/50">
+                        <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
                           <span>{CATEGORY_LABELS[c.category] || c.category} • {c.ward || "Ward A"}</span>
                           <Link
                             to={`/complaint/${c._id || c.id || c.complaintId}/track`}
-                            className="font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-1"
+                            className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1"
                           >
                             <span>Track</span>
                             <ArrowRight className="w-3 h-3" />
@@ -562,11 +563,11 @@ export default function Dashboard() {
         </div>
 
         {/* Right 4 Cols: Quick Actions & Live Feed */}
-        <div className="lg:col-span-4 space-y-5">
+        <div className="lg:col-span-4 space-y-4">
           {/* Quick Action Triggers Grid */}
-          <Card className="border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] p-4 sm:p-5">
+          <Card className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-xs p-4 sm:p-5">
             <CardHeader className="p-0 pb-3">
-              <CardTitle className="text-xs font-bold font-mono uppercase tracking-wider text-zinc-500">
+              <CardTitle className="text-xs font-bold font-mono uppercase tracking-wider text-slate-500">
                 {t("dashPage.quickActions", "Quick Actions")}
               </CardTitle>
             </CardHeader>
@@ -608,13 +609,13 @@ export default function Dashboard() {
                     <Link
                       key={act.to}
                       to={act.to}
-                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all text-center group"
+                      className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-center group"
                     >
-                      <div className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 group-hover:scale-105 transition-transform mb-1.5">
+                      <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 group-hover:scale-105 transition-transform mb-1.5">
                         <Icon className="w-4 h-4" />
                       </div>
-                      <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">{act.label}</span>
-                      <span className="text-[10px] text-zinc-400">{act.sub}</span>
+                      <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">{act.label}</span>
+                      <span className="text-xs text-slate-400">{act.sub}</span>
                     </Link>
                   )
                 })
@@ -623,26 +624,26 @@ export default function Dashboard() {
           </Card>
 
           {/* Live Ward Activity Widget */}
-          <Card className="border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] p-4 sm:p-5 space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
-              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-zinc-500">Ward Readiness</span>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-emerald-600 dark:text-emerald-400">
+          <Card className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-xs p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-500">Ward Readiness</span>
+              <span className="inline-flex items-center gap-1.5 text-xs font-mono text-emerald-600 dark:text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 98.4% SLA Compliance
               </span>
             </div>
-            <div className="space-y-2 text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
               <div className="flex items-center justify-between">
                 <span>Active Field Crews</span>
-                <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">14 Teams On-Duty</span>
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">14 Teams On-Duty</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Avg Resolution Time</span>
-                <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">4.8 Hours</span>
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">4.8 Hours</span>
               </div>
               <div className="flex items-center justify-between">
                 <span>Emergency SWM Patrol</span>
-                <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">Normal</span>
+                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">Normal</span>
               </div>
             </div>
           </Card>

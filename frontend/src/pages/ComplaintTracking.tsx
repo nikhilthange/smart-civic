@@ -1401,37 +1401,38 @@ export default function ComplaintTracking() {
         {/* Clean Header & Search Card */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-xs">
+            <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-xs">
               <Search className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 Track Grievance
               </h1>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Inspect real-time resolution timeline, assigned officer, and field proof
               </p>
             </div>
           </div>
 
           {/* Search Form */}
-          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full md:w-auto md:min-w-[380px]">
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2.5 w-full md:w-auto md:min-w-[400px]">
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 type="text"
                 placeholder="Enter Ticket ID (e.g. SC-2026-XXXX)..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                className="pl-9 h-10 rounded-xl bg-zinc-50/70 dark:bg-zinc-900/70 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 text-xs border border-zinc-200 dark:border-zinc-800 focus-visible:ring-1 focus-visible:ring-emerald-500"
+                className="pl-10 h-11 rounded-xl bg-slate-50/70 dark:bg-zinc-900/70 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 text-sm border border-slate-200 dark:border-zinc-800 focus-visible:ring-2 focus-visible:ring-emerald-500"
               />
             </div>
             <Button
               type="submit"
               disabled={!searchInput.trim() || isSearching}
-              className="h-10 px-4 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-semibold rounded-xl shadow-xs text-xs shrink-0 cursor-pointer"
+              className="h-11 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-xs text-sm shrink-0 cursor-pointer transition-all"
             >
-              {isSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Track"}
+              {isSearching ? <Loader2 className="w-4 h-4 animate-spin mr-1.5" /> : null}
+              <span>{isSearching ? "Searching..." : "Track Status"}</span>
             </Button>
           </form>
         </div>
@@ -1442,7 +1443,7 @@ export default function ComplaintTracking() {
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
             <div className="flex-1 min-w-0 space-y-0.5">
               <p className="font-semibold text-xs text-rose-800 dark:text-rose-300">{error}</p>
-              <p className="text-[11px] text-rose-600 dark:text-rose-400">
+              <p className="text-xs text-rose-600 dark:text-rose-400">
                 You can try searching again with a different ID or select one of your recently filed complaints below.
               </p>
             </div>
@@ -1451,16 +1452,16 @@ export default function ComplaintTracking() {
 
         {/* Recent Complaints Section */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
-              <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <History className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                 Recent Civic Reports
               </h2>
             </div>
             {user?.role === "citizen" && (
               <Link to="/complaint/create">
-                <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8 rounded-lg">
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9 px-3.5 rounded-xl border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
                   <Plus className="w-3.5 h-3.5" />
                   New Grievance
                 </Button>
@@ -1483,7 +1484,7 @@ export default function ComplaintTracking() {
               </p>
               {user?.role === "citizen" && (
                 <Link to="/complaint/create">
-                  <Button size="sm" className="bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 gap-1.5 mt-2 h-8 text-xs rounded-lg">
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 mt-2 h-9 px-4 text-xs font-semibold rounded-xl shadow-xs">
                     <Plus className="w-3.5 h-3.5" />
                     File Grievance
                   </Button>
@@ -1518,19 +1519,22 @@ export default function ComplaintTracking() {
 
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-[11px] font-bold text-zinc-900 dark:text-zinc-100">
+                        <span
+                          className="font-mono text-xs font-bold text-slate-900 dark:text-slate-100"
+                          aria-label={`Ticket ID: ${c.complaintId || c._id.substring(0, 10)}`}
+                        >
                           {c.complaintId || c._id.substring(0, 10)}
                         </span>
                         <StatusBadge status={c.status} />
                       </div>
 
-                      <h4 className="font-semibold text-xs text-zinc-900 dark:text-zinc-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      <h3 className="font-semibold text-xs text-slate-900 dark:text-slate-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                         {c.title}
-                      </h4>
+                      </h3>
 
-                      <div className="flex items-center justify-between text-[11px] text-zinc-400 pt-0.5">
+                      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 pt-0.5">
                         <span className="truncate">{CATEGORY_LABELS[c.category] || c.category}</span>
-                        <span className="text-[10px] font-mono shrink-0">
+                        <span className="text-xs font-mono text-slate-400 dark:text-slate-500 shrink-0">
                           {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ""}
                         </span>
                       </div>

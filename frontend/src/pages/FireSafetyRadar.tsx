@@ -41,7 +41,7 @@ function playEmergencyAlarm() {
     gain.connect(ctx.destination)
     osc.start()
     osc.stop(ctx.currentTime + 0.35)
-  } catch (_) {}
+  } catch {}
 }
 
 // ─── Official Statutory MFB Citation PDF Export ──────────────────────────────

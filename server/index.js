@@ -47,7 +47,9 @@ if (process.env.NODE_ENV === "production") {
 
 // ─── DB ───────────────────────────────────────────────────────────────────────
 const connectDB = require("./config/db");
-connectDB();
+if (require.main === module) {
+  connectDB();
+}
 
 // ─── Security middleware ──────────────────────────────────────────────────────
 const {
@@ -257,26 +259,8 @@ app.use(notFoundHandler);
 app.use(globalErrorHandler);
 
 // ─── Start server ─────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode`);
-  
-  // ─── Initialize Native WebSocket Gateway ────────────────────────────────────
-  const { initSocket } = require("./services/socketService");
-  initSocket(server);
-  console.log("🔌 Native WebSocket Gateway initialized on HTTP server.");
+let server = null;
 
-  // ─── Initialize SLA Background Worker ──────────────────────────────────────
-  const slaService = require("./services/slaService");
-  setTimeout(() => slaService.checkSlaBreaches(), 5000);
-  setInterval(() => slaService.checkSlaBreaches(), 10 * 60 * 1000);
-
-  // ─── Verify Email & SMTP Delivery Pipeline ──────────────────────────────────
-  const emailService = require("./services/emailService");
-  setTimeout(() => emailService.verifyConnection(), 2000);
-});
-
-// ─── Graceful shutdown — close DB + pending connections ───────────────────────
 const shutdown = async (signal) => {
   console.log(`\n⚠️  ${signal} received. Gracefully shutting down...`);
   
@@ -320,18 +304,40 @@ const shutdown = async (signal) => {
   }
 };
 
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT",  () => shutdown("SIGINT"));
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  server = app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode`);
+    
+    // ─── Initialize Native WebSocket Gateway ────────────────────────────────────
+    const { initSocket } = require("./services/socketService");
+    initSocket(server);
+    console.log("🔌 Native WebSocket Gateway initialized on HTTP server.");
 
-// ─── Unhandled rejections / exceptions ───────────────────────────────────────
-process.on("unhandledRejection", (reason, _promise) => {
-  console.error("💥 Unhandled Rejection:", JSON.stringify({ reason: reason?.message || String(reason) }));
-  if (process.env.NODE_ENV === "production") shutdown("unhandledRejection");
-});
+    // ─── Initialize SLA Background Worker ──────────────────────────────────────
+    const slaService = require("./services/slaService");
+    setTimeout(() => slaService.checkSlaBreaches(), 5000);
+    setInterval(() => slaService.checkSlaBreaches(), 10 * 60 * 1000);
 
-process.on("uncaughtException", (err) => {
-  console.error("💥 Uncaught Exception:", JSON.stringify({ error: err.message, stack: err.stack }));
-  shutdown("uncaughtException");
-});
+    // ─── Verify Email & SMTP Delivery Pipeline ──────────────────────────────────
+    const emailService = require("./services/emailService");
+    setTimeout(() => emailService.verifyConnection(), 2000);
+  });
+
+  // ─── Graceful shutdown — close DB + pending connections ───────────────────────
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT",  () => shutdown("SIGINT"));
+
+  // ─── Unhandled rejections / exceptions ───────────────────────────────────────
+  process.on("unhandledRejection", (reason, _promise) => {
+    console.error("💥 Unhandled Rejection:", JSON.stringify({ reason: reason?.message || String(reason) }));
+    if (process.env.NODE_ENV === "production") shutdown("unhandledRejection");
+  });
+
+  process.on("uncaughtException", (err) => {
+    console.error("💥 Uncaught Exception:", JSON.stringify({ error: err.message, stack: err.stack }));
+    shutdown("uncaughtException");
+  });
+}
 
 module.exports = app; // for testing

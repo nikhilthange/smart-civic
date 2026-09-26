@@ -104,16 +104,44 @@ export function usePWA() {
       })
     }
 
+    // 8. Listen for cross-component guidance requests
+    const handleGuideRequest = () => {
+      setIsDismissed(false)
+      try {
+        localStorage.removeItem(DISMISS_KEY)
+      } catch {}
+    }
+
+    const handleDismissSync = () => {
+      setIsDismissed(true)
+    }
+
+    window.addEventListener("smart_civic_open_install_guide", handleGuideRequest)
+    window.addEventListener("smart_civic_pwa_dismissed", handleDismissSync)
+
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
       window.removeEventListener("appinstalled", handleAppInstalled)
       window.removeEventListener("online", handleOnline)
       window.removeEventListener("offline", handleOffline)
+      window.removeEventListener("smart_civic_open_install_guide", handleGuideRequest)
+      window.removeEventListener("smart_civic_pwa_dismissed", handleDismissSync)
     }
   }, [])
 
   const installApp = useCallback(async (): Promise<boolean> => {
+    setIsDismissed(false)
+    try {
+      localStorage.removeItem(DISMISS_KEY)
+    } catch {}
+
     if (!deferredPrompt) {
+      // Broadcast to UI banner to display iOS or browser address-bar guidance
+      window.dispatchEvent(
+        new CustomEvent("smart_civic_open_install_guide", {
+          detail: { isIOS }
+        })
+      )
       return false
     }
 
@@ -131,20 +159,34 @@ export function usePWA() {
       console.error("[PWA] Installation prompt failed:", err)
       return false
     }
-  }, [deferredPrompt])
+  }, [deferredPrompt, isIOS])
 
   const dismissPrompt = useCallback((snoozeDays = 7) => {
     setIsDismissed(true)
     try {
       const expiry = Date.now() + snoozeDays * 24 * 60 * 60 * 1000
       localStorage.setItem(DISMISS_KEY, expiry.toString())
+      window.dispatchEvent(new CustomEvent("smart_civic_pwa_dismissed"))
     } catch {}
   }, [])
 
   const updateServiceWorker = useCallback(() => {
     if (registration?.waiting) {
+      // Reload once new service worker takes control
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.addEventListener(
+          "controllerchange",
+          () => {
+            window.location.reload()
+          },
+          { once: true }
+        )
+      }
       registration.waiting.postMessage({ type: "SKIP_WAITING" })
-      window.location.reload()
+      // Fallback reload if controllerchange event doesn't fire within 600ms
+      setTimeout(() => {
+        window.location.reload()
+      }, 600)
     }
   }, [registration])
 

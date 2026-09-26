@@ -4,6 +4,16 @@
 
 export function registerServiceWorker() {
   if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+    // In local development, avoid caching issues with Vite HMR unless explicitly enabled
+    if (import.meta.env.DEV && !localStorage.getItem("enable_dev_sw")) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const reg of registrations) {
+          reg.unregister().catch(() => {})
+        }
+      })
+      return
+    }
+
     // Immediately trigger update check on all active registrations
     navigator.serviceWorker.getRegistrations().then((registrations) => {
       for (const registration of registrations) {

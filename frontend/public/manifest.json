@@ -3,6 +3,7 @@
   "short_name": "SmartCivic",
   "description": "Smart Civics AI - Independent Mumbai Municipal Civic Grievance, Multilingual Voice Intake & Issue Resolution Platform",
   "start_url": "/",
+  "id": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#020617",

@@ -34,11 +34,13 @@ const PRECACHE_ASSETS = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      try {
-        await cache.addAll(PRECACHE_ASSETS)
-      } catch (err) {
-        console.warn("[SW] Some assets failed to precache during install:", err)
-      }
+      await Promise.all(
+        PRECACHE_ASSETS.map((url) =>
+          cache.add(url).catch((err) => {
+            console.warn(`[SW] Precache skipped for ${url}:`, err.message)
+          })
+        )
+      )
     }).then(() => self.skipWaiting())
   )
 })
@@ -73,7 +75,7 @@ self.addEventListener("fetch", (event) => {
     return
   }
 
-  // Guard 2: Bypass API routes, WebSocket gateways, and remote auth endpoints
+  // Guard 2: Bypass API routes, WebSocket gateways, dev assets, and remote auth endpoints
   if (
     url.pathname.includes("/api/") ||
     url.pathname.startsWith("/api") ||
@@ -83,9 +85,10 @@ self.addEventListener("fetch", (event) => {
     url.pathname.includes("node_modules") ||
     url.pathname.includes("_vercel") ||
     url.pathname.includes("sso-api") ||
-    url.hostname.includes("vercel.com") ||
+    url.hostname === "vercel.live" ||
+    url.hostname.endsWith(".vercel.live") ||
     url.hostname.includes("onrender.com") ||
-    url.hostname.includes("localhost:5000") ||
+    (url.hostname === "localhost" && url.port === "5000") ||
     url.port === "5000" ||
     (url.origin !== self.location.origin && !url.hostname.includes("tile.openstreetmap.org"))
   ) {
@@ -110,10 +113,11 @@ self.addEventListener("fetch", (event) => {
       fetch(event.request)
         .then((response) => {
           if (response && response.status === 200) {
-            const clone = response.clone()
+            const cloneForRoute = response.clone()
+            const cloneForIndex = response.clone()
             caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, clone).catch(() => {})
-              cache.put("/index.html", response.clone()).catch(() => {})
+              cache.put(event.request, cloneForRoute).catch(() => {})
+              cache.put("/index.html", cloneForIndex).catch(() => {})
             })
           }
           return response

@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Share, RefreshCw } from "lucide-react"
+import { X, Share, RefreshCw, Download } from "lucide-react"
 import { usePWA } from "@/hooks/usePWA"
 import { Button } from "@/components/ui/button"
 import SmartCivicLogo from "@/components/common/SmartCivicLogo"
@@ -21,34 +21,59 @@ export function PWAInstallBanner() {
 
   const [installing, setInstalling] = useState(false)
   const [showIOSInstructions, setShowIOSInstructions] = useState(false)
+  const [showDesktopGuide, setShowDesktopGuide] = useState(false)
+  const [userRequested, setUserRequested] = useState(false)
 
-  // If already running standalone or installed, only show update if available
-  if (isStandalone || isInstalled) {
-    if (isUpdateAvailable) {
-      return (
-        <div className="fixed bottom-4 right-4 z-50 max-w-sm w-[calc(100%-2rem)] mx-auto p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg flex items-center justify-between gap-3 text-slate-900 dark:text-slate-100">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <SmartCivicLogo size={24} className="w-6 h-6 shrink-0" animated={false} />
-            <div className="min-w-0">
-              <p className="text-xs font-semibold truncate">Update available</p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">Reload to apply latest changes</p>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            onClick={updateServiceWorker}
-            className="h-8 px-3 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 shrink-0"
-          >
-            Reload
-          </Button>
-        </div>
-      )
+  // Listen for explicit trigger from navbar/sidebar "Install App" buttons
+  useEffect(() => {
+    const handleOpenGuide = (e: Event) => {
+      const customEvt = e as CustomEvent<{ isIOS?: boolean }>
+      setUserRequested(true)
+      if (customEvt.detail?.isIOS) {
+        setShowIOSInstructions(true)
+      } else if (!hasNativePrompt) {
+        setShowDesktopGuide(true)
+      }
     }
+    window.addEventListener("smart_civic_open_install_guide", handleOpenGuide)
+    return () => {
+      window.removeEventListener("smart_civic_open_install_guide", handleOpenGuide)
+    }
+  }, [hasNativePrompt])
+
+  // Always show update banner if new version is waiting
+  if (isUpdateAvailable) {
+    return (
+      <div className="fixed bottom-4 right-4 z-50 max-w-sm w-[calc(100%-2rem)] mx-auto p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg flex items-center justify-between gap-3 text-slate-900 dark:text-slate-100">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <SmartCivicLogo size={24} className="w-6 h-6 shrink-0" animated={false} />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold truncate">Update available</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">Reload to apply latest changes</p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          onClick={updateServiceWorker}
+          className="h-8 px-3 rounded-lg text-xs font-medium bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 shrink-0 cursor-pointer"
+        >
+          Reload
+        </Button>
+      </div>
+    )
+  }
+
+  // If already running standalone or installed, no install prompt needed
+  if (isStandalone || isInstalled) {
     return null
   }
 
-  // Hide if cannot install or dismissed
-  if (!canInstall || isDismissed) {
+  // Defer auto-showing if user has not yet resolved the initial Cookie Notice (prevents overlapping popups)
+  const hasCookieConsent =
+    typeof window !== "undefined" && !!localStorage.getItem("smart_civic_cookie_consent")
+
+  // Hide if cannot install, dismissed, or awaiting cookie consent (unless user explicitly tapped "Install App")
+  if (!canInstall || ((isDismissed || !hasCookieConsent) && !userRequested)) {
     return null
   }
 
@@ -58,12 +83,22 @@ export function PWAInstallBanner() {
       return
     }
 
+    if (!hasNativePrompt) {
+      setShowDesktopGuide(true)
+      return
+    }
+
     setInstalling(true)
     try {
       await installApp()
     } finally {
       setInstalling(false)
     }
+  }
+
+  const handleDismiss = () => {
+    setUserRequested(false)
+    dismissPrompt(7)
   }
 
   return (
@@ -90,7 +125,7 @@ export function PWAInstallBanner() {
               </h2>
               <button
                 type="button"
-                onClick={() => dismissPrompt(7)}
+                onClick={handleDismiss}
                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-1 -mt-1 rounded-md transition-colors"
                 title="Dismiss"
                 aria-label="Close installation prompt"
@@ -121,13 +156,27 @@ export function PWAInstallBanner() {
           </motion.div>
         )}
 
+        {/* Desktop Address Bar Helper */}
+        {showDesktopGuide && !hasNativePrompt && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 flex items-center gap-2"
+          >
+            <Download className="w-4 h-4 text-emerald-500 shrink-0" />
+            <p className="leading-tight">
+              Click the <strong className="font-semibold">Install icon (⊕)</strong> in your browser&apos;s address bar to install Smart Civic.
+            </p>
+          </motion.div>
+        )}
+
         {/* Action Controls */}
         <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => dismissPrompt(7)}
+            onClick={handleDismiss}
             className="h-8 px-3 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer"
           >
             Not now

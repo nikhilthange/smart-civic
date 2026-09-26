@@ -58,7 +58,7 @@ export const VoiceGrievanceRecorder: React.FC<VoiceGrievanceRecorderProps> = ({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch (e) {}
+        } catch {}
       }
     };
   }, [language, onTranscript]);
@@ -70,7 +70,7 @@ export const VoiceGrievanceRecorder: React.FC<VoiceGrievanceRecorderProps> = ({
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch (e) {}
+        } catch {}
       }
       setIsRecording(false);
     } else {

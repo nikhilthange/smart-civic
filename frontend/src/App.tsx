@@ -162,7 +162,6 @@ function App() {
                       <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
                       
                       <Route path="/map" element={<MapView />} />
-                      <Route path="/public-map" element={<MapView />} />
                       
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/monsoon-radar" element={<MonsoonRadar />} />

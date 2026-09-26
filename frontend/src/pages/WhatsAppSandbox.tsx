@@ -324,7 +324,7 @@ export default function WhatsAppSandbox() {
       localStorage.setItem("smart_civic_wa_messages", JSON.stringify(messages))
       localStorage.setItem("smart_civic_wa_karma", sessionKarma.toString())
       localStorage.setItem("smart_civic_wa_tickets", JSON.stringify(sessionTickets))
-    } catch (_) {}
+    } catch {}
   }, [messages, sessionKarma, sessionTickets])
 
   // Scope auto-scrolling strictly to the internal chat message container (prevents window scrolling)
@@ -385,24 +385,24 @@ export default function WhatsAppSandbox() {
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
         try {
           mediaRecorderRef.current.stop()
-        } catch (_) {}
+        } catch {}
       }
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((t) => {
           try {
             t.stop()
-          } catch (_) {}
+          } catch {}
         })
       }
       if (audioElementRef.current) {
         try {
           audioElementRef.current.pause()
-        } catch (_) {}
+        } catch {}
       }
       urls.forEach((url) => {
         try {
           URL.revokeObjectURL(url)
-        } catch (_) {}
+        } catch {}
       })
     }
   }, [])
@@ -709,7 +709,7 @@ export default function WhatsAppSandbox() {
             realVoiceRef.current = text.trim()
           }
           recognition.start()
-        } catch (_) {}
+        } catch {}
       }
 
       mediaRecorder.ondataavailable = (e) => {
@@ -724,7 +724,7 @@ export default function WhatsAppSandbox() {
         if (recognition) {
           try {
             recognition.stop()
-          } catch (_) {}
+          } catch {}
         }
         setIsRecording(false)
       }
@@ -737,7 +737,7 @@ export default function WhatsAppSandbox() {
         if (recognition) {
           try {
             recognition.stop()
-          } catch (_) {}
+          } catch {}
         }
 
         setIsTranscribing(true)

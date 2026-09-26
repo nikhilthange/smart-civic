@@ -133,14 +133,37 @@ async function runE2E() {
     console.log("Work Started! Status:", startWorkRes.data.complaint.status);
 
     console.log("\n--- 6. Worker Submit Proof ---");
+    const sharp = require("sharp");
+    // Generate a non-blank, non-identical test JPEG buffer with varied pixel texture
+    const testProofBuffer = await sharp({
+      create: {
+        width: 100,
+        height: 100,
+        channels: 3,
+        noise: { type: "gaussian", mean: 128, sigma: 25 }
+      }
+    }).jpeg().toBuffer();
+
     const submitProofReq = {
       user: { id: worker.user._id },
       params: { id: complaintId },
-      body: { resolutionNotes: "Pothole filled successfully." },
-      file: { filename: "test_proof.jpg", path: "/uploads/test_proof.jpg" }
+      body: { 
+        resolutionNotes: "Pothole filled and surface leveled successfully.",
+        latitude: 19.076,
+        longitude: 72.877
+      },
+      file: { 
+        filename: "test_proof.jpg", 
+        originalname: "test_proof.jpg",
+        buffer: testProofBuffer,
+        path: "test_proof.jpg" 
+      }
     };
     const submitProofRes = mockRes();
     await complaintController.workerSubmitProof(submitProofReq, submitProofRes);
+    if (!submitProofRes.data?.complaint) {
+      throw new Error(`Worker submit proof failed: ${JSON.stringify(submitProofRes.data)}`);
+    }
     console.log("Proof Submitted! Status:", submitProofRes.data.complaint.status);
 
     console.log("\n--- 7. Officer Approve Resolution ---");
@@ -151,14 +174,19 @@ async function runE2E() {
     };
     const resolveRes = mockRes();
     await complaintController.resolveComplaint(resolveReq, resolveRes);
+    if (!resolveRes.data?.complaint) {
+      throw new Error(`Officer resolve complaint failed: ${JSON.stringify(resolveRes.data)}`);
+    }
     console.log("Complaint Resolved! Status:", resolveRes.data.complaint.status);
 
     console.log("\n--- E2E Test Completed Successfully ---");
     
   } catch (error) {
     console.error("E2E Test Failed:", error);
+    process.exit(1);
   } finally {
-    mongoose.disconnect();
+    await mongoose.disconnect();
+    process.exit(0);
   }
 }
 

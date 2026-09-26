@@ -86,6 +86,7 @@ const ThankYou = lazyRetry(() => import("./pages/ThankYou"))
 const NotFound = lazyRetry(() => import("./pages/NotFound"))
 const NagarsevakDirectory = lazyRetry(() => import("./pages/NagarsevakDirectory"))
 import CookieConsentBanner from "./components/common/CookieConsentBanner"
+import PWAInstallBanner from "./components/common/PWAInstallBanner"
 
 // ─── Loading Fallback Component ───────────────────────────────────────────────
 const RouteLoadingFallback = () => (
@@ -233,6 +234,7 @@ function App() {
                 </Routes>
               </Suspense>
               <CookieConsentBanner />
+              <PWAInstallBanner />
             </Router>
         </SocketProvider>
       </AuthProvider>

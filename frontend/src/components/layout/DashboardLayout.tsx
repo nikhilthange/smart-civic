@@ -24,6 +24,7 @@ import {
   LifeBuoy,
   X,
   Users,
+  Download,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -42,6 +43,7 @@ import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
 import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { useTranslation } from "react-i18next"
 import { useAuth } from "@/context/AuthContext"
+import { usePWA } from "@/hooks/usePWA"
 import { triggerHapticFeedback } from "@/utils/haptics"
 
 import SmartCivicLogo from "@/components/common/SmartCivicLogo"
@@ -110,6 +112,7 @@ export default function DashboardLayout() {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
   const { user, logout } = useAuth()
   const { t } = useTranslation()
+  const { canInstall, installApp } = usePWA()
 
   // Global Cmd+K / Ctrl+K & ? Hotkey listeners
   useEffect(() => {
@@ -332,7 +335,17 @@ export default function DashboardLayout() {
 
       {/* #9: distinct footer with generous padding and clear border separation
            #4: remove `truncate` so the status text never clips */}
-      <div className="mt-auto px-4 pt-4 pb-4 border-t-2 border-slate-200/80 dark:border-slate-800/80 shrink-0">
+      <div className="mt-auto px-4 pt-4 pb-4 border-t-2 border-slate-200/80 dark:border-slate-800/80 shrink-0 space-y-2">
+        {canInstall && (
+          <button
+            type="button"
+            onClick={installApp}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Install Smart Civic App</span>
+          </button>
+        )}
         <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80">
           <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 inline-block animate-pulse" aria-hidden="true" />
           <span className="text-xs font-mono text-slate-500 dark:text-slate-400 whitespace-normal leading-tight">
@@ -415,6 +428,19 @@ export default function DashboardLayout() {
           </Button>
 
           <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+            {canInstall && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={installApp}
+                className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-semibold text-xs transition-all shadow-2xs cursor-pointer"
+                title="Install Smart Civic App"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Install App</span>
+              </Button>
+            )}
             <div className="hidden sm:block">
               <LanguageSelector />
             </div>

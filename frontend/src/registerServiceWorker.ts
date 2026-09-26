@@ -11,27 +11,33 @@ export function registerServiceWorker() {
       }
     })
 
-    if (import.meta.env.PROD) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker
-          .register("/sw.js")
-          .then((reg) => {
-            console.log("🚀 BMC Smart Civic Service Worker active:", reg.scope)
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((reg) => {
+          console.log("🚀 BMC Smart Civic Service Worker active:", reg.scope)
 
-            // Auto-update check
-            reg.update().catch(() => {})
+          // Auto-update check periodically
+          reg.update().catch(() => {})
 
-            // Background sync registration if supported
-            if ("sync" in reg) {
-              ;(reg as any).sync.register("sync-offline-civic-tickets").catch(() => {
-                // Ignore if permission denied
-              })
-            }
-          })
-          .catch((err) => {
-            console.warn("Service Worker registration failed:", err)
-          })
-      })
-    }
+          // Background sync registration if supported
+          if ("sync" in reg) {
+            ;(reg as any).sync.register("sync-offline-civic-tickets").catch(() => {
+              // Ignore if permission denied
+            })
+          }
+        })
+        .catch((err) => {
+          console.warn("Service Worker registration failed:", err)
+        })
+    })
+
+    // Listen for messages from SW (e.g. background sync triggers)
+    navigator.serviceWorker.addEventListener("message", (event) => {
+      if (event.data && event.data.type === "SYNC_OFFLINE_QUEUE") {
+        console.log("⚡ Service Worker triggered offline queue sync")
+        window.dispatchEvent(new CustomEvent("smart_civic_sync_queue"))
+      }
+    })
   }
 }

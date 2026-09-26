@@ -18,6 +18,7 @@ import {
   Quote,
   Zap,
   Search,
+  Download,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -26,6 +27,7 @@ import AiPipelineHeroVisual from "@/components/common/AiPipelineHeroVisual"
 import SeoHead from "@/components/common/SeoHead"
 import SmartCivicLogo from "@/components/common/SmartCivicLogo"
 import StickyMobileCta from "@/components/common/StickyMobileCta"
+import { usePWA } from "@/hooks/usePWA"
 
 const TESTIMONIALS_DATA = [
   {
@@ -145,6 +147,7 @@ export default function Home() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
   const [currentTestimonialIdx, setCurrentTestimonialIdx] = useState(0)
   const [isTestimonialPaused, setIsTestimonialPaused] = useState(false)
+  const { canInstall, installApp } = usePWA()
 
   // Automatic carousel rotation every 5 seconds (pauses on user hover)
   useEffect(() => {
@@ -215,6 +218,18 @@ export default function Home() {
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2 shrink-0">
+            {canInstall && (
+              <Button
+                type="button"
+                onClick={installApp}
+                className="hidden sm:inline-flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                title="Install Smart Civic App"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Install App</span>
+              </Button>
+            )}
+
             <Button asChild className="h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800" size="sm" variant="ghost">
               <Link to="/auth">Sign In</Link>
             </Button>

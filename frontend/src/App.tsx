@@ -6,6 +6,7 @@ import { NotificationProvider } from "./context/NotificationContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
 import ErrorBoundary from "./components/common/ErrorBoundary"
 import RouteSeo from "./components/common/RouteSeo"
+import OfflineSyncBanner from "./components/common/OfflineSyncBanner"
 
 // ─── Chunk Mismatch & Dynamic Import Resilience Helper ────────────────────────
 export function lazyRetry<T extends React.ComponentType<any>>(
@@ -111,6 +112,7 @@ function App() {
         <SocketProvider>
           <Router>
             <NotificationProvider>
+              <OfflineSyncBanner />
               <RouteSeo />
               <Suspense fallback={<RouteLoadingFallback />}>
                 <Routes>

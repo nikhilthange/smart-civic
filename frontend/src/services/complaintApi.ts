@@ -1,4 +1,10 @@
 import api from "@/lib/axios"
+import {
+  cacheComplaintsLocally,
+  getCachedComplaintsLocally,
+  cacheStatsLocally,
+  getCachedStatsLocally,
+} from "@/utils/offlineQueue"
 
 export type ComplaintStatus =
   | "submitted"
@@ -156,6 +162,7 @@ export interface ComplaintsResponse {
   page: number
   pages: number
   complaints: Complaint[]
+  isOfflineCache?: boolean
 }
 
 export const CATEGORY_LABELS: Record<ComplaintCategory, string> = {
@@ -219,8 +226,42 @@ export const complaintApi = {
   },
 
   getAll: async (params?: Record<string, string | number>) => {
-    const res = await api.get<ComplaintsResponse>("/complaints", { params })
-    return res.data
+    // If clearly offline, serve from offline cache immediately
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      const cached = getCachedComplaintsLocally()
+      if (cached && cached.complaints.length > 0) {
+        return {
+          success: true,
+          total: cached.total,
+          page: 1,
+          pages: 1,
+          complaints: cached.complaints as Complaint[],
+          isOfflineCache: true,
+        }
+      }
+    }
+
+    try {
+      const res = await api.get<ComplaintsResponse>("/complaints", { params })
+      if (res.data && Array.isArray(res.data.complaints)) {
+        cacheComplaintsLocally(res.data.complaints, res.data.total)
+      }
+      return res.data
+    } catch (err) {
+      // Fallback to offline cache if network failed
+      const cached = getCachedComplaintsLocally()
+      if (cached && cached.complaints.length > 0) {
+        return {
+          success: true,
+          total: cached.total,
+          page: 1,
+          pages: 1,
+          complaints: cached.complaints as Complaint[],
+          isOfflineCache: true,
+        }
+      }
+      throw err
+    }
   },
 
   getOne: async (id: string) => {
@@ -239,13 +280,24 @@ export const complaintApi = {
   },
 
   getStats: async () => {
-    const res = await api.get<{
-      success: boolean;
-      total: number;
-      byStatus: Record<string, number>;
-      byCategory: { _id: string; count: number }[];
-    }>("/complaints/stats")
-    return res.data
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      const cachedStats = getCachedStatsLocally()
+      if (cachedStats) return cachedStats
+    }
+    try {
+      const res = await api.get<{
+        success: boolean
+        total: number
+        byStatus: Record<string, number>
+        byCategory: { _id: string; count: number }[]
+      }>("/complaints/stats")
+      if (res.data) cacheStatsLocally(res.data)
+      return res.data
+    } catch (err) {
+      const cachedStats = getCachedStatsLocally()
+      if (cachedStats) return cachedStats
+      throw err
+    }
   },
 
   assignOfficer: async (id: string, officerId: string) => {

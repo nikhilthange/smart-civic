@@ -19,7 +19,7 @@ import { VoiceInput } from "@/components/common/VoiceInput"
 import { QrScannerModal, type ScannedAssetData } from "@/components/common/QrScannerModal"
 
 import { parseImageExif } from "@/utils/exifParser"
-import { saveOfflineResolution } from "@/utils/offlineQueue"
+import { saveOfflineComplaint } from "@/utils/offlineQueue"
 import { detectWardByCoordinates } from "@/utils/mumbaiWardBoundaries"
 import toast from "react-hot-toast"
 import analyticsService from "@/services/analyticsService"
@@ -275,21 +275,33 @@ export default function CreateComplaint() {
 
     setIsSubmitting(true)
 
-    // Offline Interceptor
+    // Offline Interceptor: Save full citizen complaint locally with base64 photos
     if (!navigator.onLine) {
-      const offlineTicketId = `SC-${new Date().getFullYear()}-OFFLINE-${Math.floor(10000 + Math.random() * 90000)}`
-      saveOfflineResolution({
-        complaintId: offlineTicketId,
-        notes: `[OFFLINE SUBMISSION] ${form.title} - ${form.description}`,
+      const finalDescription = selectedCategoryItem
+        ? `[Municipal Grievance Catalog: ${selectedCategoryItem.id} - ${selectedCategoryItem.name} (${selectedCategoryItem.marathiName}) | ${selectedCategoryItem.isRapid24h ? "24h Rapid SLA Directive" : `${selectedCategoryItem.standardSlaHours}h SLA`}]\n\n${form.description}`
+        : form.description
+
+      const saveRes = await saveOfflineComplaint({
+        title: form.title,
+        description: finalDescription,
+        category: form.category,
+        locationAddress: form.locationAddress,
+        locationCity: form.locationCity,
+        locationState: form.locationState,
+        locationPincode: form.locationPincode,
+        ward: form.ward,
+        lat: form.lat,
+        lng: form.lng,
+        priority: form.priority,
+        isAnonymous: form.isAnonymous,
+        files,
       })
+
       setIsSubmitting(false)
-      toast.success("📶 You are offline. Grievance cached in IndexedDB queue and will auto-flush when online!", {
-        icon: "💾",
-        duration: 8000,
-      })
+      const offlineId = saveRes.clientTicketId || `SC-${new Date().getFullYear()}-OFFLINE`
       setSuccess({
-        complaintId: offlineTicketId,
-        rawId: offlineTicketId,
+        complaintId: offlineId,
+        rawId: offlineId,
         aiVerified: true,
       })
       return

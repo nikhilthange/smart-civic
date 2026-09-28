@@ -39,7 +39,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { NotificationBell } from "@/components/ui/NotificationBell"
-import OfflineSyncBanner from "@/components/common/OfflineSyncBanner"
 import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { useTranslation } from "react-i18next"
 import { useAuth } from "@/context/AuthContext"
@@ -376,9 +375,6 @@ export default function DashboardLayout() {
 
       {/* Main Content Area */}
       <div className="flex flex-col flex-1 h-full overflow-hidden min-w-0 w-full max-w-full">
-        {/* Offline Sync Banner */}
-        <OfflineSyncBanner />
-
         {/* Permanent Fixed Top Header */}
         <header className="shrink-0 z-40 flex h-16 sm:h-[68px] items-center gap-3 sm:gap-4 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-[#090A0F]/70 backdrop-blur-xl px-4 sm:px-6 lg:px-8 shadow-xs w-full max-w-full">
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>

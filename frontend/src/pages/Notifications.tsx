@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   Bell,
@@ -13,15 +13,15 @@ import {
   Clock,
   Building2,
   CheckCircle2,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { notificationApi, type AppNotification } from "@/services/notificationApi"
 import { EmptyState } from "@/components/common/EmptyState"
 import { SkeletonActivityFeed } from "@/components/common/SkeletonLoader"
-import { useSocket } from "@/context/SocketContext"
-import { triggerHapticFeedback } from "@/utils/haptics"
-import toast from "react-hot-toast"
+import { useNotifications } from "@/context/NotificationContext"
+import type { AppNotification } from "@/services/notificationApi"
+import { useState } from "react"
 
 type FilterTab = "all" | "unread" | "sla" | "rewards"
 
@@ -57,89 +57,27 @@ function getNotificationIcon(type: string) {
 
 export default function Notifications() {
   const navigate = useNavigate()
-  const [notifications, setNotifications] = useState<AppNotification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<FilterTab>("all")
 
-  const fetchNotifications = useCallback(async () => {
-    try {
-      setLoading(true)
-      const data = await notificationApi.getAll()
-      setNotifications(data.notifications || [])
-      setUnreadCount(data.unreadCount || 0)
-    } catch {
-      toast.error("Failed to load notifications")
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    fetchNotifications,
+    markRead,
+    markAllRead,
+    deleteOne,
+    clearRead,
+  } = useNotifications()
 
-  const { socket } = useSocket()
-
+  // refresh when user opens the page
   useEffect(() => {
     fetchNotifications()
   }, [fetchNotifications])
 
-  // Live WebSocket notification receiver
-  useEffect(() => {
-    if (!socket) return
-
-    const handleSocketNotif = (payload: any) => {
-      const notif = payload?.notification || payload
-      triggerHapticFeedback("medium")
-      if (notif?.title) {
-        toast.success(`Live Alert: ${notif.title}`, { icon: "🔔" })
-      }
-      setUnreadCount((prev) => prev + 1)
-      if (notif?._id) {
-        setNotifications((prev) => [notif, ...prev])
-      } else {
-        fetchNotifications()
-      }
-    }
-
-    socket.on("notification", handleSocketNotif)
-    socket.on("notification:new", handleSocketNotif)
-
-    return () => {
-      socket.off("notification", handleSocketNotif)
-      socket.off("notification:new", handleSocketNotif)
-    }
-  }, [socket, fetchNotifications])
-
-  const handleMarkAllRead = async () => {
-    try {
-      await notificationApi.markAllRead()
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
-      setUnreadCount(0)
-      toast.success("All notifications marked as read")
-    } catch {
-      toast.error("Could not mark notifications as read")
-    }
-  }
-
-  const handleClearAll = () => {
-    setNotifications([])
-    setUnreadCount(0)
-    toast.success("Notification list cleared")
-  }
-
   const handleNotificationClick = async (notif: AppNotification) => {
-    if (!notif.isRead) {
-      try {
-        await notificationApi.markRead(notif._id)
-        setNotifications((prev) =>
-          prev.map((n) => (n._id === notif._id ? { ...n, isRead: true } : n))
-        )
-        setUnreadCount((c) => Math.max(0, c - 1))
-      } catch {
-        // continue navigation
-      }
-    }
-    if (notif.actionUrl) {
-      navigate(notif.actionUrl)
-    }
+    if (!notif.isRead) await markRead(notif._id)
+    if (notif.actionUrl) navigate(notif.actionUrl)
   }
 
   // Filter notifications based on tab
@@ -159,6 +97,8 @@ export default function Notifications() {
     return true
   })
 
+  const hasRead = notifications.some((n) => n.isRead)
+
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pt-2 pb-12 px-2 sm:px-4">
       {/* Header */}
@@ -169,7 +109,7 @@ export default function Notifications() {
               <Bell className="w-5 h-5" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-slate-900 dark:text-white">
-              Notifications & Alerts
+              Notifications &amp; Alerts
             </h1>
             {unreadCount > 0 && (
               <Badge className="bg-emerald-600 text-white font-mono text-xs px-2.5 py-0.5 rounded-full">
@@ -187,22 +127,22 @@ export default function Notifications() {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleMarkAllRead}
+              onClick={markAllRead}
               className="border-slate-200 dark:border-slate-800 text-xs font-semibold gap-1.5 rounded-xl h-9"
             >
               <CheckCheck className="w-4 h-4 text-emerald-600" />
               <span>Mark all read</span>
             </Button>
           )}
-          {notifications.length > 0 && (
+          {hasRead && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleClearAll}
+              onClick={clearRead}
               className="text-xs text-slate-400 hover:text-rose-600 rounded-xl h-9 gap-1.5"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>Clear list</span>
+              <span>Clear read</span>
             </Button>
           )}
         </div>
@@ -210,53 +150,30 @@ export default function Notifications() {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200/80 dark:border-white/[0.08] pb-3 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab("all")}
-          className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
-            activeTab === "all"
-              ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-              : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-          }`}
-        >
-          <span>All</span>
-          <span className="font-mono text-[10px] opacity-80">{notifications.length}</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("unread")}
-          className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
-            activeTab === "unread"
-              ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-              : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-          }`}
-        >
-          <span>Unread</span>
-          <span className="font-mono text-[10px] opacity-80">{unreadCount}</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("sla")}
-          className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
-            activeTab === "sla"
-              ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-              : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-          }`}
-        >
-          <Zap className="w-3 h-3" />
-          <span>SLA & Dispatches</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("rewards")}
-          className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
-            activeTab === "rewards"
-              ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-              : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-          }`}
-        >
-          <Gift className="w-3 h-3" />
-          <span>Karma & Rewards</span>
-        </button>
+        {(
+          [
+            { id: "all",     label: "All",              count: notifications.length },
+            { id: "unread",  label: "Unread",           count: unreadCount },
+            { id: "sla",     label: "SLA & Dispatches", icon: <Zap className="w-3 h-3" /> },
+            { id: "rewards", label: "Karma & Rewards",  icon: <Gift className="w-3 h-3" /> },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as FilterTab)}
+            className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === tab.id
+                ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
+                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            {"icon" in tab && tab.icon}
+            <span>{tab.label}</span>
+            {"count" in tab && tab.count !== undefined && (
+              <span className="font-mono text-[10px] opacity-80">{tab.count}</span>
+            )}
+          </button>
+        ))}
 
         <Button
           variant="ghost"
@@ -296,18 +213,25 @@ export default function Notifications() {
               return (
                 <div
                   key={notif._id}
-                  onClick={() => handleNotificationClick(notif)}
-                  className={`p-4 sm:p-5 flex items-start gap-4 cursor-pointer transition-colors ${
+                  className={`p-4 sm:p-5 flex items-start gap-4 group transition-colors ${
                     !notif.isRead
                       ? "bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/30"
                       : "hover:bg-slate-50 dark:hover:bg-slate-800/40"
                   }`}
                 >
-                  <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-white/[0.08] shadow-sm shrink-0 mt-0.5">
+                  {/* Icon */}
+                  <div
+                    className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-white/[0.08] shadow-sm shrink-0 mt-0.5 cursor-pointer"
+                    onClick={() => handleNotificationClick(notif)}
+                  >
                     {icon}
                   </div>
 
-                  <div className="flex-1 min-w-0">
+                  {/* Content */}
+                  <div
+                    className="flex-1 min-w-0 cursor-pointer"
+                    onClick={() => handleNotificationClick(notif)}
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <p
@@ -340,6 +264,15 @@ export default function Notifications() {
                       </div>
                     )}
                   </div>
+
+                  {/* Per-row delete button */}
+                  <button
+                    onClick={() => deleteOne(notif._id)}
+                    aria-label="Delete notification"
+                    className="p-2 rounded-xl text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               )
             })}

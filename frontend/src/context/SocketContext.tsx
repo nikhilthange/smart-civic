@@ -23,6 +23,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Connect to backend server URL (guaranteed base origin without /api)
     const backendUrl = getNormalizedBaseUrl()
 
+    const token = localStorage.getItem("token")
+
     const socketInstance: Socket = io(backendUrl, {
       transports: ["websocket", "polling"],
       reconnection: true,
@@ -32,10 +34,29 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       timeout: 20000,
       autoConnect: true,
       withCredentials: true,
+      auth: {
+        token: token || undefined,
+      },
     })
 
     socketInstance.on("connect", () => {
       setIsConnected(true)
+      // If user info exists in localStorage, join personal room
+      try {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) {
+          const user = JSON.parse(storedUser)
+          const uid = user?.id || user?._id
+          if (uid) {
+            socketInstance.emit("join:room", `user:${uid}`)
+          }
+          if (user?.ward) {
+            socketInstance.emit("join:ward", user.ward)
+          }
+        }
+      } catch {
+        // ignore parse error
+      }
     })
 
     socketInstance.on("disconnect", () => {
@@ -60,6 +81,18 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     socketInstance.on("complaint:status_updated", (payload) => {
       setLastEvent({ type: "STATUS_UPDATED", payload })
+    })
+
+    socketInstance.on("notification", (payload) => {
+      setLastEvent({ type: "NOTIFICATION", payload })
+    })
+
+    socketInstance.on("notification:new", (payload) => {
+      setLastEvent({ type: "NOTIFICATION", payload })
+    })
+
+    socketInstance.on("emergency:broadcast", (payload) => {
+      setLastEvent({ type: "EMERGENCY_BROADCAST", payload })
     })
 
     setSocket(socketInstance)

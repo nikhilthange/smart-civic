@@ -77,4 +77,25 @@ router.delete("/fcm-token", protect, async (req, res) => {
   }
 });
 
+// DELETE /api/notifications/clear-read — bulk delete all read notifications
+router.delete("/clear-read", protect, async (req, res) => {
+  try {
+    const result = await Notification.deleteMany({ recipient: req.user.id, isRead: true });
+    res.status(200).json({ success: true, deleted: result.deletedCount, message: `${result.deletedCount} read notifications cleared` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to clear read notifications" });
+  }
+});
+
+// DELETE /api/notifications/:id — delete a single notification
+router.delete("/:id", protect, async (req, res) => {
+  try {
+    const notif = await Notification.findOneAndDelete({ _id: req.params.id, recipient: req.user.id });
+    if (!notif) return res.status(404).json({ success: false, message: "Notification not found" });
+    res.status(200).json({ success: true, message: "Notification deleted" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Failed to delete notification" });
+  }
+});
+
 module.exports = router;

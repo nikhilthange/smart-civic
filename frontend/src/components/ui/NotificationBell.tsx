@@ -1,10 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react"
+/**
+ * NotificationBell.tsx
+ * Consumes the global NotificationContext — no duplicate fetches.
+ */
+import { useState, useEffect, useRef } from "react"
 import {
   Bell,
   CheckCheck,
   ExternalLink,
   Loader2,
-  X,
   Zap,
   Gift,
   ShieldAlert,
@@ -13,16 +16,13 @@ import {
   Building2,
   Clock,
   ArrowRight,
+  Trash2,
 } from "lucide-react"
 import { Button } from "./button"
 import { Badge } from "./badge"
 import { useNavigate } from "react-router-dom"
-import { notificationApi, type AppNotification } from "../../services/notificationApi"
-import { requestFCMToken, onForegroundMessage } from "../../lib/firebase"
-import { useSocket } from "@/context/SocketContext"
-import { useAuth } from "@/context/AuthContext"
-import { triggerHapticFeedback } from "@/utils/haptics"
-import toast from "react-hot-toast"
+import type { AppNotification } from "../../services/notificationApi"
+import { useNotifications } from "@/context/NotificationContext"
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -56,156 +56,19 @@ function getNotificationIcon(type: string) {
 
 export function NotificationBell() {
   const navigate = useNavigate()
-  const { isAuthenticated, token } = useAuth()
   const [open, setOpen] = useState(false)
-  const [notifications, setNotifications] = useState<AppNotification[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
-  const [loading, setLoading] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
 
-  const fetchNotifications = useCallback(async () => {
-    if (!isAuthenticated || !token) return
-    try {
-      setLoading(true)
-      const data = await notificationApi.getAll()
-      setNotifications(data.notifications || [])
-      setUnreadCount(data.unreadCount || 0)
-    } catch {
-      // silently ignore
-    } finally {
-      setLoading(false)
+  const { notifications, unreadCount, loading, markRead, markAllRead, deleteOne } =
+    useNotifications()
+
+  const handleNotificationClick = async (notif: AppNotification) => {
+    if (!notif.isRead) await markRead(notif._id)
+    if (notif.actionUrl) {
+      navigate(notif.actionUrl)
+      setOpen(false)
     }
-  }, [isAuthenticated, token])
-
-  // Fetch on mount and poll every 60s
-  useEffect(() => {
-    if (!isAuthenticated || !token) return
-    fetchNotifications()
-    const interval = setInterval(fetchNotifications, 60000)
-    return () => clearInterval(interval)
-  }, [fetchNotifications, isAuthenticated, token])
-
-  // Request FCM permission and register token on mount
-  useEffect(() => {
-    if (!isAuthenticated || !token) return
-    const initFCM = async () => {
-      try {
-        const fcmToken = await requestFCMToken()
-        if (fcmToken) {
-          await notificationApi.saveFcmToken(fcmToken)
-        }
-      } catch {
-        // FCM not configured — silently skip
-      }
-    }
-    initFCM()
-  }, [isAuthenticated, token])
-
-  const { socket } = useSocket()
-
-  // Listen for real-time WebSocket notifications from server
-  useEffect(() => {
-    if (!socket) return
-
-    const handleSocketNotif = (payload: any) => {
-      const notif = payload?.notification || payload
-      const title = notif?.title || payload?.title || "New Municipal Notification"
-      const message = notif?.message || payload?.message || "You have a new civic update."
-      const actionUrl = notif?.actionUrl || payload?.actionUrl
-
-      triggerHapticFeedback("medium")
-
-      toast.custom(
-        (t) => (
-          <div
-            onClick={() => {
-              toast.dismiss(t.id)
-              if (actionUrl) navigate(actionUrl)
-            }}
-            className={`${
-              t.visible ? "animate-enter" : "animate-leave"
-            } max-w-sm w-full bg-white dark:bg-slate-900 shadow-2xl rounded-2xl pointer-events-auto border border-emerald-500/30 dark:border-emerald-500/30 flex p-3.5 gap-3 items-start cursor-pointer hover:border-emerald-500 transition-all`}
-          >
-            <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5 animate-pulse">
-              <Bell className="h-4 w-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-1">
-                <p className="font-bold text-slate-900 dark:text-white text-xs">{title}</p>
-                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">LIVE</span>
-              </div>
-              <p className="text-slate-600 dark:text-slate-300 text-xs mt-0.5 leading-relaxed line-clamp-2">{message}</p>
-            </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                toast.dismiss(t.id)
-              }}
-              aria-label="Dismiss notification"
-              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-md shrink-0"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        ),
-        { duration: 6000 }
-      )
-
-      setUnreadCount((prev) => prev + 1)
-      if (notif?._id) {
-        setNotifications((prev) => [notif, ...prev])
-      } else {
-        fetchNotifications()
-      }
-    }
-
-    socket.on("notification", handleSocketNotif)
-    socket.on("notification:new", handleSocketNotif)
-
-    return () => {
-      socket.off("notification", handleSocketNotif)
-      socket.off("notification:new", handleSocketNotif)
-    }
-  }, [socket, navigate, fetchNotifications])
-
-  // Listen for foreground FCM messages
-  useEffect(() => {
-    let unsubscribe: (() => void) | undefined
-    onForegroundMessage((payload: any) => {
-      const { title, body } = payload.notification || {}
-      toast.custom(
-        (t) => (
-          <div
-            className={`${
-              t.visible ? "animate-enter" : "animate-leave"
-            } max-w-sm w-full bg-white dark:bg-slate-900 shadow-xl rounded-2xl pointer-events-auto border border-slate-200/80 dark:border-white/[0.08] flex p-3.5 gap-3 items-start`}
-          >
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 shrink-0 mt-0.5">
-              <Bell className="h-4 w-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-slate-900 dark:text-white text-xs">{title || "Smart Civic"}</p>
-              <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 leading-relaxed line-clamp-2">{body}</p>
-            </div>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        ),
-        { duration: 5000, position: "top-right" }
-      )
-      fetchNotifications()
-    }).then((unsub) => {
-      unsubscribe = unsub
-    })
-
-    return () => {
-      if (unsubscribe) unsubscribe()
-    }
-  }, [fetchNotifications])
+  }
 
   // Close panel on outside click
   useEffect(() => {
@@ -217,34 +80,6 @@ export function NotificationBell() {
     document.addEventListener("mousedown", handler)
     return () => document.removeEventListener("mousedown", handler)
   }, [])
-
-  const handleMarkAllRead = async () => {
-    try {
-      await notificationApi.markAllRead()
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
-      setUnreadCount(0)
-    } catch {
-      // silently ignore
-    }
-  }
-
-  const handleNotificationClick = async (notif: AppNotification) => {
-    if (!notif.isRead) {
-      try {
-        await notificationApi.markRead(notif._id)
-        setNotifications((prev) =>
-          prev.map((n) => (n._id === notif._id ? { ...n, isRead: true } : n))
-        )
-        setUnreadCount((c) => Math.max(0, c - 1))
-      } catch {
-        // continue
-      }
-    }
-    if (notif.actionUrl) {
-      navigate(notif.actionUrl)
-      setOpen(false)
-    }
-  }
 
   return (
     <div className="relative" ref={panelRef}>
@@ -282,7 +117,7 @@ export function NotificationBell() {
             </div>
             {unreadCount > 0 && (
               <button
-                onClick={handleMarkAllRead}
+                onClick={markAllRead}
                 className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
@@ -308,18 +143,23 @@ export function NotificationBell() {
                 return (
                   <div
                     key={notif._id}
-                    onClick={() => handleNotificationClick(notif)}
-                    className={`p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors flex items-start gap-3 cursor-pointer ${
+                    className={`p-3.5 transition-colors flex items-start gap-3 group ${
                       !notif.isRead ? "bg-emerald-50/30 dark:bg-emerald-950/20" : ""
                     }`}
                   >
                     {/* Icon chip */}
-                    <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-white/[0.06] shrink-0 mt-0.5">
+                    <div
+                      className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-white/[0.06] shrink-0 mt-0.5 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                      onClick={() => handleNotificationClick(notif)}
+                    >
                       {icon}
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
+                    <div
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => handleNotificationClick(notif)}
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-1.5">
                           <p
@@ -347,6 +187,15 @@ export function NotificationBell() {
                         {timeAgo(notif.createdAt)}
                       </span>
                     </div>
+
+                    {/* Delete button — shows on group hover */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteOne(notif._id) }}
+                      aria-label="Delete notification"
+                      className="p-1 rounded-lg text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all shrink-0 mt-0.5"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
                   </div>
                 )
               })

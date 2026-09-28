@@ -264,23 +264,7 @@ function evaluateKnowledgeGraph(rawDescription) {
   let highestScore = 0;
   let matchedKeyword = "";
 
-  // 0. Check Online Active Learning Keywords (Learned from User Feedback)
-  const learnedKws = modelTrainingService.getLearnedKeywords();
-  for (const word of words) {
-    if (learnedKws[word]) {
-      const learned = learnedKws[word];
-      const targetNode = BMC_KNOWLEDGE_GRAPH.find((n) => n.department === learned.department || n.category === learned.category);
-      if (targetNode) {
-        const learnedBoost = 15.0 * (learned.weight || 1.0);
-        if (learnedBoost > highestScore) {
-          highestScore = learnedBoost;
-          bestMatch = targetNode;
-          matchedKeyword = `${word} (Active Learned Weight: ${learned.weight.toFixed(2)})`;
-        }
-      }
-    }
-  }
-
+  // 1. Evaluate Core Knowledge Graph (Exact Substring & Fuzzy Matching)
   for (const node of BMC_KNOWLEDGE_GRAPH) {
     let score = 0;
     const multiplier = node.priorityMultiplier || 1.0;
@@ -313,6 +297,25 @@ function evaluateKnowledgeGraph(rawDescription) {
     if (score > highestScore) {
       highestScore = score;
       bestMatch = node;
+    }
+  }
+
+  // 2. Check Online Active Learning Keywords (Used for domain vocabulary expansion & reinforcement)
+  if (!bestMatch || highestScore < 10) {
+    const learnedKws = modelTrainingService.getLearnedKeywords();
+    for (const word of words) {
+      if (learnedKws[word]) {
+        const learned = learnedKws[word];
+        const targetNode = BMC_KNOWLEDGE_GRAPH.find((n) => n.department === learned.department || n.category === learned.category);
+        if (targetNode) {
+          const learnedBoost = 10.0 * (learned.weight || 1.0);
+          if (learnedBoost > highestScore) {
+            highestScore = learnedBoost;
+            bestMatch = targetNode;
+            matchedKeyword = `${word} (Active Learned Weight: ${learned.weight.toFixed(2)})`;
+          }
+        }
+      }
     }
   }
 

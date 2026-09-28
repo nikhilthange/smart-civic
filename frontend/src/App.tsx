@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 import { SocketProvider } from "./context/SocketContext"
+import { NotificationProvider } from "./context/NotificationContext"
 import ProtectedRoute from "./components/auth/ProtectedRoute"
 import ErrorBoundary from "./components/common/ErrorBoundary"
 import RouteSeo from "./components/common/RouteSeo"
@@ -109,8 +110,9 @@ function App() {
       <AuthProvider>
         <SocketProvider>
           <Router>
-            <RouteSeo />
-            <Suspense fallback={<RouteLoadingFallback />}>
+            <NotificationProvider>
+              <RouteSeo />
+              <Suspense fallback={<RouteLoadingFallback />}>
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Home />} />
@@ -137,7 +139,7 @@ function App() {
                       <Route path="/complaint/new" element={<CreateComplaint />} />
                       <Route path="/complaints/new" element={<CreateComplaint />} />
                       <Route path="/create-complaint" element={<CreateComplaint />} />
-                      
+
                       {/* Rewards Routes */}
                       <Route path="/rewards" element={<KarmaRewards />} />
                       <Route path="/civic-karma" element={<KarmaRewards />} />
@@ -154,15 +156,15 @@ function App() {
                       <Route path="/snap-send" element={<QuickReport />} />
                       <Route path="/snap" element={<QuickReport />} />
                       <Route path="/complaints" element={<ComplaintHistory />} />
-                      
+
                       {/* Tracking Routes (Preserved & Enhanced) */}
                       <Route path="/track" element={<TrackComplaint />} />
                       <Route path="/track/:id" element={<ComplaintTracking />} />
                       <Route path="/track-complaint" element={<TrackComplaint />} />
                       <Route path="/complaint/:id/track" element={<ComplaintTracking />} />
-                      
+
                       <Route path="/map" element={<MapView />} />
-                      
+
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/monsoon-radar" element={<MonsoonRadar />} />
                       <Route path="/dlp-registry" element={<DlpRegistry />} />
@@ -234,7 +236,8 @@ function App() {
               </Suspense>
               <CookieConsentBanner />
               <PWAInstallBanner />
-            </Router>
+            </NotificationProvider>
+          </Router>
         </SocketProvider>
       </AuthProvider>
     </ErrorBoundary>

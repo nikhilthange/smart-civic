@@ -89,6 +89,21 @@ class CitizenAppealService {
       // ignore
     }
 
+    // Dispatch real-time notification to citizen
+    try {
+      const notificationService = require("./notificationService");
+      await notificationService.send({
+        recipientId: complaint.citizen || citizenId,
+        complaintId: complaint._id,
+        type: "karma_awarded",
+        title: "🎉 +20 Civic Karma Points Credited!",
+        message: `Thank you for verifying resolution on ticket #${complaint.complaintId || complaint._id}. +20 Karma credits added to your ledger.`,
+        actionUrl: "/rewards",
+      });
+    } catch (notifErr) {
+      console.warn("Notification dispatch warning in confirmResolution:", notifErr.message);
+    }
+
     return {
       success: true,
       complaintId: complaint.complaintId || complaint._id,

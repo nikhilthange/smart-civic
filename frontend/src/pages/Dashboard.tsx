@@ -32,6 +32,7 @@ import { useAuth } from "@/context/AuthContext"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import { SkeletonKpiCard, SkeletonTable } from "@/components/common/SkeletonLoader"
 import { EmptyState } from "@/components/common/EmptyState"
+import LiveActivityFeed from "@/components/common/LiveActivityFeed"
 
 import {
   complaintApi,
@@ -626,33 +627,8 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Live Ward Activity Widget */}
-          <Card className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-xs p-4 sm:p-5 space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-slate-500">Ward Readiness</span>
-              <span className="inline-flex items-center gap-1.5 text-xs font-mono text-emerald-600 dark:text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                98.4% SLA Compliance
-              </span>
-            </div>
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-slate-600 dark:text-slate-400 shrink-0">Active Field Crews</span>
-                <span className="flex-1 border-b border-dotted border-slate-300 dark:border-slate-700 mx-1.5" aria-hidden="true" />
-                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200 shrink-0">14 Teams On-Duty</span>
-              </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-slate-600 dark:text-slate-400 shrink-0">Avg Resolution Time</span>
-                <span className="flex-1 border-b border-dotted border-slate-300 dark:border-slate-700 mx-1.5" aria-hidden="true" />
-                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200 shrink-0">4.8 Hours</span>
-              </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-slate-600 dark:text-slate-400 shrink-0">Emergency SWM Patrol</span>
-                <span className="flex-1 border-b border-dotted border-slate-300 dark:border-slate-700 mx-1.5" aria-hidden="true" />
-                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200 shrink-0">Normal</span>
-              </div>
-            </div>
-          </Card>
+          {/* Live Municipal Activity Feed */}
+          <LiveActivityFeed />
         </div>
       </div>
     </motion.div>

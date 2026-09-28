@@ -1,99 +1,69 @@
 {
   "version": "2.4.0-online",
-  "totalEpochs": 19,
-  "lastTrainedAt": "2026-09-09T05:54:33.400Z",
+  "totalEpochs": 23,
+  "lastTrainedAt": "2026-09-28T15:02:30.555Z",
   "learnedKeywords": {
     "ped": {
       "category": "parks_and_recreation",
       "department": "PRD",
       "weight": 3.5,
-      "frequency": 10
-    },
-    "gir": {
-      "category": "parks_and_recreation",
-      "department": "PRD",
-      "weight": 3.5,
-      "frequency": 10
-    },
-    "gaya": {
-      "category": "parks_and_recreation",
-      "department": "PRD",
-      "weight": 3.5,
-      "frequency": 20
-    },
-    "raste": {
-      "category": "parks_and_recreation",
-      "department": "PRD",
-      "weight": 3.5,
-      "frequency": 10
-    },
-    "traffic": {
-      "category": "parks_and_recreation",
-      "department": "PRD",
-      "weight": 3.5,
-      "frequency": 10
-    },
-    "block": {
-      "category": "parks_and_recreation",
-      "department": "PRD",
-      "weight": 3.5,
-      "frequency": 10
-    },
-    "hai": {
-      "category": "parks_and_recreation",
-      "department": "PRD",
-      "weight": 3.5,
-      "frequency": 10
+      "frequency": 18
     },
     "transformer": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.8200000000000003,
-      "frequency": 10
-    },
-    "box": {
-      "category": "public_safety",
-      "department": "PSD",
-      "weight": 2.8200000000000003,
-      "frequency": 10
+      "weight": 3.5,
+      "frequency": 18
     },
     "blast": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.8200000000000003,
-      "frequency": 10
-    },
-    "dhakkan": {
-      "category": "public_safety",
-      "department": "PSD",
-      "weight": 2.8200000000000003,
-      "frequency": 10
-    },
-    "gayab": {
-      "category": "public_safety",
-      "department": "PSD",
-      "weight": 2.8200000000000003,
-      "frequency": 10
+      "weight": 3.5,
+      "frequency": 18
     },
     "short": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.8200000000000003,
-      "frequency": 10
+      "weight": 3.5,
+      "frequency": 18
     },
     "circuit": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.8200000000000003,
-      "frequency": 10
+      "weight": 3.5,
+      "frequency": 18
+    },
+    "raste": {
+      "category": "parks_and_recreation",
+      "department": "PRD",
+      "weight": 2.6250000000000004,
+      "frequency": 6
+    },
+    "box": {
+      "category": "public_safety",
+      "department": "PSD",
+      "weight": 2.0999999999999996,
+      "frequency": 6
+    },
+    "dhakkan": {
+      "category": "public_safety",
+      "department": "PSD",
+      "weight": 2.0999999999999996,
+      "frequency": 6
+    },
+    "gayab": {
+      "category": "public_safety",
+      "department": "PSD",
+      "weight": 2.0999999999999996,
+      "frequency": 6
     }
   },
   "transitionPriors": {
-    "PWD->PRD": 2.000000000000001,
-    "PWD->PSD": 2.000000000000001
+    "PWD->PRD": 1.6000000000000005,
+    "PWD->PSD": 1.6000000000000005
   },
-  "totalTrainingSamples": 1430,
-  "averageAccuracy": 0.9831,
+  "totalTrainingSamples": 1438,
+  "averageAccuracy": 0.9899,
   "trainingLossHistory": [
     {
       "epoch": 10,
@@ -159,6 +129,34 @@
       "accuracy": 0.9831,
       "samplesTrained": 2,
       "timestamp": "2026-09-09T05:54:33.400Z"
+    },
+    {
+      "epoch": 20,
+      "loss": 0.0353,
+      "accuracy": 0.9851,
+      "samplesTrained": 2,
+      "timestamp": "2026-09-28T14:26:09.998Z"
+    },
+    {
+      "epoch": 21,
+      "loss": 0.0311,
+      "accuracy": 0.9869,
+      "samplesTrained": 2,
+      "timestamp": "2026-09-28T14:30:04.730Z"
+    },
+    {
+      "epoch": 22,
+      "loss": 0.0274,
+      "accuracy": 0.9885,
+      "samplesTrained": 2,
+      "timestamp": "2026-09-28T14:34:40.337Z"
+    },
+    {
+      "epoch": 23,
+      "loss": 0.0241,
+      "accuracy": 0.9899,
+      "samplesTrained": 2,
+      "timestamp": "2026-09-28T15:02:30.555Z"
     }
   ]
 }

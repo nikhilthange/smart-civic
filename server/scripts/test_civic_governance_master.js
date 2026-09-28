@@ -13,7 +13,7 @@ const socialIngestionService = require("../services/socialIngestionService");
 const slaHierarchyService = require("../services/slaHierarchyService");
 const civicKarmaService = require("../services/civicKarmaService");
 
-function runTests() {
+async function runTests() {
   console.log("================================================================================");
   console.log("🏛️ TESTING BMC CIVIC GOVERNANCE MASTER EXTENSIONS");
   console.log("================================================================================\n");
@@ -63,7 +63,7 @@ function runTests() {
 
   // ─── Test 3: Civic Karma Points & 24-Ward Leaderboard ─────────────────────────
   console.log("\nTest 3: Civic Karma Credits & 24-Ward Citizen Leaderboard");
-  const leaderboard = civicKarmaService.getWardLeaderboard("Ward G-North");
+  const leaderboard = await civicKarmaService.getWardLeaderboard("Ward G-North");
   assert(leaderboard !== null);
 
   const vouchers = civicKarmaService.getVouchers();
@@ -76,12 +76,11 @@ function runTests() {
 
   // ─── Test 4: Voucher Redemption Promo Code Generator ─────────────────────────
   console.log("\nTest 4: Civic Karma Voucher Redemption & Promo Token");
-  civicKarmaService.redeemVoucher("mock_user_123", "v-best-pass-30d").then((res) => {
-    assert.strictEqual(res.success, true);
-    assert.strictEqual(res.voucherId, "v-best-pass-30d");
-    assert(res.promoCode.startsWith("BMC-PUB-"));
-    console.log(`  ✅ Voucher successfully redeemed with promo code: ${res.promoCode}`);
-  });
+  const res = await civicKarmaService.redeemVoucher("mock_user_123", "v-best-pass-30d");
+  assert.strictEqual(res.success, true);
+  assert.strictEqual(res.voucherId, "v-best-pass-30d");
+  assert(res.promoCode.startsWith("BMC-PUB-"));
+  console.log(`  ✅ Voucher successfully redeemed with promo code: ${res.promoCode}`);
   passed++;
 
   console.log("\n================================================================================");
@@ -89,4 +88,7 @@ function runTests() {
   console.log("================================================================================\n");
 }
 
-runTests();
+runTests().catch((err) => {
+  console.error("Test failed:", err);
+  process.exit(1);
+});

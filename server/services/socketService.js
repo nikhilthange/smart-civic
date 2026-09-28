@@ -113,6 +113,22 @@ const jwt = require("jsonwebtoken");
   io.on("connection", (socket) => {
     console.log(`🔌 WebSocket Client Connected: ${socket.id}`);
 
+    // Automatically join authenticated users to their personal private notification channel
+    if (socket.user) {
+      const uid = socket.user.id || socket.user._id;
+      if (uid) {
+        socket.join(`user:${uid}`);
+        console.log(`📡 Auto-joined authenticated socket ${socket.id} to user channel: user:${uid}`);
+      }
+      if (socket.user.role === "admin") {
+        socket.join("admin");
+      }
+      if (socket.user.ward) {
+        socket.join(`ward:${socket.user.ward}`);
+        socket.join(`ward-${socket.user.ward}`);
+      }
+    }
+
     // Join specific rooms: user_id, ward_name, department_id, role with authorization checks
     socket.on("join:room", (room) => {
       if (!room) return;

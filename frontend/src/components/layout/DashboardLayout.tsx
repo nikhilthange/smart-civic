@@ -48,6 +48,7 @@ import { triggerHapticFeedback } from "@/utils/haptics"
 
 import SmartCivicLogo from "@/components/common/SmartCivicLogo"
 import LanguageSelector from "@/components/common/LanguageSelector"
+import PushNotificationBanner from "@/components/common/PushNotificationBanner"
 
 const CommandPalette = lazy(() => import("@/components/common/CommandPalette").then(m => ({ default: m.CommandPalette })))
 const MunicipalCopilotModal = lazy(() => import("@/components/admin/MunicipalCopilotModal"))
@@ -573,6 +574,7 @@ export default function DashboardLayout() {
           {isShortcutsOpen && <KeyboardShortcutsModal isOpen={isShortcutsOpen} onClose={() => setIsShortcutsOpen(false)} />}
           <OnboardingTourModal />
         </Suspense>
+        <PushNotificationBanner />
       </div>
     </div>
   )

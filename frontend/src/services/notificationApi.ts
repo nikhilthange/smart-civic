@@ -32,6 +32,18 @@ export const notificationApi = {
     return res.data
   },
 
+  /** Delete a single notification by ID */
+  deleteOne: async (id: string) => {
+    const res = await api.delete(`/notifications/${id}`)
+    return res.data
+  },
+
+  /** Bulk-delete all read notifications */
+  clearRead: async () => {
+    const res = await api.delete("/notifications/clear-read")
+    return res.data
+  },
+
   saveFcmToken: async (token: string) => {
     const res = await api.post("/notifications/fcm-token", { token })
     return res.data

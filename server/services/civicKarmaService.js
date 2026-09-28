@@ -6,6 +6,7 @@
  * using Redis Sorted Sets for O(log N) real-time leaderboards.
  */
 
+const mongoose = require("mongoose");
 const User = require("../models/User");
 const redisManager = require("../config/redis");
 
@@ -125,6 +126,10 @@ class CivicKarmaService {
     }
 
     // 2. Fallback to MongoDB query
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+      return [];
+    }
+
     const query = { role: { $in: ["citizen", "user"] } };
     if (wardFilter && wardFilter !== "all") {
       query.ward = wardFilter;

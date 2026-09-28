@@ -137,7 +137,7 @@ async function sendNotification({ recipientId, complaintId, type, title, message
 
     // 3. Fetch user for email + FCM token
     const user = await User.findById(recipientId).select("email name fcmToken").lean();
-    if (!user) return;
+    if (!user) return savedNotif;
 
     const promises = [];
 
@@ -182,8 +182,10 @@ async function sendNotification({ recipientId, complaintId, type, title, message
     }
 
     await Promise.allSettled(promises);
+    return savedNotif;
   } catch (err) {
     console.error("NotificationService Error:", err.message);
+    throw err;
   }
 }
 

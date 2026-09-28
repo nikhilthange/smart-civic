@@ -124,11 +124,19 @@ async function recordFeedbackSample({
   }
 }
 
+const CIVIC_STOPWORDS = new Set([
+  "the", "is", "at", "which", "on", "and", "a", "an", "in", "to", "for", "with", "of", "from", "by", "as",
+  "hai", "hain", "ke", "ka", "ki", "ko", "se", "me", "mein", "pe", "par", "aur", "bhi", "tha", "thi", "the",
+  "bada", "bohot", "bahut", "kuch", "karo", "raha", "rahi", "rahe", "gaya", "gayi", "gaye", "hua", "hui", "hue",
+  "yeh", "woh", "near", "causing", "outside", "inside", "heavy", "traffic", "block", "blocked", "area", "please",
+  "urgent", "help", "this", "that", "there", "here", "road", "gali", "rasta", "gir", "pada", "de", "do", "karo"
+]);
+
 /**
  * Fast Online Adaptation (Single Sample update)
  */
 function incorporateOnlineSample(sample) {
-  const words = (sample.inputText || "").toLowerCase().replace(/[^\w\s]/g, " ").split(/\s+/).filter((w) => w.length > 2);
+  const words = (sample.inputText || "").toLowerCase().replace(/[^\w\s]/g, " ").split(/\s+/).filter((w) => w.length > 2 && !CIVIC_STOPWORDS.has(w));
 
   words.forEach((word) => {
     if (!modelState.learnedKeywords[word]) {

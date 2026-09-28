@@ -190,6 +190,7 @@ app.use("/api/sitrep",        require("./routes/sitrepRoutes"));
 app.use("/api/broadcast",     require("./routes/broadcastRoutes"));
 app.use("/api/simulator",     require("./routes/simulationRoutes"));
 app.use("/api/ai",            require("./routes/aiRoutes"));
+app.use("/api/rts",           require("./routes/rtsRoutes"));
 
 // ─── SEO, AEO & GEO Metadata Routes (/sitemap.xml, /robots.txt, /llms.txt, /api/geo/wards) ─
 app.use("/",                  require("./routes/seoRoutes"));

@@ -350,6 +350,12 @@ const ComplaintSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    upvoters: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     priorityScore: {
       type: Number,
       default: 10,

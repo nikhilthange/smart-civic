@@ -33,6 +33,7 @@ const {
   updateAiTriage,
   rateResolution,
   analyzeComplaintImage,
+  toggleUpvote,
 } = require("../controllers/complaintController");
 
 // ─── Validation rules ─────────────────────────────────────────────────────────
@@ -218,6 +219,9 @@ router.post("/:id/escalate", protect, authorize("officer", "admin"), escalateSla
 
 // PATCH /api/complaints/:id/ai-triage — Update AI triage metadata
 router.patch("/:id/ai-triage", protect, authorize("officer", "admin"), updateAiTriage);
+
+// POST /api/complaints/:id/upvote — Toggle community endorsement / upvote
+router.post("/:id/upvote", protect, toggleUpvote);
 
 // DELETE /api/complaints/:id
 router.delete("/:id", protect, deleteComplaint);

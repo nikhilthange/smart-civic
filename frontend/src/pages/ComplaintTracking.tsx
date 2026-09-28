@@ -8,7 +8,7 @@ import {
   Image as ImageIcon, HardHat, FileCheck, Search,
   History, Scan, Plus, ZoomIn, X, Copy, ShieldCheck, Camera,
   Navigation, Trash2, Droplets, Lightbulb, CloudRain, Zap, HeartPulse,
-  Trees, Bus, Volume2, Users, MessageCircle, ThumbsUp, Flame
+  Trees, Bus, Volume2, Users, MessageCircle, ThumbsUp, Flame, FileText
 } from "lucide-react"
 import { findNagarsevakByWard, NAGARSEVAK_ROSTER } from "@/data/nagarsevakDirectory"
 import { Button } from "@/components/ui/button"
@@ -29,6 +29,7 @@ import FeedbackModal from "@/components/ui/FeedbackModal"
 import { BeforeAfterSlider } from "@/components/common/BeforeAfterSlider"
 import { formatDateTime } from "@/utils/formatters"
 import { triggerHapticFeedback } from "@/utils/haptics"
+import { generateResolutionCertificatePdf } from "@/utils/pdfReportGenerator"
 import api from "@/lib/axios"
 import toast from "react-hot-toast"
 import SeoHead from "@/components/common/SeoHead"
@@ -957,38 +958,95 @@ export const WardNagarsevakCard = React.memo(function WardNagarsevakCard({
 // ─── 7C. Memoized Community Petition & Co-Signatures Card ──────────────────────
 interface CommunityEndorsementCardProps {
   complaintId?: string
+  complaint?: Complaint | null
+  onUpvoteSuccess?: (newCount: number, newPriority: string) => void
 }
 
 export const CommunityEndorsementCard = React.memo(function CommunityEndorsementCard({
   complaintId = "default",
+  complaint,
+  onUpvoteSuccess,
 }: CommunityEndorsementCardProps) {
   const { t } = useTranslation()
-  const storageKey = `smart_civic_signed_${complaintId}`
-  const [hasSigned, setHasSigned] = useState(false)
-  const [signatureCount, setSignatureCount] = useState(5)
+  const { user } = useAuth()
+  const { socket } = useSocket()
+
+  const targetComplaintId = complaint?.complaintId || complaint?._id || complaintId
+  const storageKey = `smart_civic_signed_${targetComplaintId}`
+
+  const userId = user?.id || (user as any)?._id
+  const isInitiallySigned = useMemo(() => {
+    if (localStorage.getItem(storageKey) === "true") return true
+    if (!userId || !complaint?.upvoters) return false
+    return complaint.upvoters.some(
+      (u: any) => u === userId || (typeof u === "object" && u?._id === userId)
+    )
+  }, [complaint?.upvoters, storageKey, userId])
+
+  const [hasSigned, setHasSigned] = useState(isInitiallySigned)
+  const [signatureCount, setSignatureCount] = useState(
+    complaint?.upvoteCount || complaint?.upvotes || 1
+  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    const signed = localStorage.getItem(storageKey)
-    if (signed === "true") {
-      setHasSigned(true)
+    if (complaint) {
+      setSignatureCount(complaint.upvoteCount || complaint.upvotes || 1)
+      setHasSigned(isInitiallySigned)
     }
-    const baseCount = 3 + (complaintId.length % 7)
-    setSignatureCount(signed === "true" ? baseCount + 1 : baseCount)
-  }, [complaintId, storageKey])
+  }, [complaint, isInitiallySigned])
 
-  const handleCoSign = () => {
-    if (hasSigned) {
-      toast(t("endorsement.toastAlreadySigned", "You have already co-signed this civic petition!"))
-      return
+  // Real-time socket sync when any neighbor in the ward upvotes this ticket
+  useEffect(() => {
+    if (!socket || !complaint) return
+    const handleUpvoted = (payload: any) => {
+      if (
+        payload?.complaintId === complaint._id ||
+        payload?.customId === complaint.complaintId ||
+        payload?.complaintId === targetComplaintId
+      ) {
+        if (payload.upvoteCount !== undefined) {
+          setSignatureCount(payload.upvoteCount)
+        }
+      }
     }
+    socket.on("complaint:upvoted", handleUpvoted)
+    return () => {
+      socket.off("complaint:upvoted", handleUpvoted)
+    }
+  }, [socket, complaint, targetComplaintId])
 
+  const handleCoSign = async () => {
+    if (isSubmitting) return
+    setIsSubmitting(true)
     triggerHapticFeedback("medium")
-    localStorage.setItem(storageKey, "true")
-    setHasSigned(true)
-    setSignatureCount((prev) => prev + 1)
-    toast.success(t("endorsement.toastSuccess", "Community Signature Added! Ward SLA priority elevated to High."), {
-      duration: 4000,
-    })
+
+    try {
+      const res = await complaintApi.upvote(targetComplaintId)
+      setHasSigned(res.upvoted)
+      setSignatureCount(res.upvoteCount)
+
+      if (res.upvoted) {
+        localStorage.setItem(storageKey, "true")
+        toast.success(res.message || "Community Endorsement Added! +5 Civic Karma awarded.", {
+          duration: 4000,
+          icon: "🌟",
+        })
+      } else {
+        localStorage.removeItem(storageKey)
+        toast("Community endorsement removed.", { icon: "ℹ️" })
+      }
+
+      if (onUpvoteSuccess) {
+        onUpvoteSuccess(res.upvoteCount, res.priority)
+      }
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.message || "Failed to record endorsement. Please try again."
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const threshold = 10
@@ -1000,7 +1058,7 @@ export const CommunityEndorsementCard = React.memo(function CommunityEndorsement
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
             <Users className="w-4 h-4 text-amber-600" />
-            <span>{t("endorsement.title", "Community Petition & Signatures")}</span>
+            <span>{t("endorsement.title", "Community Petition & Co-Signatures")}</span>
           </CardTitle>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300">
             {hasSigned ? t("endorsement.signedStatus", "Signed ✓") : t("endorsement.openForSupport", "Open for Support")}
@@ -1013,7 +1071,7 @@ export const CommunityEndorsementCard = React.memo(function CommunityEndorsement
             <span className="text-2xl font-black font-mono text-slate-900 dark:text-white">
               {signatureCount}
             </span>
-            <span className="text-xs text-slate-500 ml-1.5">{t("endorsement.neighborSignatures", "Neighbor Signatures")}</span>
+            <span className="text-xs text-slate-500 ml-1.5">{t("endorsement.neighborSignatures", "Neighbor Co-Signatures")}</span>
           </div>
           <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
             {signatureCount >= 8 ? (
@@ -1022,7 +1080,7 @@ export const CommunityEndorsementCard = React.memo(function CommunityEndorsement
                 <span>{t("endorsement.priorityEscalated", "Priority Escalated")}</span>
               </>
             ) : (
-              <span>{t("endorsement.communityEndorsement", "Community Endorsement")}</span>
+              <span>{t("endorsement.communityEndorsement", "Crowd Verified")}</span>
             )}
           </span>
         </div>
@@ -1041,22 +1099,22 @@ export const CommunityEndorsementCard = React.memo(function CommunityEndorsement
         </div>
 
         <p className="text-[11px] text-slate-500 leading-relaxed">
-          {t("endorsement.description", "Multiple citizens co-signing alerts the Ward Officer that an entire neighborhood or commuter route is impacted.")}
+          {t("endorsement.description", "Multiple citizens co-signing alerts the Ward Officer that an entire neighborhood or commuter route is impacted. +5 Civic Karma awarded for participation.")}
         </p>
 
         <Button
           onClick={handleCoSign}
-          disabled={hasSigned}
+          disabled={isSubmitting}
           className={`w-full h-10 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             hasSigned
-              ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300"
+              ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900"
               : "bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
           }`}
         >
           {hasSigned ? (
             <span className="flex items-center justify-center gap-1.5">
-              <Check className="w-4 h-4" />
-              <span>{t("endorsement.alreadySigned", "You Co-Signed this Grievance")}</span>
+              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>{t("endorsement.alreadySigned", "You Endorsed this Grievance (Click to Remove)")}</span>
             </span>
           ) : (
             <span className="flex items-center justify-center gap-1.5">
@@ -1139,6 +1197,36 @@ export default function ComplaintTracking() {
   const [isReopening, setIsReopening] = useState(false)
   const [zoomImage, setZoomImage] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
+
+  const handleDownloadResolutionDocket = useCallback(async () => {
+    if (!complaint) return
+    setIsGeneratingPdf(true)
+    try {
+      await generateResolutionCertificatePdf(complaint)
+      toast.success("🏛️ Official Municipal Resolution Certificate downloaded!", {
+        duration: 4000,
+        icon: "📄",
+      })
+    } catch (err) {
+      console.error("PDF generation failed:", err)
+      toast.error("Could not generate resolution certificate.")
+    } finally {
+      setIsGeneratingPdf(false)
+    }
+  }, [complaint])
+
+  const handleUpvoteSuccess = useCallback((newCount: number, newPriority: string) => {
+    setComplaint((prev) => {
+      if (!prev) return null
+      return {
+        ...prev,
+        upvoteCount: newCount,
+        upvotes: newCount,
+        priority: (newPriority as any) || prev.priority,
+      }
+    })
+  }, [])
 
 
   // Live Geolocation, Distance Matrix & Live Turn-by-Turn Navigation
@@ -1624,6 +1712,23 @@ export default function ComplaintTracking() {
             AI Resolution Audit
           </Button>
 
+          {/* Download Official Resolution Certificate & Docket PDF */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadResolutionDocket}
+            disabled={isGeneratingPdf}
+            className="gap-1.5 text-xs rounded-xl min-h-[40px] border-emerald-600/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex-1 sm:flex-initial cursor-pointer font-semibold shadow-xs"
+            title="Download Verified BMC Resolution Certificate & Legal Docket"
+          >
+            {isGeneratingPdf ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-600" />
+            ) : (
+              <FileText className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            )}
+            <span>Resolution Docket (PDF)</span>
+          </Button>
+
           {/* Feedback Button for Citizens */}
           {user?.role === "citizen" && 
            (complaint.status === "resolved" || (complaint.status as string) === "closed") && 
@@ -1839,7 +1944,9 @@ export default function ComplaintTracking() {
 
           {/* 🖐 Community Co-Signatures & Petition Support */}
           <CommunityEndorsementCard
+            complaint={complaint}
             complaintId={complaint.complaintId || complaint._id}
+            onUpvoteSuccess={handleUpvoteSuccess}
           />
 
           {/* 🏛️ Ward Nagarsevak (Elected Representative) & 1-Tap WhatsApp Escalation */}

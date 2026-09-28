@@ -1,69 +1,69 @@
 {
   "version": "2.4.0-online",
-  "totalEpochs": 24,
-  "lastTrainedAt": "2026-09-28T15:12:03.820Z",
+  "totalEpochs": 26,
+  "lastTrainedAt": "2026-09-28T15:32:22.429Z",
   "learnedKeywords": {
     "ped": {
       "category": "parks_and_recreation",
       "department": "PRD",
       "weight": 3.5,
-      "frequency": 20
+      "frequency": 24
     },
     "transformer": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 20
+      "frequency": 24
     },
     "blast": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 20
+      "frequency": 24
     },
     "short": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 20
+      "frequency": 24
     },
     "circuit": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 20
+      "frequency": 24
     },
     "raste": {
       "category": "parks_and_recreation",
       "department": "PRD",
-      "weight": 3.0750000000000006,
-      "frequency": 8
+      "weight": 3.5,
+      "frequency": 12
     },
     "box": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 3.1800000000000006,
+      "frequency": 12
     },
     "dhakkan": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 3.1800000000000006,
+      "frequency": 12
     },
     "gayab": {
       "category": "public_safety",
       "department": "PSD",
-      "weight": 2.46,
-      "frequency": 8
+      "weight": 3.1800000000000006,
+      "frequency": 12
     }
   },
   "transitionPriors": {
-    "PWD->PRD": 1.8000000000000007,
-    "PWD->PSD": 1.8000000000000007
+    "PWD->PRD": 2.200000000000001,
+    "PWD->PSD": 2.200000000000001
   },
-  "totalTrainingSamples": 1440,
-  "averageAccuracy": 0.9911,
+  "totalTrainingSamples": 1444,
+  "averageAccuracy": 0.992,
   "trainingLossHistory": [
     {
       "epoch": 10,
@@ -164,6 +164,20 @@
       "accuracy": 0.9911,
       "samplesTrained": 2,
       "timestamp": "2026-09-28T15:12:03.820Z"
+    },
+    {
+      "epoch": 25,
+      "loss": 0.0187,
+      "accuracy": 0.992,
+      "samplesTrained": 2,
+      "timestamp": "2026-09-28T15:28:52.516Z"
+    },
+    {
+      "epoch": 26,
+      "loss": 0.0165,
+      "accuracy": 0.992,
+      "samplesTrained": 2,
+      "timestamp": "2026-09-28T15:32:22.429Z"
     }
   ]
 }

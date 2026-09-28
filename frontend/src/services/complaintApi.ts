@@ -89,6 +89,7 @@ export interface Complaint {
   citizenFeedback?: string
   upvoteCount?: number
   upvotes?: number
+  upvoters?: string[]
   aiAnalysis?: {
     verified: boolean
     category?: ComplaintCategory | string
@@ -370,6 +371,17 @@ export const complaintApi = {
       `/complaints/${id}/rate`,
       payload
     )
+    return res.data
+  },
+
+  upvote: async (id: string) => {
+    const res = await api.post<{
+      success: boolean
+      upvoted: boolean
+      upvoteCount: number
+      priority: string
+      message: string
+    }>(`/complaints/${id}/upvote`)
     return res.data
   },
 }

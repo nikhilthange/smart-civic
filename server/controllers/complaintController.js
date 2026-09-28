@@ -19,6 +19,7 @@ const resolutionInspectorService = require("../services/resolutionInspectorServi
 const Inventory = require("../models/Inventory");
 const { invalidateCache } = require("../middlewares/cacheMiddleware");
 const { scrubPii, sanitizeCitizenProfile } = require("../utils/piiScrubber");
+const civicKarmaService = require("../services/civicKarmaService");
 
 // ─── Broad Pattern Cache Invalidation Helper ─────────────────────────────────
 const purgeComplaintCaches = (id, complaintId) => {
@@ -2302,6 +2303,107 @@ const analyzeComplaintImage = async (req, res) => {
   }
 };
 
+// ─── @desc    Toggle upvote / community endorsement on a complaint
+// ─── @route   POST /api/complaints/:id/upvote
+// ─── @access  Private
+const toggleUpvote = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?._id || req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Authentication required to upvote." });
+    }
+
+    const isMongoId = mongoose.Types.ObjectId.isValid(id);
+    const query = isMongoId ? { $or: [{ _id: id }, { complaintId: id }] } : { complaintId: id };
+
+    const complaint = await Complaint.findOne(query);
+
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: "Complaint not found." });
+    }
+
+    if (!Array.isArray(complaint.upvoters)) {
+      complaint.upvoters = [];
+    }
+
+    const userIdStr = userId.toString();
+    const alreadyUpvoted = complaint.upvoters.some((u) => u.toString() === userIdStr);
+
+    let upvoted = false;
+
+    if (alreadyUpvoted) {
+      // Toggle off / unvote
+      complaint.upvoters = complaint.upvoters.filter((u) => u.toString() !== userIdStr);
+      complaint.upvoteCount = Math.max(1, (complaint.upvoteCount || 1) - 1);
+      complaint.upvotes = complaint.upvoteCount;
+      complaint.affectedCitizensCount = Math.max(1, (complaint.affectedCitizensCount || 1) - 1);
+      upvoted = false;
+    } else {
+      // Upvote
+      complaint.upvoters.push(userId);
+      complaint.upvoteCount = (complaint.upvoteCount || 1) + 1;
+      complaint.upvotes = complaint.upvoteCount;
+      complaint.affectedCitizensCount = (complaint.affectedCitizensCount || 1) + 1;
+      complaint.priorityScore = (complaint.priorityScore || 10) + 5;
+      upvoted = true;
+
+      // Crowd Severity Escalation: escalate priority when neighborhood consensus builds
+      if (complaint.upvoteCount >= 20 && complaint.priority !== "critical") {
+        complaint.priority = "critical";
+      } else if (complaint.upvoteCount >= 10 && complaint.priority === "low") {
+        complaint.priority = "medium";
+      } else if (complaint.upvoteCount >= 10 && complaint.priority === "medium") {
+        complaint.priority = "high";
+      }
+
+      // Award +5 Civic Karma points to citizen for civic participation
+      try {
+        await civicKarmaService.awardPoints(
+          userId,
+          5,
+          "COMMUNITY_UPVOTE",
+          `Upvoted community grievance #${complaint.complaintId || complaint._id}`
+        );
+      } catch (err) {
+        console.warn("Civic karma award failed on upvote:", err.message);
+      }
+    }
+
+    await complaint.save();
+    purgeComplaintCaches(complaint._id, complaint.complaintId);
+
+    // Broadcast live event over WebSocket
+    try {
+      const io = socketService.getIO();
+      if (io) {
+        io.emit("complaint:upvoted", {
+          complaintId: complaint._id,
+          customId: complaint.complaintId,
+          upvoteCount: complaint.upvoteCount,
+          priority: complaint.priority,
+        });
+      }
+    } catch {
+      // ignore socket error
+    }
+
+    return res.status(200).json({
+      success: true,
+      upvoted,
+      upvoteCount: complaint.upvoteCount,
+      priority: complaint.priority,
+      message: upvoted
+        ? "Community endorsement recorded! +5 Civic Karma awarded."
+        : "Community endorsement removed.",
+    });
+  } catch (error) {
+    console.error("toggleUpvote error:", error);
+    return res.status(500).json({ success: false, message: "Failed to process upvote.", error: error.message });
+  }
+};
+
 module.exports = {
   createComplaint,
   getComplaints,
@@ -2330,5 +2432,6 @@ module.exports = {
   updateAiTriage,
   rateResolution,
   analyzeComplaintImage,
+  toggleUpvote,
 };
 

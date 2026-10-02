@@ -8,13 +8,18 @@ import {
   AlertOctagon,
   RefreshCw,
   Layers,
-  CheckCircle2
+  CheckCircle2,
+  Construction,
+  Waves,
+  Trash2,
+  Lightbulb,
+  type LucideIcon,
 } from "lucide-react"
 
 interface SampleFeed {
   id: string
   label: string
-  icon: string
+  icon: LucideIcon
   confidence: string
   deptCode: string
   deptName: string
@@ -29,7 +34,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
   {
     id: "#PWD-HAZARD-9841",
     label: "Pothole Road Defect",
-    icon: "🚗",
+    icon: Construction,
     confidence: "99.4%",
     deptCode: "PWD",
     deptName: "Roads & Infrastructure",
@@ -42,7 +47,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
   {
     id: "#SWD-FLOOD-8120",
     label: "Storm Drain Blockage",
-    icon: "🌊",
+    icon: Waves,
     confidence: "98.7%",
     deptCode: "SWD",
     deptName: "Storm Water Drains",
@@ -55,7 +60,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
   {
     id: "#SWM-WASTE-4592",
     label: "Garbage Overflow",
-    icon: "🗑️",
+    icon: Trash2,
     confidence: "96.9%",
     deptCode: "SWM",
     deptName: "Solid Waste Mgmt",
@@ -68,7 +73,7 @@ const SAMPLE_FEEDS: SampleFeed[] = [
   {
     id: "#ELD-LIGHT-3019",
     label: "Streetlight Hazard",
-    icon: "💡",
+    icon: Lightbulb,
     confidence: "98.1%",
     deptCode: "ELD",
     deptName: "Electric & Streetlights",
@@ -154,7 +159,7 @@ export default function AiPipelineHeroVisual() {
                       : "text-slate-600 dark:text-slate-300 border-transparent hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-slate-500"
                   }`}
                 >
-                  <span aria-hidden="true">{feed.icon}</span>
+                  <feed.icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                   <span className="whitespace-nowrap">{feed.label}</span>
                 </button>
               )

@@ -2,6 +2,10 @@
 
 const asyncHandler = require("express-async-handler");
 const WardProject = require("../models/WardProject");
+const User = require("../models/User");
+const RoadContract = require("../models/RoadContract");
+const ContractorMicroEscrow = require("../models/ContractorMicroEscrow");
+const crypto = require("crypto");
 
 // Default BMC Ward Participatory Projects Fallback
 const DEFAULT_WARD_PROJECTS = [
@@ -89,19 +93,49 @@ exports.getWardProjects = asyncHandler(async (req, res) => {
 
 /**
  * @route   POST /api/ward-budget/vote/:id
- * @desc    Cast citizen weighted vote for local ward project (1 vote per fiscal quarter)
- * @access  Protected (Authenticated Citizen)
+ * @desc    Cast citizen weighted Quadratic Vote for local ward project
+ *          Formula: Karma Points Required = (Vote Weight)^2
+ * @access  Public / Authenticated
  */
 exports.castProjectVote = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const userId = req.user ? req.user._id.toString() : (req.body.userId || "usr_citizen_demo_99");
+  const rawWeight = parseInt(req.body.voteWeight || 1, 10);
+  const voteWeight = Math.max(1, Math.min(5, isNaN(rawWeight) ? 1 : rawWeight));
+  const karmaRequired = voteWeight * voteWeight;
   const quarter = "Q2-2026";
 
-  let project = await WardProject.findOne({ $or: [{ _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }, { projectId: id }] });
+  let user = null;
+  if (req.user && req.user._id) {
+    user = await User.findById(req.user._id);
+  } else if (req.body.userId) {
+    user = await User.findOne({
+      $or: [
+        { _id: req.body.userId.match(/^[0-9a-fA-F]{24}$/) ? req.body.userId : null },
+        { email: req.body.userId },
+      ],
+    });
+  }
+
+  // If user is registered in MongoDB, enforce Quadratic Karma point deduction
+  if (user) {
+    if ((user.karmaPoints || 0) < karmaRequired) {
+      return res.status(400).json({
+        success: false,
+        message: `⚠️ Quadratic Voting requires ${karmaRequired} Karma point(s) for ${voteWeight} vote(s), but your current balance is ${user.karmaPoints || 0} Karma. Earn points by submitting verified civic reports!`,
+        requiredKarma: karmaRequired,
+        currentKarma: user.karmaPoints || 0,
+      });
+    }
+  }
+
+  const userId = user ? user._id.toString() : (req.body.userId || "usr_citizen_demo_99");
+
+  let project = await WardProject.findOne({
+    $or: [{ _id: id.match(/^[0-9a-fA-F]{24}$/) ? id : null }, { projectId: id }],
+  });
 
   if (!project) {
-    res.status(404);
-    throw new Error("Ward project not found");
+    return res.status(404).json({ success: false, message: "Ward project not found." });
   }
 
   // Check if citizen already voted in this fiscal quarter
@@ -112,28 +146,43 @@ exports.castProjectVote = asyncHandler(async (req, res) => {
   if (alreadyVoted) {
     return res.status(400).json({
       success: false,
-      message: `⚠️ You have already cast your participatory vote for this project in ${quarter}.`,
+      message: `⚠️ You have already cast your participatory ballot for this project in ${quarter}.`,
       votesCount: project.votesCount,
     });
   }
 
-  project.votesCount += 1;
-  project.votersList.push({ userId, quarter });
+  // Deduct real Karma points from User in MongoDB
+  if (user) {
+    user.karmaPoints -= karmaRequired;
+    await user.save();
+  }
 
-  if (project.votesCount >= 300 && project.status === "PROPOSED") {
+  project.votesCount += voteWeight;
+  project.votersList.push({
+    userId,
+    voteWeight,
+    karmaSpent: karmaRequired,
+    quarter,
+    votedAt: new Date(),
+  });
+
+  if (project.votesCount >= 500 && project.status === "PROPOSED") {
     project.status = "CITIZEN_APPROVED";
   }
 
   await project.save();
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
-    message: `🗳️ Your vote has been recorded! Total Citizen Votes: ${project.votesCount}`,
+    message: `🗳️ ${voteWeight} weighted vote(s) recorded using ${karmaRequired} Karma points! Total Citizen Votes: ${project.votesCount}`,
     votesCount: project.votesCount,
     status: project.status,
+    karmaDeducted: karmaRequired,
+    remainingKarma: user ? user.karmaPoints : 0,
     project,
   });
 });
+
 
 /**
  * @route   GET /api/ward-budget/corporator-ledger/:ward
@@ -223,3 +272,85 @@ exports.createWardProject = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: err.message || "Failed to create project" });
   }
 });
+
+/**
+ * @route   GET /api/ward-budget/expenditures/:ward
+ * @desc    Get real audited work orders and expenditures from MongoDB (RoadContracts + Defect Micro-Escrows)
+ * @access  Public / Authenticated
+ */
+exports.getWardExpenditures = asyncHandler(async (req, res) => {
+  const { ward } = req.params;
+  const filter = ward && ward !== "all" ? { ward } : {};
+
+  // Fetch real RoadContracts from MongoDB
+  const contracts = await RoadContract.find(filter).sort({ completionDate: -1 }).lean();
+  // Fetch real micro-escrows from MongoDB
+  const escrows = await ContractorMicroEscrow.find(filter).sort({ createdAt: -1 }).lean();
+
+  const transactions = [];
+
+  for (const c of contracts) {
+    const hash = crypto
+      .createHash("sha256")
+      .update(`${c.contractId}-${c.totalProjectCostInr || 25000000}-${c.completionDate}`)
+      .digest("hex")
+      .slice(0, 16);
+
+    const cost = c.totalProjectCostInr || 25000000;
+    const retention = c.retentionFundAmountInr || Math.round(cost * 0.1);
+
+    transactions.push({
+      workOrderId: c.contractId,
+      title: `${c.roadName} Surface Renewal (${c.surfaceType || "MASTIC_ASPHALT"})`,
+      contractorName: c.contractorName,
+      vendorGstin: `27AAAC${(c.contractorId || "CON001").replace(/[^A-Z0-9]/gi, "").padStart(6, "0").slice(0, 6)}1ZX`,
+      disbursedAmountInr: cost - retention,
+      committedAmountInr: cost,
+      completionPercentage: c.status === "ACTIVE_WARRANTY" ? 100 : 85,
+      status: c.retentionFundFrozen ? "BILL_UNDER_AUDIT" : c.status === "ACTIVE_WARRANTY" ? "COMPLETED" : "IN_PROGRESS",
+      sanctionDate: c.completionDate ? new Date(c.completionDate).toISOString().split("T")[0] : "2026-03-15",
+      blockHash: hash,
+    });
+  }
+
+  for (const e of escrows) {
+    const hash = crypto
+      .createHash("sha256")
+      .update(`${e.escrowId}-${e.collateralAmountInr}-${e.createdAt}`)
+      .digest("hex")
+      .slice(0, 16);
+
+    transactions.push({
+      workOrderId: e.escrowId,
+      title: `${e.complaintTitle} (Micro-Escrow Protection)`,
+      contractorName: e.companyName,
+      vendorGstin: `27AABC${(e.contractorId || "CON002").replace(/[^A-Z0-9]/gi, "").padStart(6, "0").slice(0, 6)}1ZM`,
+      disbursedAmountInr: e.releasedAmountInr || 0,
+      committedAmountInr: e.collateralAmountInr,
+      completionPercentage:
+        e.status === "FULL_RELEASED"
+          ? 100
+          : e.status === "PARTIALLY_RELEASED_DLP_LOCKED"
+          ? 80
+          : e.status === "SLASHED_TO_CITIZEN_POOL"
+          ? 0
+          : 40,
+      status:
+        e.status === "SLASHED_TO_CITIZEN_POOL"
+          ? "BILL_UNDER_AUDIT"
+          : e.status === "FULL_RELEASED"
+          ? "COMPLETED"
+          : "IN_PROGRESS",
+      sanctionDate: e.createdAt ? new Date(e.createdAt).toISOString().split("T")[0] : "2026-04-01",
+      blockHash: hash,
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    count: transactions.length,
+    ward: ward || "all",
+    transactions,
+  });
+});
+

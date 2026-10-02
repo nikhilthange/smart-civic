@@ -100,6 +100,19 @@ export interface CorporatorLedger {
   auditedProjects: WardProject[]
 }
 
+export interface FundExpenditureTransaction {
+  workOrderId: string
+  title: string
+  contractorName: string
+  vendorGstin: string
+  disbursedAmountInr: number
+  committedAmountInr: number
+  completionPercentage: number
+  status: "COMPLETED" | "IN_PROGRESS" | "BILL_UNDER_AUDIT"
+  sanctionDate: string
+  blockHash: string
+}
+
 export const municipalApi = {
   // Module 1: Monsoon & Nullah Desilting
   getFloodRadar: async (rainfallMm?: number): Promise<FloodRadarResponse> => {
@@ -165,12 +178,20 @@ export const municipalApi = {
     })
     return res.data
   },
-  castVote: async (projectId: string) => {
-    const res = await api.post(`/ward-budget/vote/${projectId}`)
+  createWardProject: async (projectData: any) => {
+    const res = await api.post("/ward-budget/projects", projectData)
+    return res.data
+  },
+  castVote: async (projectId: string, voteWeight: number = 1, userId?: string) => {
+    const res = await api.post(`/ward-budget/vote/${projectId}`, { voteWeight, userId })
     return res.data
   },
   getCorporatorLedger: async (ward: string): Promise<CorporatorLedger> => {
     const res = await api.get(`/ward-budget/corporator-ledger/${encodeURIComponent(ward)}`)
+    return res.data
+  },
+  getWardExpenditures: async (ward: string): Promise<{ count: number; transactions: FundExpenditureTransaction[] }> => {
+    const res = await api.get(`/ward-budget/expenditures/${encodeURIComponent(ward)}`)
     return res.data
   },
 }

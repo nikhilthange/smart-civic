@@ -216,5 +216,224 @@ export const advancedMunicipalApi = {
     const res = await api.get("/simulator/status")
     return res.data
   },
+
+  // Module 8: Maharashtra Right to Service (RTS Act 2015) Statutory Enforcement
+  getRtsPenalties: async (params?: { ward?: string; status?: string; officerEmployeeId?: string }): Promise<{ count: number; penalties: RtsStatutoryPenalty[] }> => {
+    const res = await api.get("/rts/penalties", { params })
+    return res.data
+  },
+  getRtsSummary: async (): Promise<{ summary: RtsSummary }> => {
+    const res = await api.get("/rts/summary")
+    return res.data
+  },
+  runRtsComplianceAudit: async () => {
+    const res = await api.post("/rts/audit")
+    return res.data
+  },
+  adjudicateRtsPenalty: async (noticeNumber: string, payload: { decision: string; note?: string; adjudicatedBy?: string }) => {
+    const res = await api.post(`/rts/adjudicate/${encodeURIComponent(noticeNumber)}`, payload)
+    return res.data
+  },
+  compensateRtsCitizen: async (noticeNumber: string) => {
+    const res = await api.post(`/rts/compensate-citizen/${encodeURIComponent(noticeNumber)}`)
+    return res.data
+  },
+
+  // Module 9: Court Evidentiary Dossier (Sec 65B) & Autonomous Emergency Re-Tendering
+  getComplaintCourtDossier: async (complaintId: string): Promise<CourtEvidentiaryDossier> => {
+    const res = await api.get(`/legal-dossier/complaint/${complaintId}`)
+    return res.data
+  },
+  executeEmergencyRetender: async (complaintId: string, authorizingOfficer?: string): Promise<EmergencyRetenderResult> => {
+    const res = await api.post(`/legal-dossier/emergency-retender/${complaintId}`, { authorizingOfficer })
+    return res.data
+  },
+  getWardSystemicDossier: async (ward: string): Promise<WardSystemicDossier> => {
+    const res = await api.get(`/legal-dossier/ward/${encodeURIComponent(ward)}`)
+    return res.data
+  },
 }
+
+export interface RtsStatutoryPenalty {
+  _id?: string
+  noticeNumber: string
+  complaintId: string
+  complaintTitle: string
+  ward: string
+  category: string
+  designatedOfficer: {
+    officerId: string
+    employeeId: string
+    name: string
+    designation: string
+    departmentCode: string
+  }
+  complainantCitizen: {
+    citizenId: string
+    name: string
+    email: string
+  }
+  statutoryTimeLimitHours: number
+  elapsedHours: number
+  delayDays: number
+  dailyPenaltyRateInr: number
+  statutoryPenaltyCapInr: number
+  totalPenaltyAmountInr: number
+  status: "SHOW_CAUSE_ISSUED" | "SALARY_DEDUCTION_ENFORCED" | "CITIZEN_COMPENSATED" | "FORCE_MAJEURE_EXCUSED"
+  appellateAuthority: string
+  hearingDate: string
+  adjudicationNote?: string
+  adjudicatedAt?: string
+  adjudicatedBy?: string
+  citizenCompensationPaidInr: number
+  citizenCompensationVoucher?: string
+  compensatedAt?: string
+  legalNoticeHash: string
+  createdAt: string
+}
+
+export interface RtsSummary {
+  global: {
+    totalNotices: number
+    totalPenaltyAssessedInr: number
+    totalSalaryDeductedInr: number
+    totalCitizenCompensationDisbursedInr: number
+    activeShowCausesCount: number
+  }
+  wardBreakdown: {
+    _id: string
+    noticesCount: number
+    salaryDeductedInr: number
+    compensationDisbursedInr: number
+  }[]
+}
+
+export interface CourtEvidentiaryDossier {
+  success: boolean
+  dossierId: string
+  generatedAt: string
+  complaint: {
+    id: string
+    complaintId: string
+    title: string
+    description: string
+    category: string
+    priority: string
+    status: string
+    ward: string
+    coordinates: [number, number]
+    address: string
+    imageUrl?: string | null
+    citizenName: string
+    createdAt: string
+    slaDeadline: string
+    isOverdue: boolean
+    daysOverdue: number
+  }
+  rtsPenalty?: {
+    noticeNumber: string
+    statutoryCategory: string
+    designatedOfficer: {
+      name: string
+      designation: string
+      ward: string
+    }
+    daysOverdue: number
+    penaltyAmountInr: number
+    adjudicationStatus: string
+    legalNoticeHash: string
+  }
+  contractorEscrow?: {
+    escrowId: string
+    companyName: string
+    collateralAmountInr: number
+    slashedAmountInr: number
+    dlpRetainedAmountInr: number
+    status: string
+    slashedReason?: string
+  }
+  section65BCertificate: {
+    certificateNumber: string
+    statutoryProvision: string
+    certifyingOfficer: {
+      title: string
+      authority: string
+      systemNodeId: string
+    }
+    digitalFingerprintSha256: string
+    issuedAt: string
+    evidentiaryIntegrityDeclaration: string
+  }
+  chainOfCustody: {
+    step: number
+    event: string
+    timestamp: string
+    actor: string
+    details: string
+    hash: string
+  }[]
+  highCourtPilDraft: {
+    forum: string
+    causeTitle: string
+    parties: {
+      petitioner: string
+      respondent1: string
+      respondent2: string
+      respondent3: string
+    }
+    statutoryGrounds: string[]
+    prayerClauses: string[]
+  }
+  rtiSection6Application: {
+    addressedTo: string
+    applicationSubject: string
+    requisitions: string[]
+    statutoryFee: string
+    statutoryDeadlineDays: number
+  }
+}
+
+export interface EmergencyRetenderResult {
+  success: boolean
+  message: string
+  retenderReceipt: {
+    receiptNumber: string
+    complaintId: string
+    complaintTitle: string
+    ward: string
+    forfeitedContractor: string
+    forfeitedAmountInr: number
+    awardedContractor: {
+      contractorId: string
+      companyName: string
+      reliabilityScore: number
+      authorizedContact: string
+    }
+    newEscrowId: string
+    expeditedSlaHours: number
+    expeditedSlaDeadline: string
+    authorizingAuthority: string
+    transactionHashSha256: string
+    executedAt: string
+  }
+}
+
+export interface WardSystemicDossier {
+  success: boolean
+  ward: string
+  auditTimestamp: string
+  systemicFingerprintSha256: string
+  summary: {
+    totalComplaintsLogged: number
+    chronicBreachedComplaints: number
+    breachPercentage: number
+    totalOfficerRtsPenaltiesInr: number
+    totalContractorEscrowSlashedInr: number
+    aggregatePublicDividendRecoverableInr: number
+  }
+  chronicDefectDocket: any[]
+  legalRemedyRecommended: string
+}
+
+
 

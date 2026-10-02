@@ -9,7 +9,7 @@ import {
   Filter, MapPin, Layers, RefreshCw, Flame,
   Search, Eye, AlertTriangle, Building2, Radio,
   Download, FileSpreadsheet, Clock,
-  Zap, CheckCircle2, Navigation, X, ChevronRight, Phone
+  Zap, CheckCircle2, Navigation, X, ChevronRight, Phone, Waves
 } from "lucide-react"
 import { complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
 import { getImageUrl, handleImageError, FALLBACK_IMAGE } from "@/utils/imageUrl"
@@ -141,9 +141,8 @@ export default function MapView() {
           count: payload.count,
           message: payload.message,
         })
-        toast.error(`🌊 EMERGENCY: Active Monsoon Flood Hotspot detected in ${payload.ward || "Mumbai"}!`, {
+        toast.error(`EMERGENCY: Active Monsoon Flood Hotspot detected in ${payload.ward || "Mumbai"}!`, {
           duration: 7000,
-          icon: "🚨",
         })
       }
       fetchComplaints(true)
@@ -403,7 +402,7 @@ export default function MapView() {
         // Click to filter by ward
         polygonLayer.on("click", () => {
           setSelectedWard(ward.wardCode)
-          toast.success(`Filtered to ${ward.wardCode} (${ward.name})`, { icon: "🏛️" })
+          toast.success(`Filtered to ${ward.wardCode} (${ward.name})`)
         })
 
         choroplethGroup.addLayer(polygonLayer)
@@ -412,14 +411,29 @@ export default function MapView() {
 
     // 2. Process Complaints / Pins / Heatmap
     filteredComplaints.forEach((c) => {
-      let lat = c.location?.coordinates?.coordinates?.[1]
-      let lng = c.location?.coordinates?.coordinates?.[0]
+      let lat: number | undefined
+      let lng: number | undefined
 
-      // Fallback to ward preset coordinates if missing or invalid
-      if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+      const loc = c.location as any
+      if (Array.isArray(loc?.coordinates?.coordinates)) {
+        lng = loc.coordinates.coordinates[0]
+        lat = loc.coordinates.coordinates[1]
+      } else if (Array.isArray(loc?.coordinates)) {
+        lng = loc.coordinates[0]
+        lat = loc.coordinates[1]
+      } else if (typeof loc?.latitude === "number" && typeof loc?.longitude === "number") {
+        lat = loc.latitude
+        lng = loc.longitude
+      } else if (typeof (c as any).latitude === "number" && typeof (c as any).longitude === "number") {
+        lat = (c as any).latitude
+        lng = (c as any).longitude
+      }
+
+      // Fallback to ward preset coordinates only if real GPS is completely missing
+      if (typeof lat !== "number" || typeof lng !== "number" || isNaN(lat) || isNaN(lng)) {
         const preset = WARD_COORDINATES[c.ward || "Ward A"] || MUMBAI_CENTER
-        lat = preset[0] + (Math.random() - 0.5) * 0.015
-        lng = preset[1] + (Math.random() - 0.5) * 0.015
+        lat = preset[0]
+        lng = preset[1]
       }
 
       bounds.push([lat, lng])
@@ -529,7 +543,7 @@ export default function MapView() {
                 cursor: pointer;
                 text-align: center;
               ">
-                ⚡ Quick Triage
+                Quick Triage
               </button>
               <a href="/complaint/${c._id}/track" style="
                 flex: 1;
@@ -632,8 +646,8 @@ export default function MapView() {
       {activeHotspotAlert && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white shadow-xl animate-pulse gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl text-xl shrink-0">
-              🌊
+            <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl shrink-0 text-white">
+              <Waves className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="font-extrabold text-sm flex items-center gap-2">
@@ -809,10 +823,10 @@ export default function MapView() {
           <Button
             variant="outline"
             onClick={() => setIsIotSimulatorOpen(true)}
-            className="gap-1.5 text-xs bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100 font-bold rounded-xl h-9"
+            className="gap-1.5 text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 font-semibold rounded-xl h-9"
           >
-            <Radio className="h-4 w-4 text-blue-600 animate-pulse" />
-            📡 IoT Simulator
+            <Radio className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>SCADA &amp; IoT Ingestion</span>
           </Button>
 
           <Button

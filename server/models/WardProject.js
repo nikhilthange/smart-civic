@@ -57,6 +57,8 @@ const wardProjectSchema = new mongoose.Schema(
     votersList: [
       {
         userId: { type: String },
+        voteWeight: { type: Number, default: 1 },
+        karmaSpent: { type: Number, default: 1 },
         votedAt: { type: Date, default: Date.now },
         quarter: { type: String, default: "Q2-2026" },
       },

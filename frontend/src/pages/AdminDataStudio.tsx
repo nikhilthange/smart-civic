@@ -275,7 +275,7 @@ export default function AdminDataStudio() {
   const handleSeedAllModules = async () => {
     setLoading(true)
     try {
-      toast.loading("⚡ Populating all 17 municipal modules in MongoDB...", { id: "seed-all" })
+      toast.loading("Populating municipal modules in central registry...", { id: "seed-all" })
       const res = await api.post("/simulator/batch-seed-all")
       toast.success(res.data.message || "All municipal collections seeded!", { id: "seed-all" })
       fetchStatus()
@@ -325,7 +325,7 @@ export default function AdminDataStudio() {
     setLoading(true)
     try {
       await api.post("/simulator/generate", { count: 1 })
-      toast.success(`🎉 Grievance created and broadcasted via WebSocket!`, { duration: 5000 })
+      toast.success("Grievance created and broadcast live across municipal telemetry!", { duration: 5000 })
       fetchStatus()
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to create complaint")
@@ -343,7 +343,7 @@ export default function AdminDataStudio() {
         ...subwayForm,
         coordinates: [subwayForm.lng, subwayForm.lat],
       })
-      toast.success(`🌊 Subway "${res.data.subway.subwayName}" registered in MongoDB!`)
+      toast.success(`Subway "${res.data.subway.subwayName}" registered in Central Registry.`)
       fetchStatus()
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Failed to register subway")
@@ -480,7 +480,7 @@ export default function AdminDataStudio() {
               Admin Management & Live Data Studio
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              100% PERSISTENT MONGODB
+              CENTRAL MUNICIPAL DATASTORE
             </span>
           </div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -497,7 +497,7 @@ export default function AdminDataStudio() {
             className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs gap-1.5 shadow-sm"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>⚡ Seed All Modules with Live Data</span>
+            <span>Seed All Municipal Systems</span>
           </Button>
 
           <Button
@@ -598,7 +598,7 @@ export default function AdminDataStudio() {
               {tabs.find((t) => t.id === activeTab)?.label}
             </CardTitle>
             <CardDescription className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Add a new persistent entity directly to MongoDB and observe instant reflection on target radar.
+              Add a new persistent entity directly to Central Datastore and observe instant reflection on target radar.
             </CardDescription>
           </div>
           <Link
@@ -681,7 +681,7 @@ export default function AdminDataStudio() {
 
               <Button type="submit" disabled={loading} className="gap-2 text-xs">
                 <PlusCircle className="w-4 h-4" />
-                <span>Save Grievance to MongoDB & Broadcast</span>
+                <span>Commit Grievance & Broadcast Live</span>
               </Button>
             </form>
           )}
@@ -746,7 +746,7 @@ export default function AdminDataStudio() {
 
               <Button type="submit" disabled={loading} className="gap-2 text-xs">
                 <PlusCircle className="w-4 h-4" />
-                <span>Save Subway Gate to MongoDB</span>
+                <span>Register Subway Ingress Node</span>
               </Button>
             </form>
           )}
@@ -791,7 +791,7 @@ export default function AdminDataStudio() {
 
               <Button type="submit" disabled={loading} className="gap-2 text-xs">
                 <PlusCircle className="w-4 h-4" />
-                <span>Save CCTV Camera to MongoDB</span>
+                <span>Register Municipal CCTV Sensor</span>
               </Button>
             </form>
           )}
@@ -852,7 +852,7 @@ export default function AdminDataStudio() {
 
               <Button type="submit" disabled={loading} className="gap-2 text-xs">
                 <PlusCircle className="w-4 h-4" />
-                <span>Save Smart RFID Bin to MongoDB</span>
+                <span>Register Solid Waste Smart Bin</span>
               </Button>
             </form>
           )}
@@ -919,7 +919,7 @@ export default function AdminDataStudio() {
 
               <Button type="submit" disabled={loading} className="gap-2 text-xs">
                 <PlusCircle className="w-4 h-4" />
-                <span>Save C1 Building to MongoDB</span>
+                <span>Register C1 Structural Notice</span>
               </Button>
             </form>
           )}
@@ -976,7 +976,7 @@ export default function AdminDataStudio() {
 
               <Button type="submit" disabled={loading} className="gap-2 text-xs">
                 <PlusCircle className="w-4 h-4" />
-                <span>Save Road Contract to MongoDB</span>
+                <span>Register Road DLP Contract</span>
               </Button>
             </form>
           )}
@@ -1034,7 +1034,7 @@ export default function AdminDataStudio() {
 
               <Button type="submit" disabled={loading} className="gap-2 text-xs">
                 <PlusCircle className="w-4 h-4" />
-                <span>Save Housing Society to MongoDB</span>
+                <span>Register ALM Housing Society</span>
               </Button>
             </form>
           )}
@@ -1090,7 +1090,7 @@ export default function AdminDataStudio() {
 
               <Button type="submit" disabled={loading} className="gap-2 text-xs">
                 <PlusCircle className="w-4 h-4" />
-                <span>Open Project for Citizen Voting in MongoDB</span>
+                <span>Gazette Project for Ward Voting</span>
               </Button>
             </form>
           )}

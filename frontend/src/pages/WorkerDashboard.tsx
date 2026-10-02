@@ -132,7 +132,7 @@ export default function WorkerDashboard() {
 
     const handleOnline = () => {
       setIsOnline(true)
-      toast.success("📶 Connection restored. Syncing offline tasks...")
+      toast.success("Network connection restored. Synchronizing offline tasks...")
       syncOfflineQueue(() => {
         setOfflineCount(getOfflineQueue().length)
         fetchWorkerTasks(true)
@@ -141,7 +141,7 @@ export default function WorkerDashboard() {
 
     const handleOffline = () => {
       setIsOnline(false)
-      toast.error("⚠️ Offline mode active. Action queue enabled.")
+      toast.error("Offline mode active. Local action queue enabled.")
     }
 
     const onFocus = () => fetchWorkerTasks(true)
@@ -171,8 +171,7 @@ export default function WorkerDashboard() {
       triggerHapticFeedback("medium")
       await api.put(`/complaints/${taskId}/accept-task`)
       triggerHapticFeedback("success")
-      toast.success("⚡ Task Claimed! Successfully added to your active repair queue.", {
-        icon: "🛠️",
+      toast.success("Task Claimed: Successfully allocated to your active repair schedule.", {
         duration: 4000,
       })
       await fetchWorkerTasks(true)
@@ -219,8 +218,8 @@ export default function WorkerDashboard() {
       const durationStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins} mins`
 
       toast.success(
-        `🚀 Daily TSP Route Optimized: ${result.orderedTasks.length} stops (${result.totalDistanceKm} km • ~${durationStr})!`,
-        { duration: 5000, icon: "⚡" }
+        `Daily TSP Route Optimized: ${result.orderedTasks.length} stops (${result.totalDistanceKm} km • ~${durationStr}).`,
+        { duration: 5000 }
       )
     } catch {
       toast.error("Failed to compute optimal route.")
@@ -236,8 +235,7 @@ export default function WorkerDashboard() {
         const compressed = await compressFieldImage(rawFile)
         setProofFile(compressed.file)
         setFilePreview(compressed.previewUrl)
-        toast.success(`⚡ Low-Bandwidth Auto-Compress: ${compressed.originalSizeKb}KB ➔ ${compressed.compressedSizeKb}KB (${compressed.compressionRatioPct}% reduction)`, {
-          icon: "🚀",
+        toast.success(`Low-Bandwidth Compression: ${compressed.originalSizeKb} KB to ${compressed.compressedSizeKb} KB (${compressed.compressionRatioPct}% reduction).`, {
           duration: 4000,
         })
       } catch {
@@ -354,7 +352,7 @@ export default function WorkerDashboard() {
       } else if (err.response?.status === 422) {
         triggerHapticFeedback("error")
         const errorMsg = err.response?.data?.message || "AI Quality Inspector rejected the proof: The issue does not appear resolved. Please upload an authentic photo of the completed repair."
-        toast.error(errorMsg, { duration: 6000, icon: "🚫" })
+        toast.error(errorMsg, { duration: 6000 })
         handleRemoveFile()
       } else {
         triggerHapticFeedback("error")

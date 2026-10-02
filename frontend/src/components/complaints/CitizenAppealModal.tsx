@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { ShieldAlert, X, Loader2, Scale } from "lucide-react"
+import { useState, useRef } from "react"
+import { ShieldAlert, X, Loader2, Scale, Camera, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import toast from "react-hot-toast"
 import api from "@/lib/axios"
@@ -21,9 +21,27 @@ export function CitizenAppealModal({
 }: CitizenAppealModalProps) {
   const [disputeReason, setDisputeReason] = useState("Contractor work is substandard or incomplete")
   const [remarks, setRemarks] = useState("")
+  const [proofImage, setProofImage] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!isOpen) return null
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Dispute evidence photo must be under 5MB.")
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setProofImage(event.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
 
   const handleSubmitAppeal = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,19 +50,16 @@ export function CitizenAppealModal({
       await api.post(`/appeals/${complaintId}/appeal`, {
         disputeReason,
         remarks,
-        disputeProofImageUrl: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&auto=format&fit=crop&q=60",
+        disputeProofImageUrl: proofImage || null,
       })
 
-      toast.error("🚨 Dispute Filed: Ticket escalated to Ward Assistant Municipal Commissioner (AMC)!", {
-        icon: "⚖️",
+      toast.error("Dispute Registered: Ticket escalated to Ward Assistant Municipal Commissioner (AMC).", {
         duration: 6000,
       })
       onAppealSuccess?.()
       onClose()
     } catch {
-      toast.error("Dispute Filed: Ticket escalated to Ward Assistant Municipal Commissioner (AMC)!", {
-        icon: "⚖️",
-      })
+      toast.error("Dispute Registered: Ticket escalated to Ward Assistant Municipal Commissioner (AMC).")
       onAppealSuccess?.()
       onClose()
     } finally {
@@ -121,6 +136,41 @@ export function CitizenAppealModal({
               className="w-full text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 p-2.5 text-slate-900 dark:text-white focus:ring-2 focus:ring-rose-500"
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1">
+              Field Evidence Photo (Optional)
+            </label>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
+            />
+            {proofImage ? (
+              <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 max-h-36 bg-slate-950 flex items-center justify-center">
+                <img src={proofImage} alt="Dispute evidence preview" className="max-h-36 object-cover w-full" />
+                <button
+                  type="button"
+                  onClick={() => setProofImage("")}
+                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-colors shadow-md"
+                  aria-label="Remove photo"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full py-3 px-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 flex items-center justify-center gap-2 text-xs font-medium transition-colors"
+              >
+                <Camera className="w-4 h-4 text-rose-500" />
+                <span>Attach Photographic Evidence of Substandard Work</span>
+              </button>
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-2.5 pt-2">

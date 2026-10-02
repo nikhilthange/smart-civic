@@ -23,7 +23,7 @@ import {
   X,
   ShieldCheck,
   RotateCcw,
-  Sparkles,
+  ChevronRight,
   ChevronDown,
   ChevronUp,
   Radio,
@@ -107,7 +107,7 @@ const QUICK_ACTIONS = [
   {
     icon: MapPin,
     label: "Share Live GPS",
-    payload: "📍 Live GPS Shared: 19.0596° N, 72.8347° E (Ward H-West, Mumbai)",
+    payload: "Live GPS Shared: 19.0596° N, 72.8347° E (Ward H-West, Mumbai)",
     color: "hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-600 dark:hover:text-rose-400",
   },
   {
@@ -124,12 +124,12 @@ const INITIAL_MESSAGES: Message[] = [
     sender: "bot",
     type: "interactive_buttons",
     content:
-      "नमस्कार! Brihanmumbai Municipal Corporation (BMC) २४x७ WhatsApp Grievance Bot मध्ये आपले स्वागत आहे. 🙏\n\nकृपया तक्रारीचा प्रकार निवडा किंवा थेट मेसेज टाईप करा:",
+      "नमस्कार! Brihanmumbai Municipal Corporation (BMC) २४x७ WhatsApp Grievance Bot मध्ये आपले स्वागत आहे.\n\nकृपया तक्रारीचा प्रकार निवडा किंवा थेट मेसेज टाईप करा:",
     timestamp: "10:45 AM",
     interactiveButtons: [
-      { id: "btn-pothole", title: "🚧 खड्डे / Roads", payload: "रस्ता खड्डे (Road Pothole defect)" },
-      { id: "btn-swm", title: "🗑️ कचरा / Waste", payload: "कचरा समस्या (Overflowing Garbage)" },
-      { id: "btn-water", title: "💧 पाणी / Water", payload: "पाणी गळती (Water Pipeline Leak)" },
+      { id: "btn-pothole", title: "खड्डे / Roads", payload: "रस्ता खड्डे (Road Pothole defect)" },
+      { id: "btn-swm", title: "कचरा / Waste", payload: "कचरा समस्या (Overflowing Garbage)" },
+      { id: "btn-water", title: "पाणी / Water", payload: "पाणी गळती (Water Pipeline Leak)" },
     ],
   },
 ]
@@ -369,7 +369,7 @@ export default function WhatsAppSandbox() {
         id: `alert-${Date.now()}`,
         sender: "bot",
         type: "text",
-        content: `🔔 **[Live Municipal Status Update]**\n\n📌 **तिकीट क्र**: *#${matched?.ticketId || incomingTicketId}*\n⚡ **नवीन स्थिती**: *${newStatus}*\n👷 **फील्ड कामगार / अभियंता**: *${payload.workerName || "Santosh Gaikwad (Allocated)"}*\n\nआपल्या तक्रारीचे निवारण युद्धपातळीवर सुरू आहे.\nLive Track: http://localhost:5173/complaints`,
+        content: `[Live Municipal Status Update]\n\nतिकीट क्र: #${matched?.ticketId || incomingTicketId}\nनवीन स्थिती: ${newStatus}\nफील्ड कामगार / अभियंता: ${payload.workerName || "Santosh Gaikwad (Allocated)"}\n\nआपल्या तक्रारीचे निवारण सुरू आहे.\nLive Track: ${typeof window !== "undefined" ? window.location.origin : ""}/complaints`,
         timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
       }
 
@@ -500,12 +500,12 @@ export default function WhatsAppSandbox() {
               sender: "bot",
               type: "interactive_buttons",
               content:
-                "🔄 संभाषण रीसेट केले आहे. Brihanmumbai Municipal Corporation (BMC) Citizen Bot मेन्यू:\n\nकृपया पर्याय निवडा:",
+                "संभाषण रीसेट केले आहे. Brihanmumbai Municipal Corporation (BMC) Citizen Bot मेन्यू:\n\nकृपया पर्याय निवडा:",
               timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
               interactiveButtons: [
-                { id: "btn-pothole", title: "🚧 खड्डे / Roads", payload: "रस्ता खड्डे (Road Pothole defect)" },
-                { id: "btn-swm", title: "🗑️ कचरा / Waste", payload: "कचरा समस्या (Overflowing Garbage)" },
-                { id: "btn-water", title: "💧 पाणी / Water", payload: "पाणी गळती (Water Pipeline Leak)" },
+                { id: "btn-pothole", title: "खड्डे / Roads", payload: "रस्ता खड्डे (Road Pothole defect)" },
+                { id: "btn-swm", title: "कचरा / Waste", payload: "कचरा समस्या (Overflowing Garbage)" },
+                { id: "btn-water", title: "पाणी / Water", payload: "पाणी गळती (Water Pipeline Leak)" },
               ],
             },
           ])
@@ -524,7 +524,7 @@ export default function WhatsAppSandbox() {
               sender: "bot",
               type: "text",
               content:
-                "📋 **सक्रिय तक्रार स्थिती (Live Ticket Status)**:\n\n• तिकीट क्र: **#SC-2026-90D20FF0**\n• प्रभाग: **Ward H-West (Bandra West)**\n• स्थिती: 🟡 **IN_PROGRESS (Worker Allocated: Santosh Gaikwad)**\n• SLA डेडलाईन: **22 तास शिल्लक**\n\nसविस्तर पाहण्यासाठी: http://localhost:5173/complaints",
+                `सक्रिय तक्रार स्थिती (Live Ticket Status):\n\n• तिकीट क्र: #SC-2026-90D20FF0\n• प्रभाग: Ward H-West (Bandra West)\n• स्थिती: IN_PROGRESS — Worker Allocated: Santosh Gaikwad\n• SLA डेडलाईन: 22 तास शिल्लक\n\nसविस्तर पाहण्यासाठी: ${typeof window !== "undefined" ? window.location.origin : ""}/complaints`,
               timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
             },
           ])
@@ -569,7 +569,7 @@ export default function WhatsAppSandbox() {
                 id: `bot-${Date.now()}`,
                 sender: "bot",
                 type: "text",
-                content: `⚡ **[Live Gateway MongoDB Sync]**\n\n✅ तक्रार यशस्वीरीत्या सर्व्हरवर नोंदवली!\n🎫 **तिकीट क्र**: *#${ticketId}*\n📍 **प्रभाग**: *${wardAssigned}*\n🏢 **विभाग**: *${complaint?.departmentId || "PWD"}*\n🏆 **Civic Karma**: *+50 Points जमा झाले!*\n\nLive Tracking: http://localhost:5173/complaints`,
+                content: `BMC Municipal Grievance Gateway\n\nतक्रार यशस्वीरीत्या नोंदवली.\nतिकीट क्र: #${ticketId}\nप्रभाग: ${wardAssigned}\nविभाग: ${complaint?.departmentId || "PWD"}\nCivic Karma: +50 Points जमा झाले.\n\nLive Tracking: ${typeof window !== "undefined" ? window.location.origin : ""}/complaints`,
                 timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
                 complaintId: ticketId,
               },
@@ -579,8 +579,8 @@ export default function WhatsAppSandbox() {
           }, 800)
           return
         } catch {
-          // Graceful fallback to offline simulated triage
-          toast.error("⚠️ Live API unreachable; switched to offline simulated triage", { duration: 4000 })
+          // Graceful fallback to offline standby protocol
+          toast.error("Municipal server temporarily unreachable; switched to offline standby protocol", { duration: 4000 })
         }
       }
 
@@ -594,18 +594,18 @@ export default function WhatsAppSandbox() {
 
           botResponse = {
             type: "interactive_buttons",
-            content: `📍 तक्रार विषय नोंदवला: *${text}*.\n\nकृपया तक्रार निवारणासाठी संबंधित जागेचा **फोटो (Camera Photo)** किंवा **लाईव्ह GPS लोकेशन** शेअर करा:`,
+            content: `तक्रार विषय नोंदवला: ${text}.\n\nकृपया तक्रार निवारणासाठी संबंधित जागेचा फोटो (Camera Photo) किंवा लाईव्ह GPS लोकेशन शेअर करा:`,
             interactiveButtons: [
-              { id: "btn-cam", title: "📸 फोटो पाठवा", payload: "📸 Camera Photo Attached" },
-              { id: "btn-loc", title: "📍 GPS Location", payload: "📍 Live Location: 19.0596° N, 72.8347° E" },
-              { id: "btn-skip", title: "⏭️ पुढे जा (Skip)", payload: "Skip media attachment" },
+              { id: "btn-cam", title: "फोटो पाठवा", payload: "Camera Photo Attached" },
+              { id: "btn-loc", title: "GPS Location", payload: "Live Location: 19.0596° N, 72.8347° E" },
+              { id: "btn-skip", title: "पुढे जा (Skip)", payload: "Skip media attachment" },
             ],
           }
         } else if (dialogueStage === "AWAITING_MEDIA_OR_LOCATION") {
           setDialogueStage("AWAITING_WARD")
           botResponse = {
             type: "interactive_list",
-            content: `✅ पुरावा जोडला गेला आहे. कृपया आपला **BMC प्रभाग (Ward)** निवडा:`,
+            content: `पुरावा जोडला गेला आहे. कृपया आपला BMC प्रभाग (Ward) निवडा:`,
             listSections: [
               {
                 title: "Western Suburbs (पश्चिम उपनगरे)",
@@ -644,7 +644,7 @@ export default function WhatsAppSandbox() {
 
           botResponse = {
             type: "text",
-            content: `🎉 **तक्रार अधिकृतरीत्या नोंदवण्यात आली आहे!**\n\n═══════════════════════════\n🎫 **तिकीट क्र**: *#${ticketId}*\n📍 **प्रभाग**: *${text}*\n⏱️ **SLA डेडलाईन**: *24 तास (On-Time Guaranteed)*\n🏆 **Civic Karma**: *+50 Points जमा झाले!*\n🛡️ **Zero-Trust Privacy**: *EXIF व वैयक्तिक माहिती सुरक्षित (Scrubbed)*\n═══════════════════════════\n\nसंबंधित कनिष्ठ अभियंता व फील्ड कामगारास (Field Worker) त्वरित कार्य आदेश जारी करण्यात आला आहे.\n\nLive Tracking Link: http://localhost:5173/complaints`,
+            content: `तक्रार अधिकृतरीत्या नोंदवण्यात आली आहे.\n\nतिकीट क्र: #${ticketId}\nप्रभाग: ${text}\nSLA डेडलाईन: 24 तास (On-Time Guaranteed)\nCivic Karma: +50 Points जमा झाले.\nZero-Trust Privacy: EXIF व वैयक्तिक माहिती सुरक्षित (Scrubbed)\n\nसंबंधित कनिष्ठ अभियंता व फील्ड कामगारास त्वरित कार्य आदेश जारी करण्यात आला आहे.\n\nLive Tracking: ${typeof window !== "undefined" ? window.location.origin : ""}/complaints`,
             complaintId: ticketId,
             ticketDetails: {
               ward: text,
@@ -874,14 +874,14 @@ export default function WhatsAppSandbox() {
               <Building2 className="w-5 h-5" />
             </div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold font-display tracking-tight text-slate-900 dark:text-white">
-              Headless WhatsApp Grievance Sandbox
+              WhatsApp Grievance Channel
             </h1>
             <Badge className="bg-emerald-600 text-white font-mono text-xs px-2.5 py-0.5 rounded-full hidden sm:inline-flex">
               WHATSAPP CLOUD API
             </Badge>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-sans">
-            Full-width multi-turn conversational simulator with native MediaRecorder PTT, Whisper STT transcriptions, and WebSocket live status updates.
+            Multi-turn grievance submission via WhatsApp — with voice notes, photo attachments, GPS location, and real-time status updates.
           </p>
         </div>
 
@@ -948,8 +948,8 @@ export default function WhatsAppSandbox() {
           {/* WhatsApp Top Header */}
           <div className="relative z-20 bg-[#075E54] dark:bg-[#202C33] text-white px-4 py-3 flex items-center justify-between shadow-md border-b border-emerald-800/40 dark:border-zinc-800 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-600/80 flex items-center justify-center font-bold text-base shadow-inner border border-white/20">
-                🏛️
+              <div className="w-10 h-10 rounded-full bg-emerald-600/80 flex items-center justify-center shadow-inner border border-white/20">
+                <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
@@ -960,11 +960,11 @@ export default function WhatsAppSandbox() {
                 </div>
                 <span className="text-[11px] text-emerald-100 dark:text-zinc-400 flex items-center gap-1">
                   {isSending ? (
-                    <span className="text-emerald-300 font-medium animate-pulse">typing response...</span>
+                    <span className="text-emerald-300 font-medium animate-pulse">composing response...</span>
                   ) : isTranscribing ? (
-                    <span className="text-amber-300 font-medium animate-pulse">transcribing audio (Whisper STT)...</span>
+                    <span className="text-amber-300 font-medium animate-pulse">processing voice note...</span>
                   ) : isRecording ? (
-                    <span className="text-red-300 font-medium animate-pulse">recording voice note...</span>
+                    <span className="text-red-300 font-medium animate-pulse">recording...</span>
                   ) : (
                     <>
                       <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -1066,10 +1066,10 @@ export default function WhatsAppSandbox() {
             <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-2">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
-                  Quick Municipal Presets
+                  Quick Report Presets
                 </p>
                 <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
-                  Mode: {isLiveGatewayMode ? "⚡ LIVE MONGODB" : `🧪 ${dialogueStage}`} {currentGrievanceContext.category ? `• ${currentGrievanceContext.category}` : ""}
+                  {isLiveGatewayMode ? "Live Gateway" : "Simulation Mode"}{currentGrievanceContext.category ? ` • ${currentGrievanceContext.category}` : ""}
                 </span>
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -1119,7 +1119,7 @@ export default function WhatsAppSandbox() {
                         </div>
                         <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium">
                           <ShieldCheck className="w-3 h-3" />
-                          <span>🛡️ EXIF Stripped: Geolocation Protected</span>
+                          <span>EXIF Stripped: Geolocation Protected</span>
                         </div>
                       </div>
                     )}
@@ -1149,7 +1149,7 @@ export default function WhatsAppSandbox() {
                         <div className="flex items-center gap-3 py-1 min-w-[200px] sm:min-w-[240px]">
                           <div className="relative">
                             <div className="w-9 h-9 rounded-full bg-emerald-600/80 text-white flex items-center justify-center font-bold text-xs">
-                              👤
+                              <User className="w-4 h-4 text-white" />
                             </div>
                             <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] shadow-sm">
                               <Mic className="w-2.5 h-2.5" />
@@ -1190,12 +1190,12 @@ export default function WhatsAppSandbox() {
                           </div>
                         </div>
 
-                        {/* Expandable Whisper STT Transcription Card */}
+                        {/* Voice Note Transcription Card */}
                         {m.transcription && (
                           <div className="p-2 rounded-xl bg-black/5 dark:bg-black/20 border border-black/10 dark:border-white/10 text-[11px] space-y-1">
                             <span className="font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
-                              <Sparkles className="w-3 h-3" />
-                              <span>Whisper STT Transcription (Marathi):</span>
+                              <Mic className="w-3 h-3" />
+                              <span>Voice Transcription:</span>
                             </span>
                             <p className="italic text-slate-700 dark:text-zinc-300">"{m.transcription}"</p>
                           </div>
@@ -1215,7 +1215,7 @@ export default function WhatsAppSandbox() {
                             onClick={() => handleSendMessage(btn.payload)}
                             className="w-full py-2 px-3 text-center text-xs font-semibold text-[#00A884] dark:text-[#25D366] bg-slate-50 dark:bg-zinc-800/80 hover:bg-slate-100 dark:hover:bg-zinc-700/80 rounded-xl transition border border-slate-200 dark:border-zinc-700/40 active:scale-[0.98] shadow-sm flex items-center justify-center gap-1.5"
                           >
-                            <Sparkles className="w-3.5 h-3.5" />
+                            <ChevronRight className="w-3.5 h-3.5" />
                             <span>{btn.title}</span>
                           </button>
                         ))}
@@ -1235,7 +1235,10 @@ export default function WhatsAppSandbox() {
                           }
                           className="w-full py-2 px-3 text-xs font-bold text-white bg-[#00A884] hover:bg-[#008f6f] rounded-xl flex items-center justify-between shadow-sm transition"
                         >
-                          <span>📋 View Options (पर्याय निवडा)</span>
+                          <span className="inline-flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5 inline" />
+                            View Options (पर्याय निवडा)
+                          </span>
                           {isListMenuExpanded[m.id] ? (
                             <ChevronUp className="w-4 h-4" />
                           ) : (
@@ -1293,7 +1296,7 @@ export default function WhatsAppSandbox() {
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: "150ms" }}></span>
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: "300ms" }}></span>
                   </div>
-                  <span className="text-[11px] text-slate-500 dark:text-zinc-400">BMC Bot is thinking...</span>
+                  <span className="text-[11px] text-slate-500 dark:text-zinc-400">BMC Grievance Bot</span>
                 </div>
               </div>
             )}
@@ -1328,7 +1331,7 @@ export default function WhatsAppSandbox() {
                 role="menuitem"
                 onClick={() => {
                   setIsAttachMenuOpen(false)
-                  handleSendMessage("📍 Live GPS Pin: 19.0596° N, 72.8347° E (Bandra Reclamation)", { type: "location" })
+                  handleSendMessage("Live GPS Pin: 19.0596° N, 72.8347° E (Bandra Reclamation)", { type: "location" })
                 }}
                 className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition"
               >
@@ -1342,7 +1345,7 @@ export default function WhatsAppSandbox() {
                 role="menuitem"
                 onClick={() => {
                   setIsAttachMenuOpen(false)
-                  handleSendMessage("📄 Document: Ward_H_West_Defect_Notice.pdf (2.4 MB)", { type: "document" })
+                  handleSendMessage("Document: Ward_H_West_Defect_Notice.pdf (2.4 MB)", { type: "document" })
                 }}
                 className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition"
               >
@@ -1489,9 +1492,9 @@ export default function WhatsAppSandbox() {
                 </span>
               </div>
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-100 dark:border-zinc-800">
-                <span className="text-slate-500 dark:text-zinc-400">Active State Machine</span>
+                <span className="text-slate-500 dark:text-zinc-400">Dialogue State</span>
                 <Badge variant="outline" className="font-mono text-[10px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800">
-                  {dialogueStage}
+                  {dialogueStage === "IDLE" ? "READY" : dialogueStage === "AWAITING_MEDIA_OR_LOCATION" ? "AWAITING MEDIA" : dialogueStage === "AWAITING_WARD" ? "AWAITING WARD" : dialogueStage}
                 </Badge>
               </div>
             </div>

@@ -522,22 +522,46 @@ export default function AdminDashboard() {
       return {
         department: dept.code,
         deptLabel: dept.title,
-        Resolved: resolved || Math.floor(Math.random() * 8 + 3),
-        "In Progress": inProgress || Math.floor(Math.random() * 5 + 1),
-        Breached: breached || Math.floor(Math.random() * 2),
+        Resolved: resolved,
+        "In Progress": inProgress,
+        Breached: breached,
       }
     })
   }, [complaints])
 
   // ── 7-Day Ingestion vs Resolution Velocity Trend Data ──────────────────────
   const velocityTrendData = useMemo(() => {
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    return days.map((day, idx) => ({
-      day,
-      Ingested: [18, 24, 29, 32, 28, 19, 14][idx],
-      Resolved: [14, 21, 27, 30, 29, 22, 17][idx],
-    }))
-  }, [])
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    const dayBuckets = dayNames.map((day) => ({ day, Ingested: 0, Resolved: 0 }))
+
+    if (Array.isArray(complaints) && complaints.length > 0) {
+      complaints.forEach((c: any) => {
+        if (c.createdAt) {
+          const d = new Date(c.createdAt)
+          if (!isNaN(d.getTime())) {
+            dayBuckets[d.getDay()].Ingested += 1
+          }
+        }
+        if (c.status === "resolved" || c.status === "closed") {
+          const d = new Date(c.resolvedAt || c.updatedAt || c.createdAt)
+          if (!isNaN(d.getTime())) {
+            dayBuckets[d.getDay()].Resolved += 1
+          }
+        }
+      })
+    }
+
+    // Return in Mon-Sun order for weekly dashboard view
+    return [
+      dayBuckets[1], // Mon
+      dayBuckets[2], // Tue
+      dayBuckets[3], // Wed
+      dayBuckets[4], // Thu
+      dayBuckets[5], // Fri
+      dayBuckets[6], // Sat
+      dayBuckets[0], // Sun
+    ]
+  }, [complaints])
 
   const handleExportPdf = async () => {
     setIsGeneratingPdf(true)

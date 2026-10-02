@@ -12,6 +12,8 @@ import {
   Building2,
   Sliders,
   ExternalLink,
+  Radio,
+  CloudLightning,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -283,7 +285,7 @@ export default function MonsoonRadar() {
             </span>
           </div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Real-time IMD weather ingestion, Arabian Sea tidal hydrodynamic models, and MongoDB citizen waterlogging reports.
+            Real-time IMD weather ingestion, Arabian Sea tidal hydrodynamic models, and verified citizen waterlogging reports.
           </p>
         </div>
 
@@ -293,22 +295,24 @@ export default function MonsoonRadar() {
             <button
               type="button"
               onClick={() => setTelemetryMode("live")}
-              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${telemetryMode === "live"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${telemetryMode === "live"
                   ? "bg-white dark:bg-zinc-900 text-emerald-600 dark:text-emerald-400 shadow-sm border border-zinc-200 dark:border-zinc-700"
                   : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                 }`}
             >
-              📡 Live Satellite
+              <Radio className="w-3.5 h-3.5" />
+              <span>Live Telemetry</span>
             </button>
             <button
               type="button"
               onClick={() => setTelemetryMode("simulated")}
-              className={`px-3 py-1.5 rounded-md font-semibold transition-all ${telemetryMode === "simulated"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold transition-all ${telemetryMode === "simulated"
                   ? "bg-white dark:bg-zinc-900 text-amber-600 dark:text-amber-400 shadow-sm border border-zinc-200 dark:border-zinc-700"
                   : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                 }`}
             >
-              🧪 Cloudburst Sim
+              <CloudLightning className="w-3.5 h-3.5" />
+              <span>Cloudburst Drill</span>
             </button>
           </div>
 
@@ -317,7 +321,7 @@ export default function MonsoonRadar() {
               fetchLiveWeather()
               fetchComplaintsData()
               fetchRadar()
-              toast.success("Telemetry synchronized with Open-Meteo & MongoDB", { icon: "🔄" })
+              toast.success("Telemetry synchronized with Open-Meteo & Central Municipal Gateway")
             }}
             variant="outline"
             size="sm"
@@ -391,7 +395,7 @@ export default function MonsoonRadar() {
             {criticalHotspotsCount} <span className="text-sm font-normal text-zinc-500">Critical</span>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            {complaints.length} active waterlogging reports in MongoDB
+            {complaints.length} active field waterlogging reports
           </p>
         </motion.div>
 

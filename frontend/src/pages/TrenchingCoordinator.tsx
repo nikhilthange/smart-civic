@@ -55,7 +55,7 @@ export default function TrenchingCoordinator() {
       if (res.evaluation.isDlpBlocked) {
         toast.error(res.evaluation.reason, { duration: 6000 })
       } else if (res.evaluation.isCollisionDetected) {
-        toast.success(res.evaluation.message, { icon: "🔄", duration: 6000 })
+        toast.success(res.evaluation.message, { duration: 6000 })
       } else {
         toast.success(res.evaluation.message, { duration: 5000 })
       }
@@ -285,8 +285,9 @@ export default function TrenchingCoordinator() {
                       Agency: <strong>{p.agencyName}</strong> • {p.purpose}
                     </p>
                     {isMerged && (
-                      <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-mono font-semibold">
-                        🔄 Joint Trenching with {p.coordinatingAgencies?.join(" & ")} • Savings: {formatCurrencyINR(p.sharedCostSavingsInr || 0)}
+                      <p className="text-[11px] text-indigo-600 dark:text-indigo-400 font-mono font-semibold inline-flex items-center gap-1">
+                        <RefreshCw className="w-3 h-3 text-indigo-500 shrink-0" />
+                        <span>Joint Trenching with {p.coordinatingAgencies?.join(" & ")} • Savings: {formatCurrencyINR(p.sharedCostSavingsInr || 0)}</span>
                       </p>
                     )}
                   </div>

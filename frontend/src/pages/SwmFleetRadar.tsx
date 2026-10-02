@@ -207,8 +207,7 @@ export default function SwmFleetRadar() {
         )
       )
       triggerHapticFeedback("success")
-      toast.success(`RFID Lift Confirmed for ${binId}! Logged 380 kg MSW. Fill reset to 0%.`, {
-        icon: "🚛",
+      toast.success(`RFID Lift Confirmed for ${binId}. Logged 380 kg MSW. Fill reset to 0%.`, {
         duration: 4000,
       })
     } catch {
@@ -226,8 +225,8 @@ export default function SwmFleetRadar() {
     setContractorEscrow((prev) => Math.max(0, prev - penalty))
     setPenaltiesLogged((prev) => prev + 1)
     toast.error(
-      `SLA Breach! CleanCity Infra Ltd missed Society Lift #402. ₹5,000 auto-deducted from escrow under MMC Act Sec 354.`,
-      { duration: 6000, icon: "⚖️" }
+      `SLA Breach: CleanCity Infra Ltd missed Society Lift #402. ₹5,000 auto-deducted from escrow under MMC Act Sec 354.`,
+      { duration: 6000 }
     )
   }
 

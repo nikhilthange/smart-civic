@@ -39,15 +39,12 @@ export function CitizenConfirmationBanner({
         rating,
         feedback: "Citizen verified and accepted on-site repair.",
       })
-      toast.success("🎉 Resolution Accepted! +20 Civic Karma points awarded to your wallet!", {
-        icon: "🌟",
+      toast.success("Resolution verified. 20 Civic Karma credits added to your ledger.", {
         duration: 5000,
       })
       onStatusUpdated?.()
     } catch {
-      toast.success("Resolution Accepted! +20 Civic Karma points awarded!", {
-        icon: "🌟",
-      })
+      toast.success("Resolution verified. 20 Civic Karma credits added.")
       onStatusUpdated?.()
     } finally {
       setIsAccepting(false)

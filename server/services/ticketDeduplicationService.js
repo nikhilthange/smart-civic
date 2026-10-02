@@ -48,7 +48,13 @@ class TicketDeduplicationService {
     }
 
     for (const parent of candidateComplaints) {
-      const parentCoords = parent.location?.coordinates;
+      const rawCoords = parent.location?.coordinates;
+      const parentCoords = Array.isArray(rawCoords)
+        ? rawCoords
+        : Array.isArray(rawCoords?.coordinates)
+        ? rawCoords.coordinates
+        : null;
+
       if (parentCoords && parentCoords.length >= 2) {
         const parentLng = parentCoords[0];
         const parentLat = parentCoords[1];

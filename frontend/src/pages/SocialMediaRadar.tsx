@@ -57,12 +57,11 @@ export default function SocialMediaRadar() {
     try {
       const res = await api.post("/social/convert-ticket", post)
       toast.success(
-        `Converted to Official Complaint #${res.data.data?.complaintId || "SC-2026-9041"} in ${post.extractedWard}`,
-        { icon: "⚡" }
+        `Converted to Official Complaint #${res.data.data?.complaintId || "SC-2026-9041"} in ${post.extractedWard}`
       )
       setConvertedIds((prev) => [...prev, post.postId])
     } catch {
-      toast.success(`Converted to Official Complaint #${post.postId.slice(3)} in ${post.extractedWard}`, { icon: "⚡" })
+      toast.success(`Converted to Official Complaint #${post.postId.slice(3)} in ${post.extractedWard}`)
       setConvertedIds((prev) => [...prev, post.postId])
     } finally {
       setConvertingId(null)

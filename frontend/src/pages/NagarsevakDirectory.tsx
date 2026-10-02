@@ -186,14 +186,19 @@ export default function NagarsevakDirectory() {
                   {/* Profile Info */}
                   <CardContent className="p-5 space-y-4">
                     <div className="flex items-start gap-3.5">
-                      <img
-                        src={ns.avatar}
-                        alt={ns.name}
-                        onError={(e) => {
-                          ;(e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(ns.name)}&background=0284c7&color=fff`
-                        }}
-                        className="w-13 h-13 rounded-2xl object-cover border border-slate-200 dark:border-slate-800 shrink-0 shadow-xs"
-                      />
+                      <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-950 text-white flex flex-col items-center justify-center border border-slate-700/60 shrink-0 shadow-xs relative">
+                        <span className="text-sm font-bold font-mono text-emerald-400">
+                          {ns.name
+                            .split(" ")
+                            .map((p) => p[0])
+                            .slice(0, 2)
+                            .join("")
+                            .toUpperCase()}
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">
+                          {ns.electoralWard.replace("Ward ", "W-")}
+                        </span>
+                      </div>
                       <div className="space-y-1 min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">

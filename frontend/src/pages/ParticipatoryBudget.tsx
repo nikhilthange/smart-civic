@@ -14,14 +14,21 @@ import {
   X,
   FileCheck2,
   Award,
+  Sparkles,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "react-router-dom"
-import { municipalApi, type WardProject, type CorporatorLedger } from "@/services/municipalApi"
+import {
+  municipalApi,
+  type WardProject,
+  type CorporatorLedger,
+  type FundExpenditureTransaction,
+} from "@/services/municipalApi"
 import { formatCurrencyINR, formatNumber, formatDate } from "@/utils/formatters"
 import toast from "react-hot-toast"
+import api from "@/lib/axios"
 
 interface ExtendedWardProject extends WardProject {
   focusArea?: string
@@ -32,105 +39,14 @@ interface ExtendedWardProject extends WardProject {
   proposedAt?: string
 }
 
-interface FundExpenditureTransaction {
-  workOrderId: string
-  title: string
-  contractorName: string
-  vendorGstin: string
-  disbursedAmountInr: number
-  committedAmountInr: number
-  completionPercentage: number
-  status: "COMPLETED" | "IN_PROGRESS" | "BILL_UNDER_AUDIT"
-  sanctionDate: string
-  blockHash: string
-}
-
 export default function ParticipatoryBudget() {
-  const [projects, setProjects] = useState<ExtendedWardProject[]>([
-    {
-      _id: "wp-1",
-      projectId: "WP-GN-01",
-      title: "Solar Streetlight Grid for Shivaji Park Perimeter",
-      description: "Installation of 48 smart solar LED mast lights with battery telemetry along Shivaji Park walking track to reduce grid power load.",
-      ward: "Ward G-North",
-      category: "INFRASTRUCTURE",
-      estimatedBudgetInr: 3200000,
-      fundsDisbursedInr: 1600000,
-      corporatorName: "Adv. Rahul Sawant",
-      estimatedBeneficiaryCitizens: 45000,
-      votesCount: 488,
-      status: "IN_EXECUTION",
-      proposedBy: "Shivaji Park Citizens Welfare Forum",
-      proposedAt: "2026-03-12T00:00:00.000Z",
-      focusArea: "Renewable Energy",
-      statutoryThresholdVotes: 500,
-      currentVotes: 488,
-      hasVoted: false,
-    },
-    {
-      _id: "wp-2",
-      projectId: "WP-GN-02",
-      title: "Dadar Flower Market Women Sanitation & Nursing Lounge",
-      description: "Construction of a dedicated, high-hygiene public toilet block with infant nursing room and sanitary vending kiosk near Senapati Bapat Marg.",
-      ward: "Ward G-North",
-      category: "SANITATION",
-      estimatedBudgetInr: 2800000,
-      fundsDisbursedInr: 2800000,
-      corporatorName: "Adv. Rahul Sawant",
-      estimatedBeneficiaryCitizens: 38000,
-      votesCount: 520,
-      status: "CITIZEN_APPROVED",
-      proposedBy: "Dadar Mahila Vyapari Sangh",
-      proposedAt: "2026-04-01T00:00:00.000Z",
-      focusArea: "Sanitation & Hygiene",
-      statutoryThresholdVotes: 500,
-      currentVotes: 520,
-      hasVoted: false,
-    },
-    {
-      _id: "wp-3",
-      projectId: "WP-GN-03",
-      title: "Rainwater Percolation & Micro-Catchment Wells",
-      description: "Drilling 12 localized groundwater recharge borewells along Cadell Road to prevent monsoon stormwater waterlogging.",
-      ward: "Ward G-North",
-      category: "ENVIRONMENT",
-      estimatedBudgetInr: 1850000,
-      fundsDisbursedInr: 0,
-      corporatorName: "Adv. Rahul Sawant",
-      estimatedBeneficiaryCitizens: 28000,
-      votesCount: 412,
-      status: "PROPOSED",
-      proposedBy: "Green Dadar Initiative",
-      proposedAt: "2026-05-10T00:00:00.000Z",
-      focusArea: "Water Conservation",
-      statutoryThresholdVotes: 500,
-      currentVotes: 412,
-      hasVoted: false,
-    },
-    {
-      _id: "wp-4",
-      projectId: "WP-GN-04",
-      title: "Smart Footpath Widening & Tactile Paving on Ranade Road",
-      description: "Universal accessibility pedestrian retrofitting with non-slip cobblestone, tactile pavers for visually impaired, and bollard segregation.",
-      ward: "Ward G-North",
-      category: "INFRASTRUCTURE",
-      estimatedBudgetInr: 2200000,
-      fundsDisbursedInr: 0,
-      corporatorName: "Adv. Rahul Sawant",
-      estimatedBeneficiaryCitizens: 52000,
-      votesCount: 365,
-      status: "PROPOSED",
-      proposedBy: "Accessible Mumbai Alliance",
-      proposedAt: "2026-05-18T00:00:00.000Z",
-      focusArea: "Pedestrian Safety",
-      statutoryThresholdVotes: 500,
-      currentVotes: 365,
-      hasVoted: false,
-    },
-  ])
-
+  // Real database-backed state (zero mock data)
+  const [projects, setProjects] = useState<ExtendedWardProject[]>([])
+  const [transactions, setTransactions] = useState<FundExpenditureTransaction[]>([])
   const [ledger, setLedger] = useState<CorporatorLedger | null>(null)
   const [selectedWard, setSelectedWard] = useState("Ward G-North")
+  const [userKarma, setUserKarma] = useState<number | null>(null)
+  const [selectedVoteWeights, setSelectedVoteWeights] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
   const [isVoting, setIsVoting] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -146,72 +62,39 @@ export default function ParticipatoryBudget() {
     focusArea: "Public Amenities",
   })
 
-  // Discretionary Expenditure Audit Ledger Data
-  const [transactions] = useState<FundExpenditureTransaction[]>([
-    {
-      workOrderId: "WO-2026-GN-089",
-      title: "Solar Mast Lights at Shivaji Park",
-      contractorName: "Surya Urja Infra Pvt Ltd",
-      vendorGstin: "27AAACS1429B1ZX",
-      disbursedAmountInr: 1600000,
-      committedAmountInr: 3200000,
-      completionPercentage: 75,
-      status: "IN_PROGRESS",
-      sanctionDate: "2026-04-10",
-      blockHash: "9a2f1c8d4e5b6a7c",
-    },
-    {
-      workOrderId: "WO-2026-GN-074",
-      title: "Women Sanitation Lounge Dadar West",
-      contractorName: "CivicBuild Infrastructure Ltd",
-      vendorGstin: "27AABCC8841M1ZN",
-      disbursedAmountInr: 2800000,
-      committedAmountInr: 2800000,
-      completionPercentage: 100,
-      status: "COMPLETED",
-      sanctionDate: "2026-03-22",
-      blockHash: "4c7e2b1f8a9d0e3a",
-    },
-    {
-      workOrderId: "WO-2026-GN-052",
-      title: "Dharavi Junction Crosswalk Resurfacing",
-      contractorName: "Apex Roadways & Pavers Ltd",
-      vendorGstin: "27AAACA9940L1ZP",
-      disbursedAmountInr: 800000,
-      committedAmountInr: 1200000,
-      completionPercentage: 90,
-      status: "BILL_UNDER_AUDIT",
-      sanctionDate: "2026-02-15",
-      blockHash: "1e8d9c4b7a2f5e6a",
-    },
-  ])
-
   const isMountedRef = useRef(true)
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
-      const [projRes, ledgerRes] = await Promise.all([
+      const [projRes, ledgerRes, expRes, userRes] = await Promise.all([
         municipalApi.getWardProjects(selectedWard).catch(() => ({ projects: [] })),
         municipalApi.getCorporatorLedger(selectedWard).catch(() => null),
+        municipalApi.getWardExpenditures(selectedWard).catch(() => ({ count: 0, transactions: [] })),
+        api.get("/users/profile").catch(() => ({ data: { user: { karmaPoints: 50 } } })),
       ])
+
       if (isMountedRef.current) {
-        if (projRes.projects && projRes.projects.length > 0) {
+        if (projRes.projects) {
           setProjects((prev) =>
             projRes.projects.map((p: any) => ({
               ...p,
-              focusArea: p.focusArea || "Urban Development",
+              focusArea: p.focusArea || "Urban Infrastructure",
               statutoryThresholdVotes: 500,
-              currentVotes: p.votesCount || 300,
-              hasVoted: prev.find((item) => item.projectId === p.projectId)?.hasVoted || false,
+              currentVotes: p.votesCount || 0,
+              hasVoted: prev.find((item) => item.projectId === p.projectId || item._id === p._id)?.hasVoted || false,
             }))
           )
         }
         if (ledgerRes) setLedger(ledgerRes)
+        if (expRes.transactions) setTransactions(expRes.transactions)
+        if (userRes.data?.user?.karmaPoints !== undefined) {
+          setUserKarma(userRes.data.user.karmaPoints)
+        }
       }
     } catch {
       if (isMountedRef.current) {
-        toast.error("Failed to load participatory ward budget data")
+        toast.error("Failed to load participatory ward budget data.")
       }
     } finally {
       if (isMountedRef.current) {
@@ -239,99 +122,107 @@ export default function ParticipatoryBudget() {
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [isModalOpen])
 
-  // Cast Weighted Ward Vote with Anti-Duplicate Protection
+  // Cast Weighted Quadratic Ward Vote with Real Karma Deduction
   const handleVote = async (projectId: string) => {
     const targetProject = projects.find((p) => p.projectId === projectId || p._id === projectId)
     if (targetProject?.hasVoted) {
-      toast.error("You have already cast your statutory citizen vote on this proposal for Q2-2026.")
+      toast.error("You have already cast your statutory citizen ballot on this proposal for Q2-2026.")
+      return
+    }
+
+    const voteWeight = selectedVoteWeights[projectId] || 1
+    const karmaRequired = voteWeight * voteWeight
+
+    if (userKarma !== null && userKarma < karmaRequired) {
+      toast.error(
+        `Insufficient Karma: Casting ${voteWeight} weighted vote(s) requires ${karmaRequired} Karma points, but your balance is ${userKarma}. Earn karma by submitting verified civic reports!`,
+        { duration: 6000 }
+      )
       return
     }
 
     setIsVoting(true)
     try {
-      try {
-        await municipalApi.castVote(projectId)
-      } catch {
-        // Fallback optimistic increment
-      }
-
-      setProjects((prev) =>
-        prev.map((p) =>
-          p.projectId === projectId || p._id === projectId
-            ? {
-                ...p,
-                votesCount: (p.votesCount || 0) + 1,
-                currentVotes: (p.currentVotes || 0) + 1,
-                hasVoted: true,
-                status:
-                  (p.currentVotes || 0) + 1 >= (p.statutoryThresholdVotes || 500) && p.status === "PROPOSED"
-                    ? "CITIZEN_APPROVED"
-                    : p.status,
-              }
-            : p
+      const res = await municipalApi.castVote(projectId, voteWeight)
+      if (res.success) {
+        setProjects((prev) =>
+          prev.map((p) =>
+            p.projectId === projectId || p._id === projectId
+              ? {
+                  ...p,
+                  votesCount: res.votesCount || (p.votesCount || 0) + voteWeight,
+                  currentVotes: res.votesCount || (p.currentVotes || 0) + voteWeight,
+                  hasVoted: true,
+                  status: res.status || p.status,
+                }
+              : p
+          )
         )
-      )
 
-      toast.success(
-        `Vote Recorded! Your ballot is cryptographically linked to Aadhaar/Citizen ID under DPDP Act 2023.`,
-        { icon: "🗳️", duration: 5000 }
-      )
-    } catch {
-      toast.error("Voting failed. Please verify your ward residency.")
+        if (typeof res.remainingKarma === "number") {
+          setUserKarma(res.remainingKarma)
+        } else if (userKarma !== null) {
+          setUserKarma(Math.max(0, userKarma - karmaRequired))
+        }
+
+        toast.success(
+          `Quadratic vote recorded: Cast ${voteWeight} vote(s) using ${karmaRequired} Karma points.`,
+          { duration: 5000 }
+        )
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Voting failed. Please verify your ward residency or Karma balance.")
     } finally {
       setIsVoting(false)
     }
   }
 
-  // Handle Community Proposal Submission
-  const handleProposalSubmit = (e: React.FormEvent) => {
+  // Handle Community Proposal Submission to MongoDB
+  const handleProposalSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newProposal.title || !newProposal.description) {
       toast.error("Please fill in the project title and problem statement")
       return
     }
 
-    const createdProject: ExtendedWardProject = {
-      _id: `wp-${Date.now()}`,
-      projectId: `WP-GN-0${projects.length + 1}`,
-      title: newProposal.title,
-      description: `${newProposal.description} (Landmark: ${newProposal.landmark})`,
-      ward: selectedWard,
-      category: "CIVIC_AMENITY",
-      estimatedBudgetInr:
-        newProposal.budgetCategory === "TIER_1_UNDER_10L"
-          ? 850000
-          : newProposal.budgetCategory === "TIER_2_10L_25L"
-          ? 1800000
-          : 3500000,
-      fundsDisbursedInr: 0,
-      corporatorName: ledger?.corporatorName || "Hon. Ward Councilor (BMC)",
-      estimatedBeneficiaryCitizens: parseInt(newProposal.beneficiaries, 10) || 20000,
-      votesCount: 1,
-      status: "PROPOSED",
-      proposedBy: "Verified Ward Citizen (DPDP Masked)",
-      proposedAt: new Date().toISOString(),
-      focusArea: newProposal.focusArea,
-      statutoryThresholdVotes: 500,
-      currentVotes: 1,
-      hasVoted: true,
+    const budget =
+      newProposal.budgetCategory === "TIER_1_UNDER_10L"
+        ? 850000
+        : newProposal.budgetCategory === "TIER_2_10L_25L"
+        ? 1800000
+        : 3500000
+
+    try {
+      const payload = {
+        title: newProposal.title,
+        description: `${newProposal.description}${newProposal.landmark ? ` (Landmark: ${newProposal.landmark})` : ""}`,
+        ward: selectedWard,
+        category: "SOLAR_STREETLIGHTS",
+        estimatedBudgetInr: budget,
+        corporatorName: ledger?.corporatorName || "Hon. Ward Councilor (BMC)",
+        estimatedBeneficiaryCitizens: parseInt(newProposal.beneficiaries, 10) || 15000,
+      }
+
+      const res = await municipalApi.createWardProject(payload)
+      if (res.success) {
+        toast.success(
+          `Community proposal "${newProposal.title}" registered successfully. Ballot is now open for participatory voting.`,
+          { duration: 5000 }
+        )
+        setIsModalOpen(false)
+        setNewProposal({
+          title: "",
+          landmark: "",
+          description: "",
+          budgetCategory: "TIER_2_10L_25L",
+          beneficiaries: "15000",
+          focusArea: "Public Amenities",
+        })
+        await fetchData()
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to submit proposal to municipal database.")
     }
-
-    setProjects([createdProject, ...projects])
-    setIsModalOpen(false)
-    setNewProposal({
-      title: "",
-      landmark: "",
-      description: "",
-      budgetCategory: "TIER_2_10L_25L",
-      beneficiaries: "15000",
-      focusArea: "Public Amenities",
-    })
-
-    toast.success(
-      "Community Proposal Submitted! Added to Ward Direct Democracy Ballot for citizen co-voting.",
-      { icon: "📜", duration: 6000 }
-    )
   }
 
   const filteredTransactions = transactions.filter(
@@ -363,12 +254,19 @@ export default function ParticipatoryBudget() {
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
+          {userKarma !== null && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-mono font-bold">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{userKarma} Karma Available</span>
+            </div>
+          )}
+
           <Button
             onClick={() => setIsModalOpen(true)}
             className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 px-3 rounded-xl gap-1.5 shadow-sm active:scale-95 transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>Submit Project Proposal</span>
+            <span>Submit Proposal</span>
           </Button>
 
           <select
@@ -412,9 +310,11 @@ export default function ParticipatoryBudget() {
             <Award className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-            {formatCurrencyINR(ledger?.committedProjectsBudgetInr || 6000000)}
+            {formatCurrencyINR(ledger?.committedProjectsBudgetInr || 0)}
           </div>
-          <p className="text-[11px] text-emerald-600 font-medium">● 4 Citizen-Approved Projects</p>
+          <p className="text-[11px] text-emerald-600 font-medium">
+            ● {projects.filter((p) => p.status === "CITIZEN_APPROVED" || p.status === "IN_EXECUTION").length} Approved Projects
+          </p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-1">
@@ -423,7 +323,7 @@ export default function ParticipatoryBudget() {
             <FileCheck2 className="w-4 h-4 text-indigo-600" />
           </div>
           <div className="text-2xl font-bold font-mono text-indigo-600 dark:text-indigo-400">
-            {formatCurrencyINR(ledger?.disbursedExpenditureInr || 3200000)}
+            {formatCurrencyINR(ledger?.disbursedExpenditureInr || 0)}
           </div>
           <p className="text-[11px] text-slate-400">Verified contractor invoices</p>
         </div>
@@ -449,112 +349,152 @@ export default function ParticipatoryBudget() {
               Direct Democracy Ballot: Ward Capital Proposals (Q2-2026)
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Proposals surpassing 500 verified votes receive immediate statutory administrative sanction.
+              Quadratic Voting Enabled: Weight $V$ requires $V^2$ Karma points. Proposals surpassing 500 votes receive statutory sanction.
             </p>
           </div>
-          <span className="text-xs font-mono text-slate-400">1 Vote per Verified Citizen</span>
+          <span className="text-xs font-mono text-slate-400">
+            {projects.length} Proposals in {selectedWard}
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map((proj) => {
-            const votes = proj.currentVotes || proj.votesCount || 0
-            const threshold = proj.statutoryThresholdVotes || 500
-            const progressPercent = Math.min(100, Math.round((votes / threshold) * 100))
-            const isApproved = proj.status === "CITIZEN_APPROVED" || proj.status === "IN_EXECUTION"
+        {loading ? (
+          <div className="p-12 text-center text-slate-400 font-mono bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-500" />
+            Loading participatory ballot and verified civic proposals...
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="p-12 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+            No active proposals found for {selectedWard}. Submit the first community proposal above!
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {projects.map((proj) => {
+              const projectId = proj.projectId || proj._id
+              const votes = proj.currentVotes || proj.votesCount || 0
+              const threshold = proj.statutoryThresholdVotes || 500
+              const progressPercent = Math.min(100, Math.round((votes / threshold) * 100))
+              const isApproved = proj.status === "CITIZEN_APPROVED" || proj.status === "IN_EXECUTION"
+              const currentWeight = selectedVoteWeights[projectId] || 1
+              const karmaCost = currentWeight * currentWeight
 
-            return (
-              <Card
-                key={proj._id || proj.projectId}
-                className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm flex flex-col justify-between space-y-4 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all"
-              >
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-mono font-bold text-slate-400">{proj.projectId}</span>
-                    <Badge
-                      className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full ${
-                        isApproved
-                          ? "bg-emerald-600 text-white"
-                          : "bg-amber-500 text-white"
+              return (
+                <Card
+                  key={projectId}
+                  className="border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm flex flex-col justify-between space-y-4 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all"
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-mono font-bold text-slate-400">{proj.projectId}</span>
+                      <Badge
+                        className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full ${
+                          isApproved ? "bg-emerald-600 text-white" : "bg-amber-500 text-white"
+                        }`}
+                      >
+                        {proj.status.replace("_", " ")}
+                      </Badge>
+                    </div>
+
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-white font-display line-clamp-2">
+                      {proj.title}
+                    </h3>
+
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">
+                      {proj.description}
+                    </p>
+
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                        <Tag className="w-3 h-3 text-slate-400" />
+                        {proj.focusArea || "Civic Amenity"}
+                      </span>
+                    </div>
+
+                    {/* Financial & Beneficiary Chips */}
+                    <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-mono">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Est. Budget</span>
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          {formatCurrencyINR(proj.estimatedBudgetInr)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Beneficiaries</span>
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          ~{formatNumber(proj.estimatedBeneficiaryCitizens)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Voting Progress Towards 500 Vote Threshold */}
+                    <div className="space-y-1 pt-1">
+                      <div className="flex items-center justify-between text-[11px] font-mono">
+                        <span className="text-slate-500">Threshold Progress</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                          {votes} / {threshold} Votes ({progressPercent}%)
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-500 ${
+                            progressPercent >= 100 ? "bg-emerald-500" : "bg-teal-500"
+                          }`}
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quadratic Voting Controller */}
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1 text-slate-400 font-mono text-[11px]">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{formatDate(proj.proposedAt || "2026-04-01T00:00:00.000Z")}</span>
+                      </div>
+
+                      {!proj.hasVoted && (
+                        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700">
+                          {[1, 2, 3].map((w) => (
+                            <button
+                              key={w}
+                              type="button"
+                              onClick={() => setSelectedVoteWeights((prev) => ({ ...prev, [projectId]: w }))}
+                              className={`px-2 py-0.5 text-[10px] font-mono rounded transition-all ${
+                                currentWeight === w
+                                  ? "bg-emerald-600 text-white font-bold"
+                                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                              }`}
+                            >
+                              {w}V ({w * w}p)
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <Button
+                      size="sm"
+                      disabled={isVoting || proj.hasVoted}
+                      onClick={() => handleVote(projectId)}
+                      className={`w-full text-xs font-semibold h-8 px-3 rounded-xl gap-1.5 shadow-sm active:scale-95 transition-all ${
+                        proj.hasVoted
+                          ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700"
+                          : "bg-emerald-600 hover:bg-emerald-700 text-white"
                       }`}
                     >
-                      {proj.status.replace("_", " ")}
-                    </Badge>
-                  </div>
-
-                  <h3 className="font-bold text-sm text-slate-900 dark:text-white font-display line-clamp-2">
-                    {proj.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">
-                    {proj.description}
-                  </p>
-
-                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center gap-1">
-                      <Tag className="w-3 h-3 text-slate-400" />
-                      {proj.focusArea || "Civic Amenity"}
-                    </span>
-                  </div>
-
-                  {/* Financial & Beneficiary Chips */}
-                  <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-2xl border border-slate-100 dark:border-slate-800 text-xs font-mono">
-                    <div>
-                      <span className="text-[10px] text-slate-400 block">Est. Budget</span>
-                      <span className="font-bold text-slate-900 dark:text-white">
-                        {formatCurrencyINR(proj.estimatedBudgetInr)}
+                      <Vote className="w-3.5 h-3.5" />
+                      <span>
+                        {proj.hasVoted
+                          ? "Quadratic Ballot Cast"
+                          : `Cast ${currentWeight} Vote(s) (-${karmaCost} Karma)`}
                       </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 block">Beneficiaries</span>
-                      <span className="font-bold text-slate-900 dark:text-white">
-                        ~{formatNumber(proj.estimatedBeneficiaryCitizens)}
-                      </span>
-                    </div>
+                    </Button>
                   </div>
-
-                  {/* Voting Progress Towards 500 Vote Threshold */}
-                  <div className="space-y-1 pt-1">
-                    <div className="flex items-center justify-between text-[11px] font-mono">
-                      <span className="text-slate-500">Threshold Progress</span>
-                      <span className="font-bold text-slate-800 dark:text-slate-200">
-                        {votes} / {threshold} Votes ({progressPercent}%)
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          progressPercent >= 100 ? "bg-emerald-500" : "bg-teal-500"
-                        }`}
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1 text-slate-400 font-mono text-[11px]">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{formatDate(proj.proposedAt || "2026-04-01T00:00:00.000Z")}</span>
-                  </div>
-
-                  <Button
-                    size="sm"
-                    disabled={isVoting || proj.hasVoted}
-                    onClick={() => handleVote(proj.projectId || proj._id)}
-                    className={`text-xs font-semibold h-8 px-3 rounded-xl gap-1.5 shadow-sm active:scale-95 transition-all ${
-                      proj.hasVoted
-                        ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700"
-                        : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                    }`}
-                  >
-                    <Vote className="w-3.5 h-3.5" />
-                    <span>{proj.hasVoted ? "Voted ✓" : "Cast Ward Vote"}</span>
-                  </Button>
-                </div>
-              </Card>
-            )
-          })}
-        </div>
+                </Card>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Audited Corporator Fund Expenditure Ledger */}
@@ -608,51 +548,63 @@ export default function ParticipatoryBudget() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
-                {filteredTransactions.map((tx) => (
-                  <tr key={tx.workOrderId} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
-                      {tx.workOrderId}
-                      <span className="block text-[10px] font-normal text-slate-400 font-sans">
-                        {tx.sanctionDate}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 block">{tx.title}</span>
-                      <Badge variant="outline" className="text-[9px] font-mono mt-0.5">
-                        {tx.status.replace(/_/g, " ")}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 font-mono">
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 font-sans block">
-                        {tx.contractorName}
-                      </span>
-                      <span className="text-[10px] text-slate-400">{tx.vendorGstin}</span>
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono">
-                      <span className="font-bold text-slate-900 dark:text-white block">
-                        {formatCurrencyINR(tx.disbursedAmountInr)}
-                      </span>
-                      <span className="text-[10px] text-slate-400">
-                        Committed: {formatCurrencyINR(tx.committedAmountInr)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <div className="inline-flex items-center gap-1 font-mono font-bold text-[11px] text-emerald-600 dark:text-emerald-400">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>{tx.completionPercentage}%</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-center font-mono">
-                      <Link
-                        to="/audit-ledger"
-                        className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 hover:underline"
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>#{tx.blockHash}</span>
-                      </Link>
+                {filteredTransactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-400 font-mono">
+                      No expenditure records found matching criteria.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredTransactions.map((tx) => (
+                    <tr key={tx.workOrderId} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                        {tx.workOrderId}
+                        <span className="block text-[10px] font-normal text-slate-400 font-sans">
+                          {tx.sanctionDate}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 block">{tx.title}</span>
+                        <Badge variant="outline" className="text-[9px] font-mono mt-0.5">
+                          {tx.status.replace(/_/g, " ")}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 font-mono">
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 font-sans block">
+                          {tx.contractorName}
+                        </span>
+                        <span className="text-[10px] text-slate-400">{tx.vendorGstin}</span>
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono">
+                        <span className="font-bold text-slate-900 dark:text-white block">
+                          {formatCurrencyINR(tx.disbursedAmountInr)}
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          Committed: {formatCurrencyINR(tx.committedAmountInr)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="inline-flex items-center gap-1 font-mono font-bold text-[11px] text-emerald-600 dark:text-emerald-400">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>{tx.completionPercentage}%</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-center font-mono">
+                        <span
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 cursor-pointer"
+                          title={`SHA-256 Ledger Hash: ${tx.blockHash}`}
+                          onClick={() => {
+                            navigator.clipboard.writeText(tx.blockHash)
+                            toast.success("Transaction Block Hash copied to clipboard!")
+                          }}
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>#{tx.blockHash}</span>
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

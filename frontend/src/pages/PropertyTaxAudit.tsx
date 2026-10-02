@@ -57,7 +57,7 @@ export default function PropertyTaxAudit() {
       })
       setCalcResult(res)
       if (res.isViolation) {
-        toast.error(res.assessmentNotice, { icon: "🚨", duration: 7000 })
+        toast.error(res.assessmentNotice, { duration: 7000 })
       } else {
         toast.success(res.assessmentNotice, { duration: 5000 })
       }

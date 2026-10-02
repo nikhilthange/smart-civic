@@ -2,12 +2,18 @@
 
 const express = require("express");
 const router = express.Router();
-const { getComplaintRtsStatus, getMunicipalRtsStats } = require("../controllers/rtsController");
+const {
+  getAllPenalties,
+  getRtsSummary,
+  runComplianceAudit,
+  adjudicatePenalty,
+  compensateCitizen,
+} = require("../controllers/rtsController");
 
-// GET /api/rts/stats — Municipal RTS compliance overview
-router.get("/stats", getMunicipalRtsStats);
-
-// GET /api/rts/status/:complaintId — Specific ticket RTS statutory guarantee
-router.get("/status/:complaintId", getComplaintRtsStatus);
+router.get("/penalties", getAllPenalties);
+router.get("/summary", getRtsSummary);
+router.post("/audit", runComplianceAudit);
+router.post("/adjudicate/:noticeNumber", adjudicatePenalty);
+router.post("/compensate-citizen/:noticeNumber", compensateCitizen);
 
 module.exports = router;

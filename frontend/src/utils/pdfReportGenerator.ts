@@ -1,5 +1,6 @@
 import type { WardScore, Complaint } from "@/services/complaintApi"
 import { CATEGORY_LABELS } from "@/services/complaintApi"
+import type { CourtEvidentiaryDossier } from "@/services/advancedMunicipalApi"
 
 export interface PdfReportData {
   wardScores: WardScore[]
@@ -352,4 +353,254 @@ export const generateResolutionCertificatePdf = async (complaint: Complaint): Pr
   // Save PDF
   doc.save(`BMC_Resolution_Docket_${ticketId}.pdf`)
 }
+
+/**
+ * Generates an official, court-admissible legal evidentiary dossier for
+ * High Court Public Interest Litigation (PIL) & RTI Act 2005 proceedings.
+ * Features Indian Evidence Act Section 65B Certificate, SHA-256 Chain of Custody,
+ * and statutory Maharashtra RTS Act Section 10 penalty breakdown.
+ */
+export const generateHighCourtDossierPdf = async (dossier: CourtEvidentiaryDossier): Promise<void> => {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ])
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" })
+  const ticketId = dossier.complaint.complaintId || dossier.complaint.id || "DOCKET"
+
+  // ── Page 1: Header Banner (Judicial Navy & Gold) ──
+  doc.setFillColor(15, 23, 42) // Slate-900
+  doc.rect(0, 0, 210, 32, "F")
+  
+  doc.setFillColor(180, 83, 9) // Amber-700
+  doc.rect(0, 32, 210, 2, "F")
+
+  doc.setTextColor(245, 158, 11) // Gold/Amber
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(10.5)
+  doc.text("IN THE HIGH COURT OF JUDICATURE AT BOMBAY", 14, 11)
+
+  doc.setTextColor(255, 255, 255)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(13)
+  doc.text("STATUTORY ELECTRONIC EVIDENTIARY DOSSIER", 14, 19)
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(8)
+  doc.setTextColor(203, 213, 225)
+  doc.text("INDIAN EVIDENCE ACT SEC 65B • MAHARASHTRA RTS ACT 2015 • RTI ACT 2005 SEC 4", 14, 26)
+
+  // ── 1. Cause Title & Parties Box ──
+  doc.setFillColor(248, 250, 252)
+  doc.setDrawColor(203, 213, 225)
+  doc.roundedRect(14, 38, 182, 34, 2, 2, "FD")
+
+  doc.setTextColor(15, 23, 42)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(8.5)
+  doc.text(`DOCKET: ${dossier.highCourtPilDraft.causeTitle}`, 18, 44)
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(7.5)
+  doc.setTextColor(51, 65, 85)
+  doc.text(`PETITIONER: ${dossier.highCourtPilDraft.parties.petitioner}`, 18, 50)
+  doc.text(`RESPONDENT 1: ${dossier.highCourtPilDraft.parties.respondent1}`, 18, 55)
+  doc.text(`RESPONDENT 2: ${dossier.highCourtPilDraft.parties.respondent2}`, 18, 60)
+  doc.text(`RESPONDENT 3: ${dossier.highCourtPilDraft.parties.respondent3}`, 18, 65)
+
+  // ── 2. Indian Evidence Act Section 65B Certificate Box ──
+  doc.setFillColor(254, 243, 199) // amber-100
+  doc.setDrawColor(217, 119, 6)   // amber-600
+  doc.setLineWidth(0.5)
+  doc.roundedRect(14, 76, 182, 38, 2, 2, "FD")
+
+  doc.setTextColor(146, 64, 14) // amber-800
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(9)
+  doc.text("CERTIFICATE UNDER SECTION 65B(4) OF THE INDIAN EVIDENCE ACT, 1872", 18, 83)
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(7)
+  doc.setTextColor(120, 53, 15)
+  doc.text(`Certificate No: ${dossier.section65BCertificate.certificateNumber} | Authority: ${dossier.section65BCertificate.certifyingOfficer.authority}`, 18, 88)
+  doc.text(`System Node: ${dossier.section65BCertificate.certifyingOfficer.systemNodeId} | Certified: ${new Date(dossier.section65BCertificate.issuedAt).toLocaleString("en-IN")}`, 18, 93)
+
+  const declText = dossier.section65BCertificate.evidentiaryIntegrityDeclaration
+  doc.text(doc.splitTextToSize(declText, 174), 18, 98)
+
+  doc.setFont("courier", "bold")
+  doc.setFontSize(6.8)
+  doc.setTextColor(15, 23, 42)
+  doc.text(`SHA-256 FINGERPRINT: ${dossier.section65BCertificate.digitalFingerprintSha256}`, 18, 111)
+
+  // ── 3. Defect & Grievance Specifications Table ──
+  doc.setTextColor(15, 23, 42)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(10)
+  doc.text("1. Civic Defect Specifications & Geotag Verification", 14, 122)
+
+  const defectRows = [
+    ["Grievance Docket ID", ticketId],
+    ["Defect Subject / Title", dossier.complaint.title],
+    ["Municipal Ward & Locality", `${dossier.complaint.ward} • ${dossier.complaint.address}`],
+    ["Geographic Coordinates", `Lat ${dossier.complaint.coordinates[1]?.toFixed(5)}°, Lng ${dossier.complaint.coordinates[0]?.toFixed(5)}° (WGS84 GPS)`],
+    ["Citizen Complainant", dossier.complaint.citizenName],
+    ["Lodged Timestamp", new Date(dossier.complaint.createdAt).toLocaleString("en-IN")],
+    ["Statutory SLA Deadline", new Date(dossier.complaint.slaDeadline).toLocaleString("en-IN")],
+    ["SLA Default Duration", `${dossier.complaint.daysOverdue} Days Overdue (Statutory Breach)`],
+    ["Current Status", dossier.complaint.status.toUpperCase()],
+  ]
+
+  autoTable(doc, {
+    startY: 126,
+    head: [["Evidentiary Parameter", "Recorded Municipal Value"]],
+    body: defectRows,
+    theme: "grid",
+    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: "bold" },
+    styles: { fontSize: 8, cellPadding: 2.5 },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 55 },
+      1: { cellWidth: 135 },
+    },
+  })
+
+  // ── 4. Chronological Chain of Custody Table ──
+  const finalY1 = (doc as any).lastAutoTable?.finalY || 190
+  doc.setTextColor(15, 23, 42)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(10)
+  doc.text("2. Cryptographic Chain of Custody & Audit Trail", 14, finalY1 + 10)
+
+  const custodyRows = dossier.chainOfCustody.map((c) => [
+    `#${c.step}`,
+    c.event.replace(/_/g, " "),
+    new Date(c.timestamp).toLocaleDateString("en-IN"),
+    c.actor,
+    c.details,
+    c.hash,
+  ])
+
+  autoTable(doc, {
+    startY: finalY1 + 14,
+    head: [["#", "Audit Checkpoint", "Date", "Responsible Actor", "Details", "Block Hash"]],
+    body: custodyRows,
+    theme: "striped",
+    headStyles: { fillColor: [67, 56, 202], textColor: [255, 255, 255], fontStyle: "bold" },
+    styles: { fontSize: 7.2, cellPadding: 2.2 },
+    columnStyles: {
+      0: { cellWidth: 8 },
+      1: { fontStyle: "bold", cellWidth: 38 },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 35 },
+      4: { cellWidth: 62 },
+      5: { fontStyle: "normal", cellWidth: 27 },
+    },
+  })
+
+  // ── Page 2: Legal Remedies, Statutory RTS, Contractor Escrow & RTI ──
+  doc.addPage()
+
+  // Page 2 Header Banner
+  doc.setFillColor(15, 23, 42)
+  doc.rect(0, 0, 210, 16, "F")
+  doc.setTextColor(255, 255, 255)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(10)
+  doc.text(`STATUTORY REMEDIES & PRAYERS — DOCKET ${ticketId}`, 14, 11)
+
+  // ── 5. Statutory RTS Section 10 Penalty & Escrow Forfeiture Table ──
+  doc.setTextColor(15, 23, 42)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(10)
+  doc.text("3. Statutory Officer Liability & Contractor Escrow Forfeiture", 14, 25)
+
+  const penaltyRows = [
+    ["Statutory Act / Provision", "Maharashtra Right to Public Services Act 2015 — Section 10"],
+    ["Designated Public Officer", `${dossier.rtsPenalty?.designatedOfficer?.name || "Assistant Municipal Commissioner"} (${dossier.rtsPenalty?.designatedOfficer?.designation || "Ward Executive"})`],
+    ["Statutory Penalty Rate", "₹250 per day of default (Mandatory salary deduction under Sec 10)"],
+    ["Total Accrued Penalty", `₹${dossier.rtsPenalty?.penaltyAmountInr || (dossier.complaint.daysOverdue * 250)} (Cap: ₹5,000)`],
+    ["Legal Show-Cause Notice", dossier.rtsPenalty?.noticeNumber || "RTS-SEC10-PENDING"],
+    ["Contractor On Record", dossier.contractorEscrow?.companyName || "Delinquent Contractor Corp"],
+    ["Contractor Collateral Forfeiture", `₹${dossier.contractorEscrow?.slashedAmountInr || 5000} (Slashed to Ward Citizen Dividend Pool)`],
+  ]
+
+  autoTable(doc, {
+    startY: 29,
+    head: [["Legal Liability Parameter", "Statutory Determination"]],
+    body: penaltyRows,
+    theme: "grid",
+    headStyles: { fillColor: [180, 83, 9], textColor: [255, 255, 255], fontStyle: "bold" },
+    styles: { fontSize: 8, cellPadding: 2.5 },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 60 },
+      1: { cellWidth: 130 },
+    },
+  })
+
+  // ── 6. Formal High Court Prayer Clauses ──
+  const finalY2 = (doc as any).lastAutoTable?.finalY || 80
+  doc.setTextColor(15, 23, 42)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(10)
+  doc.text("4. Formal Prayer Clauses for Judicial Writ / Lokayukta Complaint", 14, finalY2 + 10)
+
+  doc.setFillColor(248, 250, 252)
+  doc.setDrawColor(203, 213, 225)
+  doc.roundedRect(14, finalY2 + 14, 182, 42, 2, 2, "FD")
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(7.6)
+  doc.setTextColor(30, 41, 59)
+  let prayerY = finalY2 + 20
+  dossier.highCourtPilDraft.prayerClauses.forEach((prayer, idx) => {
+    const wrapped = doc.splitTextToSize(`(${String.fromCharCode(97 + idx)}) ${prayer}`, 174)
+    doc.text(wrapped, 18, prayerY)
+    prayerY += wrapped.length * 4.2 + 2
+  })
+
+  // ── 7. RTI Act 2005 Section 6(1) Requisition Draft ──
+  const finalY3 = finalY2 + 62
+  doc.setTextColor(15, 23, 42)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(10)
+  doc.text("5. Right to Information Act 2005 (Section 6 Requisition Draft)", 14, finalY3)
+
+  doc.setFillColor(241, 245, 249)
+  doc.roundedRect(14, finalY3 + 4, 182, 46, 2, 2, "FD")
+
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(7.5)
+  doc.setTextColor(51, 65, 85)
+  doc.text(`Addressed to: ${dossier.rtiSection6Application.addressedTo}`, 18, finalY3 + 10)
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(7)
+  let rtiY = finalY3 + 15
+  dossier.rtiSection6Application.requisitions.slice(0, 4).forEach((req) => {
+    const wrapped = doc.splitTextToSize(req, 174)
+    doc.text(wrapped, 18, rtiY)
+    rtiY += wrapped.length * 3.8 + 2
+  })
+
+  // ── 8. Official Attestation & Digital Verification ──
+  const finalY4 = finalY3 + 55
+  doc.setFillColor(248, 250, 252)
+  doc.roundedRect(14, finalY4, 182, 26, 2, 2, "FD")
+
+  doc.setFont("courier", "bold")
+  doc.setFontSize(7.5)
+  doc.setTextColor(15, 23, 42)
+  doc.text("MCGM CITYOS JUDICIAL COMPLIANCE & CRYPTOGRAPHIC NOTARY", 18, finalY4 + 7)
+
+  doc.setFont("courier", "normal")
+  doc.setFontSize(6.8)
+  doc.setTextColor(100, 116, 139)
+  doc.text(`Digital Seal Token: SEC65B-SEAL-${ticketId}-${Date.now().toString(16).toUpperCase()}`, 18, finalY4 + 13)
+  doc.text(`Verification Host: https://mumbai.cityos.gov.in/verify/dossier/${ticketId}`, 18, finalY4 + 18)
+  doc.text("Certified Under the Seal of the Municipal Corporation of Greater Mumbai", 18, finalY4 + 23)
+
+  // Save PDF
+  doc.save(`HighCourt_Evidentiary_Dossier_${ticketId}.pdf`)
+}
+
 

@@ -291,7 +291,7 @@ export default function KarmaRewards() {
       })
 
       triggerHapticFeedback("success")
-      toast.success(res.data.message || "Perk redeemed successfully! 🎉")
+      toast.success(res.data.message || "Perk redeemed successfully.")
       const newPoints = typeof res.data.remainingPoints === "number" ? res.data.remainingPoints : karmaPoints - perk.pointsCost
       setKarmaPoints(newPoints)
       updateUserKarma(newPoints)
@@ -789,7 +789,7 @@ export default function KarmaRewards() {
                   className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/30 flex items-center justify-center text-4xl"
                 >
                   <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[22px] flex items-center justify-center">
-                    🎉
+                    <Gift className="w-9 h-9 text-emerald-500" />
                   </div>
                 </motion.div>
               </div>

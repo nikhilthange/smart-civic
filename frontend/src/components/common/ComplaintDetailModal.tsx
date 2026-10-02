@@ -2,9 +2,12 @@ import { useState, useEffect } from "react"
 import {
   X, MapPin, Navigation, Clock, CheckCircle2,
   Building2, ExternalLink, ZoomIn, Copy, Check, Calendar,
-  ArrowRight, Users, Activity, Loader2, Layers, Landmark
+  ArrowRight, Users, Activity, Loader2, Layers, Landmark,
+  Gavel, Scale, ShieldAlert
 } from "lucide-react"
 import { complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
+import { advancedMunicipalApi } from "@/services/advancedMunicipalApi"
+import { generateHighCourtDossierPdf } from "@/utils/pdfReportGenerator"
 import { getImageUrl, handleImageError } from "@/utils/imageUrl"
 import { getTravelDetails, getGoogleMapsDirUrl, type TravelDetails } from "@/utils/geoUtils"
 import { BeforeAfterSlider } from "./BeforeAfterSlider"
@@ -51,6 +54,50 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
       toast.error(err.response?.data?.message || "Failed to claim task.")
     } finally {
       setIsClaiming(false)
+    }
+  }
+
+  const [isGeneratingDossier, setIsGeneratingDossier] = useState(false)
+  const [isRetendering, setIsRetendering] = useState(false)
+
+  const handleGenerateCourtDossier = async () => {
+    if (!complaint) return
+    const id = complaint.complaintId || complaint._id
+    try {
+      setIsGeneratingDossier(true)
+      triggerHapticFeedback("medium")
+      toast.loading("Retrieving Section 65B Electronic Evidentiary Trail...", { id: "court-dossier" })
+      const dossier = await advancedMunicipalApi.getComplaintCourtDossier(id)
+      await generateHighCourtDossierPdf(dossier)
+      triggerHapticFeedback("success")
+      toast.success("High Court PIL & RTI Dossier generated with SHA-256 seal!", { id: "court-dossier" })
+    } catch (err: any) {
+      triggerHapticFeedback("error")
+      toast.error(err.response?.data?.message || "Failed to generate legal dossier.", { id: "court-dossier" })
+    } finally {
+      setIsGeneratingDossier(false)
+    }
+  }
+
+  const handleEmergencyRetender = async () => {
+    if (!complaint) return
+    const id = complaint.complaintId || complaint._id
+    if (!window.confirm("Confirm Emergency Re-Tender under Municipal Code Section 72(c)? This will forfeit delinquent contractor collateral and award to top Grade-A contractor with 24h SLA.")) {
+      return
+    }
+    try {
+      setIsRetendering(true)
+      triggerHapticFeedback("medium")
+      toast.loading("Invoking Emergency Retender & Forfeiting Delinquent Collateral...", { id: "retender" })
+      const result = await advancedMunicipalApi.executeEmergencyRetender(id, user?.name || "Assistant Municipal Commissioner")
+      triggerHapticFeedback("success")
+      toast.success(`Awarded to ${result.retenderReceipt.awardedContractor.companyName} (Expedited 24h SLA)`, { id: "retender" })
+      onClose()
+    } catch (err: any) {
+      triggerHapticFeedback("error")
+      toast.error(err.response?.data?.message || "Emergency re-tendering failed.", { id: "retender" })
+    } finally {
+      setIsRetendering(false)
     }
   }
 
@@ -477,7 +524,10 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
 
                 <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500 border-t border-slate-200/60 dark:border-slate-800">
                   <span>{t("voucher.auditStandard", "Audit Standard: IRC:SP:100-2014 & BMC Pothole Repair Norms")}</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">{t("voucher.seCertified", "SE Quality Certified ✓")}</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                    <span>{t("voucher.seCertified", "SE Quality Certified")}</span>
+                  </span>
                 </div>
               </div>
             )}
@@ -505,6 +555,71 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
                     )}
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* ─── Statutory Legal Evidentiary & Emergency Re-Tendering ─── */}
+            <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 to-indigo-950 rounded-xl border border-indigo-500/30 text-white space-y-3.5 shadow-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-500/20 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400">
+                    <Scale className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold tracking-wide text-zinc-100 flex items-center gap-1.5">
+                      High Court PIL & RTI 2005 Legal Evidentiary Dossier
+                    </h4>
+                    <p className="text-[11px] text-zinc-400">
+                      Court-admissible electronic record certified under Section 65B Indian Evidence Act & Section 10 Maharashtra RTS Act
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={handleGenerateCourtDossier}
+                    disabled={isGeneratingDossier}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-zinc-950 shadow-md transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isGeneratingDossier ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Gavel className="w-3.5 h-3.5" />
+                    )}
+                    <span>Download Court Dossier (Sec 65B)</span>
+                  </button>
+
+                  {(user?.role === "admin" || user?.role === "officer") && complaint.status !== "resolved" && (
+                    <button
+                      onClick={handleEmergencyRetender}
+                      disabled={isRetendering}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-md transition-all cursor-pointer disabled:opacity-50"
+                      title="Forfeit delinquent contractor collateral and award emergency tender under Sec 72(c)"
+                    >
+                      {isRetendering ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <ShieldAlert className="w-3.5 h-3.5" />
+                      )}
+                      <span>Emergency Re-Tender (Sec 72c)</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[11px] text-zinc-300">
+                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span className="text-zinc-400 block text-[10px] uppercase font-mono">Statutory Provision</span>
+                  <span className="font-semibold text-amber-300">Sec 65B(4) Evidence Act / Sec 63 BSA</span>
+                </div>
+                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span className="text-zinc-400 block text-[10px] uppercase font-mono">Officer Daily Penalty</span>
+                  <span className="font-semibold text-rose-300">₹250/Day under RTS Act 2015 Sec 10</span>
+                </div>
+                <div className="p-2 rounded-lg bg-white/5 border border-white/10">
+                  <span className="text-zinc-400 block text-[10px] uppercase font-mono">Contractor Micro-Escrow</span>
+                  <span className="font-semibold text-emerald-300">Automatic Forfeiture & Re-Award</span>
+                </div>
               </div>
             </div>
           </div>

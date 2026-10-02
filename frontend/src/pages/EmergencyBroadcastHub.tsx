@@ -576,7 +576,7 @@ export default function EmergencyBroadcastHub() {
             <CardContent className="p-0 space-y-3">
               {isLoading ? (
                 <div className="p-8 text-center text-slate-500 font-mono text-xs">
-                  Loading active geo-broadcasts from MongoDB...
+                  Loading active geo-targeted municipal broadcasts...
                 </div>
               ) : broadcasts.length === 0 ? (
                 <div className="p-8 text-center text-slate-500 font-mono text-xs">

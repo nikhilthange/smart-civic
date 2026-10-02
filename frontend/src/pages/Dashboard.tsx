@@ -121,15 +121,29 @@ export default function Dashboard() {
     const load = async () => {
       setIsLoading(true)
       try {
-        const data = await complaintApi.getAll({ page: 1, limit: 5 })
-        if (!isMounted) return
-        setRecent(data.complaints || [])
+        const [complaintsData, statsData] = await Promise.allSettled([
+          complaintApi.getAll({ page: 1, limit: 5 }),
+          complaintApi.getStats(),
+        ])
 
-        const byStatus: Record<string, number> = {}
-        ;(data.complaints || []).forEach((c) => {
-          byStatus[c.status] = (byStatus[c.status] || 0) + 1
-        })
-        setStats({ total: data.total || 0, byStatus })
+        if (!isMounted) return
+
+        if (complaintsData.status === "fulfilled") {
+          setRecent(complaintsData.value.complaints || [])
+        }
+
+        if (statsData.status === "fulfilled" && statsData.value) {
+          setStats({
+            total: statsData.value.total || 0,
+            byStatus: statsData.value.byStatus || {},
+          })
+        } else if (complaintsData.status === "fulfilled") {
+          const byStatus: Record<string, number> = {}
+          ;(complaintsData.value.complaints || []).forEach((c) => {
+            byStatus[c.status] = (byStatus[c.status] || 0) + 1
+          })
+          setStats({ total: complaintsData.value.total || 0, byStatus })
+        }
       } catch {
         // fail silently on dashboard
       } finally {

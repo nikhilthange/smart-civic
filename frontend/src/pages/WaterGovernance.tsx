@@ -57,7 +57,7 @@ export default function WaterGovernance() {
         maxCappedRateInr: maxPrice,
       })
       setGeneratedPass(res.pass)
-      toast.success(`Tanker Pass ${res.pass.tripPassId} generated with SHA256 QR signature!`, { icon: "💧" })
+      toast.success(`Tanker Pass ${res.pass.tripPassId} generated with SHA256 QR signature.`)
     } catch {
       toast.error("Failed to generate tanker pass")
     } finally {

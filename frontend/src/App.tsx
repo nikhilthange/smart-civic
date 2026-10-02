@@ -77,6 +77,7 @@ const ContractorRegistry = lazyRetry(() => import("./pages/ContractorRegistry"))
 const AlmSocietyDashboard = lazyRetry(() => import("./pages/AlmSocietyDashboard"))
 const DailySitrepDashboard = lazyRetry(() => import("./pages/DailySitrepDashboard"))
 const EmergencyBroadcastHub = lazyRetry(() => import("./pages/EmergencyBroadcastHub"))
+const RtsEnforcementRadar = lazyRetry(() => import("./pages/RtsEnforcementRadar"))
 const QuickReport = lazyRetry(() => import("./pages/QuickReport"))
 const AdminDataStudio = lazyRetry(() => import("./pages/AdminDataStudio"))
 const MapView = lazyRetry(() => import("./pages/MapView"))
@@ -190,7 +191,11 @@ function App() {
                       <Route path="/digital-twin" element={<DigitalTwinSim />} />
                       <Route path="/green-bonds" element={<GreenBondLedger />} />
                       <Route path="/social-radar" element={<SocialMediaRadar />} />
+                      <Route path="/contractors" element={<ContractorRegistry />} />
+                      <Route path="/contractor-escrow" element={<ContractorRegistry />} />
                       <Route path="/contractor-registry" element={<ContractorRegistry />} />
+                      <Route path="/rts-enforcement" element={<RtsEnforcementRadar />} />
+                      <Route path="/rts-radar" element={<RtsEnforcementRadar />} />
                       <Route path="/alm-societies" element={<AlmSocietyDashboard />} />
                       <Route path="/sitrep" element={<DailySitrepDashboard />} />
                       <Route path="/emergency-broadcast" element={<EmergencyBroadcastHub />} />

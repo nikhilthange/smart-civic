@@ -65,7 +65,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 142,
     pendingCount: 6,
     responseRate: 96,
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Gaurang+Jhaveri&background=0f172a&color=10b981&bold=true",
     status: "Active"
   },
   {
@@ -86,7 +86,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 98,
     pendingCount: 9,
     responseRate: 91,
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Aysha+Vanu&background=0f172a&color=38bdf8&bold=true",
     status: "Active"
   },
   {
@@ -107,7 +107,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 114,
     pendingCount: 8,
     responseRate: 93,
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Supriya+Dalvi&background=0f172a&color=f43f5e&bold=true",
     status: "Active"
   },
   {
@@ -127,7 +127,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 230,
     pendingCount: 12,
     responseRate: 95,
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Asif+Zakaria&background=0f172a&color=38bdf8&bold=true",
     status: "Active"
   },
   {
@@ -147,7 +147,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 310,
     pendingCount: 14,
     responseRate: 96,
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Rohan+Rathod&background=0f172a&color=f59e0b&bold=true",
     status: "Active"
   },
   {
@@ -167,7 +167,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 185,
     pendingCount: 7,
     responseRate: 96,
-    avatar: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Vishakha+Raut&background=0f172a&color=f97316&bold=true",
     status: "Active"
   },
 
@@ -189,7 +189,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 275,
     pendingCount: 15,
     responseRate: 95,
-    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Naresh+Mhaske&background=0f172a&color=f97316&bold=true",
     status: "Active"
   },
   {
@@ -209,7 +209,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 195,
     pendingCount: 18,
     responseRate: 91,
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Sanjay+Bhoir&background=0f172a&color=f97316&bold=true",
     status: "Active"
   },
 
@@ -231,7 +231,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 320,
     pendingCount: 8,
     responseRate: 97,
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Suresh+Kulkarni&background=0f172a&color=f59e0b&bold=true",
     status: "Active"
   },
   {
@@ -251,7 +251,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 240,
     pendingCount: 11,
     responseRate: 95,
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Netra+Shirke&background=0f172a&color=10b981&bold=true",
     status: "Active"
   },
 
@@ -273,7 +273,7 @@ export const NAGARSEVAK_ROSTER: Nagarsevak[] = [
     resolvedCount: 165,
     pendingCount: 16,
     responseRate: 91,
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80",
+    avatar: "https://ui-avatars.com/api/?name=Deepesh+Mhatre&background=0f172a&color=f97316&bold=true",
     status: "Active"
   }
 ]

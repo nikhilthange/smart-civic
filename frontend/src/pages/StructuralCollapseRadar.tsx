@@ -51,7 +51,7 @@ export default function StructuralCollapseRadar() {
       })
       setSimResult(res)
       if (res.isImminentHazard) {
-        toast.error(res.statusMessage, { icon: "🚨", duration: 7000 })
+        toast.error(res.statusMessage, { duration: 7000 })
       } else {
         toast.success(res.statusMessage, { duration: 5000 })
       }
@@ -280,8 +280,9 @@ export default function StructuralCollapseRadar() {
                       {b.ward} • {b.address} • <strong>{b.residentFamilyCount} Families</strong>
                     </p>
                     {b.transitCampAllocated && (
-                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
-                        ⛺ Transit Camp Allotted: {b.transitCampLocation}
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold inline-flex items-center gap-1">
+                        <Building2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        <span>Transit Camp Allotted: {b.transitCampLocation}</span>
                       </p>
                     )}
                   </div>

@@ -32,15 +32,15 @@ import { VoiceGrievanceRecorder } from "@/components/common/VoiceGrievanceRecord
 
 // ─── Supported BMC Categories ──────────────────────────────────────────────────
 const CIVIC_CATEGORIES = [
-  { id: "roads_and_infrastructure", label: "Roads & Potholes", icon: "🛣️", dept: "PWD" },
-  { id: "garbage_collection", label: "Solid Waste & Garbage", icon: "🗑️", dept: "SWM" },
-  { id: "drainage", label: "Drainage & Waterlogging", icon: "🌊", dept: "SWD" },
-  { id: "street_lighting", label: "Streetlights & Electricity", icon: "💡", dept: "ELD" },
-  { id: "water_and_sanitation", label: "Water Supply & Leakage", icon: "🚰", dept: "WSD" },
-  { id: "public_safety", label: "Public Safety & Hazards", icon: "⚠️", dept: "PSD" },
-  { id: "parks_and_recreation", label: "Parks & Fallen Trees", icon: "🌳", dept: "PRD" },
-  { id: "illegal_construction", label: "Encroachment & Building", icon: "🏗️", dept: "LIC" },
-  { id: "other", label: "Other Civic Matters", icon: "🏛️", dept: "GEN" },
+  { id: "roads_and_infrastructure", label: "Roads & Potholes", dept: "PWD" },
+  { id: "garbage_collection", label: "Solid Waste & Sanitation", dept: "SWM" },
+  { id: "drainage", label: "Drainage & Waterlogging", dept: "SWD" },
+  { id: "street_lighting", label: "Streetlights & Electricity", dept: "ELD" },
+  { id: "water_and_sanitation", label: "Water Supply & Leakage", dept: "WSD" },
+  { id: "public_safety", label: "Public Safety & Hazards", dept: "PSD" },
+  { id: "parks_and_recreation", label: "Parks & Fallen Trees", dept: "PRD" },
+  { id: "illegal_construction", label: "Encroachment & Building", dept: "LIC" },
+  { id: "other", label: "Other Civic Matters", dept: "GEN" },
 ]
 
 const BMC_WARDS = [
@@ -238,7 +238,7 @@ export default function QuickReport() {
         setCoordinates([exif.longitude, exif.latitude])
         setGpsSource("exif")
         await resolveWardAndAddressFromCoordinates(exif.latitude, exif.longitude)
-        toast.success("Camera EXIF GPS coordinates extracted!", { icon: "📍" })
+        toast.success("Camera EXIF GPS coordinates extracted.")
       } else {
         // Fallback to browser geolocation
         setAnalysisStep("Requesting precise GPS location from device...")
@@ -279,7 +279,7 @@ export default function QuickReport() {
           if (res.ward) setDetectedWard(res.ward)
           if (res.address) setDetectedAddress(res.address)
           setAnalysisNote(res.analysisNote || `Computer Vision classified ${res.category}`)
-          toast.success(`AI Vision: ${res.detectedIssue || "Issue classified"}`, { icon: "📸" })
+          toast.success(`AI Vision: ${res.detectedIssue || "Issue classified"}`)
         } else {
           throw new Error("Invalid response")
         }
@@ -294,7 +294,7 @@ export default function QuickReport() {
           { label: local.category || "pothole", confidence: local.confidence / 100, box: [0.15, 0.35, 0.85, 0.75] }
         ])
         setAnalysisNote("AI Vision: Classified via local browser heuristic pipeline.")
-        toast.success(`AI Vision: ${local.issue}`, { icon: "📸" })
+        toast.success(`AI Vision: ${local.issue}`)
       }
 
     } catch (err: any) {
@@ -424,9 +424,8 @@ export default function QuickReport() {
         "TKT-" + Math.floor(100000 + Math.random() * 900000)
 
       setSubmittedReward(true)
-      toast.success("Grievance dispatched! +10 Civic Karma points awarded 🌟", {
+      toast.success("Grievance dispatched: +10 Civic Karma points awarded.", {
         duration: 4000,
-        icon: "🚀",
       })
 
       setTimeout(() => {
@@ -437,14 +436,14 @@ export default function QuickReport() {
       if (err.response?.data?.error === "AI_VERIFICATION_FAILED") {
         const categoryLabel = activeCategoryObj?.label || detectedCategory || "the selected category"
         const msg = `AI Validation Failed: Your photo does not appear to show ${categoryLabel}. Please upload a clear photo of the issue.`
-        toast.error(msg, { duration: 6000, icon: "🚫" })
+        toast.error(msg, { duration: 6000 })
         return
       }
 
       const errorMsg =
         err.response?.data?.message ||
         "Grievance recorded offline and queued for auto-dispatch."
-      toast.success(errorMsg, { icon: "🚀" })
+      toast.success(errorMsg)
       navigate("/complaints")
     } finally {
       setIsSubmitting(false)
@@ -758,7 +757,7 @@ export default function QuickReport() {
                   >
                     {CIVIC_CATEGORIES.map((cat) => (
                       <option key={cat.id} value={cat.id}>
-                        {cat.icon} {t(`categories.${cat.id}`, cat.label)} ({cat.dept})
+                        {t(`categories.${cat.id}`, cat.label)} ({cat.dept})
                       </option>
                     ))}
                   </select>

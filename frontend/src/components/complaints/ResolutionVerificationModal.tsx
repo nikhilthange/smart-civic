@@ -14,6 +14,7 @@ import { VisionBoundingBoxCanvas } from '../common/VisionBoundingBoxCanvas';
 interface ResolutionVerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  complaintId?: string;
   complaintTitle: string;
   category: string;
   department: string;
@@ -28,6 +29,7 @@ interface ResolutionVerificationModalProps {
 export const ResolutionVerificationModal: React.FC<ResolutionVerificationModalProps> = ({
   isOpen,
   onClose,
+  complaintId,
   complaintTitle,
   category,
   department,
@@ -41,6 +43,10 @@ export const ResolutionVerificationModal: React.FC<ResolutionVerificationModalPr
   const [viewMode, setViewMode] = useState<'split' | 'before' | 'after'>('split');
 
   if (!isOpen) return null;
+
+  const certificateId = complaintId
+    ? `BMC-AUDIT-${complaintId.slice(-8).toUpperCase()}`
+    : `BMC-AUDIT-${(category || "PWD").substring(0, 3).toUpperCase()}-${(department || "ENG").substring(0, 3).toUpperCase()}`;
 
   // AI Resolution Audit Score Calculation
   const qualityScore = 96;
@@ -103,7 +109,7 @@ export const ResolutionVerificationModal: React.FC<ResolutionVerificationModalPr
             <div className="text-right">
               <div className="text-[11px] font-mono text-slate-400">Certificate ID</div>
               <div className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                BMC-AUDIT-{Math.random().toString(36).substring(2, 9).toUpperCase()}
+                {certificateId}
               </div>
             </div>
           </div>

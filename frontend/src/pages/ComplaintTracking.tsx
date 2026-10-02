@@ -8,7 +8,7 @@ import {
   Image as ImageIcon, HardHat, FileCheck, Search,
   History, Scan, Plus, ZoomIn, X, Copy, ShieldCheck, Camera,
   Navigation, Trash2, Droplets, Lightbulb, CloudRain, Zap, HeartPulse,
-  Trees, Bus, Volume2, Users, MessageCircle, ThumbsUp, Flame, FileText
+  Trees, Bus, Volume2, Users, MessageCircle, ThumbsUp, Flame, FileText, Gavel
 } from "lucide-react"
 import { findNagarsevakByWard, NAGARSEVAK_ROSTER } from "@/data/nagarsevakDirectory"
 import { Button } from "@/components/ui/button"
@@ -29,7 +29,8 @@ import FeedbackModal from "@/components/ui/FeedbackModal"
 import { BeforeAfterSlider } from "@/components/common/BeforeAfterSlider"
 import { formatDateTime } from "@/utils/formatters"
 import { triggerHapticFeedback } from "@/utils/haptics"
-import { generateResolutionCertificatePdf } from "@/utils/pdfReportGenerator"
+import { generateResolutionCertificatePdf, generateHighCourtDossierPdf } from "@/utils/pdfReportGenerator"
+import { advancedMunicipalApi } from "@/services/advancedMunicipalApi"
 import api from "@/lib/axios"
 import toast from "react-hot-toast"
 import SeoHead from "@/components/common/SeoHead"
@@ -557,7 +558,8 @@ export const ResolutionTimeline = React.memo(function ResolutionTimeline({
                     </p>
                     {historyEntry.note.includes("Verified on-site") && (
                       <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800 shadow-sm">
-                        📍 Geo-Fenced On-Site GPS Verified (&le;100m)
+                        <MapPin className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span>Geo-Fenced On-Site GPS Verified (&le;100m)</span>
                       </span>
                     )}
                   </div>
@@ -623,7 +625,7 @@ export const AiVerificationDetails = React.memo(function AiVerificationDetails({
           <div className="bg-white/70 dark:bg-slate-900/70 p-2 rounded-xl border border-violet-100 dark:border-violet-900/40">
             <span className="text-[11px] text-violet-600 dark:text-violet-400 block font-medium">{t("tracking.verifiedStatus")}</span>
             <span className="font-bold text-xs text-emerald-700 dark:text-emerald-400 mt-0.5 block">
-              {aiAnalysis.verified ? "Verified ✅" : "Triage Complete 🔍"}
+              {aiAnalysis.verified ? "Verified" : "Triage Complete"}
             </span>
           </div>
           <div className="bg-white/70 dark:bg-slate-900/70 p-2 rounded-xl border border-violet-100 dark:border-violet-900/40">
@@ -911,14 +913,19 @@ export const WardNagarsevakCard = React.memo(function WardNagarsevakCard({
       </CardHeader>
       <CardContent className="space-y-3.5">
         <div className="flex items-start gap-3">
-          <img
-            src={nagarsevak.avatar}
-            alt={nagarsevak.name}
-            onError={(e) => {
-              ;(e.currentTarget as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(nagarsevak.name)}&background=0284c7&color=fff`
-            }}
-            className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-          />
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-950 text-white flex flex-col items-center justify-center border border-slate-700/60 shrink-0 shadow-xs">
+            <span className="text-xs font-bold font-mono text-emerald-400">
+              {nagarsevak.name
+                .split(" ")
+                .map((p) => p[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase()}
+            </span>
+            <span className="text-[8px] text-slate-400 font-semibold uppercase tracking-wider">
+              {nagarsevak.electoralWard.replace("Ward ", "W-")}
+            </span>
+          </div>
           <div className="min-w-0 flex-1 space-y-0.5">
             <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
               {nagarsevak.name}
@@ -1030,11 +1037,10 @@ export const CommunityEndorsementCard = React.memo(function CommunityEndorsement
         localStorage.setItem(storageKey, "true")
         toast.success(res.message || "Community Endorsement Added! +5 Civic Karma awarded.", {
           duration: 4000,
-          icon: "🌟",
         })
       } else {
         localStorage.removeItem(storageKey)
-        toast("Community endorsement removed.", { icon: "ℹ️" })
+        toast("Community endorsement removed.")
       }
 
       if (onUpvoteSuccess) {
@@ -1061,7 +1067,7 @@ export const CommunityEndorsementCard = React.memo(function CommunityEndorsement
             <span>{t("endorsement.title", "Community Petition & Co-Signatures")}</span>
           </CardTitle>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300">
-            {hasSigned ? t("endorsement.signedStatus", "Signed ✓") : t("endorsement.openForSupport", "Open for Support")}
+            {hasSigned ? t("endorsement.signedStatus", "Signed") : t("endorsement.openForSupport", "Open for Support")}
           </span>
         </div>
       </CardHeader>
@@ -1198,21 +1204,43 @@ export default function ComplaintTracking() {
   const [zoomImage, setZoomImage] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
+  const [isGeneratingDossier, setIsGeneratingDossier] = useState(false)
 
   const handleDownloadResolutionDocket = useCallback(async () => {
     if (!complaint) return
     setIsGeneratingPdf(true)
     try {
       await generateResolutionCertificatePdf(complaint)
-      toast.success("🏛️ Official Municipal Resolution Certificate downloaded!", {
+      toast.success("Official Municipal Resolution Certificate downloaded.", {
         duration: 4000,
-        icon: "📄",
       })
     } catch (err) {
       console.error("PDF generation failed:", err)
       toast.error("Could not generate resolution certificate.")
     } finally {
       setIsGeneratingPdf(false)
+    }
+  }, [complaint])
+
+  const handleDownloadCourtDossier = useCallback(async () => {
+    if (!complaint) return
+    const id = complaint.complaintId || complaint._id
+    setIsGeneratingDossier(true)
+    try {
+      toast.loading("Retrieving Section 65B Electronic Evidentiary Trail...", { id: "court-dossier" })
+      const dossier = await advancedMunicipalApi.getComplaintCourtDossier(id)
+      await generateHighCourtDossierPdf(dossier)
+      toast.success("High Court PIL & RTI Evidentiary Dossier downloaded with SHA-256 seal.", {
+        id: "court-dossier",
+        duration: 5000,
+      })
+    } catch (err: any) {
+      console.error("Court dossier generation failed:", err)
+      toast.error(err.response?.data?.message || "Could not generate legal evidentiary dossier.", {
+        id: "court-dossier",
+      })
+    } finally {
+      setIsGeneratingDossier(false)
     }
   }, [complaint])
 
@@ -1331,7 +1359,7 @@ export default function ComplaintTracking() {
         triggerHapticFeedback("success")
         if (updated.status) {
           const label = STATUS_CONFIG[updated.status as ComplaintStatus]?.label || updated.status
-          toast.success(`Live Telemetry: Status is now ${label}`, { icon: "📡", id: `status-${updatedId}` })
+          toast.success(`Live Telemetry: Status is now ${label}`, { id: `status-${updatedId}` })
         }
 
         setComplaint((prev) => (prev ? { ...prev, ...updated } : updated))
@@ -1432,7 +1460,7 @@ export default function ComplaintTracking() {
     setIsReopening(true)
     try {
       await api.post(`/complaints/${complaint._id}/reopen`, { reason: reopenReason })
-      toast.success("🚨 Complaint reopened and escalated to Critical priority!")
+      toast.success("Grievance reopened and escalated to Critical priority.")
       setIsReopenModalOpen(false)
       setReopenReason("")
       load()
@@ -1729,6 +1757,23 @@ export default function ComplaintTracking() {
             <span>Resolution Docket (PDF)</span>
           </Button>
 
+          {/* Download Court-Admissible High Court PIL & RTI Evidentiary Dossier */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadCourtDossier}
+            disabled={isGeneratingDossier}
+            className="gap-1.5 text-xs rounded-xl min-h-[40px] border-amber-600/40 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex-1 sm:flex-initial cursor-pointer font-semibold shadow-xs"
+            title="Download Court-Admissible Electronic Evidentiary Dossier certified under Section 65B Indian Evidence Act"
+          >
+            {isGeneratingDossier ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-600" />
+            ) : (
+              <Gavel className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+            )}
+            <span>Court Dossier (Sec 65B)</span>
+          </Button>
+
           {/* Feedback Button for Citizens */}
           {user?.role === "citizen" && 
            (complaint.status === "resolved" || (complaint.status as string) === "closed") && 
@@ -1902,8 +1947,9 @@ export default function ComplaintTracking() {
                   address={complaint.location.address}
                 />
               </div>
-              <p className="text-xs text-slate-500 truncate">
-                📍 {complaint.location.address}
+              <p className="text-xs text-slate-500 truncate inline-flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span>{complaint.location.address}</span>
               </p>
             </CardContent>
           </Card>

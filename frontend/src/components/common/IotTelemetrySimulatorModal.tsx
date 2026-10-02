@@ -75,9 +75,7 @@ export function IotTelemetrySimulatorModal({ isOpen, onClose, onTelemetrySent }:
       })
 
       setLastResponse(res.data)
-      toast.success(`📡 Telemetry processed! Ticket ${res.data.complaintId || ""} spawned.`, {
-        icon: "🚨",
-      })
+      toast.success(`Telemetry processed: Municipal docket #${res.data.complaintId || ""} spawned.`)
       if (onTelemetrySent) onTelemetrySent()
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to transmit IoT telemetry.")
@@ -98,13 +96,13 @@ export function IotTelemetrySimulatorModal({ isOpen, onClose, onTelemetrySent }:
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm sm:text-base font-bold text-white">
-                  IoT Sensor Gateway Simulator
+                  Municipal SCADA &amp; IoT Telemetry Gateway
                 </h2>
                 <span className="bg-cyan-500/20 text-cyan-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-cyan-500/40">
                   MQTT 2026
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-slate-400">Inject calibrated municipal field sensor payloads</p>
+              <p className="text-[11px] sm:text-xs text-slate-400">Calibrated municipal telemetry ingestion &amp; automated dispatch</p>
             </div>
           </div>
           <button

@@ -36,7 +36,7 @@ export default function ThankYou() {
   }
 
   const handleWhatsAppShare = () => {
-    const text = `🚨 I just reported a civic defect (${category}) in ${ward} using Smart Civic AI! Track resolution live: ${trackingUrl}`
+    const text = `Civic Grievance Logged: ${category} in ${ward} via BMC Smart Civic. Track official resolution live: ${trackingUrl}`
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank")
   }
 

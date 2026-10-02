@@ -165,9 +165,7 @@ export default function CreateComplaint() {
           locationPincode: pincode,
           ward: wardObj.wardCode,
         }))
-        toast.success(`📍 High-accuracy GPS detected: ${wardObj.wardCode} (${lat.toFixed(4)}, ${lng.toFixed(4)})`, {
-          icon: "🛰️",
-        })
+        toast.success(`High-accuracy GPS detected: ${wardObj.wardCode} (${lat.toFixed(4)}, ${lng.toFixed(4)})`)
         setGeoLoading(false)
       },
       (err) => {
@@ -222,7 +220,7 @@ export default function CreateComplaint() {
           timestamp: extracted.timestamp,
           isGeotagCompliant: Boolean(extracted.lat && extracted.lng),
         })
-        toast.success(`📍 EXIF GPS extracted: ${extracted.suggestedLandmark} (${wardObj?.wardCode || extracted.suggestedWard})`, { icon: "🛰️" })
+        toast.success(`EXIF GPS extracted: ${extracted.suggestedLandmark} (${wardObj?.wardCode || extracted.suggestedWard})`)
       }
     }
 
@@ -339,7 +337,7 @@ export default function CreateComplaint() {
         const categoryLabel = (CATEGORY_LABELS as any)[form.category] || form.category
         const msg = `AI Validation Failed: Your photo does not appear to show ${categoryLabel}. Please upload a clear photo of the issue.`
         setError(msg)
-        toast.error(msg, { duration: 6000, icon: "🚫" })
+        toast.error(msg, { duration: 6000 })
         return
       }
 
@@ -811,8 +809,9 @@ export default function CreateComplaint() {
                       <ShieldCheck className="w-4 h-4 text-emerald-600" />
                       Municipal Geotag Mandate Verified
                     </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700">
-                      GPS Camera Lock ✓
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 inline-flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                      GPS Camera Lock
                     </span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono text-slate-600 dark:text-slate-400">

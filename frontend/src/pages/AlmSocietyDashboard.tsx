@@ -105,7 +105,7 @@ export default function AlmSocietyDashboard() {
       {/* Society Grid */}
       {isLoading ? (
         <div className="p-8 text-center text-slate-500 font-mono text-xs">
-          Loading registered housing societies from MongoDB...
+          Loading registered Advanced Locality Management societies...
         </div>
       ) : societies.length === 0 ? (
         <div className="p-8 text-center text-slate-500 font-mono text-xs">

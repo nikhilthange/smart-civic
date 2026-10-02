@@ -110,9 +110,8 @@ export const saveOfflineResolution = (item: Omit<OfflineResolutionItem, "id" | "
     // Request SW background sync
     requestSwBackgroundSync()
 
-    toast.success("📱 Saved to offline queue! Will auto-sync when connection is restored.", {
+    toast.success("Saved to offline storage. Docket will synchronize automatically when connection is restored.", {
       duration: 5000,
-      icon: "💾",
     })
     return true
   } catch (err) {
@@ -175,9 +174,7 @@ export const syncOfflineQueue = async (onSuccess?: () => void): Promise<number> 
   }
 
   if (syncedCount > 0) {
-    toast.success(`⚡ Synced ${syncedCount} offline task resolution(s)!`, {
-      icon: "🌐",
-    })
+    toast.success(`Synchronized ${syncedCount} offline task resolution(s).`)
     if (onSuccess) onSuccess()
   }
 
@@ -245,8 +242,8 @@ export const saveOfflineComplaint = async (
     requestSwBackgroundSync()
 
     toast.success(
-      `📶 Saved offline! Provisional Ticket #${clientTicketId}. Will sync automatically when connected.`,
-      { duration: 7000, icon: "💾" }
+      `Saved offline. Provisional Docket #${clientTicketId}. Will synchronize automatically when connected.`,
+      { duration: 7000 }
     )
 
     return { success: true, clientTicketId }
@@ -326,8 +323,8 @@ export const syncOfflineComplaints = async (onSuccess?: () => void): Promise<num
       syncedCount++
 
       toast.success(
-        `⚡ Grievance Synced! [${item.clientTicketId}] registered as #${realId || "Confirmed"}`,
-        { icon: "🏛️", duration: 6000 }
+        `Grievance Synced: Docket [${item.clientTicketId}] registered as #${realId || "Confirmed"}`,
+        { duration: 6000 }
       )
     } catch (err: any) {
       console.warn(`Failed to sync offline complaint ${item.clientTicketId}:`, err.message)
@@ -360,7 +357,7 @@ export const syncAllOfflineData = async (options?: {
 
   isSyncing = true
   if (!options?.silent) {
-    toast.loading("🔄 Synchronizing offline civic tickets...", { id: "offline-syncing" })
+    toast.loading("Synchronizing offline civic dockets...", { id: "offline-syncing" })
   }
 
   try {
@@ -371,8 +368,7 @@ export const syncAllOfflineData = async (options?: {
       toast.dismiss("offline-syncing")
       const totalSynced = complaintsSynced + resolutionsSynced
       if (totalSynced > 0) {
-        toast.success(`✨ Successfully synchronized ${totalSynced} offline item(s)!`, {
-          icon: "🚀",
+        toast.success(`Successfully synchronized ${totalSynced} offline record(s).`, {
           duration: 4000,
         })
       }

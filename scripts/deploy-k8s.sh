@@ -58,6 +58,7 @@ echo "  [Step 3/5] Deploying Core Workloads (Backend, Frontend & Async Worker Wo
 kubectl apply -f "${K8S_DIR}/backend-deployment.yaml" -n "${NAMESPACE}"
 kubectl apply -f "${K8S_DIR}/frontend-deployment.yaml" -n "${NAMESPACE}"
 kubectl apply -f "${K8S_DIR}/worker-deployment.yaml" -n "${NAMESPACE}"
+kubectl apply -f "${K8S_DIR}/ai-inference-deployment.yaml" -n "${NAMESPACE}"
 
 echo "  [Step 4/5] Configuring Traffic Routing, Ingress & Horizontal Pod Autoscaling (HPA)..."
 kubectl apply -f "${K8S_DIR}/hpa.yaml" -n "${NAMESPACE}"
@@ -83,6 +84,9 @@ kubectl rollout status deployment/smart-civic-backend -n "${NAMESPACE}" --timeou
 
 echo "  Waiting for Smart Civic Frontend UI deployment..."
 kubectl rollout status deployment/smart-civic-frontend -n "${NAMESPACE}" --timeout=60s || true
+
+echo "  Waiting for Smart Civic AI Inference deployment..."
+kubectl rollout status deployment/smart-civic-ai-inference -n "${NAMESPACE}" --timeout=90s || true
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 4. CLUSTER POST-DEPLOYMENT AUDIT

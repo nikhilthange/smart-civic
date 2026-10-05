@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smart-civic-ai-inference
+  namespace: smart-civic
+  labels:
+    app: smart-civic
+    tier: ai-inference-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: smart-civic
+      tier: ai-inference-service
+  template:
+    metadata:
+      labels:
+        app: smart-civic
+        tier: ai-inference-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: yolo-inference
+          image: smart-civic/ai-inference:v1.0.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - uvicorn
+            - app:app
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8000"
+            - --workers
+            - "2"
+          ports:
+            - containerPort: 8000
+              name: http-inference
+          env:
+            - name: MODEL_WEIGHTS_PATH
+              value: "/models/yolov8n.pt"
+            - name: TENSORRT_FP16
+              value: "true"
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+            - name: CONFIDENCE_THRESHOLD
+              value: "0.45"
+          envFrom:
+            - configMapRef:
+                name: smart-civic-config
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1024Mi
+            limits:
+              cpu: 2000m
+              memory: 2048Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: model-weights
+              mountPath: /models
+              readOnly: true
+            - name: tmp-volume
+              mountPath: /tmp
+      volumes:
+        - name: model-weights
+          configMap:
+            name: smart-civic-config
+        - name: tmp-volume
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smart-civic-ai-inference-service
+  namespace: smart-civic
+  labels:
+    app: smart-civic
+    tier: ai-inference-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http-inference
+  selector:
+    app: smart-civic
+    tier: ai-inference-service

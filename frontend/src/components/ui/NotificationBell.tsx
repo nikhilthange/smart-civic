@@ -188,13 +188,13 @@ export function NotificationBell() {
                       </span>
                     </div>
 
-                    {/* Delete button — shows on group hover */}
+                    {/* Delete button — shows on mobile or group hover on desktop */}
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteOne(notif._id) }}
                       aria-label="Delete notification"
-                      className="p-1 rounded-lg text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all shrink-0 mt-0.5"
+                      className="p-1 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all shrink-0 mt-0.5"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 )

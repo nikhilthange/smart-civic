@@ -603,4 +603,165 @@ export const generateHighCourtDossierPdf = async (dossier: CourtEvidentiaryDossi
   doc.save(`HighCourt_Evidentiary_Dossier_${ticketId}.pdf`)
 }
 
+export interface RoadPassportPdfData {
+  contractId: string
+  roadName: string
+  ward: string
+  surfaceType: string
+  contractorName: string
+  contractorId: string
+  contractorRating?: number
+  completionDate: string | Date
+  dlpExpiryDate: string | Date
+  totalProjectCostInr: number
+  retentionFundAmountInr: number
+  retentionFundFrozen: boolean
+  status: string
+  daysRemaining: number
+  totalWarrantyDays: number
+  warrantyProgressPercent: number
+  isWarrantyActive: boolean
+  sha256Seal: string
+  statutoryActClause: string
+  issuingAuthority: string
+}
+
+/**
+ * Generates an official Municipal Road Birth Certificate & Defect Liability Passport (PDF)
+ * with SHA-256 Cryptographic Integrity Seal and BMC Roads Department attestation.
+ */
+export const generateRoadPassportPdf = async (passport: RoadPassportPdfData): Promise<void> => {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ])
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" })
+  const contractId = passport.contractId || "ROAD-PASSPORT"
+
+  // ── Header Banner (Emerald & Deep Navy) ──
+  doc.setFillColor(6, 78, 59) // Emerald-900
+  doc.rect(0, 0, 210, 34, "F")
+
+  doc.setFillColor(16, 185, 129) // Emerald-500 accent stripe
+  doc.rect(0, 34, 210, 2.5, "F")
+
+  doc.setTextColor(255, 255, 255)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(13)
+  doc.text("BRIHANMUMBAI MUNICIPAL CORPORATION (BMC)", 14, 13)
+
+  doc.setFontSize(10)
+  doc.setTextColor(209, 250, 229) // Emerald-100
+  doc.text("DEPARTMENT OF ROADS, TRAFFIC & CIVIC INFRASTRUCTURE", 14, 20)
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(8)
+  doc.setTextColor(167, 243, 208)
+  doc.text("STATUTORY ROAD BIRTH CERTIFICATE & DEFECT LIABILITY PASSPORT (MMC ACT SEC 64B)", 14, 27)
+
+  // ── 1. Road Identity & Passport Summary Box ──
+  doc.setFillColor(248, 250, 252)
+  doc.setDrawColor(203, 213, 225)
+  doc.roundedRect(14, 42, 182, 32, 2, 2, "FD")
+
+  doc.setTextColor(15, 23, 42)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(11)
+  doc.text(passport.roadName.toUpperCase(), 18, 50)
+
+  doc.setFont("helvetica", "normal")
+  doc.setFontSize(8.5)
+  doc.setTextColor(71, 85, 105)
+  doc.text(`Administrative Ward: ${passport.ward} • Surface Material: ${passport.surfaceType.replace(/_/g, " ")}`, 18, 57)
+  doc.text(`Road Asset Identification Code: ${passport.contractId} • Issuing Authority: ${passport.issuingAuthority}`, 18, 64)
+  doc.text(`Statutory Clause: ${passport.statutoryActClause}`, 18, 70)
+
+  // ── 2. Warranty & Defect Liability Period Status ──
+  doc.setTextColor(15, 23, 42)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(10)
+  doc.text("1. Defect Liability Period (DLP) & Financial Escrow Guarantee", 14, 82)
+
+  const dlpRows = [
+    ["Warranty Status", passport.isWarrantyActive ? "ACTIVE DLP GUARANTEE (CONTRACTOR LIABLE)" : "WARRANTY EXPIRED"],
+    ["Days Remaining in Warranty", `${passport.daysRemaining} Days Remaining (${passport.totalWarrantyDays} Days Total Term)`],
+    ["Paving Completion Date", new Date(passport.completionDate).toLocaleDateString("en-IN", { dateStyle: "long" })],
+    ["DLP Warranty Expiry Date", new Date(passport.dlpExpiryDate).toLocaleDateString("en-IN", { dateStyle: "long" })],
+    ["Total Public Project Outlay", `INR ₹${(passport.totalProjectCostInr / 10000000).toFixed(2)} Crore`],
+    ["10% Contractor Retention Escrow", `INR ₹${passport.retentionFundAmountInr.toLocaleString()} (Locked Collateral)`],
+    ["Escrow Penalty Status", passport.retentionFundFrozen ? "FROZEN (PENALTY ACTION ACTIVE)" : "COMPLIANT (PERFORMANCE GUARANTEED)"],
+  ]
+
+  autoTable(doc, {
+    startY: 86,
+    margin: { left: 14, right: 14 },
+    body: dlpRows,
+    theme: "striped",
+    styles: { fontSize: 8, cellPadding: 2.2 },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 70, textColor: [30, 41, 59] },
+      1: { cellWidth: 112, textColor: [15, 23, 42] },
+    },
+    didParseCell: (data) => {
+      if (data.row.index === 0 && data.column.index === 1) {
+        data.cell.styles.textColor = passport.isWarrantyActive ? [5, 150, 105] : [220, 38, 38]
+        data.cell.styles.fontStyle = "bold"
+      }
+    },
+  })
+
+  const finalY1 = (doc as any).lastAutoTable.finalY + 8
+
+  // ── 3. Contractor Information & SLA Accountability ──
+  doc.setTextColor(15, 23, 42)
+  doc.setFont("helvetica", "bold")
+  doc.setFontSize(10)
+  doc.text("2. Execution Contractor & Civic Performance Profile", 14, finalY1)
+
+  const contractorRows = [
+    ["Contractor / Firm Name", passport.contractorName],
+    ["Vendor Municipal ID", passport.contractorId],
+    ["Contractor Reliability Score", `${passport.contractorRating || 94} / 100 (Civic Performance Index)`],
+    ["Statutory Pothole SLA", "48-Hour Mandatory Defect Resolution (Clause 18.4)"],
+    ["Citizen Penalty Dividend", "INR ₹500 Slashed & Credited to Whistleblower on SLA Breach"],
+  ]
+
+  autoTable(doc, {
+    startY: finalY1 + 4,
+    margin: { left: 14, right: 14 },
+    body: contractorRows,
+    theme: "grid",
+    headStyles: { fillColor: [15, 23, 42] },
+    styles: { fontSize: 8, cellPadding: 2.2 },
+    columnStyles: {
+      0: { fontStyle: "bold", cellWidth: 70, textColor: [51, 65, 85] },
+      1: { cellWidth: 112, textColor: [15, 23, 42] },
+    },
+  })
+
+  const finalY2 = (doc as any).lastAutoTable.finalY + 10
+
+  // ── 4. Cryptographic Notary & Digital Verification Seal ──
+  doc.setFillColor(248, 250, 252)
+  doc.setDrawColor(16, 185, 129)
+  doc.setLineWidth(0.6)
+  doc.roundedRect(14, finalY2, 182, 34, 2, 2, "FD")
+
+  doc.setFont("courier", "bold")
+  doc.setFontSize(8)
+  doc.setTextColor(6, 78, 59)
+  doc.text("OFFICIAL DIGITAL VERIFICATION & NOTARIZATION SEAL", 18, finalY2 + 8)
+
+  doc.setFont("courier", "normal")
+  doc.setFontSize(7)
+  doc.setTextColor(30, 41, 59)
+  doc.text(`Digital SHA-256 Fingerprint: ${passport.sha256Seal}`, 18, finalY2 + 15)
+  doc.text(`Verification Gateway: https://smartcivic.mumbai.gov.in/road-passport/${passport.contractId}`, 18, finalY2 + 21)
+  doc.text(`Notarized Timestamp: ${new Date().toISOString()} • MCGM Head Office, Fort, Mumbai 400001`, 18, finalY2 + 27)
+
+  // Save PDF
+  doc.save(`BMC_Road_Birth_Certificate_${contractId}.pdf`)
+}
+
+
 

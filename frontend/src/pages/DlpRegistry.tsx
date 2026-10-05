@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
+import { Link } from "react-router-dom"
 import {
   Calculator,
   Lock,
@@ -12,6 +13,7 @@ import {
   X,
   Sparkles,
   Layers,
+  QrCode,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -207,6 +209,15 @@ export default function DlpRegistry() {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <Link to="/road-passport">
+            <Button
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-1.5 rounded-xl h-9 shadow-sm cursor-pointer"
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              <span>Digital Road Passport & QR</span>
+            </Button>
+          </Link>
           <Button
             onClick={fetchContracts}
             variant="outline"
@@ -625,7 +636,18 @@ export default function DlpRegistry() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-auto">
+                <div className="flex items-center gap-2.5 shrink-0 self-start lg:self-auto flex-wrap">
+                  <Link to={`/road-passport/${c.contractId}`}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 text-xs font-semibold h-9 rounded-xl gap-1.5 cursor-pointer"
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
+                      <span>Road Passport</span>
+                    </Button>
+                  </Link>
+
                   <Button
                     size="sm"
                     variant={isSelected ? "default" : "outline"}

@@ -71,7 +71,7 @@ router.post(
 );
 
 // GET /api/complaints/stats  — must come before /:id
-router.get("/stats", protect, authorize("admin", "officer"), getStats);
+router.get("/stats", protect, authorize("admin", "officer", "citizen", "worker"), getStats);
 
 // GET /api/complaints/ward-sla-choropleth
 router.get("/ward-sla-choropleth", getWardSlaChoropleth);

@@ -42,6 +42,7 @@ import {
   Award,
   ShieldAlert,
   Scale,
+  QrCode,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -100,6 +101,7 @@ const navGroups: NavGroup[] = [
       { key: "nav.trackComplaint", defaultName: "Track Grievance", href: "/track", icon: Search },
       { key: "nav.complaintHistory", defaultName: "Grievance Records", href: "/complaints", icon: History },
       { key: "nav.mapView", defaultName: "Live Ward GIS Map", href: "/map", icon: MapPin },
+      { key: "nav.roadPassport", defaultName: "Road Birth Certificate (QR)", href: "/road-passport", icon: QrCode, badge: "MMC 64B" },
       { key: "nav.nagarsevak", defaultName: "Find My Nagarsevak", href: "/nagarsevak", icon: Users },
       { key: "nav.rewards", defaultName: "Civic Karma & Rewards", href: "/rewards", icon: Trophy, citizenOnly: true },
       { key: "nav.wardBudget", defaultName: "Ward Budget Voting", href: "/ward-budget", icon: Coins, citizenOnly: true },
@@ -135,6 +137,7 @@ const navGroups: NavGroup[] = [
       { key: "nav.c1Collapse", defaultName: "C1 Building Collapse", href: "/structural-collapse", icon: Building2, officerOnly: true },
       { key: "nav.trenching", defaultName: "Dig-Once Utility Trenching", href: "/trenching-coordinator", icon: Wrench, officerOnly: true },
       { key: "nav.dlp", defaultName: "DLP Road Warranty Registry", href: "/dlp-registry", icon: ShieldCheck, officerOnly: true },
+      { key: "nav.roadPassportRadar", defaultName: "Road Birth Certificates", href: "/road-passport", icon: QrCode, officerOnly: true },
       { key: "nav.swmFleet", defaultName: "SWM Compactor Fleet", href: "/swm-fleet", icon: Truck, officerOnly: true },
       { key: "nav.aqi", defaultName: "AQI & Dust Enforcement", href: "/aqi-enforcement", icon: Wind, officerOnly: true },
       { key: "nav.water", defaultName: "Water Supply & Tankers", href: "/water-governance", icon: Droplets, officerOnly: true },

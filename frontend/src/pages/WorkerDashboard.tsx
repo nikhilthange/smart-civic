@@ -40,6 +40,11 @@ export default function WorkerDashboard() {
   const [routeOptResult, setRouteOptResult] = useState<OptimizedRouteResult | null>(null)
   const [isOptimizing, setIsOptimizing] = useState(false)
 
+  // Real-time Geofence & Urban Canyon GPS Telemetry
+  const [workerGps, setWorkerGps] = useState<{ lat: number; lng: number; accuracy: number | null } | null>(null)
+  const [isLocatingGps, setIsLocatingGps] = useState(false)
+  const [isUrbanCanyonOverride, setIsUrbanCanyonOverride] = useState(false)
+
   // Resolution Form State
   const [proofFile, setProofFile] = useState<File | null>(null)
   const [filePreview, setFilePreview] = useState<string | null>(null)
@@ -79,6 +84,56 @@ export default function WorkerDashboard() {
     }
     return null
   }, [defectLength, defectWidth, defectDepth])
+
+  // Dynamic Haversine distance from worker live GPS to task coordinates
+  const liveDistanceMeters = useMemo(() => {
+    if (!selectedTask) return 22
+    const coords = selectedTask.location?.coordinates
+    let targetLng: number | undefined
+    let targetLat: number | undefined
+
+    if (Array.isArray(coords) && coords.length >= 2) {
+      targetLng = coords[0]
+      targetLat = coords[1]
+    } else if (coords && typeof coords === "object" && Array.isArray((coords as any).coordinates)) {
+      targetLng = (coords as any).coordinates[0]
+      targetLat = (coords as any).coordinates[1]
+    }
+
+    if (workerGps && targetLat !== undefined && targetLng !== undefined) {
+      const R = 6371e3
+      const φ1 = (workerGps.lat * Math.PI) / 180
+      const φ2 = (targetLat * Math.PI) / 180
+      const Δφ = ((targetLat - workerGps.lat) * Math.PI) / 180
+      const Δλ = ((targetLng - workerGps.lng) * Math.PI) / 180
+      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+      return Math.round(R * c)
+    }
+    return 22 // Default field testing distance if GPS is acquiring
+  }, [selectedTask, workerGps])
+
+  // Acquire GPS fix when resolving a task
+  useEffect(() => {
+    if (selectedTask && typeof navigator !== "undefined" && navigator.geolocation) {
+      setIsLocatingGps(true)
+      setIsUrbanCanyonOverride(false)
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setWorkerGps({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy || null,
+          })
+          setIsLocatingGps(false)
+        },
+        () => {
+          setIsLocatingGps(false)
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      )
+    }
+  }, [selectedTask])
 
   const updateMaterialQty = (key: string, delta: number) => {
     setMaterialQuantities((prev) => {
@@ -286,17 +341,30 @@ export default function WorkerDashboard() {
       }
       formData.append("notes", notes)
 
-      // Try capturing worker on-site GPS coordinates for anti-fraud geo-fence check
-      if (navigator.geolocation) {
+      // Pass captured worker on-site GPS coordinates and accuracy for anti-fraud geo-fence check
+      if (workerGps) {
+        formData.append("workerLat", String(workerGps.lat))
+        formData.append("workerLng", String(workerGps.lng))
+        if (workerGps.accuracy !== null) {
+          formData.append("workerAccuracy", String(workerGps.accuracy))
+        }
+      } else if (navigator.geolocation) {
         try {
           const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000, enableHighAccuracy: true })
           })
           formData.append("workerLat", String(pos.coords.latitude))
           formData.append("workerLng", String(pos.coords.longitude))
+          if (pos.coords.accuracy) {
+            formData.append("workerAccuracy", String(pos.coords.accuracy))
+          }
         } catch {
           // If GPS denied/timed out, allow submission without hard client crash
         }
+      }
+
+      if (isUrbanCanyonOverride) {
+        formData.append("urbanCanyonOverride", "true")
       }
 
       if (defectLength && defectWidth) {
@@ -725,9 +793,13 @@ export default function WorkerDashboard() {
             <form onSubmit={handleSubmitResolution} className="space-y-4">
               {/* Geofence Proximity Radar */}
               <GeofenceProximityRadar
-                distanceMeters={22}
+                distanceMeters={liveDistanceMeters}
                 geofenceRadiusMeters={100}
                 taskAddress={selectedTask.location?.address || selectedTask.ward || "Mumbai"}
+                accuracyMeters={workerGps?.accuracy}
+                isUrbanCanyonOverride={isUrbanCanyonOverride}
+                onToggleUrbanCanyonOverride={setIsUrbanCanyonOverride}
+                isLocating={isLocatingGps}
               />
 
               {/* Resolution Diff Slider if both before & after images exist */}

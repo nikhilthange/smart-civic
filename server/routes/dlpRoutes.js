@@ -8,9 +8,11 @@ const {
   calculatePotholeVolume,
   checkWarrantyLiability,
   freezeRetentionDeposit,
+  getRoadPassport,
 } = require("../controllers/potholeDlpController");
 
 router.get("/contracts", getRoadContracts);
+router.get("/passport/:contractId", getRoadPassport);
 router.post("/contracts", createRoadContract);
 router.post("/estimate-volume", calculatePotholeVolume);
 router.post("/check-warranty", checkWarrantyLiability);

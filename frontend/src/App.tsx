@@ -55,6 +55,7 @@ const KarmaRewards = lazyRetry(() => import("./pages/KarmaRewards"))
 const Notifications = lazyRetry(() => import("./pages/Notifications"))
 const MonsoonRadar = lazyRetry(() => import("./pages/MonsoonRadar"))
 const DlpRegistry = lazyRetry(() => import("./pages/DlpRegistry"))
+const DigitalRoadPassport = lazyRetry(() => import("./pages/DigitalRoadPassport"))
 const SwmFleetRadar = lazyRetry(() => import("./pages/SwmFleetRadar"))
 const ParticipatoryBudget = lazyRetry(() => import("./pages/ParticipatoryBudget"))
 const TrenchingCoordinator = lazyRetry(() => import("./pages/TrenchingCoordinator"))
@@ -134,6 +135,9 @@ function App() {
                   <Route path="/nagarsevak" element={<NagarsevakDirectory />} />
                   <Route path="/corporators" element={<NagarsevakDirectory />} />
                   <Route path="/find-nagarsevak" element={<NagarsevakDirectory />} />
+                  <Route path="/road-passport" element={<DigitalRoadPassport />} />
+                  <Route path="/road-passport/:contractId" element={<DigitalRoadPassport />} />
+                  <Route path="/passport/:contractId" element={<DigitalRoadPassport />} />
 
                   {/* Citizen-only Routes — Create Complaint & Rewards */}
                   <Route element={<ProtectedRoute allowedRoles={["citizen"]} />}>

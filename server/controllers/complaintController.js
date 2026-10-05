@@ -1600,6 +1600,8 @@ const workerSubmitProof = async (req, res) => {
     // ─── Geo-Fenced Resolution Proof (Anti-Fraud Check) ──────────────────────────
     const rawWorkerLat = req.body.workerLat !== undefined ? req.body.workerLat : (req.body.latitude !== undefined ? req.body.latitude : req.headers?.["x-worker-lat"]);
     const rawWorkerLng = req.body.workerLng !== undefined ? req.body.workerLng : (req.body.longitude !== undefined ? req.body.longitude : req.headers?.["x-worker-lng"]);
+    const rawAccuracy = req.body.workerAccuracy !== undefined ? req.body.workerAccuracy : req.body.accuracy;
+    const isUrbanCanyonOverride = req.body.urbanCanyonOverride === "true" || req.body.urbanCanyonOverride === true;
     let geofenceNote = "";
 
     const targetCoords = complaint.location?.coordinates?.coordinates;
@@ -1608,6 +1610,7 @@ const workerSubmitProof = async (req, res) => {
     if (rawWorkerLat !== undefined || rawWorkerLng !== undefined) {
       const workerLat = parseFloat(rawWorkerLat);
       const workerLng = parseFloat(rawWorkerLng);
+      const accuracy = rawAccuracy !== undefined ? parseFloat(rawAccuracy) : 0;
 
       if (
         !Number.isFinite(workerLat) ||
@@ -1628,13 +1631,17 @@ const workerSubmitProof = async (req, res) => {
         const targetLat = targetCoords[1];
         const distanceMeters = calculateHaversineDistanceMeters(targetLat, targetLng, workerLat, workerLng);
 
-        if (distanceMeters > 100) {
+        // Urban Canyon tolerance: high-rise multi-path reflections in dense Mumbai corridors can degrade GPS by 30-60m
+        const toleranceBuffer = isUrbanCanyonOverride ? 60 : (accuracy > 30 ? Math.min(60, Math.round(accuracy / 2)) : 0);
+        const maxAllowedDistance = 100 + toleranceBuffer;
+
+        if (distanceMeters > maxAllowedDistance) {
           return res.status(400).json({
             success: false,
-            message: `Geo-fence validation failed: You must be on-site within 100m of the reported defect location to submit resolution proof (Current distance: ${Math.round(distanceMeters)}m).`,
+            message: `Geo-fence validation failed: You must be on-site within ${maxAllowedDistance}m of the reported defect location to submit resolution proof (Current distance: ${Math.round(distanceMeters)}m).`,
           });
         }
-        geofenceNote = ` (Verified on-site: ${Math.round(distanceMeters)}m from target location)`;
+        geofenceNote = ` (Verified on-site: ${Math.round(distanceMeters)}m from target location${toleranceBuffer > 0 ? `, Urban Canyon tolerance ±${toleranceBuffer}m` : ""})`;
       }
     }
 

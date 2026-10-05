@@ -1,68 +1,68 @@
 {
   "version": "2.4.0-online",
-  "totalEpochs": 38,
-  "lastTrainedAt": "2026-10-05T09:50:48.674Z",
+  "totalEpochs": 39,
+  "lastTrainedAt": "2026-10-05T10:25:20.640Z",
   "learnedKeywords": {
     "ped": {
       "category": "parks_and_recreation",
       "department": "PRD",
       "weight": 3.5,
-      "frequency": 48
+      "frequency": 50
     },
     "transformer": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 48
+      "frequency": 50
     },
     "blast": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 48
+      "frequency": 50
     },
     "short": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 48
+      "frequency": 50
     },
     "circuit": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 48
+      "frequency": 50
     },
     "raste": {
       "category": "parks_and_recreation",
       "department": "PRD",
       "weight": 3.5,
-      "frequency": 36
+      "frequency": 38
     },
     "box": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 36
+      "frequency": 38
     },
     "dhakkan": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 36
+      "frequency": 38
     },
     "gayab": {
       "category": "public_safety",
       "department": "PSD",
       "weight": 3.5,
-      "frequency": 36
+      "frequency": 38
     }
   },
   "transitionPriors": {
-    "PWD->PRD": 4.6000000000000005,
-    "PWD->PSD": 4.6000000000000005
+    "PWD->PRD": 4.8,
+    "PWD->PSD": 4.8
   },
-  "totalTrainingSamples": 1468,
+  "totalTrainingSamples": 1470,
   "averageAccuracy": 0.992,
   "trainingLossHistory": [
     {
@@ -262,6 +262,13 @@
       "accuracy": 0.992,
       "samplesTrained": 2,
       "timestamp": "2026-10-05T09:50:48.674Z"
+    },
+    {
+      "epoch": 39,
+      "loss": 0.015,
+      "accuracy": 0.992,
+      "samplesTrained": 2,
+      "timestamp": "2026-10-05T10:25:20.640Z"
     }
   ]
 }

@@ -105,6 +105,27 @@ async def analyze_image(file: UploadFile = File(...)):
     result = runner.analyze_image(contents)
     return result
 
+@app.post("/verify-category", response_model=VerificationResponse)
+async def verify_category(
+    category: str = Form(...),
+    file: UploadFile = File(...)
+):
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=400, detail="Empty file uploaded.")
+
+    result = guard_instance.verify_image(contents, category)
+    return VerificationResponse(
+        verified=result["verified"],
+        selectedCategory=result["selectedCategory"],
+        detectedClasses=result.get("detectedClasses", []),
+        matchedClasses=result.get("matchedClasses", []),
+        confidence=result.get("confidence", 0.0),
+        latencyMs=result.get("latencyMs", 0.0),
+        device=result.get("device", "cpu"),
+        message=result.get("message", "")
+    )
+
 @app.post("/analyze-complaint", response_model=UnifiedPredictionResponse)
 async def analyze_complaint_unified(
     description: str = Form(...),

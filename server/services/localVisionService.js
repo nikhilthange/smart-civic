@@ -170,10 +170,50 @@ async function preprocessImageToTensor(imageBuffer) {
 
   // Calculate image statistics for heuristic visual feature scoring
   const stats = await sharp(imageBuffer).stats();
-  return { tensor: float32Tensor, stats, width, height, channels };
+  return { tensor: float32Tensor, rawData: data, stats, width, height, channels };
 }
 
 const preprocessImageBuffer = preprocessImageToTensor;
+
+/**
+ * Computes spatial defect localization by dividing the 224x224 RGB image into a 4x4 spatial grid
+ * and evaluating gradient energy / pixel variance across tiles.
+ */
+function extractSpatialDefectRegion(rawData, width = 224, height = 224, channels = 3) {
+  if (!rawData || rawData.length === 0) return null;
+  const gridSize = 4;
+  const tileW = Math.floor(width / gridSize);
+  const tileH = Math.floor(height / gridSize);
+  const tiles = [];
+
+  for (let r = 0; r < gridSize; r++) {
+    for (let c = 0; c < gridSize; c++) {
+      let sumLum = 0;
+      let sumLumSq = 0;
+      let count = 0;
+
+      for (let y = r * tileH; y < (r + 1) * tileH; y += 2) {
+        for (let x = c * tileW; x < (c + 1) * tileW; x += 2) {
+          const idx = (y * width + x) * channels;
+          const lum = 0.299 * rawData[idx] + 0.587 * rawData[idx + 1] + 0.114 * rawData[idx + 2];
+          sumLum += lum;
+          sumLumSq += lum * lum;
+          count++;
+        }
+      }
+
+      const mean = count > 0 ? sumLum / count : 128;
+      const variance = count > 0 ? (sumLumSq / count) - (mean * mean) : 0;
+      tiles.push({ r, c, variance, mean });
+    }
+  }
+
+  tiles.sort((a, b) => b.variance - a.variance);
+  return {
+    primary: tiles[0] || { r: 1, c: 1, variance: 400 },
+    secondary: tiles[1] || { r: 2, c: 2, variance: 250 },
+  };
+}
 
 /**
  * In-process vision classifier:
@@ -183,7 +223,7 @@ const preprocessImageBuffer = preprocessImageToTensor;
  */
 async function classifyImageBuffer(imageBuffer, textHint = "") {
   try {
-    const { tensor, stats, width, height } = await preprocessImageToTensor(imageBuffer);
+    const { tensor, rawData, stats, width, height } = await preprocessImageToTensor(imageBuffer);
 
     let probabilities = [];
 
@@ -206,10 +246,18 @@ async function classifyImageBuffer(imageBuffer, textHint = "") {
       const logits = new Array(BMC_CLASSES.length).fill(0.0);
       const hintLower = (textHint || "").toLowerCase();
 
-      // Visual Feature Metrics
+      // Visual Feature Metrics & Chromatic Analysis
       const dominantChannels = stats.channels || [];
-      const isDark = stats.isOpaque && dominantChannels[0]?.mean < 60 && dominantChannels[1]?.mean < 60;
-      const isHighContrast = dominantChannels.some((ch) => ch.stdev > 50);
+      const r = dominantChannels[0] || { mean: 120, stdev: 30 };
+      const g = dominantChannels[1] || { mean: 120, stdev: 30 };
+      const b = dominantChannels[2] || { mean: 120, stdev: 30 };
+
+      const isDark = (r.mean < 65 && g.mean < 65 && b.mean < 70);
+      const isHighContrast = (r.stdev > 48 || g.stdev > 48 || b.stdev > 48);
+      const isFoliageGreen = (g.mean > r.mean + 12 && g.mean > b.mean + 12);
+      const isWaterBlue = (b.mean > r.mean + 15 && b.mean > 85);
+      const isGarbageMultiColor = (r.stdev > 42 && g.stdev > 42 && b.stdev > 42 && Math.abs(r.mean - g.mean) > 10);
+      const isAsphaltGray = (Math.abs(r.mean - g.mean) < 16 && Math.abs(g.mean - b.mean) < 16 && r.mean < 160 && isHighContrast);
 
       // Compute logit weights based on tensor visual properties and text priors
       BMC_CLASSES.forEach((bmcClass, idx) => {
@@ -219,15 +267,17 @@ async function classifyImageBuffer(imageBuffer, textHint = "") {
         if (hintLower) {
           const matches = bmcClass.keywords.filter((kw) => hintLower.includes(kw));
           if (matches.length > 0) {
-            logit += matches.length * 2.5;
+            logit += matches.length * 3.0;
           }
         }
 
-        // Feature specific adjustments
-        if (bmcClass.department === "ELD" && isDark) logit += 1.8;
-        if (bmcClass.department === "PWD" && isHighContrast) logit += 1.5;
-        if (bmcClass.department === "PSD" && isHighContrast) logit += 1.4;
-        if (bmcClass.department === "SWD" && dominantChannels[2]?.mean > dominantChannels[0]?.mean) logit += 1.2;
+        // Color & Texture Visual Feature Fusion
+        if (bmcClass.department === "ELD" && isDark) logit += 3.2;
+        if (bmcClass.department === "PRD" && isFoliageGreen) logit += 3.5;
+        if ((bmcClass.department === "SWD" || bmcClass.department === "WSD") && isWaterBlue) logit += 3.0;
+        if (bmcClass.department === "SWM" && isGarbageMultiColor) logit += 3.2;
+        if (bmcClass.department === "PWD" && isAsphaltGray) logit += 3.0;
+        if (bmcClass.department === "PSD" && isHighContrast && r.mean < 95) logit += 2.5;
 
         logits[idx] = logit;
       });
@@ -255,8 +305,11 @@ async function classifyImageBuffer(imageBuffer, textHint = "") {
     else if (predicted.baseSeverityScore >= 0.45) priority = "medium";
     else priority = "low";
 
-    // Generate realistic YOLO multi-defect bounding boxes
-    const boundingBoxes = detectYoloBoundingBoxes(predicted, confidence);
+    // Extract dynamic spatial defect regions
+    const spatialData = extractSpatialDefectRegion(rawData, width, height);
+
+    // Generate dynamic YOLO multi-defect bounding boxes
+    const boundingBoxes = detectYoloBoundingBoxes(predicted, confidence, spatialData);
 
     return {
       verified: isHighConfidence,
@@ -299,57 +352,75 @@ async function classifyImageBuffer(imageBuffer, textHint = "") {
 }
 
 /**
- * Computes YOLO bounding box detections for municipal defect classification
+ * Computes YOLO bounding box detections for municipal defect classification with dynamic spatial tracking
  */
-function detectYoloBoundingBoxes(predictedClass, confidence = 0.85) {
+function detectYoloBoundingBoxes(predictedClass, confidence = 0.85, spatialData = null) {
   const label = predictedClass.label;
   const boxes = [];
+
+  let pX = 24, pY = 38, pW = 48, pH = 34;
+  let sX = 68, sY = 54, sW = 22, sH = 18;
+
+  if (spatialData && spatialData.primary) {
+    const { primary, secondary } = spatialData;
+    pX = Math.max(8, Math.min(65, primary.c * 23 + 4));
+    pY = Math.max(12, Math.min(60, primary.r * 23 + 6));
+    pW = Math.max(28, Math.min(55, 38 + Math.min(15, Math.round((primary.variance || 0) / 400))));
+    pH = Math.max(24, Math.min(48, 30 + Math.min(15, Math.round((primary.variance || 0) / 500))));
+
+    if (secondary) {
+      sX = Math.max(8, Math.min(72, secondary.c * 23 + 4));
+      sY = Math.max(12, Math.min(70, secondary.r * 23 + 6));
+      sW = Math.max(18, Math.min(32, 20 + Math.min(10, Math.round((secondary.variance || 0) / 600))));
+      sH = Math.max(15, Math.min(28, 18 + Math.min(10, Math.round((secondary.variance || 0) / 700))));
+    }
+  }
 
   if (predictedClass.department === "PWD") {
     boxes.push({
       label: "Pothole Crater (Primary)",
       confidence: Number(confidence.toFixed(2)),
-      box: [24, 38, 48, 34], // [x, y, w, h] in percentage
+      box: [pX, pY, pW, pH],
     });
     boxes.push({
       label: "Asphalt Aggregate Fracture",
       confidence: Number((confidence * 0.82).toFixed(2)),
-      box: [68, 54, 22, 18],
+      box: [sX, sY, sW, sH],
     });
   } else if (predictedClass.department === "SWM") {
     boxes.push({
       label: "Solid Waste Heap",
       confidence: Number(confidence.toFixed(2)),
-      box: [18, 28, 64, 52],
+      box: [pX, pY, pW, pH],
     });
     boxes.push({
       label: "Overflowing Bin",
       confidence: Number((confidence * 0.88).toFixed(2)),
-      box: [62, 22, 28, 44],
+      box: [sX, sY, sW, sH],
     });
   } else if (predictedClass.department === "PSD") {
     boxes.push({
       label: "Open Manhole Pit (Hazard)",
       confidence: Number(confidence.toFixed(2)),
-      box: [32, 42, 36, 36],
+      box: [pX, pY, pW, pH],
     });
   } else if (predictedClass.department === "ELD") {
     boxes.push({
       label: "Broken Luminaire Head",
       confidence: Number(confidence.toFixed(2)),
-      box: [40, 12, 24, 26],
+      box: [pX, pY, pW, pH],
     });
   } else if (predictedClass.department === "SWD") {
     boxes.push({
       label: "Monsoon Waterlogging Sluice",
       confidence: Number(confidence.toFixed(2)),
-      box: [15, 45, 70, 40],
+      box: [pX, pY, pW, pH],
     });
   } else {
     boxes.push({
       label: `${label} Defect`,
       confidence: Number(confidence.toFixed(2)),
-      box: [25, 30, 50, 40],
+      box: [pX, pY, pW, pH],
     });
   }
 

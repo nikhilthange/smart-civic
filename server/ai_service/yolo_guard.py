@@ -27,53 +27,56 @@ CATEGORY_CLASS_MAP: Dict[str, List[str]] = {
     "garbage": [
         "trash", "waste", "garbage", "bottle", "cup", "plastic", "box", "can",
         "debris", "rubbish", "litter", "bag", "bucket", "bowl", "container",
-        "plastic bag", "cardboard", "wrapper", "paper"
+        "plastic bag", "cardboard", "wrapper", "paper", "garbage_overflow"
     ],
     "garbage_collection": [
         "trash", "waste", "garbage", "bottle", "cup", "plastic", "box", "can",
         "debris", "rubbish", "litter", "bag", "bucket", "bowl", "container",
-        "plastic bag", "cardboard", "wrapper", "paper"
+        "plastic bag", "cardboard", "wrapper", "paper", "garbage_overflow"
     ],
     "illegal_dumping": [
         "trash", "waste", "garbage", "bottle", "cup", "plastic", "box", "can",
-        "debris", "rubbish", "litter", "bag", "bucket", "bowl", "container"
+        "debris", "rubbish", "litter", "bag", "bucket", "bowl", "container", "garbage_overflow"
     ],
     "pothole": [
         "pothole", "crack", "road_defect", "asphalt", "hole", "road damage",
-        "manhole", "damaged road", "crater"
+        "manhole", "damaged road", "crater", "road_crack", "broken_pavement"
     ],
     "roads_and_infrastructure": [
         "pothole", "crack", "road_defect", "asphalt", "hole", "road damage",
-        "manhole", "damaged road", "crater", "speed bump", "curb"
+        "manhole", "damaged road", "crater", "speed bump", "curb", "road_crack", "broken_pavement"
     ],
     "waterlogging": [
         "flood", "puddle", "waterlogging", "submerged", "water", "drain",
-        "leak", "stagnant water", "flooding", "water surface"
+        "leak", "stagnant water", "flooding", "water surface", "sewage_overflow"
     ],
     "storm_water_drains": [
         "flood", "puddle", "waterlogging", "submerged", "water", "drain",
-        "gutter", "nallah", "overflow", "culvert"
+        "gutter", "nallah", "overflow", "culvert", "waterlogging", "sewage_overflow"
     ],
     "water_and_sanitation": [
         "water", "leak", "pipe", "burst pipe", "tap", "pipeline", "sewage",
-        "valve", "puddle", "waterlogging"
+        "valve", "puddle", "waterlogging", "sewage_overflow"
     ],
     "street_lighting": [
         "traffic light", "street light", "light", "lamp", "pole", "wire",
-        "cable", "streetlight", "lantern"
+        "cable", "streetlight", "lantern", "broken_streetlight", "exposed_wire"
     ],
     "parks_and_recreation": [
         "tree", "branch", "leaf", "plant", "wood", "log", "fallen tree",
-        "trunk", "grass", "foliage"
+        "trunk", "grass", "foliage", "fallen_tree"
     ],
     "licensing_and_encroachment": [
         "hawker", "stall", "bench", "chair", "cart", "tent", "barrier",
-        "shed", "umbrella", "kiosk", "table"
+        "shed", "umbrella", "kiosk", "table", "abandoned_vehicle"
     ],
     "public_safety": [
         "manhole", "open manhole", "hole", "hazard", "pit", "broken cover",
-        "exposed wire", "fire", "danger"
+        "exposed wire", "fire", "danger", "open_manhole", "exposed_wire"
     ],
+    "animal_welfare": [
+        "animal", "animal_carcass", "dog", "cat", "bird"
+    ]
 }
 
 # Universal COCO class aliases to map standard 80-class models to civic taxonomy
@@ -104,6 +107,20 @@ COCO_TO_CIVIC_MAPPING: Dict[str, List[str]] = {
 }
 
 
+def find_optimal_civic_weights() -> str:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(base_dir, "best.pt"),
+        os.path.join(base_dir, "..", "..", "ai_training", "best.pt"),
+        os.path.join(base_dir, "yolov8n.pt"),
+        "yolov8n.pt"
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return os.path.abspath(c)
+    return "yolov8n.pt"
+
+
 class TensorRTYoloGuard:
     """
     NVIDIA TensorRT accelerated YOLOv8 inference guard for civic verification.
@@ -112,12 +129,12 @@ class TensorRTYoloGuard:
     def __init__(
         self,
         engine_path: str = "yolov8n.engine",
-        pt_path: str = "yolov8n.pt",
+        pt_path: Optional[str] = None,
         device: str = "0",
         conf_threshold: float = CONFIDENCE_THRESHOLD,
     ):
         self.engine_path = engine_path
-        self.pt_path = pt_path
+        self.pt_path = pt_path or find_optimal_civic_weights()
         self.device = device
         self.conf_threshold = conf_threshold
         self.model = None

@@ -220,7 +220,7 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-slate-100 dark:bg-slate-950 font-sans">
+    <div className="min-h-[100dvh] h-full w-full flex flex-col lg:flex-row bg-slate-100 dark:bg-slate-950 font-sans overflow-x-hidden overflow-y-auto lg:overflow-hidden">
       {/* ═══ LEFT HERO PANEL: MUMBAI MUNICIPAL HERITAGE ARCHITECTURE ═══ */}
       <div className="relative hidden lg:flex lg:w-1/2 xl:w-7/12 flex-col justify-between p-10 xl:p-14 overflow-hidden border-r border-slate-200 dark:border-slate-800">
         {/* Background Photograph */}

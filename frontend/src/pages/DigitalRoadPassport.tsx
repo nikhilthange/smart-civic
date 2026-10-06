@@ -161,7 +161,7 @@ export default function DigitalRoadPassport() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-[100dvh] h-full w-full overflow-x-hidden overflow-y-auto overscroll-y-contain bg-slate-50 dark:bg-slate-950 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Navigation Breadcrumb Bar */}
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">

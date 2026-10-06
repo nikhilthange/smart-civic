@@ -125,7 +125,14 @@ function App() {
                   <Route path="/register" element={<Auth />} />
                   <Route path="/verify-email" element={<VerifyEmail />} />
                   <Route path="/unauthorized" element={<Unauthorized />} />
-                  <Route path="/public-map" element={<MapView />} />
+                  <Route
+                    path="/public-map"
+                    element={
+                      <div className="min-h-[100dvh] h-full w-full overflow-x-hidden overflow-y-auto overscroll-y-contain bg-slate-50 dark:bg-slate-950">
+                        <MapView />
+                      </div>
+                    }
+                  />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<Terms />} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 import { useTranslation } from "react-i18next"
 import {
@@ -15,6 +16,7 @@ import {
   EyeOff,
   Building,
   Key,
+  ArrowLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +25,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "react-hot-toast"
 
 export default function Settings() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { i18n } = useTranslation()
 
@@ -108,13 +111,24 @@ export default function Settings() {
   return (
     <div className="space-y-6 pb-12">
       {/* Page Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Account & Portal Settings
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400">
-          Manage your personal profile, notification channels, security credentials, and DPDP privacy settings.
-        </p>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/dashboard"))}
+          className="p-2.5 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-800 shrink-0"
+          aria-label="Go back"
+          title="Go back"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Account & Portal Settings
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Manage your personal profile, notification channels, security credentials, and DPDP privacy settings.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

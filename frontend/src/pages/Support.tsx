@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import {
   LifeBuoy,
   PhoneCall,
@@ -12,15 +12,17 @@ import {
   Ambulance,
   ShieldAlert,
   Bot,
+  ArrowLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "react-hot-toast"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 export default function Support() {
+  const navigate = useNavigate()
   const [ticketCategory, setTicketCategory] = useState("general_inquiry")
   const [subject, setSubject] = useState("")
   const [message, setMessage] = useState("")
@@ -73,13 +75,24 @@ export default function Support() {
   return (
     <div className="space-y-6 pb-12">
       {/* Page Header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          Civic Helpdesk & Citizen Support
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400">
-          Get assistance with municipal grievance tracking, statutory escalations, emergency contacts, and direct support.
-        </p>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/dashboard"))}
+          className="p-2.5 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-800 shrink-0"
+          aria-label="Go back"
+          title="Go back"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Civic Helpdesk & Citizen Support
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+            Get assistance with municipal grievance tracking, statutory escalations, emergency contacts, and direct support.
+          </p>
+        </div>
       </div>
 
       {/* 24x7 Emergency Helplines */}

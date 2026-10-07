@@ -19,8 +19,6 @@ import {
   type Nagarsevak,
   type MmrCorporation
 } from "@/data/nagarsevakDirectory"
-import SmartCivicLogo from "@/components/common/SmartCivicLogo"
-import { LanguageToggle } from "@/components/common/LanguageToggle"
 
 export default function NagarsevakDirectory() {
   const { t, i18n } = useTranslation()
@@ -57,81 +55,71 @@ export default function NagarsevakDirectory() {
   }
 
   return (
-    <div className="min-h-[100dvh] h-full w-full overflow-x-hidden overflow-y-auto overscroll-y-contain flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-emerald-500 selection:text-white">
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-2.5">
-            <SmartCivicLogo className="w-8 h-8" />
-            <span className="font-bold text-lg tracking-tight">Smart Civic <span className="text-emerald-600">AI</span></span>
-          </Link>
-          <div className="flex items-center gap-2.5">
-            <LanguageToggle />
-            <Button variant="outline" size="sm" asChild className="text-xs">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-12">
+      {/* Page Header Card */}
+      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900/80 border border-slate-200/80 dark:border-zinc-800/80 shadow-xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 text-xs font-semibold">
+              <Users className="w-3.5 h-3.5" />
+              <span>{t("nagarsevakDirectory.badge", "MMR Elected Representative & Ward Accountability Directory")}</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {t("nagarsevakDirectory.title", "Find Your Nagarsevak (Ward Corporator)")}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 max-w-2xl leading-relaxed">
+              {t("nagarsevakDirectory.subtitle", "Connect directly with your elected ward corporator across Mumbai (BMC), Thane (TMC), Navi Mumbai (NMMC), and Kalyan-Dombivli (KDMC). Escalate unresolved 48h SLA grievances with 1-tap WhatsApp communication.")}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="outline" size="sm" asChild className="text-xs rounded-xl">
               <Link to="/map">
                 <MapPin className="w-3.5 h-3.5 mr-1 text-emerald-600" />
                 <span>{t("nagarsevakDirectory.liveMap", "Live Ward Map")}</span>
               </Link>
             </Button>
-            <Button size="sm" asChild className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+            <Button size="sm" asChild className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl">
               <Link to="/complaint/create">{t("nagarsevakDirectory.fileGrievance", "File Grievance")}</Link>
             </Button>
           </div>
         </div>
-      </header>
 
-      {/* Hero */}
-      <section className="py-10 sm:py-14 px-4 sm:px-6 bg-gradient-to-b from-white via-slate-50 to-slate-100/60 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 border-b border-slate-200/80 dark:border-slate-800/80">
-        <div className="max-w-5xl mx-auto text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 text-xs font-semibold">
-            <Users className="w-3.5 h-3.5" />
-            <span>{t("nagarsevakDirectory.badge", "MMR Elected Representative & Ward Accountability Directory")}</span>
+        {/* Search Box */}
+        <div className="relative pt-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
+          <Input
+            type="text"
+            placeholder={t("nagarsevakDirectory.searchPlaceholder", "Search by corporator name, ward (e.g. 217, Hill Road, Bandra), or party...")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 h-11 rounded-xl bg-slate-50/70 dark:bg-zinc-800/60 border-slate-200 dark:border-zinc-700 text-xs sm:text-sm shadow-2xs focus-visible:ring-emerald-500"
+          />
+        </div>
+
+        {/* Quick Metrics */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs font-medium">
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/80">
+            <span className="text-lg font-bold font-mono text-slate-900 dark:text-white block">592</span>
+            <span className="text-slate-500 dark:text-zinc-400">{t("nagarsevakDirectory.statCorporators", "MMR Corporators")}</span>
           </div>
-
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-            {t("nagarsevakDirectory.title", "Find Your Nagarsevak (Ward Corporator)")}
-          </h1>
-
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            {t("nagarsevakDirectory.subtitle", "Connect directly with your elected ward corporator across Mumbai (BMC), Thane (TMC), Navi Mumbai (NMMC), and Kalyan-Dombivli (KDMC). Escalate unresolved 48h SLA grievances with 1-tap WhatsApp communication.")}
-          </p>
-
-          {/* Search Box */}
-          <div className="max-w-xl mx-auto relative pt-2">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
-            <Input
-              type="text"
-              placeholder={t("nagarsevakDirectory.searchPlaceholder", "Search by corporator name, ward (e.g. 217, Hill Road, Bandra), or party...")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-11 h-12 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-sm shadow-sm focus-visible:ring-emerald-500"
-            />
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/80">
+            <span className="text-lg font-bold font-mono text-blue-600 dark:text-blue-400 block">4</span>
+            <span className="text-slate-500 dark:text-zinc-400">{t("nagarsevakDirectory.statCorps", "Municipal Corps")}</span>
           </div>
-
-          {/* Quick Metrics */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto pt-4 text-xs font-medium">
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-              <span className="text-xl font-bold font-mono text-slate-900 dark:text-white block">592</span>
-              <span className="text-slate-500">{t("nagarsevakDirectory.statCorporators", "MMR Corporators")}</span>
-            </div>
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-              <span className="text-xl font-bold font-mono text-blue-600 block">4</span>
-              <span className="text-slate-500">{t("nagarsevakDirectory.statCorps", "Municipal Corps")}</span>
-            </div>
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-              <span className="text-xl font-bold font-mono text-emerald-600 block">94.8%</span>
-              <span className="text-slate-500">{t("nagarsevakDirectory.statResponse", "Avg Response Rate")}</span>
-            </div>
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-              <span className="text-xl font-bold font-mono text-amber-600 block">1-Tap</span>
-              <span className="text-slate-500">{t("nagarsevakDirectory.statWhatsApp", "WhatsApp Escalation")}</span>
-            </div>
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/80">
+            <span className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400 block">94.8%</span>
+            <span className="text-slate-500 dark:text-zinc-400">{t("nagarsevakDirectory.statResponse", "Avg Response Rate")}</span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/80">
+            <span className="text-lg font-bold font-mono text-amber-600 dark:text-amber-400 block">1-Tap</span>
+            <span className="text-slate-500 dark:text-zinc-400">{t("nagarsevakDirectory.statWhatsApp", "WhatsApp Escalation")}</span>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Main Grid Content */}
-      <main className="flex-1 py-8 px-4 sm:px-6 max-w-7xl mx-auto w-full space-y-6">
+      <div className="w-full space-y-6">
         {/* Corporation Selector Tabs */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500">
@@ -186,7 +174,7 @@ export default function NagarsevakDirectory() {
                   {/* Profile Info */}
                   <CardContent className="p-5 space-y-4">
                     <div className="flex items-start gap-3.5">
-                      <div className="w-13 h-13 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-950 text-white flex flex-col items-center justify-center border border-slate-700/60 shrink-0 shadow-xs relative">
+                      <div className="w-13 h-13 rounded-2xl bg-slate-900 dark:bg-slate-800 text-white flex flex-col items-center justify-center border border-slate-700/60 shrink-0 shadow-xs relative">
                         <span className="text-sm font-bold font-mono text-emerald-400">
                           {ns.name
                             .split(" ")
@@ -271,12 +259,7 @@ export default function NagarsevakDirectory() {
             ))}
           </div>
         )}
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-slate-200/80 dark:border-slate-800/80 py-6 px-6 text-center text-xs text-slate-500 dark:text-slate-400">
-        © 2026 Smart Civic AI Platform • MMR Municipal Corporator Accountability Initiative
-      </footer>
+      </div>
     </div>
   )
 }

@@ -89,9 +89,9 @@ export const ResolutionVerificationModal: React.FC<ResolutionVerificationModalPr
         <div className="p-6 overflow-y-auto space-y-6 flex-1">
           
           {/* AI Score & Certificate Bar */}
-          <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 via-primary-500/10 to-teal-500/10 border border-emerald-500/20 flex flex-wrap items-center justify-between gap-4">
+          <div className="p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500 text-white flex flex-col items-center justify-center shadow-lg shadow-emerald-500/20 font-bold">
+              <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex flex-col items-center justify-center shadow-xs font-bold">
                 <span className="text-base leading-none">{qualityScore}%</span>
                 <span className="text-[9px] uppercase tracking-wider font-semibold">Match</span>
               </div>

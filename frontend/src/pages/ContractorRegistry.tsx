@@ -300,14 +300,14 @@ export default function ContractorRegistry() {
       {/* Real Citizen Dividend Pool KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Total Slashed to Citizen Dividend Pool */}
-        <Card className="rounded-2xl border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent dark:from-emerald-950/30 dark:via-zinc-900/60 dark:to-zinc-900/40 shadow-sm">
+        <Card className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 Citizen Welfare Pool
               </span>
-              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                <Coins className="w-4 h-4" />
+              <div className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                <Coins className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
             <div className="mt-3">
@@ -323,14 +323,14 @@ export default function ContractorRegistry() {
         </Card>
 
         {/* KPI 2: Active Defect Collateral Held */}
-        <Card className="rounded-2xl border-sky-500/30 bg-gradient-to-br from-sky-500/10 via-sky-500/5 to-transparent dark:from-sky-950/30 dark:via-zinc-900/60 dark:to-zinc-900/40 shadow-sm">
+        <Card className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 Active Collateral Held
               </span>
-              <div className="p-2 rounded-xl bg-sky-500/20 text-sky-600 dark:text-sky-400">
-                <ShieldCheck className="w-4 h-4" />
+              <div className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                <ShieldCheck className="w-4 h-4 text-sky-600 dark:text-sky-400" />
               </div>
             </div>
             <div className="mt-3">
@@ -345,14 +345,14 @@ export default function ContractorRegistry() {
         </Card>
 
         {/* KPI 3: 12-Month DLP Retention Reserve */}
-        <Card className="rounded-2xl border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-transparent dark:from-purple-950/30 dark:via-zinc-900/60 dark:to-zinc-900/40 shadow-sm">
+        <Card className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 12-Mo DLP Warranty Lock
               </span>
-              <div className="p-2 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400">
-                <Lock className="w-4 h-4" />
+              <div className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                <Lock className="w-4 h-4 text-slate-600 dark:text-zinc-300" />
               </div>
             </div>
             <div className="mt-3">
@@ -367,14 +367,14 @@ export default function ContractorRegistry() {
         </Card>
 
         {/* KPI 4: Total Protected Defects */}
-        <Card className="rounded-2xl border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-950/30 dark:via-zinc-900/60 dark:to-zinc-900/40 shadow-sm">
+        <Card className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                 Escrow Protected Defects
               </span>
-              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
-                <Building2 className="w-4 h-4" />
+              <div className="p-2 rounded-xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                <Building2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
             <div className="mt-3">

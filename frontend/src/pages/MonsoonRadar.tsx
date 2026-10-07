@@ -14,13 +14,14 @@ import {
   ExternalLink,
   Radio,
   CloudLightning,
+  ArrowLeft,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { municipalApi, type FloodRadarResponse } from "@/services/municipalApi"
 import { complaintApi, type Complaint } from "@/services/complaintApi"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import type { Variants } from "framer-motion"
 
@@ -64,6 +65,7 @@ function interpretWeatherCode(code: number): { text: string; icon: string; sever
 }
 
 export default function MonsoonRadar() {
+  const navigate = useNavigate()
   const [data, setData] = useState<FloodRadarResponse | null>(null)
   const [complaints, setComplaints] = useState<Complaint[]>([])
   const [liveWeather, setLiveWeather] = useState<LiveWeatherTelemetry | null>(null)
@@ -272,7 +274,16 @@ export default function MonsoonRadar() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/dashboard"))}
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-800 shrink-0"
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
             <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               Monsoon Flood Radar & Telemetry
             </h1>
@@ -284,7 +295,7 @@ export default function MonsoonRadar() {
               LIVE TELEMETRY
             </span>
           </div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 sm:pl-11">
             Real-time IMD weather ingestion, Arabian Sea tidal hydrodynamic models, and verified citizen waterlogging reports.
           </p>
         </div>

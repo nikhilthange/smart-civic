@@ -15,11 +15,12 @@ import {
   FileCheck2,
   Award,
   Sparkles,
+  ArrowLeft,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import {
   municipalApi,
   type WardProject,
@@ -40,6 +41,7 @@ interface ExtendedWardProject extends WardProject {
 }
 
 export default function ParticipatoryBudget() {
+  const navigate = useNavigate()
   // Real database-backed state (zero mock data)
   const [projects, setProjects] = useState<ExtendedWardProject[]>([])
   const [transactions, setTransactions] = useState<FundExpenditureTransaction[]>([])
@@ -235,20 +237,29 @@ export default function ParticipatoryBudget() {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-6 pt-2 pb-24 sm:pb-28 safe-bottom px-2 sm:px-4">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 sm:p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <button
+              type="button"
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/dashboard"))}
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-800 shrink-0"
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
               <Coins className="w-5 h-5" />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold font-display tracking-tight text-slate-900 dark:text-white">
-              Participatory Ward Budgeting & Corporator Ledger
+              Participatory Ward Budgeting &amp; Corporator Ledger
             </h1>
-            <Badge className="bg-emerald-600 text-white font-mono text-xs px-2.5 py-0.5 rounded-full shadow-sm">
+            <Badge className="bg-emerald-600 text-white font-mono text-xs px-2.5 py-0.5 rounded-full shadow-xs">
               CITIZEN DIRECT DEMOCRACY
             </Badge>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-sans sm:pl-11">
             Cast weighted citizen votes on municipal capital proposals and audit corporator discretionary development expenditures.
           </p>
         </div>

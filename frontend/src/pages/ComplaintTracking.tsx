@@ -836,9 +836,9 @@ export const MunicipalRapidPotholeSla = React.memo(function MunicipalRapidPothol
   const minsLeft = Math.floor((msLeft % 3600000) / 60000)
 
   return (
-    <div className="w-full p-4 rounded-2xl border border-amber-300/80 dark:border-amber-900/60 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 dark:from-amber-950/30 dark:via-orange-950/20 dark:to-transparent flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+    <div className="w-full p-4 rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/70 dark:bg-amber-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
       <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 shrink-0">
+        <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 shrink-0">
           <Zap className="w-5 h-5 animate-pulse" />
         </div>
         <div className="space-y-0.5">
@@ -899,7 +899,7 @@ export const WardNagarsevakCard = React.memo(function WardNagarsevakCard({
   }
 
   return (
-    <Card className="shadow-sm border-blue-200 dark:border-blue-900/50 bg-gradient-to-b from-white to-blue-50/30 dark:from-slate-900 dark:to-blue-950/20">
+    <Card className="shadow-xs border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
@@ -913,7 +913,7 @@ export const WardNagarsevakCard = React.memo(function WardNagarsevakCard({
       </CardHeader>
       <CardContent className="space-y-3.5">
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-950 text-white flex flex-col items-center justify-center border border-slate-700/60 shrink-0 shadow-xs">
+          <div className="w-12 h-12 rounded-xl bg-slate-900 dark:bg-slate-800 text-white flex flex-col items-center justify-center border border-slate-700/60 shrink-0 shadow-xs">
             <span className="text-xs font-bold font-mono text-emerald-400">
               {nagarsevak.name
                 .split(" ")
@@ -1059,7 +1059,7 @@ export const CommunityEndorsementCard = React.memo(function CommunityEndorsement
   const progressPct = Math.min(100, Math.round((signatureCount / threshold) * 100))
 
   return (
-    <Card className="shadow-sm border-amber-200 dark:border-amber-900/50 bg-gradient-to-b from-white to-amber-50/30 dark:from-slate-900 dark:to-amber-950/20">
+    <Card className="shadow-xs border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-900 dark:text-white">
@@ -1098,7 +1098,7 @@ export const CommunityEndorsementCard = React.memo(function CommunityEndorsement
           </div>
           <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
+              className="h-full bg-amber-500 transition-all duration-500"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -1517,7 +1517,16 @@ export default function ComplaintTracking() {
         {/* Clean Header & Search Card */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 sm:p-6 bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-xs">
+            <button
+              type="button"
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/complaints"))}
+              className="p-2.5 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-800 shrink-0"
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <div className="h-11 w-11 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-xs shrink-0">
               <Search className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
@@ -1680,7 +1689,7 @@ export default function ComplaintTracking() {
         canonicalPath={`/track/${targetId}`}
       />
       {/* Top Breadcrumb & Controls Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5 bg-white dark:bg-zinc-900/60 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
         <div className="flex items-start gap-3 min-w-0">
           <Link to="/track" className="shrink-0" title="Back to Tracking Search">
             <Button variant="outline" size="icon" className="min-h-[42px] min-w-[42px] rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">

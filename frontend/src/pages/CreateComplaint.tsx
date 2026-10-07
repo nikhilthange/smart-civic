@@ -5,7 +5,7 @@ import {
   MapPin, UploadCloud, FileText, X, Image, AlertCircle,
   CheckCircle2, Loader2, Bot, Info, Camera, QrCode, ShieldCheck,
   Clock, ShieldAlert, Building2, Trash2, Droplets, Lightbulb,
-  CloudRain, Zap, HeartPulse, Trees, Bus, Volume2, Search
+  CloudRain, Zap, HeartPulse, Trees, Bus, Volume2, Search, ArrowLeft
 } from "lucide-react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -409,7 +409,16 @@ export default function CreateComplaint() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900/60 p-4 sm:p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-xs">
+          <button
+            type="button"
+            onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/dashboard"))}
+            className="p-2.5 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-800 shrink-0"
+            aria-label="Go back"
+            title="Go back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="h-10 w-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-700/60 shadow-xs shrink-0">
             <FileText className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>

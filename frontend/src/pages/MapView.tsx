@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import L, { ensureLeafletPlugins } from "@/lib/leafletSetup"
 import "leaflet/dist/leaflet.css"
@@ -9,7 +9,7 @@ import {
   Filter, MapPin, Layers, RefreshCw, Flame,
   Search, Eye, AlertTriangle, Building2, Radio,
   Download, FileSpreadsheet, Clock,
-  Zap, CheckCircle2, Navigation, X, ChevronRight, Phone, Waves
+  Zap, CheckCircle2, Navigation, X, ChevronRight, Phone, Waves, ArrowLeft
 } from "lucide-react"
 import { complaintApi, type Complaint, CATEGORY_LABELS, STATUS_CONFIG } from "@/services/complaintApi"
 import { getImageUrl, handleImageError, FALLBACK_IMAGE } from "@/utils/imageUrl"
@@ -64,6 +64,7 @@ const SEVERITY_COLORS: Record<string, { bg: string; border: string; text: string
 }
 
 export default function MapView() {
+  const navigate = useNavigate()
   const { lastEvent } = useSocket()
   const [complaints, setComplaints] = useState<Complaint[]>([])
   const [loading, setLoading] = useState(true)
@@ -644,19 +645,19 @@ export default function MapView() {
       />
       {/* Active Monsoon Flood Emergency Radar Banner */}
       {activeHotspotAlert && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white shadow-xl animate-pulse gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/90 dark:bg-rose-950/40 text-rose-950 dark:text-rose-100 shadow-xs gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl shrink-0 text-white">
-              <Waves className="w-5 h-5 text-white" />
+            <div className="p-2.5 bg-rose-100 dark:bg-rose-900/60 rounded-xl shrink-0 text-rose-700 dark:text-rose-300">
+              <Waves className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm flex items-center gap-2">
+              <h3 className="font-bold text-sm flex items-center gap-2 text-rose-950 dark:text-rose-100">
                 Active Monsoon Flood Hotspot in {activeHotspotAlert.ward || "Mumbai"}!
-                <span className="bg-white/30 text-white text-[10px] uppercase font-mono px-2 py-0.5 rounded-full">
+                <span className="bg-rose-200/80 dark:bg-rose-900/80 text-rose-800 dark:text-rose-200 text-[10px] uppercase font-mono px-2 py-0.5 rounded-full font-semibold">
                   {activeHotspotAlert.count} Critical Reports
                 </span>
               </h3>
-              <p className="text-xs text-white/90 mt-0.5">
+              <p className="text-xs text-rose-850 dark:text-rose-250 mt-0.5">
                 {activeHotspotAlert.message || "Multiple high-severity drainage and waterlogging complaints clustered within 500m."}
               </p>
             </div>
@@ -671,14 +672,14 @@ export default function MapView() {
                     mapInstanceRef.current.flyTo([activeHotspotAlert.lat, activeHotspotAlert.lng], 16, { animate: true, duration: 1.5 })
                   }
                 }}
-                className="bg-white text-red-700 hover:bg-white/90 font-extrabold text-xs shadow-md shrink-0"
+                className="bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs shadow-xs shrink-0"
               >
-                🎯 Zoom to Flood Hotspot
+                Zoom to Hotspot
               </Button>
             )}
             <button
               onClick={() => setActiveHotspotAlert(null)}
-              className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 text-xs"
+              className="text-rose-600 dark:text-rose-400 hover:text-rose-900 dark:hover:text-rose-200 p-1 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs"
             >
               ✕
             </button>
@@ -689,15 +690,24 @@ export default function MapView() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/dashboard"))}
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-800 shrink-0"
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
               Interactive Public GIS Map
             </h1>
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 font-bold">
-              BMC Municipal GIS Suite
+            <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800 font-bold">
+              BMC GIS Suite
             </Badge>
           </div>
-          <p className="text-slate-600 text-xs sm:text-sm mt-1">
+          <p className="text-slate-600 dark:text-zinc-400 text-xs sm:text-sm mt-1 sm:pl-11">
             Real-time spatial visualization, 24-Ward choropleths, and defect telemetry across Mumbai
           </p>
         </div>
@@ -705,41 +715,41 @@ export default function MapView() {
         <div className="flex items-center flex-wrap gap-2">
           {/* Map Layer Mode Switcher */}
           {activeTab === "map" && (
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs shadow-inner">
+            <div className="flex items-center bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl border border-slate-200/80 dark:border-zinc-700 text-xs">
               <button
                 type="button"
                 onClick={() => setMapLayerMode("clusters")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                   mapLayerMode === "clusters"
-                    ? "bg-white text-indigo-700 shadow-sm border border-slate-200"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs border border-slate-200/80 dark:border-zinc-700"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
-                <MapPin className="w-3.5 h-3.5" />
+                <MapPin className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
                 Clustered Pins
               </button>
               <button
                 type="button"
                 onClick={() => setMapLayerMode("heatmap")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                   mapLayerMode === "heatmap"
-                    ? "bg-gradient-to-r from-red-600 to-amber-600 text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white dark:bg-zinc-900 text-rose-700 dark:text-rose-400 shadow-xs border border-slate-200/80 dark:border-zinc-700"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
-                <Flame className="w-3.5 h-3.5" />
+                <Flame className="w-3.5 h-3.5 text-rose-600" />
                 Defect Heatmap
               </button>
               <button
                 type="button"
                 onClick={() => setMapLayerMode("choropleth")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
                   mapLayerMode === "choropleth"
-                    ? "bg-emerald-700 text-white shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white dark:bg-zinc-900 text-emerald-700 dark:text-emerald-400 shadow-xs border border-slate-200/80 dark:border-zinc-700"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
-                <Layers className="w-3.5 h-3.5" />
+                <Layers className="w-3.5 h-3.5 text-emerald-600" />
                 24-Ward Choropleth
               </button>
             </div>

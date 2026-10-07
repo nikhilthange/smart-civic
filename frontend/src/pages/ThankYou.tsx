@@ -72,7 +72,7 @@ export default function ThankYou() {
         >
           {/* Card */}
           <Card className="rounded-3xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white text-center relative overflow-hidden">
+            <div className="bg-emerald-600 p-6 text-white text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px] opacity-10" />
               <motion.div
                 initial={{ scale: 0 }}

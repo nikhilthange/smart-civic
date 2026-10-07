@@ -18,7 +18,9 @@ import {
   BadgePercent,
   Compass,
   Trophy,
+  ArrowLeft,
 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/context/AuthContext"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -30,8 +32,7 @@ import { triggerHapticFeedback } from "@/utils/haptics"
 // ─── Custom Vector Logos for Municipal Partners ─────────────────────────────
 
 export const BestLogo = () => (
-  <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-red-600 via-rose-700 to-red-900 p-1.5 shadow-md shadow-red-900/30 flex items-center justify-center overflow-hidden border border-red-400/40 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/20" />
+  <div className="relative w-12 h-12 rounded-xl bg-slate-900 dark:bg-slate-800 p-1.5 shadow-2xs flex items-center justify-center overflow-hidden border border-slate-700/60">
     <svg viewBox="0 0 100 100" className="w-full h-full relative z-10" fill="none">
       {/* BEST Iconic Shield Outline */}
       <path
@@ -78,8 +79,7 @@ export const BestLogo = () => (
 )
 
 export const MetroLogo = () => (
-  <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-red-600 via-amber-500 to-yellow-600 p-1.5 shadow-md shadow-amber-900/30 flex items-center justify-center overflow-hidden border border-yellow-300/40 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/20" />
+  <div className="relative w-12 h-12 rounded-xl bg-slate-900 dark:bg-slate-800 p-1.5 shadow-2xs flex items-center justify-center overflow-hidden border border-slate-700/60">
     <svg viewBox="0 0 100 100" className="w-full h-full relative z-10" fill="none">
       <circle cx="50" cy="50" r="42" fill="#B91C1C" stroke="#FDE047" strokeWidth="4" />
       <circle cx="50" cy="50" r="34" fill="#DC2626" />
@@ -103,8 +103,7 @@ export const MetroLogo = () => (
 )
 
 export const LibraryLogo = () => (
-  <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-800 via-teal-900 to-slate-900 p-1.5 shadow-md shadow-emerald-950/40 flex items-center justify-center overflow-hidden border border-emerald-400/40 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/20" />
+  <div className="relative w-12 h-12 rounded-xl bg-slate-900 dark:bg-slate-800 p-1.5 shadow-2xs flex items-center justify-center overflow-hidden border border-slate-700/60">
     <svg viewBox="0 0 100 100" className="w-full h-full relative z-10" fill="none">
       {/* Greek / Asiatic Library Pillars */}
       <path d="M22 34 L50 16 L78 34 Z" fill="#FDE68A" stroke="#B45309" strokeWidth="2" />
@@ -126,8 +125,7 @@ export const LibraryLogo = () => (
 )
 
 export const TreeLogo = () => (
-  <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 via-green-700 to-teal-900 p-1.5 shadow-md shadow-emerald-900/30 flex items-center justify-center overflow-hidden border border-emerald-300/40 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/20" />
+  <div className="relative w-12 h-12 rounded-xl bg-slate-900 dark:bg-slate-800 p-1.5 shadow-2xs flex items-center justify-center overflow-hidden border border-slate-700/60">
     <svg viewBox="0 0 100 100" className="w-full h-full relative z-10" fill="none">
       {/* GPS Geo-Tag Outer Pulse Ring */}
       <circle cx="50" cy="50" r="42" stroke="#6EE7B7" strokeWidth="2.5" strokeDasharray="6 4" />
@@ -153,8 +151,7 @@ export const TreeLogo = () => (
 )
 
 export const PoolLogo = () => (
-  <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-600 via-teal-700 to-blue-900 p-1.5 shadow-md shadow-cyan-950/30 flex items-center justify-center overflow-hidden border border-cyan-300/40 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-white/20" />
+  <div className="relative w-12 h-12 rounded-xl bg-slate-900 dark:bg-slate-800 p-1.5 shadow-2xs flex items-center justify-center overflow-hidden border border-slate-700/60">
     <svg viewBox="0 0 100 100" className="w-full h-full relative z-10" fill="none">
       <circle cx="50" cy="50" r="40" fill="#0891B2" stroke="#67E8F9" strokeWidth="3" />
       {/* Olympic Wave Swirls */}
@@ -250,6 +247,7 @@ const MUNICIPAL_PERKS: PerkItem[] = [
 const CATEGORIES = ["All", "Transit", "Eco", "Culture", "Sports"]
 
 export default function KarmaRewards() {
+  const navigate = useNavigate()
   const { user, updateUserKarma, refreshUserProfile } = useAuth()
   const [karmaPoints, setKarmaPoints] = useState<number>(user?.karmaPoints ?? 0)
   const [redeemedList, setRedeemedList] = useState<any[]>(user?.redeemedRewards || [])
@@ -382,17 +380,29 @@ export default function KarmaRewards() {
       {/* ─── Clean Municipal Header & Karma Balance Card ─── */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-6 sm:p-7 bg-white dark:bg-zinc-900/60 rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
         <div className="space-y-3 max-w-2xl">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse shrink-0" />
-            <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
-              Civic Citizen Recognition
-            </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/dashboard"))}
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-800 shrink-0"
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse shrink-0" />
+                <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                  Civic Citizen Recognition
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                Civic Badges &amp; Karma
+              </h1>
+            </div>
           </div>
-
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            Civic Badges &amp; Karma
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed sm:pl-11">
             Earn Civic Karma by resolving neighborhood issues and verifying ground resolutions. Redeem points for authentic Mumbai municipal benefits.
           </p>
 
@@ -735,7 +745,7 @@ export default function KarmaRewards() {
               <motion.div
                 key={i}
                 whileHover={{ scale: 1.01 }}
-                className="p-4 rounded-2xl border border-emerald-200/80 dark:border-emerald-900/60 bg-gradient-to-br from-emerald-50/60 to-teal-50/30 dark:from-emerald-950/20 dark:to-slate-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-xs"
+                className="p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-xs"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -786,11 +796,9 @@ export default function KarmaRewards() {
                   initial={{ scale: 0, rotate: -20 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ type: "spring", stiffness: 400, delay: 0.1 }}
-                  className="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/30 flex items-center justify-center text-4xl"
+                  className="w-16 h-16 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center shadow-xs"
                 >
-                  <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[22px] flex items-center justify-center">
-                    <Gift className="w-9 h-9 text-emerald-500" />
-                  </div>
+                  <Gift className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                 </motion.div>
               </div>
 
@@ -807,7 +815,7 @@ export default function KarmaRewards() {
               </div>
 
               {/* Digital Pass Aesthetic Box */}
-              <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-50 to-emerald-50/40 dark:from-slate-800/80 dark:to-emerald-950/20 border-2 border-dashed border-emerald-400 space-y-3 relative">
+              <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-dashed border-slate-300 dark:border-slate-700 space-y-3 relative">
                 <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">
                   Official Municipal Voucher Pass
                 </span>
@@ -830,7 +838,7 @@ export default function KarmaRewards() {
                   size="sm"
                   variant="outline"
                   onClick={() => handleCopyCode(activeVoucherModal.voucherCode)}
-                  className="gap-1.5 text-xs font-bold border-emerald-300 text-emerald-800 dark:text-emerald-300 rounded-xl cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-950"
+                  className="gap-1.5 text-xs font-bold border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                   {copied ? "Copied to Clipboard!" : "Copy Voucher Code"}
@@ -838,7 +846,7 @@ export default function KarmaRewards() {
               </div>
 
               <Button
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold h-11 rounded-xl shadow-lg shadow-emerald-600/25 cursor-pointer"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold h-11 rounded-xl shadow-xs cursor-pointer"
                 onClick={() => setActiveVoucherModal(null)}
               >
                 Done & Return to Rewards

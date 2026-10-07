@@ -281,7 +281,7 @@ export default function AiPipelineHeroVisual() {
                   initial={{ width: "0%" }}
                   animate={{ width: current.confidence }}
                   transition={{ duration: 0.6, ease: "easeOut" }}
-                  className="bg-gradient-to-r from-emerald-500 to-teal-500 h-full rounded-full shadow-sm"
+                  className="bg-emerald-600 h-full rounded-full shadow-xs"
                 />
               </div>
               <div className="flex justify-between text-xs font-mono text-slate-500 mt-1">

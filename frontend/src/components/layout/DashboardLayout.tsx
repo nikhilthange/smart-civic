@@ -27,22 +27,14 @@ import {
   Download,
   Radio,
   FileText,
-  Video,
-  Layers,
-  Navigation,
   Building2,
   Coins,
-  Truck,
-  Wind,
-  Droplets,
-  Flame,
-  Trees,
-  Bus,
-  Dog,
-  Award,
   ShieldAlert,
   Scale,
   QrCode,
+  ArrowLeft,
+  ChevronRight,
+  Home,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -120,33 +112,11 @@ const navGroups: NavGroup[] = [
       { key: "nav.adminDashboard", defaultName: "Executive Command", href: "/admin", icon: BarChart3, adminOnly: true },
       { key: "nav.sitrep", defaultName: "Daily SITREP Briefing", href: "/sitrep", icon: FileText, officerOnly: true, badge: "Daily" },
       { key: "nav.emergencyBroadcast", defaultName: "Emergency Disaster Siren", href: "/emergency-broadcast", icon: Radio, officerOnly: true, badge: "Siren" },
+      { key: "nav.monsoon", defaultName: "Monsoon Flood Radar", href: "/monsoon-radar", icon: CloudRain, badge: "Live IMD" },
       { key: "nav.contractors", defaultName: "Contractor 3-Strike Registry", href: "/contractor-registry", icon: ShieldAlert, officerOnly: true },
       { key: "nav.rtsEnforcement", defaultName: "RTS Statutory Penalty Ledger", href: "/rts-enforcement", icon: Scale, officerOnly: true, badge: "Act 2015" },
       { key: "nav.auditLedger", defaultName: "Compliance Ledger", href: "/audit-ledger", icon: ShieldCheck, adminOnly: true },
       { key: "nav.dataStudio", defaultName: "Municipal Data Studio", href: "/admin/data-studio", icon: Database, adminOnly: true },
-    ],
-  },
-  {
-    groupKey: "navGroup.smartRadars",
-    label: "CityOS Smart Radars & IoT",
-    items: [
-      { key: "nav.monsoon", defaultName: "Monsoon Flood Radar", href: "/monsoon-radar", icon: CloudRain, officerOnly: true },
-      { key: "nav.cctv", defaultName: "CCTV AI Surveillance", href: "/cctv-surveillance", icon: Video, officerOnly: true },
-      { key: "nav.digitalTwin", defaultName: "3D Digital Twin Runoff", href: "/digital-twin", icon: Layers, officerOnly: true },
-      { key: "nav.subways", defaultName: "Flooded Subway Detours", href: "/disaster-subways", icon: Navigation, officerOnly: true },
-      { key: "nav.c1Collapse", defaultName: "C1 Building Collapse", href: "/structural-collapse", icon: Building2, officerOnly: true },
-      { key: "nav.trenching", defaultName: "Dig-Once Utility Trenching", href: "/trenching-coordinator", icon: Wrench, officerOnly: true },
-      { key: "nav.dlp", defaultName: "DLP Road Warranty Registry", href: "/dlp-registry", icon: ShieldCheck, officerOnly: true },
-      { key: "nav.roadPassportRadar", defaultName: "Road Birth Certificates", href: "/road-passport", icon: QrCode, officerOnly: true },
-      { key: "nav.swmFleet", defaultName: "SWM Compactor Fleet", href: "/swm-fleet", icon: Truck, officerOnly: true },
-      { key: "nav.aqi", defaultName: "AQI & Dust Enforcement", href: "/aqi-enforcement", icon: Wind, officerOnly: true },
-      { key: "nav.water", defaultName: "Water Supply & Tankers", href: "/water-governance", icon: Droplets, officerOnly: true },
-      { key: "nav.fireSafety", defaultName: "High-Rise Fire Safety", href: "/fire-safety", icon: Flame, officerOnly: true },
-      { key: "nav.coastal", defaultName: "Mangrove CRZ Sentinel", href: "/coastal-sentinel", icon: Trees, officerOnly: true },
-      { key: "nav.transitLane", defaultName: "BEST Transit Bus Dashcam", href: "/best-transit", icon: Bus, officerOnly: true },
-      { key: "nav.animalWelfare", defaultName: "Animal Welfare Radar", href: "/animal-welfare", icon: Dog, officerOnly: true },
-      { key: "nav.socialRadar", defaultName: "Social Media Civic Radar", href: "/social-radar", icon: MessageSquare, officerOnly: true },
-      { key: "nav.greenBonds", defaultName: "Green Climate Bonds", href: "/green-bonds", icon: Award, officerOnly: true },
     ],
   },
 ]
@@ -185,7 +155,55 @@ export default function DashboardLayout() {
   // Get initials for avatar fallback
   const initials = user?.name
     ? user.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
-    : "U"
+    : "G"
+
+  // Check if current route is a root dashboard overview
+  const isRootDashboard = useMemo(() => {
+    return [
+      "/dashboard",
+      "/citizen-dashboard",
+      "/admin",
+      "/admin-dashboard",
+      "/admin/dashboard",
+      "/officer-portal",
+      "/officer",
+      "/officer-dashboard",
+      "/officer/dashboard",
+      "/worker-queue",
+      "/worker-dashboard",
+      "/worker/dashboard",
+    ].includes(location.pathname)
+  }, [location.pathname])
+
+  // Dynamic breadcrumb hierarchy
+  const currentBreadcrumb = useMemo(() => {
+    const path = location.pathname
+    for (const group of navGroups) {
+      for (const item of group.items) {
+        if (
+          path === item.href ||
+          (item.href === "/complaint/create" && (path === "/complaint/new" || path === "/create-complaint")) ||
+          (item.href === "/worker-queue" && (path.startsWith("/worker-queue") || path.startsWith("/worker-dashboard") || path.startsWith("/worker/dashboard"))) ||
+          (item.href === "/officer-portal" && (path.startsWith("/officer-portal") || path.startsWith("/officer-dashboard") || path.startsWith("/officer/dashboard") || path === "/officer")) ||
+          (item.href === "/admin" && (path.startsWith("/admin-dashboard") || path.startsWith("/admin/dashboard"))) ||
+          (item.href === "/road-passport" && (path.startsWith("/road-passport") || path.startsWith("/passport"))) ||
+          (item.href === "/nagarsevak" && (path.startsWith("/nagarsevak") || path.startsWith("/corporators") || path.startsWith("/find-nagarsevak"))) ||
+          (item.href === "/track" && (path.startsWith("/track") || path.includes("/track")))
+        ) {
+          return {
+            group: t(group.groupKey, group.label),
+            title: t(item.key, item.defaultName),
+          }
+        }
+      }
+    }
+    if (path.includes("/track")) return { group: t("navGroup.citizenPortal", "Citizen Portal"), title: t("nav.trackComplaint", "Track Grievance") }
+    if (path.includes("/road-passport") || path.includes("/passport")) return { group: t("navGroup.smartRadars", "CityOS Smart Radars & IoT"), title: t("nav.roadPassport", "Road Birth Certificate (QR)") }
+    if (path.includes("/nagarsevak") || path.includes("/corporators")) return { group: t("navGroup.citizenPortal", "Citizen Portal"), title: t("nav.nagarsevak", "Find My Nagarsevak") }
+    if (path.includes("/settings")) return { group: t("navGroup.citizenPortal", "Citizen Portal"), title: t("nav.settings", "Settings & Profile") }
+    if (path.includes("/support") || path.includes("/help")) return { group: t("navGroup.citizenPortal", "Citizen Portal"), title: t("nav.support", "Civic Helpdesk") }
+    return { group: "Smart Civic AI", title: "Municipal CityOS" }
+  }, [location.pathname, t])
 
   const roleBadgeColor: Record<string, string> = {
     admin: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
@@ -269,7 +287,7 @@ export default function DashboardLayout() {
 
       <div className="flex-1 overflow-y-auto py-3">
         {/* User identity card */}
-        {user && (
+        {user ? (
           <div className="mx-3.5 mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 border border-slate-200/80 dark:border-slate-800/80">
             <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
               {user.name}
@@ -291,17 +309,38 @@ export default function DashboardLayout() {
               )}
             </div>
           </div>
+        ) : (
+          <div className="mx-3.5 mb-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 border border-slate-200/80 dark:border-slate-800/80 text-center">
+            <p className="text-xs font-semibold text-slate-900 dark:text-slate-100 mb-0.5">
+              Public Citizen Access
+            </p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+              BMC CityOS Public Portal
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                if (isMobile) setIsMobileMenuOpen(false)
+                navigate("/auth")
+              }}
+              className="w-full text-xs h-7 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-2xs"
+            >
+              Sign In / Register
+            </Button>
+          </div>
         )}
 
         {/* Grouped Navigation */}
         <div className="px-2.5 space-y-4">
           {navGroups.map((group) => {
-            // Filter items based on user role
+            // Filter items based on user role (defaulting to citizen for guest public browsing)
+            const effectiveRole = user?.role || "citizen"
             const visibleItems = group.items.filter((item) => {
-              const isCitizen = user?.role === "citizen"
-              const isAdmin = user?.role === "admin"
-              const isOfficerOrAdmin = ["admin", "officer"].includes(user?.role ?? "")
-              const isWorkerOfficerAdmin = ["admin", "officer", "worker"].includes(user?.role ?? "")
+              const isCitizen = effectiveRole === "citizen"
+              const isAdmin = effectiveRole === "admin"
+              const isOfficerOrAdmin = ["admin", "officer"].includes(effectiveRole)
+              const isWorkerOfficerAdmin = ["admin", "officer", "worker"].includes(effectiveRole)
 
               if (item.citizenOnly && !isCitizen) return false
               if (item.adminOnly && !isAdmin) return false
@@ -335,7 +374,16 @@ export default function DashboardLayout() {
                           location.pathname === "/officer/dashboard")) ||
                       (item.href === "/admin" &&
                         (location.pathname === "/admin-dashboard" ||
-                          location.pathname === "/admin/dashboard"))
+                          location.pathname === "/admin/dashboard")) ||
+                      (item.href === "/road-passport" &&
+                        (location.pathname.startsWith("/road-passport") ||
+                          location.pathname.startsWith("/passport"))) ||
+                      (item.href === "/nagarsevak" &&
+                        (location.pathname === "/corporators" ||
+                          location.pathname === "/find-nagarsevak")) ||
+                      (item.href === "/track" &&
+                        (location.pathname.startsWith("/track") ||
+                          location.pathname.includes("/track")))
 
                     return (
                       <Link
@@ -491,53 +539,64 @@ export default function DashboardLayout() {
             </div>
             <NotificationBell />
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="icon" className="rounded-xl min-h-[44px] min-w-[44px] touch-manipulation cursor-pointer border border-zinc-200 dark:border-zinc-700">
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold font-mono rounded-lg">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="sr-only">Toggle user menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 z-[70]">
-                <DropdownMenuLabel>
-                  <div>
-                    <p className="font-medium">{user?.name}</p>
-                    <p className="text-xs font-normal text-muted-foreground truncate">
-                      {user?.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsCommandPaletteOpen(true)}>
-                  <Command className="mr-2 h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-                  {t("nav.commandPalette", "Command Palette (⌘K)")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsCopilotOpen(true)}>
-                  <Bot className="mr-2 h-4 w-4 text-emerald-600" />
-                  {t("nav.copilot", "Municipal AI Copilot")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
-                  <SettingsIcon className="mr-2 h-4 w-4 text-slate-500" />
-                  {t("nav.settingsPreferences", "Settings & Preferences")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/support")} className="cursor-pointer">
-                  <LifeBuoy className="mr-2 h-4 w-4 text-blue-500" />
-                  {t("nav.civicSupport", "Civic Helpdesk & Support")}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-600 focus:text-red-700 cursor-pointer"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {t("nav.logout", "Logout")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="icon" className="rounded-xl min-h-[44px] min-w-[44px] touch-manipulation cursor-pointer border border-zinc-200 dark:border-zinc-700">
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-bold font-mono rounded-lg">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="sr-only">Toggle user menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 z-[70]">
+                  <DropdownMenuLabel>
+                    <div>
+                      <p className="font-medium">{user?.name}</p>
+                      <p className="text-xs font-normal text-muted-foreground truncate">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setIsCommandPaletteOpen(true)}>
+                    <Command className="mr-2 h-4 w-4 text-zinc-900 dark:text-zinc-100" />
+                    {t("nav.commandPalette", "Command Palette (⌘K)")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsCopilotOpen(true)}>
+                    <Bot className="mr-2 h-4 w-4 text-emerald-600" />
+                    {t("nav.copilot", "Municipal AI Copilot")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")} className="cursor-pointer">
+                    <SettingsIcon className="mr-2 h-4 w-4 text-slate-500" />
+                    {t("nav.settingsPreferences", "Settings & Preferences")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/support")} className="cursor-pointer">
+                    <LifeBuoy className="mr-2 h-4 w-4 text-blue-500" />
+                    {t("nav.civicSupport", "Civic Helpdesk & Support")}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-red-600 focus:text-red-700 cursor-pointer"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {t("nav.logout", "Logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => navigate("/auth")}
+                className="rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs px-3.5 h-9 cursor-pointer"
+              >
+                Sign In
+              </Button>
+            )}
           </div>
         </header>
 
@@ -550,6 +609,54 @@ export default function DashboardLayout() {
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6"
           >
+            {/* Universal Subpage Breadcrumb & Back Navigation Bar */}
+            {!isRootDashboard && (
+              <div className="flex items-center justify-between gap-3 text-xs text-slate-500 dark:text-zinc-400 pb-1">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.history.length > 1) {
+                        navigate(-1)
+                      } else {
+                        navigate("/dashboard")
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 text-slate-700 dark:text-zinc-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-zinc-800/80 transition-all shadow-2xs font-medium cursor-pointer"
+                    aria-label="Go back to previous page"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back</span>
+                  </button>
+
+                  <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 flex-wrap text-xs">
+                    <Link
+                      to="/dashboard"
+                      className="inline-flex items-center gap-1 text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 transition"
+                      title="Dashboard"
+                    >
+                      <Home className="w-3.5 h-3.5" />
+                    </Link>
+                    <ChevronRight className="w-3 h-3 text-slate-300 dark:text-zinc-600 shrink-0" />
+                    <span className="text-slate-500 dark:text-zinc-400 font-medium">
+                      {currentBreadcrumb.group}
+                    </span>
+                    <ChevronRight className="w-3 h-3 text-slate-300 dark:text-zinc-600 shrink-0" />
+                    <span className="font-semibold text-slate-800 dark:text-zinc-200 truncate max-w-[200px] sm:max-w-sm">
+                      {currentBreadcrumb.title}
+                    </span>
+                  </nav>
+                </div>
+
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200/80 dark:border-zinc-700/80">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                    {user?.ward || "BMC CityOS • Ward H-West"}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <ErrorBoundary inline={true}>
               <Outlet />
             </ErrorBoundary>
@@ -574,11 +681,11 @@ export default function DashboardLayout() {
                     <motion.div
                       whileTap={{ scale: 0.9 }}
                       whileHover={{ scale: 1.05 }}
-                      className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 text-white flex items-center justify-center shadow-lg shadow-emerald-500/35 border-2 border-white dark:border-zinc-900"
+                      className="w-12 h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-md shadow-emerald-600/25 border-2 border-white dark:border-zinc-900 transition-colors"
                     >
-                      <Icon className="w-5 h-5 animate-pulse" />
+                      <Icon className="w-5 h-5" />
                     </motion.div>
-                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 mt-0.5">
+                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 mt-0.5">
                       {item.name}
                     </span>
                   </Link>

@@ -214,13 +214,13 @@ export default function RtsEnforcementRadar() {
       {/* 4-Metric Real RTS KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Total Salary Deductions Enforced */}
-        <Card className="rounded-2xl border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-transparent dark:from-rose-950/30 dark:via-zinc-900/60 dark:to-zinc-900/40 shadow-sm">
+        <Card className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Officer Salary Debited
               </span>
-              <div className="p-2 rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400">
+              <div className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-rose-600 dark:text-rose-400">
                 <UserX className="w-4 h-4" />
               </div>
             </div>
@@ -237,13 +237,13 @@ export default function RtsEnforcementRadar() {
         </Card>
 
         {/* KPI 2: Citizen Compensation Disbursed */}
-        <Card className="rounded-2xl border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent dark:from-emerald-950/30 dark:via-zinc-900/60 dark:to-zinc-900/40 shadow-sm">
+        <Card className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Citizen Delay Dividends
               </span>
-              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <div className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400">
                 <Coins className="w-4 h-4" />
               </div>
             </div>
@@ -253,20 +253,20 @@ export default function RtsEnforcementRadar() {
               </div>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-emerald-500" />
-                <span>Redistributed to aggrieved citizens as redressal</span>
+                <span>Redistributed to aggrieved citizens</span>
               </p>
             </div>
           </CardContent>
         </Card>
 
         {/* KPI 3: Active Show-Causes */}
-        <Card className="rounded-2xl border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-950/30 dark:via-zinc-900/60 dark:to-zinc-900/40 shadow-sm">
+        <Card className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Active Show-Causes
               </span>
-              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
+              <div className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-amber-600 dark:text-amber-400">
                 <AlertTriangle className="w-4 h-4" />
               </div>
             </div>
@@ -282,13 +282,13 @@ export default function RtsEnforcementRadar() {
         </Card>
 
         {/* KPI 4: Total Statutory Notices Issued */}
-        <Card className="rounded-2xl border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-transparent dark:from-indigo-950/30 dark:via-zinc-900/60 dark:to-zinc-900/40 shadow-sm">
+        <Card className="rounded-2xl border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Statutory Fines Assessed
               </span>
-              <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+              <div className="p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400">
                 <FileText className="w-4 h-4" />
               </div>
             </div>
@@ -297,7 +297,7 @@ export default function RtsEnforcementRadar() {
                 {formatCurrencyINR(summary?.global?.totalPenaltyAssessedInr || 0)}
               </div>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
-                Across {summary?.global?.totalNotices || 0} formal statutory show-cause orders
+                Across {summary?.global?.totalNotices || 0} formal statutory orders
               </p>
             </div>
           </CardContent>

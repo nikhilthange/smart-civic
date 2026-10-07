@@ -91,8 +91,8 @@ export default function PushNotificationBanner() {
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] w-[min(96vw,440px)] pointer-events-auto"
         >
           <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200/80 dark:border-white/[0.08] overflow-hidden">
-            {/* Gradient accent top bar */}
-            <div className="h-1 w-full bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400" />
+            {/* Accent top bar */}
+            <div className="h-1 w-full bg-emerald-600" />
 
             <div className="flex items-start gap-4 p-5">
               {/* Icon */}

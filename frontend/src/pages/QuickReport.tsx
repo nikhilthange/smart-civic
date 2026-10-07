@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   Award,
   Zap,
+  ArrowLeft,
 } from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
@@ -454,12 +455,25 @@ export default function QuickReport() {
 
   return (
     <div className="w-full max-w-xl mx-auto px-1 sm:px-0 space-y-5">
-      {/* Header */}
-      <div className="text-center space-y-1.5 pb-2">
+      {/* Top Navigation & Badge */}
+      <div className="flex items-center justify-between pb-1">
+        <button
+          type="button"
+          onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/dashboard"))}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white px-2.5 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-zinc-700"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back</span>
+        </button>
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
           <Zap className="w-3.5 h-3.5" />
           <span>{t("quickReport.badge", "Instant Field Report")}</span>
         </div>
+      </div>
+
+      {/* Header */}
+      <div className="text-center space-y-1.5 pb-2">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
           {t("quickReport.heroTitle", "Snap & Send Grievance")}
         </h1>

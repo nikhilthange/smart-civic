@@ -559,8 +559,8 @@ export function ComplaintDetailModal({ complaint, onClose }: ComplaintDetailModa
             </div>
 
             {/* ─── Statutory Legal Evidentiary & Emergency Re-Tendering ─── */}
-            <div className="p-4 sm:p-5 bg-gradient-to-r from-slate-900 to-indigo-950 rounded-xl border border-indigo-500/30 text-white space-y-3.5 shadow-lg">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-500/20 pb-2.5">
+            <div className="p-4 sm:p-5 bg-slate-900 dark:bg-zinc-900/90 rounded-xl border border-slate-700/80 dark:border-zinc-800 text-white space-y-3.5 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400">
                     <Scale className="w-4 h-4" />

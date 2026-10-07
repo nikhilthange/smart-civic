@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import {
   Search, Plus, RefreshCw, ChevronLeft,
   ChevronRight, Trash2, AlertCircle, Loader2, FileX,
-  Camera, ExternalLink, MapPin
+  Camera, ExternalLink, MapPin, ArrowLeft
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -131,7 +131,16 @@ export default function ComplaintHistory() {
       {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/dashboard"))}
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-800 shrink-0"
+              aria-label="Go back"
+              title="Go back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
               Grievance Redressal Records
             </h1>
@@ -139,7 +148,7 @@ export default function ComplaintHistory() {
               {total} Total
             </span>
           </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 sm:pl-11">
             Track, filter, and audit municipal complaint lifecycle & SLA milestones.
           </p>
         </div>

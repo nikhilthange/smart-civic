@@ -17,7 +17,6 @@ import {
   ChevronRight,
   Zap,
   Search,
-  Download,
   Building2,
   Scale,
   Gavel,
@@ -30,7 +29,7 @@ import AiPipelineHeroVisual from "@/components/common/AiPipelineHeroVisual"
 import SeoHead from "@/components/common/SeoHead"
 import SmartCivicLogo from "@/components/common/SmartCivicLogo"
 import StickyMobileCta from "@/components/common/StickyMobileCta"
-import { usePWA } from "@/hooks/usePWA"
+import HomeNavbar from "@/components/navigation/HomeNavbar"
 import { complaintApi } from "@/services/complaintApi"
 import { advancedMunicipalApi } from "@/services/advancedMunicipalApi"
 
@@ -138,7 +137,6 @@ export default function Home() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0)
   const [currentTestimonialIdx, setCurrentTestimonialIdx] = useState(0)
   const [isTestimonialPaused, setIsTestimonialPaused] = useState(false)
-  const { canInstall, installApp } = usePWA()
 
   // Real database-backed municipal metrics state
   const [platformMetrics, setPlatformMetrics] = useState({
@@ -242,57 +240,8 @@ export default function Home() {
         canonicalPath="/"
         faqs={HOME_FAQS}
       />
-      {/* Navbar */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
-        <div className="w-full max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-          {/* Brand Logo */}
-          <Link className="flex items-center gap-2.5 min-w-0 shrink" to="/">
-            <SmartCivicLogo className="w-7 h-7" />
-            <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white truncate">
-              Smart Civic <span className="text-primary">AI</span>
-            </span>
-          </Link>
-
-          {/* Desktop Navigation Links — Authentic Institutional Portals */}
-          <nav className="hidden lg:flex gap-5 items-center">
-            <Link to="/track" className="text-xs font-semibold text-slate-700 hover:text-emerald-600 dark:text-slate-300 transition-colors">Track 48h SLA</Link>
-            <Link to="/public-map" className="text-xs font-semibold text-slate-700 hover:text-emerald-600 dark:text-slate-300 transition-colors">Ward GIS Map</Link>
-            <Link to="/nagarsevak" className="text-xs font-semibold text-slate-700 hover:text-emerald-600 dark:text-slate-300 transition-colors">Elected Nagarsevaks</Link>
-            <Link to="/rts-radar" className="text-xs font-semibold text-slate-700 hover:text-emerald-600 dark:text-slate-300 transition-colors flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-              <span>RTS Statutory Radar</span>
-            </Link>
-            <Link to="/contractor-registry" className="text-xs font-semibold text-slate-700 hover:text-emerald-600 dark:text-slate-300 transition-colors">Contractor Escrows</Link>
-            <Link to="/participatory-budget" className="text-xs font-semibold text-slate-700 hover:text-emerald-600 dark:text-slate-300 transition-colors">Ward Budget</Link>
-          </nav>
-
-          {/* Right Action Buttons */}
-          <div className="flex items-center gap-2 shrink-0">
-            {canInstall && (
-              <Button
-                type="button"
-                onClick={installApp}
-                className="hidden sm:inline-flex items-center gap-1.5 h-8 sm:h-9 px-2.5 sm:px-3 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
-                title="Install Smart Civic App"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Install App</span>
-              </Button>
-            )}
-
-            <Button asChild className="h-8 sm:h-9 px-2.5 sm:px-3 text-xs sm:text-sm font-medium rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800" size="sm" variant="ghost">
-              <Link to="/auth">Sign In</Link>
-            </Button>
-
-            <Button asChild className="h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm font-semibold rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 whitespace-nowrap" size="sm">
-              <Link to="/auth">
-                <span>Get Started</span>
-                <ArrowRight className="ml-1 h-3.5 w-3.5 hidden sm:inline" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      {/* Institutional Top Navbar */}
+      <HomeNavbar />
 
       <main className="flex-1">
         {/* Hero Section */}
